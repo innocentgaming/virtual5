@@ -107,28 +107,46 @@ JSON Structure:
 
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 12000);
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        signal: controller.signal,
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: {
-            temperature: 0.3,
-            responseMimeType: 'application/json',
-          },
-        }),
+    const candidateModels = ['gemini-3.8-flash', 'gemini-2.5-flash-lite', 'gemini-flash-latest', 'gemini-1.5-flash'];
+    let response: Response | null = null;
+
+    for (const model of candidateModels) {
+      try {
+        const candidateRes = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            signal: controller.signal,
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: prompt }] }],
+              generationConfig: {
+                temperature: 0.3,
+                responseMimeType: 'application/json',
+              },
+            }),
+          }
+        );
+        if (candidateRes.ok) {
+          response = candidateRes;
+          break;
+        } else if (candidateRes.status === 404) {
+          continue; // Model not available for this key, check next candidate
+        } else {
+          response = candidateRes;
+          break;
+        }
+      } catch {
+        break;
       }
-    );
+    }
 
     clearTimeout(timeoutId);
 
-    if (!response.ok) {
-      console.warn('AI API returned status ' + response.status + ', falling back to rule engine.');
+    if (!response || !response.ok) {
+      console.warn('AI API returned status ' + (response ? response.status : 'timeout') + ', falling back to rule engine.');
       return generateFallbackPlan(request);
     }
 

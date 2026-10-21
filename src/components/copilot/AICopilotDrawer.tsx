@@ -11,6 +11,7 @@ import type { EventPlan } from '../../types/event';
 import {
   COPILOT_STARTER_PROMPTS,
   generateCopilotAnswer,
+  generateCopilotAnswerAsync,
   type CopilotMessage,
 } from '../../services/copilotService';
 
@@ -36,11 +37,12 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
   ]);
 
   const [inputVal, setInputVal] = useState('');
+  const [isThinking, setIsThinking] = useState(false);
 
   if (!isOpen) return null;
 
-  const handleSendPrompt = (promptText: string) => {
-    if (!promptText.trim()) return;
+  const handleSendPrompt = async (promptText: string) => {
+    if (!promptText.trim() || isThinking) return;
 
     const userMsg: CopilotMessage = {
       id: 'usr-' + Date.now(),
@@ -49,17 +51,31 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
       timestamp: 'Just now',
     };
 
-    const answerText = generateCopilotAnswer(promptText, plan);
-
-    const assistantMsg: CopilotMessage = {
-      id: 'ast-' + Date.now() + 1,
-      sender: 'assistant',
-      text: answerText,
-      timestamp: 'Just now',
-    };
-
-    setMessages((prev) => [...prev, userMsg, assistantMsg]);
+    setMessages((prev) => [...prev, userMsg]);
     setInputVal('');
+    setIsThinking(true);
+
+    try {
+      const answerText = await generateCopilotAnswerAsync(promptText, plan);
+      const assistantMsg: CopilotMessage = {
+        id: 'ast-' + Date.now(),
+        sender: 'assistant',
+        text: answerText,
+        timestamp: 'Just now',
+      };
+      setMessages((prev) => [...prev, assistantMsg]);
+    } catch {
+      const fallbackText = generateCopilotAnswer(promptText, plan);
+      const assistantMsg: CopilotMessage = {
+        id: 'ast-' + Date.now(),
+        sender: 'assistant',
+        text: fallbackText,
+        timestamp: 'Just now',
+      };
+      setMessages((prev) => [...prev, assistantMsg]);
+    } finally {
+      setIsThinking(false);
+    }
   };
 
   const handleFormSubmit = (e: React.FormEvent) => {
@@ -221,6 +237,25 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
               )}
             </div>
           ))}
+
+          {isThinking && (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.6rem 0.85rem',
+                borderRadius: 'var(--radius-sm)',
+                backgroundColor: 'var(--bg-card-subtle)',
+                color: 'var(--text-muted)',
+                fontSize: '0.8125rem',
+                width: 'fit-content',
+              }}
+            >
+              <Sparkles size={14} color="var(--brand-primary)" />
+              <span>Copilot is analyzing your plan with Gemini...</span>
+            </div>
+          )}
         </div>
 
         {/* Input Form Bar */}

@@ -7,6 +7,7 @@ describe('AI Planner & Safe Integration', () => {
   });
 
   it('falls back to rule engine immediately when no API key is provided', async () => {
+    vi.stubEnv('VITE_GEMINI_API_KEY', '');
     const plan = await generateAIEventPlan({
       eventType: 'wedding',
       eventDate: '2026-11-20',
@@ -18,6 +19,7 @@ describe('AI Planner & Safe Integration', () => {
     expect(plan.plannerSource).toBe('fallback_rule_engine');
     expect(plan.city).toBe('Boston, MA');
     expect(plan.budgetItems.length).toBeGreaterThan(0);
+    vi.unstubAllEnvs();
   });
 
   it('handles network failure or API errors gracefully by recovering to fallback engine', async () => {

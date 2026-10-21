@@ -110,3 +110,83 @@ export function generateCopilotAnswer(question: string, plan: EventPlan): string
     `• **Next Steps**: Keep your vendor statuses updated under Vendor Checklist, and track your attendee confirmations under the Guest List tab.`
   );
 }
+
+/**
+ * Asynchronously generates an AI Copilot response using Gemini if an API key is available,
+ * or gracefully returns the deterministic response.
+ */
+export async function generateCopilotAnswerAsync(
+  question: string,
+  plan: EventPlan,
+  customApiKey?: string
+): Promise<string> {
+  const apiKey =
+    customApiKey?.trim() ||
+    (import.meta.env.VITE_GEMINI_API_KEY as string | undefined)?.trim();
+
+  if (!apiKey) {
+    return generateCopilotAnswer(question, plan);
+  }
+
+  const prompt = `You are EventWise AI, an expert, encouraging event planning copilot.
+The user is planning a ${plan.eventType.toUpperCase()}:
+- Title: "${plan.title}"
+- City: ${plan.city}
+- Guests: ${plan.guestCount}
+- Budget: ${formatCurrency(plan.totalBudget)}
+- Theme: ${plan.theme || 'Standard'}
+- Venue: ${plan.venuePreference}
+
+User Question: "${question}"
+
+Provide a structured, helpful, concise, bulleted answer (under 180 words). Be concrete with estimates and practical tips.`;
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+    const candidateModels = ['gemini-3.8-flash', 'gemini-2.5-flash-lite', 'gemini-flash-latest'];
+    let textResult: string | null = null;
+
+    for (const model of candidateModels) {
+      try {
+        const res = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            signal: controller.signal,
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: prompt }] }],
+              generationConfig: {
+                temperature: 0.4,
+              },
+            }),
+          }
+        );
+
+        if (res.ok) {
+          const data = await res.json();
+          const candidateText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (candidateText) {
+            textResult = candidateText.trim();
+            break;
+          }
+        }
+      } catch {
+        break;
+      }
+    }
+
+    clearTimeout(timeoutId);
+
+    if (textResult) {
+      return textResult;
+    }
+  } catch (err) {
+    console.warn('GenAI Copilot request failed, using grounded answer:', err);
+  }
+
+  return generateCopilotAnswer(question, plan);
+}
+
