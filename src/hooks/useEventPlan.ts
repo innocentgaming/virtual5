@@ -4,6 +4,8 @@ import type {
   BudgetItem,
   TaskItem,
   VendorItem,
+  GuestItem,
+  ScheduleItem,
   EventType,
 } from '../types/event';
 import {
@@ -25,6 +27,8 @@ export type NavigationTab =
   | 'timeline'
   | 'vendors'
   | 'ideas'
+  | 'guests'
+  | 'schedule'
   | 'ai';
 
 export function useEventPlan() {
@@ -329,6 +333,76 @@ export function useEventPlan() {
     [updateActiveEvent]
   );
 
+  // Guest Actions
+  const addGuest = useCallback(
+    (guest: Omit<GuestItem, 'id'>) => {
+      const newGuest: GuestItem = {
+        ...guest,
+        id: 'g-custom-' + Date.now(),
+      };
+      updateActiveEvent((prev) => ({
+        ...prev,
+        guests: [...(prev.guests || []), newGuest],
+      }));
+    },
+    [updateActiveEvent]
+  );
+
+  const updateGuest = useCallback(
+    (id: string, updates: Partial<GuestItem>) => {
+      updateActiveEvent((prev) => ({
+        ...prev,
+        guests: (prev.guests || []).map((g) => (g.id === id ? { ...g, ...updates } : g)),
+      }));
+    },
+    [updateActiveEvent]
+  );
+
+  const deleteGuest = useCallback(
+    (id: string) => {
+      updateActiveEvent((prev) => ({
+        ...prev,
+        guests: (prev.guests || []).filter((g) => g.id !== id),
+      }));
+    },
+    [updateActiveEvent]
+  );
+
+  // Schedule Actions
+  const addScheduleItem = useCallback(
+    (item: Omit<ScheduleItem, 'id'>) => {
+      const newItem: ScheduleItem = {
+        ...item,
+        id: 's-custom-' + Date.now(),
+      };
+      updateActiveEvent((prev) => ({
+        ...prev,
+        schedule: [...(prev.schedule || []), newItem],
+      }));
+    },
+    [updateActiveEvent]
+  );
+
+  const updateScheduleItem = useCallback(
+    (id: string, updates: Partial<ScheduleItem>) => {
+      updateActiveEvent((prev) => ({
+        ...prev,
+        schedule: (prev.schedule || []).map((s) => (s.id === id ? { ...s, ...updates } : s)),
+      }));
+    },
+    [updateActiveEvent]
+  );
+
+  const deleteScheduleItem = useCallback(
+    (id: string) => {
+      updateActiveEvent((prev) => ({
+        ...prev,
+        schedule: (prev.schedule || []).filter((s) => s.id !== id),
+      }));
+    },
+    [updateActiveEvent]
+  );
+
   // Regeneration without losing plan ID
   const regenerateRecommendations = useCallback(
     async (useAI = false, apiKey?: string) => {
@@ -410,6 +484,12 @@ export function useEventPlan() {
     deleteTask,
     updateVendor,
     addVendor,
+    addGuest,
+    updateGuest,
+    deleteGuest,
+    addScheduleItem,
+    updateScheduleItem,
+    deleteScheduleItem,
     regenerateRecommendations,
     deleteCurrentEvent,
     resetToDefaults,

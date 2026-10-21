@@ -29,6 +29,7 @@ export function calculateBudgetSummary(
   };
 
   let nonContingencySum = 0;
+  let totalActual = 0;
 
   for (const item of items) {
     if (item.category === 'contingency') continue;
@@ -39,6 +40,12 @@ export function calculateBudgetSummary(
       categoryTotals.other += cost;
     }
     nonContingencySum += cost;
+
+    if (item.actualCost !== undefined && !isNaN(item.actualCost)) {
+      totalActual += Math.max(0, item.actualCost);
+    } else if (item.isPaid) {
+      totalActual += cost;
+    }
   }
 
   const contingencyAmount = Math.round(safeBudget * safeContingencyRate);
@@ -53,6 +60,8 @@ export function calculateBudgetSummary(
 
   const safeGuestCount = Math.max(1, isNaN(guestCount) ? 1 : guestCount);
   const perGuestCost = Math.round(totalEstimated / safeGuestCount);
+  const variance = safeBudget - totalActual;
+  const isActualOverBudget = totalActual > safeBudget;
 
   return {
     totalBudget: safeBudget,
@@ -63,6 +72,9 @@ export function calculateBudgetSummary(
     contingencyAmount,
     categoryTotals,
     perGuestCost,
+    totalActual,
+    variance,
+    isActualOverBudget,
   };
 }
 
@@ -80,7 +92,7 @@ export function evaluateDecisionRules(
     | 'priorities'
     | 'city'
     | 'tasks'
-  >,
+  > & { guests?: EventPlan['guests'] },
   currentDateStr?: string
 ): { insights: DecisionInsight[]; missingPrompts: string[] } {
   const insights: DecisionInsight[] = [];
@@ -201,6 +213,39 @@ export function evaluateDecisionRules(
         ', '
       )}): Ensure step-free entrance, wheelchair-accessible restrooms, designated companion seating, and clear dietary signage at all food stations.`,
     });
+  }
+
+  // RSVP Capacity & Dietary checks
+  if (plan.guests && plan.guests.length > 0) {
+    const confirmedCount = plan.guests
+      .filter((g) => g.rsvpStatus === 'attending')
+      .reduce((acc, g) => acc + (g.plusOne ? 2 : 1), 0);
+
+    if (confirmedCount > plan.guestCount) {
+      insights.push({
+        id: 'rule-rsvp-capacity-exceeded',
+        type: 'warning',
+        category: 'capacity',
+        title: 'RSVP Headcount Exceeds Planned Capacity',
+        message: `${confirmedCount} confirmed attendees exceed your target headcount of ${plan.guestCount}. Recalculate catering portions, table rentals, and venue fire marshal capacity.`,
+        actionLabel: 'Review Guest List',
+        actionType: 'NAVIGATE_GUESTS',
+      });
+    }
+
+    const dietaryCount = plan.guests.filter(
+      (g) => g.rsvpStatus === 'attending' && g.dietary && g.dietary !== 'none'
+    ).length;
+
+    if (dietaryCount > 0) {
+      insights.push({
+        id: 'rule-dietary-alert',
+        type: 'suggestion',
+        category: 'accessibility',
+        title: 'Special Dietary Requirements Noted',
+        message: `${dietaryCount} confirmed guests have specific dietary needs (e.g. vegan, celiac, halal). Confirm personalized meal plate tags with your caterer 14 days prior to the event.`,
+      });
+    }
   }
 
   return { insights, missingPrompts };

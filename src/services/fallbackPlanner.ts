@@ -8,6 +8,8 @@ import type {
   VenuePreference,
   FoodPreference,
   PriorityArea,
+  GuestItem,
+  ScheduleItem,
 } from '../types/event';
 import { evaluateDecisionRules } from './decisionEngine';
 import { formatCurrency } from '../utils/formatters';
@@ -460,6 +462,70 @@ export function generateFallbackPlan(input: PlanGenerationInput): EventPlan {
     },
   ];
 
+function generateDefaultGuests(eventType: EventType): GuestItem[] {
+  if (eventType === 'wedding') {
+    return [
+      { id: 'g-1', name: 'Sofia Martinez', email: 'sofia.m@example.com', rsvpStatus: 'attending', dietary: 'vegan', plusOne: true, plusOneName: 'Carlos Martinez', tableNumber: 'Table 1 (Family)' },
+      { id: 'g-2', name: 'David Chen', email: 'david.chen@example.com', rsvpStatus: 'attending', dietary: 'gluten_free', plusOne: false, tableNumber: 'Table 2' },
+      { id: 'g-3', name: 'Emily Watson', email: 'emily.w@example.com', rsvpStatus: 'attending', dietary: 'none', plusOne: true, plusOneName: 'Lucas Watson', tableNumber: 'Table 1 (Family)' },
+      { id: 'g-4', name: 'Robert Johnson', email: 'rjohnson@example.com', rsvpStatus: 'pending', dietary: 'halal', plusOne: false, tableNumber: 'Table 3' },
+      { id: 'g-5', name: 'Amanda Lee', email: 'amanda.lee@example.com', rsvpStatus: 'declined', dietary: 'none', plusOne: false },
+    ];
+  } else if (eventType === 'birthday') {
+    return [
+      { id: 'g-1', name: 'Marcus Vance', email: 'marcus.v@example.com', rsvpStatus: 'attending', dietary: 'none', plusOne: true, plusOneName: 'Chloe Vance', tableNumber: 'VIP Booth' },
+      { id: 'g-2', name: 'Priya Patel', email: 'priya.p@example.com', rsvpStatus: 'attending', dietary: 'vegetarian', plusOne: false, tableNumber: 'Lounge 1' },
+      { id: 'g-3', name: 'Tyler Reed', email: 'tyler.r@example.com', rsvpStatus: 'pending', dietary: 'none', plusOne: true, plusOneName: 'Sam Reed', tableNumber: 'Lounge 2' },
+      { id: 'g-4', name: 'Zoe Kravitz', email: 'zoe.k@example.com', rsvpStatus: 'attending', dietary: 'gluten_free', plusOne: false, tableNumber: 'Lounge 1' },
+    ];
+  } else {
+    return [
+      { id: 'g-1', name: 'Councilwoman Brenda Ortiz', email: 'b.ortiz@citygov.org', rsvpStatus: 'attending', dietary: 'none', plusOne: false, tableNumber: 'Civic Dais' },
+      { id: 'g-2', name: 'Dr. Kenneth Miller', email: 'kmiller@university.edu', rsvpStatus: 'attending', dietary: 'halal', plusOne: true, plusOneName: 'Nadia Miller', tableNumber: 'Committee Table' },
+      { id: 'g-3', name: 'Sarah Jenkins (Artisan Lead)', email: 'sarah.j@localcrafts.org', rsvpStatus: 'attending', dietary: 'vegan', plusOne: false, tableNumber: 'Artisan Hub' },
+      { id: 'g-4', name: 'North District Volunteers', email: 'volunteers@community.org', rsvpStatus: 'attending', dietary: 'none', plusOne: false, tableNumber: 'Volunteer Staging' },
+    ];
+  }
+}
+
+function generateDefaultSchedule(eventType: EventType): ScheduleItem[] {
+  if (eventType === 'wedding') {
+    return [
+      { id: 's-1', time: '10:00 AM', activity: 'Bridal Suite Hair & Makeup Prep', location: 'Bridal Suite / Manor', responsibleRole: 'Hair & Makeup Stylist', notes: 'Light lunch and champagne served' },
+      { id: 's-2', time: '01:00 PM', activity: 'First Look & Wedding Party Portrait Session', location: 'Rose Garden Pergola', responsibleRole: 'Photographer', notes: 'Family grouping list checked off' },
+      { id: 's-3', time: '03:30 PM', activity: 'Guest Seating & Acoustic String Prelude', location: 'Main Lawn Ceremony Grounds', responsibleRole: 'Musician & Ushers', notes: 'Reserved seating for grandparents' },
+      { id: 's-4', time: '04:00 PM', activity: 'Ceremony Processional & Ring Exchange', location: 'Main Lawn Pergola', responsibleRole: 'Officiant', notes: 'Sound mic tested with DJ' },
+      { id: 's-5', time: '05:00 PM', activity: 'Cocktail Hour & Passed Canapés', location: 'Sun Terrace', responsibleRole: 'Catering & Bar Lead', notes: 'Acoustic background set' },
+      { id: 's-6', time: '06:30 PM', activity: 'Grand Entrance & Welcome Toasts', location: 'Grand Reception Pavilion', responsibleRole: 'DJ / MC', notes: 'Best man & Maid of honor speeches' },
+      { id: 's-7', time: '07:00 PM', activity: 'Dinner Service', location: 'Dining Hall', responsibleRole: 'Executive Caterer', notes: 'Dietary meals flagged with colored place cards' },
+      { id: 's-8', time: '08:30 PM', activity: 'First Dance & Dance Floor Celebration', location: 'Dance Floor', responsibleRole: 'DJ & Lighting Lead', notes: 'Parent dances follow immediately' },
+      { id: 's-9', time: '10:30 PM', activity: 'Sparkler Exit & Formal Send-off', location: 'Front Stone Courtyard', responsibleRole: 'Event Coordinator', notes: 'Sparklers and safety buckets pre-positioned' },
+    ];
+  } else if (eventType === 'birthday') {
+    return [
+      { id: 's-1', time: '04:00 PM', activity: 'Decor & Neon Balloon Installation', location: 'Rooftop Lounge', responsibleRole: 'Decorator', notes: 'Check wind anchors on rooftop' },
+      { id: 's-2', time: '05:30 PM', activity: 'DJ Soundcheck & Atmosphere Lighting Sync', location: 'DJ Stage', responsibleRole: 'DJ / Audio Specialist', notes: 'Test retro playlist levels' },
+      { id: 's-3', time: '07:00 PM', activity: 'Guest Arrival & Signature Mocktail Bar Opens', location: 'Welcome Foyer', responsibleRole: 'Mixologist', notes: 'Polaroid guestbook active' },
+      { id: 's-4', time: '08:30 PM', activity: 'Interactive Guest of Honor Trivia & Toast', location: 'Center Stage', responsibleRole: 'Host / MC', notes: 'Short 15-minute high energy session' },
+      { id: 's-5', time: '09:30 PM', activity: 'Birthday Cake Cutting & Champagne Toast', location: 'Dessert Bar', responsibleRole: 'Event Coordinator', notes: 'Cake table spotlight activated' },
+      { id: 's-6', time: '10:00 PM', activity: 'Dance Floor Open & Photobooth Flash', location: 'Rooftop Dance Floor', responsibleRole: 'DJ', notes: 'Late-night mini slider snacks served' },
+    ];
+  } else {
+    return [
+      { id: 's-1', time: '07:30 AM', activity: 'Artisan & Food Truck Vendor Load-in', location: 'North & East Gates', responsibleRole: 'Logistics Coordinator', notes: 'Traffic marshalling active' },
+      { id: 's-2', time: '09:00 AM', activity: 'Main Stage PA System & Sound Check', location: 'Festival Main Stage', responsibleRole: 'Audio Engineer', notes: 'Microphone battery check' },
+      { id: 's-3', time: '10:00 AM', activity: 'Opening Civic Ceremony & Youth Dance Troupe', location: 'Main Stage', responsibleRole: 'Civic Director', notes: 'Land acknowledgment & national anthem' },
+      { id: 's-4', time: '12:00 PM', activity: 'Food Truck Rally & Local Marketplace Peak', location: 'Central Plaza', responsibleRole: 'Food Coordinator', notes: 'Trash and recycling monitor check' },
+      { id: 's-5', time: '02:30 PM', activity: 'Cultural Exchange Art Workshop & Demos', location: 'Community Pavilion', responsibleRole: 'Arts Coordinator', notes: 'Accessible seating verified' },
+      { id: 's-6', time: '04:30 PM', activity: 'Community Leader Awards & Charity Raffle Drawing', location: 'Main Stage', responsibleRole: 'Host / MC', notes: 'Raffle tickets collected by 4:00 PM' },
+      { id: 's-7', time: '05:30 PM', activity: 'Festival Conclusion & Clean-Up Breakdown', location: 'All Festival Grounds', responsibleRole: 'Volunteer Lead', notes: 'Zero-waste sorting verified' },
+    ];
+  }
+}
+
+  const guests = generateDefaultGuests(input.eventType);
+  const schedule = generateDefaultSchedule(input.eventType);
+
   const partialPlan = {
     totalBudget,
     budgetItems,
@@ -472,6 +538,7 @@ export function generateFallbackPlan(input: PlanGenerationInput): EventPlan {
     priorities,
     city,
     tasks,
+    guests,
   };
 
   const { insights, missingPrompts } = evaluateDecisionRules(partialPlan);
@@ -506,6 +573,8 @@ export function generateFallbackPlan(input: PlanGenerationInput): EventPlan {
     tasks,
     vendors,
     ideas,
+    guests,
+    schedule,
     decisionInsights: insights,
     missingInfoPrompts: missingPrompts,
     generationExplanation: explanation,
