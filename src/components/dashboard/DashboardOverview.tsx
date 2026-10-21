@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import type { EventPlan, BudgetSummary } from '../../types/event';
 import type { NavigationTab } from '../../hooks/useEventPlan';
+import { formatCurrency } from '../../utils/formatters';
 
 interface DashboardOverviewProps {
   plan: EventPlan;
@@ -190,10 +191,10 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
             Total Budget
           </div>
           <div className="stat-value">
-            ${budgetSummary.totalBudget.toLocaleString()}
+            {formatCurrency(budgetSummary.totalBudget)}
           </div>
           <div className="stat-subtext">
-            Per person: <strong>${budgetSummary.perGuestCost}</strong> / guest
+            Per person: <strong>{formatCurrency(budgetSummary.perGuestCost)}</strong> / guest
           </div>
         </div>
 
@@ -204,16 +205,16 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
             Estimated Spend
           </div>
           <div className="stat-value" style={{ color: budgetSummary.isOverBudget ? 'var(--color-danger)' : 'var(--text-main)' }}>
-            ${budgetSummary.totalEstimated.toLocaleString()}
+            {formatCurrency(budgetSummary.totalEstimated)}
           </div>
           <div className="stat-subtext">
             {budgetSummary.isOverBudget ? (
               <span style={{ color: 'var(--color-danger)', fontWeight: 700 }}>
-                Over by ${Math.abs(budgetSummary.remainingBalance).toLocaleString()} ({budgetSummary.utilizationPercentage}%)
+                Over by {formatCurrency(Math.abs(budgetSummary.remainingBalance))} ({budgetSummary.utilizationPercentage}%)
               </span>
             ) : (
               <span style={{ color: 'var(--color-success)', fontWeight: 600 }}>
-                ${budgetSummary.remainingBalance.toLocaleString()} remaining ({budgetSummary.utilizationPercentage}% used)
+                {formatCurrency(budgetSummary.remainingBalance)} remaining ({budgetSummary.utilizationPercentage}% used)
               </span>
             )}
           </div>
@@ -311,7 +312,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                     Category: {item.category}
                   </div>
                 </div>
-                <div style={{ fontWeight: 700 }}>${item.estimatedCost.toLocaleString()}</div>
+                <div style={{ fontWeight: 700 }}>{formatCurrency(item.estimatedCost)}</div>
               </div>
             ))}
           </div>

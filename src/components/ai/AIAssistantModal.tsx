@@ -65,7 +65,7 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
             {plan.generationExplanation}
           </p>
           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
-            Last Evaluated: {new Date(plan.lastGeneratedAt).toLocaleString()}
+            Last Evaluated: {new Date(plan.lastGeneratedAt).toLocaleString('en-US')}
           </div>
         </div>
       </div>

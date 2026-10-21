@@ -9,6 +9,7 @@ import {
   ShieldAlert,
 } from 'lucide-react';
 import type { BudgetItem, BudgetCategory, BudgetSummary, EventPlan } from '../../types/event';
+import { formatCurrency } from '../../utils/formatters';
 
 interface BudgetManagerProps {
   plan: EventPlan;
@@ -112,10 +113,10 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
           <ShieldAlert size={24} style={{ flexShrink: 0 }} />
           <div>
             <div style={{ fontWeight: 700, fontSize: '1rem' }}>
-              Warning: Budget Exceeded by ${Math.abs(budgetSummary.remainingBalance).toLocaleString()}
+              Warning: Budget Exceeded by {formatCurrency(Math.abs(budgetSummary.remainingBalance))}
             </div>
             <p style={{ fontSize: '0.875rem', marginTop: '0.25rem' }}>
-              Your current estimated expenses (${budgetSummary.totalEstimated.toLocaleString()}) exceed your planned budget (${budgetSummary.totalBudget.toLocaleString()}) by {Math.round(budgetSummary.utilizationPercentage - 100)}%.
+              Your current estimated expenses ({formatCurrency(budgetSummary.totalEstimated)}) exceed your planned budget ({formatCurrency(budgetSummary.totalBudget)}) by {Math.round(budgetSummary.utilizationPercentage - 100)}%.
             </p>
             <div style={{ fontSize: '0.8125rem', marginTop: '0.5rem', fontWeight: 600 }}>
               💡 Quick Cost-Saving Suggestions:
@@ -134,14 +135,14 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
       <div className="grid-cols-4">
         <div className="stat-card">
           <span className="stat-label">Total Event Budget</span>
-          <span className="stat-value">${budgetSummary.totalBudget.toLocaleString()}</span>
-          <span className="stat-subtext">${budgetSummary.perGuestCost} / guest ({plan.guestCount} guests)</span>
+          <span className="stat-value">{formatCurrency(budgetSummary.totalBudget)}</span>
+          <span className="stat-subtext">{formatCurrency(budgetSummary.perGuestCost)} / guest ({plan.guestCount} guests)</span>
         </div>
 
         <div className="stat-card">
           <span className="stat-label">Estimated Expenses</span>
           <span className="stat-value" style={{ color: budgetSummary.isOverBudget ? 'var(--color-danger)' : 'var(--text-main)' }}>
-            ${budgetSummary.totalEstimated.toLocaleString()}
+            {formatCurrency(budgetSummary.totalEstimated)}
           </span>
           <span className="stat-subtext">Sum of categories + reserve</span>
         </div>
@@ -149,7 +150,7 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
         <div className="stat-card">
           <span className="stat-label">Remaining Balance</span>
           <span className="stat-value" style={{ color: budgetSummary.isOverBudget ? 'var(--color-danger)' : 'var(--color-success)' }}>
-            ${budgetSummary.remainingBalance.toLocaleString()}
+            {formatCurrency(budgetSummary.remainingBalance)}
           </span>
           <span className="stat-subtext">
             {budgetSummary.isOverBudget ? 'Deficit' : 'Unallocated funds'}
@@ -158,7 +159,7 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
 
         <div className="stat-card">
           <span className="stat-label">Contingency Reserve</span>
-          <span className="stat-value">${budgetSummary.contingencyAmount.toLocaleString()}</span>
+          <span className="stat-value">{formatCurrency(budgetSummary.contingencyAmount)}</span>
           <span className="stat-subtext">{Math.round(plan.contingencyRate * 100)}% safety cushion</span>
         </div>
       </div>
@@ -227,7 +228,7 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
                   backgroundColor: CATEGORY_COLORS[cat] || '#64748b',
                   transition: 'width 0.3s ease',
                 }}
-                title={`${CATEGORY_LABELS[cat]}: $${amount.toLocaleString()} (${Math.round(pct)}%)`}
+                title={`${CATEGORY_LABELS[cat]}: ${formatCurrency(amount)} (${Math.round(pct)}%)`}
               />
             );
           })}
@@ -250,7 +251,7 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
                   }}
                 />
                 <span style={{ color: 'var(--text-muted)' }}>{CATEGORY_LABELS[cat]}:</span>
-                <span style={{ fontWeight: 600 }}>${amount.toLocaleString()}</span>
+                <span style={{ fontWeight: 600 }}>{formatCurrency(amount)}</span>
               </div>
             );
           })}
@@ -499,7 +500,7 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
                           </span>
                         </td>
                         <td style={{ padding: '0.75rem 0.5rem', textAlign: 'right', fontWeight: 700 }}>
-                          ${item.estimatedCost.toLocaleString()}
+                          {formatCurrency(item.estimatedCost)}
                           {item.isPerGuest && (
                             <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>per-guest scale</div>
                           )}

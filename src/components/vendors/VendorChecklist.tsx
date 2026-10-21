@@ -8,6 +8,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import type { VendorItem, VendorStatus, VendorCategory, EventPlan } from '../../types/event';
+import { formatCurrency } from '../../utils/formatters';
 
 interface VendorChecklistProps {
   plan: EventPlan;
@@ -233,7 +234,7 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
                       </span>
                     </div>
                     <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
-                      Category: {vendor.category} · Budget Estimate: <strong>${vendor.estimatedCost.toLocaleString()}</strong>
+                      Category: {vendor.category} · Budget Estimate: <strong>{formatCurrency(vendor.estimatedCost)}</strong>
                     </div>
                   </div>
 
