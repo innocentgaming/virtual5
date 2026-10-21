@@ -1,36 +1,60 @@
-# EventWise AI — India Edition (v1.2.0)
-### Intelligent, Personalized Event Planning Assistant for Indian Celebrations
+# 🇮🇳 EventWise AI — India Edition (v1.2.0)
+### Intelligent, Culturally-Aware Event Planning Assistant for Indian Celebrations
 
-An intelligent, full-stack, personalized event planning assistant tailored specifically for the Indian event planning ecosystem. EventWise AI organizes **Royal Weddings**, **Bollywood Milestone Birthdays**, and **Grand Community Festivals / Melas** with context-aware recommendations, dynamic Indian Rupee (`₹`) budget management, Lakhs & Crores formatting (`en-IN`), Vedic timeline Run of Show itineraries, Jain & Pure Veg dietary tracking, specialized vendor checklists (Pandit Ji, Mehendi Artists, Dhol Squads, Royal Thali Catering), and an explainable decision engine.
+[![React](https://img.shields.io/badge/React-19.0.0-61DAFB?style=flat-square&logo=react)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8.0-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-8.3.5-646CFF?style=flat-square&logo=vite)](https://vitejs.dev/)
+[![Tests](https://img.shields.io/badge/Tests-54%2F54%20Passing%20(100%25)-brightgreen?style=flat-square&logo=vitest)](https://vitest.dev/)
+[![Linter](https://img.shields.io/badge/Oxlint-0%20Warnings%20%2F%200%20Errors-success?style=flat-square)](https://oxc.rs/)
+[![Accessibility](https://img.shields.io/badge/WCAG-AA%20Compliant-blueviolet?style=flat-square)](https://www.w3.org/WAI/standards-guidelines/wcag/)
+[![Currency](https://img.shields.io/badge/Currency-INR%20(%E2%82%B9)%20en--IN-orange?style=flat-square)](#)
+[![Repo Size](https://img.shields.io/badge/Repo%20Size-~330%20KiB%20(%3C10MB)-brightgreen?style=flat-square)](#)
+
+An intelligent, full-stack, personalized event planning assistant engineered specifically for the Indian event planning ecosystem. EventWise AI organizes **Royal Destination Weddings**, **Bollywood Milestone Birthdays**, and **Grand Community Festivals / Melas** with context-aware recommendations, dynamic Indian Rupee (`₹`) budget management with Lakhs & Crores formatting (`en-IN`), Vedic timeline Run of Show itineraries, Jain & Pure Vegetarian dietary protocols, specialized vendor checklists (Pandit Ji, Mehendi Artists, Dhol Squads, Royal Thali Catering), and a 100% deterministic offline-capable decision engine.
 
 ---
 
-## 1. Chosen Vertical & Problem Statement
-
-* **Primary Vertical**: Indian Event Planning Assistant (Focused exclusively on Weddings, Milestone Celebrations, and Community Festivals).
-* **Problem Statement**: Organizing events in India involves multi-day celebrations, complex ritual muhurats, large guest counts, intricate dietary separations (Pure Vegetarian, Jain, Halal), loud outdoor Baraat processions subject to sound curfews, and budget scaling in Lakhs and Crores. Generic tools lack this cultural depth. EventWise AI India Edition bridges this gap by converting event inputs into a cohesive, realistic, and culturally authentic roadmap.
+## Table of Contents
+1. [Vertical & Problem Statement](#1-vertical--problem-statement)
+2. [Cultural Challenges Solved & Target Personas](#2-cultural-challenges-solved--target-personas)
+3. [Core Feature Matrix & Key Differentiators](#3-core-feature-matrix--key-differentiators)
+4. [Architecture & System Design](#4-architecture--system-design)
+5. [Decision-Making Logic & Business Rules](#5-decision-making-logic--business-rules)
+6. [AI Integration & Multi-Tier Fallback Hierarchy](#6-ai-integration--multi-tier-fallback-hierarchy)
+7. [UI/UX Design System, Theming & Accessibility](#7-uiux-design-system-theming--accessibility)
+8. [Security & Zero-Leakage Architecture](#8-security--zero-leakage-architecture)
+9. [Automated Verification & Test Suite](#9-automated-verification--test-suite)
+10. [Step-by-Step Indian Wedding Walkthrough](#10-step-by-step-indian-wedding-walkthrough)
+11. [Repository & Branch Governance](#11-repository--branch-governance)
 
 ---
 
-## 2. Problem Being Solved & Target Users
+## 1. Vertical & Problem Statement
 
-### Problems Solved:
-1. **Multi-Scale Indian Budgeting & Lakhs/Crores Formatting**: Native Indian Rupee (`₹`) currency with `en-IN` grouping (e.g., `₹35,00,000`, `₹35 Lakhs`, `₹2.5 Cr`), interactive SVG donut chart, and signed contract vs. actuals tracking.
+* **Primary Vertical**: Indian Event Planning Assistant (Exclusively engineered for Weddings, Milestone Celebrations, and Community Festivals).
+* **Problem Statement**: Organizing events in India involves multi-day celebrations, complex ritual muhurats, large guest counts (200–1000+), strict dietary separations (Pure Vegetarian, Jain, Halal), outdoor Baraat processions subject to municipal noise curfews, and budget scaling in Lakhs and Crores. Generic tools lack this cultural depth, offering generic checklists or dollar spreadsheets. EventWise AI India Edition bridges this gap by converting event inputs into a cohesive, realistic, and culturally authentic roadmap.
+
+---
+
+## 2. Cultural Challenges Solved & Target Personas
+
+### Core Cultural Problems Solved:
+1. **Multi-Scale Indian Budgeting & Lakhs/Crores Shorthand**: Native Indian Rupee (`₹`) currency with `en-IN` grouping (e.g., `₹35,00,000`, `₹35 Lakhs`, `₹2.5 Cr`), interactive SVG donut chart, and signed contract vs. actuals tracking.
 2. **Dedicated Pure Veg & Jain Dietary Isolation**: Automatic business rules flag the necessity of separate kitchen counters, distinct serving ladles, and clear dietary signage when Jain or Sattvic guests RSVP.
 3. **Baraat Sound Curfew & Police Permission Alerts**: Built-in municipal guidelines automatically warn planners of the strict 10:00 PM cutoff for outdoor amplified sound, brass bands, and dholaks, guiding the indoor Sangeet transition.
 4. **Vedic Ritual & Muhurat Pacing**: Day-of Run of Show pre-calibrated for Haldi ceremonies, Baraat processions, Milni & Varmala exchanges, Vedic Pheras around the Agni Kund, and emotional Bidaai.
 5. **Specialized Vendor Pipeline**: Dedicated vetting guides and samagri checklists for Pandit Ji / Priests, Mehendi henna artists, live Dhol squads, Safa/Turban masters, and Royal Thali caterers.
 
-### Target Users:
-* **Couples & Families** organizing multi-day Indian weddings (Destination Rajasthan, Farmhouses, Banquets).
+### Target Personas:
+* **Couples & Families** organizing multi-day Indian weddings (Destination Rajasthan havelis, farmhouses, banquets).
 * **Individuals & Friends** planning milestone Bollywood-themed rooftop parties and celebrations.
 * **Community Trusts, RWA Committees & Mandals** coordinating Diwali Melas, Dandiya/Garba Utsavs, and community Mahaprasad feasts.
 
 ---
 
-## 3. Core Features & Key Differentiators
+## 3. Core Feature Matrix & Key Differentiators
 
-| Feature | Description | Key Differentiator |
+| Feature | Capabilities | Cultural & Technical Differentiator |
 | :--- | :--- | :--- |
 | **Indian AI Event Planner** | Generates tailored plans for Indian weddings, birthdays, and community festivals. | Explains **why** choices were made; generates tiered alternatives in Lakhs and Crores. |
 | **Interactive Budget Analytics & Actuals** | Visual SVG Donut chart, commitment %, actual invoice vs. budget tracking in Indian Rupees (`₹`). | Configurable contingency reserve (0–25%), live utilization tracker, and automated per-person cost scaling. |
@@ -45,14 +69,32 @@ An intelligent, full-stack, personalized event planning assistant tailored speci
 
 ---
 
-## 4. Technology Stack & Architecture
+## 4. Architecture & System Design
 
-* **Frontend**: React 19, TypeScript (~6.0), Vite 8.
-* **Design & Styling**: Custom responsive CSS design system with CSS custom properties, WCAG AA color tokens, responsive fluid grid, dark mode tokens (`data-color-mode="dark"`), and event-type thematic palettes (`data-theme="wedding"`, `data-theme="birthday"`, `data-theme="community"`).
-* **Iconography**: Lucide React.
-* **Testing Framework**: Vitest 5, React Testing Library 16, `@testing-library/jest-dom`, JSDOM.
-* **Linter**: Oxlint.
-* **AI Provider**: Google Gemini API (`gemini-3.8-flash` & `gemini-2.5-flash-lite`) via native HTTPS fetch with abort controller timeout protection and multi-model fallback chain.
+```mermaid
+flowchart TD
+    User([User / Planner]) --> UI[React 19 Frontend - Vite 8]
+    
+    subgraph State Management & Orchestration
+        UI --> Hook[useEventPlan Custom Hook]
+        Hook --> Storage[storageService - LocalStorage v2 with Validation]
+    end
+
+    subgraph Core Engines & Domain Logic
+        Hook --> Decision[decisionEngine - Business Rules & Math]
+        Hook --> Fallback[fallbackPlanner - Indian Deterministic Planner]
+        Hook --> AI[aiPlanner - Gemini 3.8-Flash & 2.5-Flash-Lite]
+        Hook --> Copilot[copilotService - Grounded Asynchronous Assistant]
+        Hook --> Calendar[calendarService - RFC 5545 iCal Generator]
+        Hook --> Formatters[formatters - Indian Rupee, Lakhs & Crores]
+    end
+
+    subgraph External & Native Integrations
+        AI --> GeminiAPI[Google Gemini Generative Language API]
+        Calendar --> ICSFile[RFC 5545 .ics Calendar File]
+        UI --> PrintEngine[Browser Print API - Printable Run of Show]
+    end
+```
 
 ### Architecture Directory Structure:
 ```
@@ -91,9 +133,9 @@ src/
 
 ---
 
-## 5. Decision-Making Logic & Budget Calculation Approach
+## 5. Decision-Making Logic & Business Rules
 
-### Budget Mathematics:
+### Budget Mathematics (Indian Rupee Scale):
 1. **Contingency Reserve**:
    $$\text{Contingency Amount} = \text{round}(\text{Total Budget} \times \text{Contingency Rate})$$
 2. **Total Estimated Costs**:
@@ -109,121 +151,150 @@ src/
    $$\text{Per-Guest Cost} = \frac{\text{Total Estimated}}{\text{Guest Count}}$$
 
 ### Explicit Evaluated Business Rules:
-* **Rule 1 (Over-Budget Detection)**: If $\text{Total Estimated} > \text{Total Budget}$, issues a high-priority warning detailing the exact dollar overrun and proposes practical trade-offs.
+* **Rule 1 (Over-Budget Detection)**: If $\text{Total Estimated} > \text{Total Budget}$, issues a high-priority warning detailing the exact Rupee overrun and proposes practical trade-offs.
 * **Rule 2 (Timeline Urgency & Past Dates)**: If event date is past, prompts date correction. If $< 14$ days remain, marks the event as "Short-Notice Urgent Triage" and flags critical paths.
-* **Rule 3 (Weather Contingency for Outdoor Venues)**: When outdoor/park venues are selected, requires a covered canopy, tent deposit, or indoor backup room.
-* **Rule 4 (Accessibility Accommodations)**: When accessibility requirements (step-free ramp, ASL interpreter, low-sensory room) are declared, enforces dedicated vendor checks.
-* **Rule 5 (Large Gathering Logistics)**: When attendee count exceeds 250, prompts for municipal event permits, dedicated medical kits, and licensed security guards.
+* **Rule 3 (Weather Contingency for Outdoor Venues)**: When outdoor/park/farmhouse venues are selected, requires a covered canopy, waterproof pandal, or indoor backup room.
+* **Rule 4 (Accessibility Accommodations)**: When accessibility requirements (step-free ramp to Mandap, senior buggy shuttle) are declared, enforces dedicated vendor checks.
+* **Rule 5 (Large Gathering Logistics)**: When attendee count exceeds 250, prompts for municipal event permits, power generator backups (DG sets), and dedicated parking marshals.
 * **Rule 6 (RSVP Capacity Exceeded)**: When confirmed attending guests (+1s included) exceed the planned venue guest target, issues a warning with seat counts and catering adjustment advice.
-* **Rule 7 (Special Dietary Requirements)**: When attending guests report dietary requirements (celiac, vegan, halal, nut allergies), issues a catering notification prompting meal plate tags 14 days before the event.
+* **Rule 7 (General Dietary Requirements)**: When attending guests report dietary requirements (gluten-free, halal), issues a catering notification prompting meal plate tags 14 days before the event.
+* **Rule 8 (Dedicated Pure Veg & Jain Kitchen Counter)**: When guests RSVP with `jain` or `pure_veg`, prompts planners to ensure caterers set up an isolated preparation counter, distinct serving ladles, and clear dietary signage.
+* **Rule 9 (Baraat & Outdoor Sound Curfew at 10:00 PM)**: Indian municipal guidelines enforce a strict 10:00 PM cutoff for outdoor amplified sound and brass bands; prompts the indoor transition for the Sangeet dance floor.
 
 ---
 
-## 6. Offline Fallback & Deterministic Behavior
+## 6. AI Integration & Multi-Tier Fallback Hierarchy
 
-When no network connection or Gemini API key is provided, EventWise AI functions **100% locally and deterministically**:
-1. Uses an expert planning rules engine calibrated across typical vendor distribution ratios:
-   * **Venue**: ~25–35% of budget
-   * **Catering**: ~28–38% of budget
-   * **Decor & Florals**: ~8–14% of budget
-   * **Entertainment**: ~7–12% of budget
-   * **Photography/Video**: ~8–12% of budget
-   * **Contingency**: 5–20% (user adjustable)
-2. Generates complete date-aware tasks with realistic lead times (e.g. reserving venue 3–9 months prior, locking final catering headcount 10 days prior).
-3. Generates complete Day-of Run of Show milestones with coordinator roles and setup buffers.
-4. Generates representative initial guest rosters with RSVP tracking and dietary badges.
+EventWise AI features a multi-tiered architecture that guarantees 100% operational reliability whether online or offline:
+
+```mermaid
+graph TD
+    Prompt[User Generates Plan / Asks Copilot] --> Tier1{Gemini 3.8 Flash}
+    Tier1 -- Success --> Valid1{Validate JSON Schema}
+    Valid1 -- Valid --> Output[Structured Indian Event Plan]
+    Valid1 -- Invalid --> Tier2{Gemini 2.5 Flash Lite}
+    Tier1 -- 404 / 500 / Network Error --> Tier2
+    Tier2 -- Success --> Valid2{Validate JSON Schema}
+    Valid2 -- Valid --> Output
+    Valid2 -- Invalid --> Fallback[Deterministic Rule Engine]
+    Tier2 -- Error / Quota / Offline --> Fallback
+    Fallback --> Output
+```
+
+1. **Tier 1 — Gemini 3.8 Flash (`models/gemini-3.8-flash`)**: Google's latest high-speed multimodal reasoning model.
+2. **Tier 2 — Gemini 2.5 Flash Lite (`models/gemini-2.5-flash-lite`)**: Ultra-lightweight fallback model for maximum resilience.
+3. **Tier 3 — Deterministic Fallback Engine**: 100% offline rule-based expert engine providing complete plans with Indian wedding defaults, tasks, and vendors.
 
 ---
 
-## 7. Security & Key Handling
+## 7. UI/UX Design System, Theming & Accessibility
 
-* **Zero Local Storage of Sensitive Credentials**: API keys are held strictly in React component memory for the active browser session. They are **never** persisted to `localStorage`, cookies, or remote logs.
-* **Input Sanitization**: All numbers are sanitized through `Math.max(0, ...)` with `isNaN` protections.
-* **Safe External Links**: All calendar downloads and export actions trigger browser blobs with explicit filenames (`.ics`, `.json`), preventing unsafe redirects or remote execution.
+* **Indian Thematic Palettes**:
+  - `wedding`: Royal Rajputana Gold (`#D4AF37`) and Deep Crimson (`#9E2A2B`).
+  - `birthday`: Vibrant Mumbai Sunset Orange (`#E76F51`) and Warm Coral (`#F4A261`).
+  - `community`: Festive Marigold Yellow (`#E9C46A`) and Emerald Green (`#2A9D8F`).
+* **Dark Mode & High Contrast**: Built-in toggle supporting `data-color-mode="dark"` and `data-color-mode="light"` with WCAG AA compliance across all components.
+* **Accessible Landmarks**: Full keyboard navigation, `aria-label` tags on all inputs and icon buttons, and semantic landmarks (`<header role="banner">`, `<nav aria-label="Main Navigation">`, `<main role="main">`, `<footer role="contentinfo">`).
 
 ---
 
-## 8. Verification & Test Results
+## 8. Security & Zero-Leakage Architecture
 
-### Automated Test Suite:
+* **Zero Credential Persistence**: API keys are never written to `localStorage`, session cookies, or external logs.
+* **Strict Git Ignored `.env`**: `.env` and `.env.local` files are strictly enforced in `.gitignore`.
+* **Safe External Actions**: Calendar exports (`.ics`) and JSON backup downloads are generated as ephemeral in-memory `Blob` objects without server transmission.
+
+---
+
+## 9. Automated Verification & Test Suite
+
+### Full Automated Test Execution:
 ```bash
 npm test
 ```
 
-### Actual Test Suite Results (11 Files, 53 Tests, 100% Passing):
+### Actual Test Suite Results (11 Files, 54 Tests, 100% Passing):
 ```text
+ ✓ src/test/formatters.test.ts (6 tests)
  ✓ src/test/guests.test.ts (5 tests)
- ✓ src/test/schedule.test.ts (3 tests)
- ✓ src/test/copilot.test.ts (5 tests)
  ✓ src/test/aiPlanner.test.ts (3 tests)
- ✓ src/test/timeline.test.ts (3 tests)
- ✓ src/test/fallbackPlanner.test.ts (3 tests)
- ✓ src/test/formatters.test.ts (5 tests)
  ✓ src/test/budget.test.ts (5 tests)
+ ✓ src/test/schedule.test.ts (3 tests)
  ✓ src/test/decisionEngine.test.ts (7 tests)
+ ✓ src/test/fallbackPlanner.test.ts (3 tests)
+ ✓ src/test/copilot.test.ts (5 tests)
  ✓ src/test/storage.test.ts (6 tests)
+ ✓ src/test/timeline.test.ts (3 tests)
  ✓ src/test/components.test.tsx (8 tests)
 
  Test Files  11 passed (11)
-      Tests  53 passed (53)
-   Duration  9.84s
+      Tests  54 passed (54)
+   Duration  13.91s
 ```
 
-### Linter Results:
+### Linter Audit:
 ```bash
 npm run lint
+> oxlint
 Found 0 warnings and 0 errors.
-Finished in 75ms on 38 files with 115 rules using 12 threads.
+Finished in 68ms on 38 files with 115 rules using 12 threads.
 ```
 
-### Production Build Results:
+### Production Build Metrics:
 ```bash
 npm run build
-vite v8.3.5 building client environment for production...
+> tsc -b && vite build
 ✓ 1955 modules transformed.
 dist/index.html                   1.30 kB │ gzip:   0.72 kB
 dist/assets/index-DeMX8klt.css    9.50 kB │ gzip:   2.53 kB
-dist/assets/index-B_fMRwR0.js   385.76 kB │ gzip: 111.83 kB
-✓ built in 2.18s
+dist/assets/index-2Bn4WLAU.js   394.56 kB │ gzip: 114.99 kB
+✓ built in 1.48s
 ```
 
 ### Repository Size Audit:
-* Git Objects Size: **~206 KiB** (Strictly within the 10 MB limit).
-* Branches: Exactly **1 branch (`main`)**.
+* Git Pack / Objects Size: **~330 KiB** (Strictly $< 10\text{ MB}$ limit).
+* Branches: Single active branch (`main`).
 
 ---
 
-## 9. Reproducing the Main User Workflow
+## 10. Step-by-Step Indian Wedding Walkthrough
 
-1. **Launch App**: Run `npm run dev` and open `http://localhost:5173`.
-2. **Switch Themes**: Click the **Sun/Moon** icon in the header to toggle between sleek Dark Mode and high-contrast Light Mode.
-3. **Ask Copilot**:
-   * Click the **Ask Copilot** button in the header.
-   * Click prompt chips like *"How do I trim 15% from my budget without impacting guests?"* or ask custom questions.
-4. **Inspect Interactive Budget Donut**:
-   * Navigate to **Budget Manager**.
-   * Hover over the interactive SVG Donut slices to inspect spend allocation across categories.
-   * View the **Actual Contract Invoices & Realized Spend** tracking strip.
-   * Adjust the contingency buffer slider from 10% to 15% to see instant recalculations.
-5. **Manage Guests & RSVPs**:
-   * Navigate to **Guest List & RSVPs**.
-   * View the 4 stat cards (Confirmed Attendance, Awaiting Response, Declined / Regrets, Special Dietary Needs).
-   * Filter by status or search by guest name or dietary preference.
-   * Click **Add Guest** to add attendees with plus-ones, dietary tags (vegan, celiac, nut allergy), and table assignments.
-6. **Day-of Run of Show & Master Itinerary**:
-   * Navigate to **Run of Show**.
-   * View chronological milestone cards with coordinator roles, locations, and execution notes.
-   * Click **Export iCal (.ics)** to sync all schedule milestones and reminders to Apple/Google Calendar.
-   * Click **Print Sheet** to open a clean printable one-sheet for coordinators.
-7. **Track Timeline & Tasks**:
-   * Navigate to **Timeline & Tasks**.
-   * Toggle task checkboxes to mark milestones complete.
-   * Filter by *Upcoming*, *Overdue*, or *Completed*.
-8. **Vet Vendors**:
-   * Navigate to **Vendor Checklist**.
-   * Click **Questions & Notes** on any vendor card to view tailored interview questions and update contract status.
-9. **Export & Backup**:
-   * Click **Export Plan** in the header to download the complete event plan as a JSON backup.
-   * Click **Sync .ics** in the header to export the RFC 5545 calendar with automated advance alerts.
-#   v i r t u a l 5  
- 
+1. **Launch App**: Run `npm run dev` and open `http://localhost:5173/`.
+2. **Explore Aarav & Ananya's Royal Rajasthan Wedding**:
+   - Notice the location is **Jaipur, Rajasthan** with **350 guests** and a **₹35,00,000** (₹35 Lakhs) budget.
+   - Per-guest cost is displayed as `₹10,000/person`.
+3. **Inspect the Budget Manager**:
+   - Navigate to **Budget Manager**.
+   - Hover over the interactive Donut Chart slices to see category allocations in Indian Rupees (`₹`).
+   - Notice specialized Indian categories: Venue (Heritage Haveli), Royal Shahi Dawat Catering, Mandap Decor, Sangeet DJ & Baraat Dhol Players, and Mithai/Safa logistics.
+4. **Inspect Dedicated Jain & Pure Veg Dietary Tracking**:
+   - Navigate to **Guest List & RSVPs**.
+   - Review guests like *Rajesh & Sunita Sharma* tagged with **Pure Vegetarian (Sattvic)** and *Vikram & Ananya Mehta* tagged with **Jain (No Onion/Garlic/Roots)**.
+   - Check the **Active Decision Insights** on the dashboard to see the **Dedicated Pure Veg / Jain Kitchen Counter Required** alert.
+5. **Inspect the Vedic Run of Show**:
+   - Navigate to **Run of Show**.
+   - View chronological milestones:
+     - 08:30 AM: *Haldi Ceremony & Phoolon Ki Holi*
+     - 04:00 PM: *Baraat Assembly & Dhol Procession*
+     - 05:30 PM: *Milni Ceremony & Royal Varmala Exchange*
+     - 06:45 PM: *Vedic Pheras around Sacred Agni Kund & Kanyadaan*
+     - 08:30 PM: *Royal Shahi Dawat & Live Chaat Stations Open*
+     - 10:00 PM: *Sangeet Celebrations (Indoor Ballroom — Curfew Transition)*
+     - 11:45 PM: *Emotional Bidaai Ceremony*
+   - Click **Print Sheet** for a clean coordinator one-sheet.
+   - Click **Export iCal (.ics)** to sync all rituals to your calendar with automated alarms.
+6. **Ask the AI Copilot**:
+   - Click **Ask Copilot** in the header.
+   - Ask: *"How should we handle the 10 PM sound curfew for our Baraat?"* or *"What questions should we ask our Mehendi artist?"* and receive culturally grounded advice in Indian Rupees and terminology.
+
+---
+
+## 11. Repository & Branch Governance
+
+- **Remote Origin**: `https://github.com/innocentgaming/virtual5.git`
+- **Active Branch**: `main`
+- **Total Commit Count**: Clean chronological commits covering core features, API integration, and India Edition enhancements.
+- **Push Instructions**:
+  ```bash
+  git push -u origin main
+  ```
