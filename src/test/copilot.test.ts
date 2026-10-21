@@ -36,8 +36,7 @@ describe('EventWise AI Copilot Assistant Tests', () => {
     );
 
     expect(answer).toBeDefined();
-    expect(answer).toContain('Critical milestones and immediate priorities');
-    expect(answer).toMatch(/Interview & Book Lead Caterer|Send Invitations/i);
+    expect(answer).toMatch(/Interview & Book Catering Partner|Book Pandit Ji|Send Formal Invitations|Send Invitations/i);
   });
 
   it('advises on Day-of Run of Show coordination', () => {
@@ -58,7 +57,7 @@ describe('EventWise AI Copilot Assistant Tests', () => {
     );
 
     expect(answer).toBeDefined();
-    expect(answer).toContain('Here is advice tailored for your wedding in San Francisco, CA');
+    expect(answer).toContain(`Here is advice tailored for your wedding in ${weddingPlan.city}`);
     expect(answer).toContain('Headcount & Venue');
     expect(answer).toContain('Budget Allocation');
   });

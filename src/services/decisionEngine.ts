@@ -81,6 +81,7 @@ export function calculateBudgetSummary(
 export function evaluateDecisionRules(
   plan: Pick<
     EventPlan,
+    | 'eventType'
     | 'totalBudget'
     | 'budgetItems'
     | 'contingencyRate'
@@ -191,16 +192,27 @@ export function evaluateDecisionRules(
     });
   } else if (plan.guestCount > 0 && plan.totalBudget > 0) {
     const perGuestBudget = plan.totalBudget / plan.guestCount;
-    if (perGuestBudget < 35) {
+    const tightThreshold = 500; // ₹500 per guest threshold in EventWise India
+    if (perGuestBudget < tightThreshold) {
       insights.push({
         id: 'rule-per-guest-low',
         type: 'warning',
         category: 'budget',
-        title: 'Tight Per-Guest Budget ($' + Math.round(perGuestBudget) + '/person)',
-        message:
-          'Your overall budget averages under $35 per guest. Buffet catering, self-serve beverage stations, and a community center or park venue will be essential to stay on target.',
+        title: `Tight Per-Guest Budget (${formatCurrency(Math.round(perGuestBudget))}/person)`,
+        message: `Your overall budget averages under ${formatCurrency(tightThreshold)} per guest. Buffet catering, community halls, and streamlined menu selections will be essential to stay on target.`,
       });
     }
+  }
+
+  // Baraat and outdoor music curfew rule for Indian events
+  if (plan.eventType === 'wedding' || plan.priorities?.includes('entertainment')) {
+    insights.push({
+      id: 'rule-baraat-curfew',
+      type: 'suggestion',
+      category: 'timeline',
+      title: 'Baraat & Outdoor Sound Curfew (10:00 PM)',
+      message: 'Indian municipal guidelines enforce a strict 10:00 PM cutoff for outdoor amplified sound, dhol processions, and brass bands. Transition the dance floor indoors for late-night Sangeet or post-Pheras festivities.',
+    });
   }
 
   if (plan.accessibilityNeeds && plan.accessibilityNeeds.length > 0) {
@@ -243,7 +255,21 @@ export function evaluateDecisionRules(
         type: 'suggestion',
         category: 'accessibility',
         title: 'Special Dietary Requirements Noted',
-        message: `${dietaryCount} confirmed guests have specific dietary needs (e.g. vegan, celiac, halal). Confirm personalized meal plate tags with your caterer 14 days prior to the event.`,
+        message: `${dietaryCount} confirmed guests have specific dietary needs. Confirm personalized meal plate tags with your caterer 14 days prior to the event.`,
+      });
+    }
+
+    const jainOrPureVegCount = plan.guests.filter(
+      (g) => g.rsvpStatus === 'attending' && (g.dietary === 'jain' || g.dietary === 'pure_veg')
+    ).length;
+
+    if (jainOrPureVegCount > 0) {
+      insights.push({
+        id: 'rule-jain-dietary-counter',
+        type: 'action_required',
+        category: 'accessibility',
+        title: 'Dedicated Pure Veg / Jain Kitchen Counter Required',
+        message: `${jainOrPureVegCount} guests require Jain (no onion/garlic/root veg) or Sattvic Pure Vegetarian preparation. Ensure your caterer sets up an isolated preparation counter, distinct serving ladles, and clear signage.`,
       });
     }
   }

@@ -78,7 +78,7 @@ describe('EventWise AI UI & Workflow Integration Tests', () => {
     expect(screen.getByText(/Add New Expense Item/i)).toBeInTheDocument();
 
     const nameInput = screen.getByLabelText(/Expense Description \*/i);
-    const costInput = screen.getByLabelText(/Estimated Amount \(\$\) \*/i);
+    const costInput = screen.getByLabelText(/Estimated Amount/i);
 
     fireEvent.change(nameInput, { target: { value: 'Live Jazz Trio' } });
     fireEvent.change(costInput, { target: { value: '1800' } });
@@ -149,10 +149,10 @@ describe('EventWise AI UI & Workflow Integration Tests', () => {
     const select = screen.getByLabelText(/Select active event plan/i);
     expect(select).toBeInTheDocument();
 
-    // Switch to Jordan's Birthday
+    // Switch to Rohan's Birthday
     fireEvent.change(select, { target: { value: 'evt-sample-birthday' } });
 
-    expect(screen.getByRole('heading', { name: /Jordan's 30th Rooftop Milestone Celebration/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Rohan's 30th Bollywood Rooftop Bash/i })).toBeInTheDocument();
   });
 
   it('meets accessibility basics with semantic landmarks and ARIA labels', () => {

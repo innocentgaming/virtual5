@@ -56,16 +56,16 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
     initialPlan?.eventDate ||
       new Date(Date.now() + 90 * 86400000).toISOString().split('T')[0]
   );
-  const [city, setCity] = useState(initialPlan?.city || 'San Francisco, CA');
-  const [guestCount, setGuestCount] = useState<number>(initialPlan?.guestCount || 100);
-  const [totalBudget, setTotalBudget] = useState<number>(initialPlan?.totalBudget || 25000);
+  const [city, setCity] = useState(initialPlan?.city || 'Jaipur, Rajasthan');
+  const [guestCount, setGuestCount] = useState<number>(initialPlan?.guestCount || 250);
+  const [totalBudget, setTotalBudget] = useState<number>(initialPlan?.totalBudget || 1500000);
   const [venuePreference, setVenuePreference] = useState<VenuePreference>(
-    initialPlan?.venuePreference || 'banquet_hall'
+    initialPlan?.venuePreference || 'heritage_haveli'
   );
   const [foodPreference, setFoodPreference] = useState<FoodPreference>(
-    initialPlan?.foodPreference || 'buffet'
+    initialPlan?.foodPreference || 'royal_thali'
   );
-  const [theme, setTheme] = useState(initialPlan?.theme || 'Modern Elegant');
+  const [theme, setTheme] = useState(initialPlan?.theme || 'Royal Marigold & Antique Gold');
   const [contingencyRate, setContingencyRate] = useState<number>(
     initialPlan?.contingencyRate !== undefined ? Math.round(initialPlan.contingencyRate * 100) : 10
   );
@@ -273,9 +273,24 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
               className="form-control"
               value={city}
               onChange={(e) => setCity(e.target.value)}
-              placeholder="e.g. Austin, TX"
+              placeholder="e.g. Jaipur, Rajasthan"
+              list="indian-cities-list"
               required
             />
+            <datalist id="indian-cities-list">
+              <option value="Jaipur, Rajasthan" />
+              <option value="Udaipur, Rajasthan" />
+              <option value="New Delhi" />
+              <option value="Mumbai, Maharashtra" />
+              <option value="Bengaluru, Karnataka" />
+              <option value="Pune, Maharashtra" />
+              <option value="Hyderabad, Telangana" />
+              <option value="Goa" />
+              <option value="Ahmedabad, Gujarat" />
+              <option value="Kolkata, West Bengal" />
+              <option value="Chandigarh" />
+              <option value="Lucknow, Uttar Pradesh" />
+            </datalist>
           </div>
 
           <div className="form-group">
@@ -284,7 +299,7 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
               id="evt-guests"
               type="number"
               min="1"
-              max="5000"
+              max="10000"
               className="form-control"
               value={guestCount}
               onChange={(e) => setGuestCount(Math.max(1, parseInt(e.target.value) || 1))}
@@ -293,12 +308,12 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
           </div>
 
           <div className="form-group">
-            <label htmlFor="evt-budget" className="form-label">Approximate Budget ($) *</label>
+            <label htmlFor="evt-budget" className="form-label">Approximate Budget (₹) *</label>
             <input
               id="evt-budget"
               type="number"
               min="0"
-              step="100"
+              step="5000"
               className="form-control"
               value={totalBudget}
               onChange={(e) => setTotalBudget(Math.max(0, parseInt(e.target.value) || 0))}
@@ -317,14 +332,17 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
               value={venuePreference}
               onChange={(e) => setVenuePreference(e.target.value as VenuePreference)}
             >
+              <option value="heritage_haveli">Heritage Haveli / Palace (Royal Rajasthan / Goa)</option>
+              <option value="farmhouse_lawn">Farmhouse / Wedding Lawn (NCR / Punjab)</option>
+              <option value="resort_lawn">Destination Resort & Lawn</option>
+              <option value="banquet_hall">Grand Banquet Hall</option>
               <option value="indoor">Indoor Hall / Ballroom</option>
               <option value="outdoor">Outdoor Lawn</option>
-              <option value="banquet_hall">Banquet Hall</option>
               <option value="garden_park">Botanical Garden / Public Park</option>
-              <option value="community_center">Community Civic Center</option>
+              <option value="community_center">Community / Samaj Bhavan</option>
               <option value="beach">Beach / Waterfront</option>
               <option value="rooftop">Rooftop Lounge</option>
-              <option value="hotel">Hotel Conference Ballroom</option>
+              <option value="hotel">5-Star Luxury Hotel</option>
             </select>
           </div>
 
@@ -336,12 +354,14 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
               value={foodPreference}
               onChange={(e) => setFoodPreference(e.target.value as FoodPreference)}
             >
-              <option value="buffet">Buffet Service (Balanced Cost)</option>
-              <option value="plated">Plated Multi-Course Dinner (Premium)</option>
-              <option value="cocktail">Hors d'oeuvres & Cocktail Reception</option>
+              <option value="royal_thali">Royal Sit-Down Thali Service</option>
+              <option value="live_chaat_counters">Live Chaat & Tandoor Counters</option>
+              <option value="buffet">Grand Multi-Cuisine Buffet</option>
+              <option value="plated">Plated Multi-Course Dinner</option>
+              <option value="cocktail">Cocktail & Hors d'oeuvres</option>
               <option value="food_trucks">Food Trucks & Casual Stalls</option>
               <option value="family_style">Family Style Sharing Platters</option>
-              <option value="potluck">Community Potluck / Self-Catering</option>
+              <option value="potluck">Community Potluck / Langar</option>
             </select>
           </div>
         </div>

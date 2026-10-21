@@ -215,6 +215,7 @@ JSON Structure:
       : fallback.ideas;
 
     const { insights, missingPrompts } = evaluateDecisionRules({
+      eventType: request.eventType,
       totalBudget: request.totalBudget,
       budgetItems: mergedBudget,
       contingencyRate: request.contingencyRate || 0.10,
