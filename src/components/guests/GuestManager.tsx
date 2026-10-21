@@ -19,6 +19,8 @@ interface GuestManagerProps {
 const DIETARY_LABELS: Record<DietaryRequirement, string> = {
   none: 'Standard / None',
   vegetarian: 'Vegetarian',
+  jain: 'Jain (No Onion/Garlic/Roots)',
+  pure_veg: 'Pure Vegetarian (Sattvic)',
   vegan: 'Vegan',
   gluten_free: 'Gluten-Free (Celiac)',
   halal: 'Halal',
@@ -29,6 +31,8 @@ const DIETARY_LABELS: Record<DietaryRequirement, string> = {
 const DIETARY_BADGE_COLORS: Record<DietaryRequirement, string> = {
   none: '#64748b',
   vegetarian: '#10b981',
+  jain: '#ea580c',
+  pure_veg: '#16a34a',
   vegan: '#059669',
   gluten_free: '#f59e0b',
   halal: '#8b5cf6',

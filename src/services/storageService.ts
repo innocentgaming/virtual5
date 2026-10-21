@@ -1,8 +1,8 @@
 import type { EventPlan } from '../types/event';
 import { INITIAL_EVENTS } from '../data/sampleEvents';
 
-const STORAGE_KEY_EVENTS = 'eventwise_ai_events_v1';
-const STORAGE_KEY_ACTIVE_ID = 'eventwise_ai_active_id_v1';
+const STORAGE_KEY_EVENTS = 'eventwise_ai_events_india_v1';
+const STORAGE_KEY_ACTIVE_ID = 'eventwise_ai_active_id_india_v1';
 
 /**
  * Validates whether an object is a structurally valid EventPlan.

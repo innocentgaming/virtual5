@@ -3,6 +3,7 @@ import { evaluateDecisionRules } from '../services/decisionEngine';
 
 describe('Decision Engine Business Rules', () => {
   const basePlan = {
+    eventType: 'wedding' as const,
     totalBudget: 10000,
     budgetItems: [
       { id: '1', name: 'Venue Rental', category: 'venue' as const, estimatedCost: 4000, priority: 'essential' as const },

@@ -317,7 +317,7 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="new-exp-cost" className="form-label">Estimated Amount ($) *</label>
+                  <label htmlFor="new-exp-cost" className="form-label">Estimated Amount ({plan.currency || '₹'}) *</label>
                   <input
                     id="new-exp-cost"
                     type="number"

@@ -1,21 +1,44 @@
 /**
- * Currency, number, and percentage formatting utilities for EventWise AI.
- * Uses en-US standards to avoid system locale variance while properly handling negative numbers.
+ * Currency, number, and percentage formatting utilities for EventWise AI India.
+ * Uses Indian Rupee (₹) and Indian Numbering System (Lakhs & Crores) by default.
  */
 
-export function formatCurrency(amount: number): string {
-  if (isNaN(amount) || !isFinite(amount)) return '$0';
+export function formatCurrency(amount: number, currency: string = '₹'): string {
+  if (isNaN(amount) || !isFinite(amount)) return `${currency}0`;
   const isNegative = amount < 0;
-  const absFormatted = Math.abs(Math.round(amount)).toLocaleString('en-US');
-  return isNegative ? `-$${absFormatted}` : `$${absFormatted}`;
+  const absVal = Math.abs(Math.round(amount));
+  const absFormatted = absVal.toLocaleString('en-IN');
+  return isNegative ? `-${currency}${absFormatted}` : `${currency}${absFormatted}`;
+}
+
+/**
+ * Formats large amounts into friendly Indian Lakhs / Crores shorthand.
+ * e.g., 3500000 -> "₹35 Lakhs", 25000000 -> "₹2.5 Cr"
+ */
+export function formatIndianShort(amount: number, currency: string = '₹'): string {
+  if (isNaN(amount) || !isFinite(amount)) return `${currency}0`;
+  const isNegative = amount < 0;
+  const absVal = Math.abs(amount);
+  const prefix = isNegative ? `-${currency}` : currency;
+
+  if (absVal >= 10000000) {
+    const cr = Math.round((absVal / 10000000) * 10) / 10;
+    return `${prefix}${cr} Cr`;
+  }
+  if (absVal >= 100000) {
+    const lk = Math.round((absVal / 100000) * 10) / 10;
+    return `${prefix}${lk} Lakhs`;
+  }
+  return `${prefix}${absVal.toLocaleString('en-IN')}`;
 }
 
 export function formatNumber(val: number): string {
   if (isNaN(val) || !isFinite(val)) return '0';
-  return Math.round(val).toLocaleString('en-US');
+  return Math.round(val).toLocaleString('en-IN');
 }
 
 export function formatPercent(val: number): string {
   if (isNaN(val) || !isFinite(val)) return '0%';
   return `${Math.round(val * 10) / 10}%`;
 }
+

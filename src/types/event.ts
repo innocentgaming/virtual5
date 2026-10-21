@@ -8,7 +8,10 @@ export type VenuePreference =
   | 'community_center'
   | 'beach'
   | 'rooftop'
-  | 'hotel';
+  | 'hotel'
+  | 'heritage_haveli'
+  | 'farmhouse_lawn'
+  | 'resort_lawn';
 
 export type FoodPreference =
   | 'buffet'
@@ -16,7 +19,9 @@ export type FoodPreference =
   | 'cocktail'
   | 'food_trucks'
   | 'family_style'
-  | 'potluck';
+  | 'potluck'
+  | 'royal_thali'
+  | 'live_chaat_counters';
 
 export type PriorityArea =
   | 'venue'
@@ -81,6 +86,11 @@ export type VendorCategory =
   | 'officiant'
   | 'transport'
   | 'baker'
+  | 'pandit_priest'
+  | 'mehendi'
+  | 'dhol_band'
+  | 'safa_turban'
+  | 'mithai_favors'
   | 'other';
 
 export type VendorStatus = 'not_started' | 'contacted' | 'shortlisted' | 'booked' | 'completed';
@@ -123,6 +133,8 @@ export type RsvpStatus = 'attending' | 'declined' | 'pending';
 export type DietaryRequirement =
   | 'none'
   | 'vegetarian'
+  | 'jain'
+  | 'pure_veg'
   | 'vegan'
   | 'gluten_free'
   | 'halal'

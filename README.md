@@ -1,29 +1,30 @@
-# EventWise AI — Intelligent, Personalized Event Planning Assistant (v1.1.0)
+# EventWise AI — India Edition (v1.2.0)
+### Intelligent, Personalized Event Planning Assistant for Indian Celebrations
 
-An intelligent, full-stack, personalized event planning assistant that helps users organize **Weddings**, **Birthdays**, and **Community Events** with context-aware recommendations, dynamic budget management, interactive visual analytics, date-aware preparation schedules, Day-of Run of Show itineraries, RSVP & dietary tracking, vendor interview checklists, and an explainable decision engine.
+An intelligent, full-stack, personalized event planning assistant tailored specifically for the Indian event planning ecosystem. EventWise AI organizes **Royal Weddings**, **Bollywood Milestone Birthdays**, and **Grand Community Festivals / Melas** with context-aware recommendations, dynamic Indian Rupee (`₹`) budget management, Lakhs & Crores formatting (`en-IN`), Vedic timeline Run of Show itineraries, Jain & Pure Veg dietary tracking, specialized vendor checklists (Pandit Ji, Mehendi Artists, Dhol Squads, Royal Thali Catering), and an explainable decision engine.
 
 ---
 
 ## 1. Chosen Vertical & Problem Statement
 
-* **Primary Vertical**: Event Planning Assistant (Focused exclusively on Weddings, Birthdays, and Community Gatherings).
-* **Problem Statement**: Organizing events is fraught with budgeting blind spots, missed timeline milestones, opaque vendor interactions, chaotic day-of coordination, and planning paralysis. Most generic tools are either static spreadsheets or simplistic to-do checklists that lack contextual intelligence. EventWise AI solves this by converting event specifications (guest counts, budget, target dates, venue styles, food preferences, cultural traditions, and accessibility needs) into a cohesive, realistic, and actionable event roadmap.
+* **Primary Vertical**: Indian Event Planning Assistant (Focused exclusively on Weddings, Milestone Celebrations, and Community Festivals).
+* **Problem Statement**: Organizing events in India involves multi-day celebrations, complex ritual muhurats, large guest counts, intricate dietary separations (Pure Vegetarian, Jain, Halal), loud outdoor Baraat processions subject to sound curfews, and budget scaling in Lakhs and Crores. Generic tools lack this cultural depth. EventWise AI India Edition bridges this gap by converting event inputs into a cohesive, realistic, and culturally authentic roadmap.
 
 ---
 
 ## 2. Problem Being Solved & Target Users
 
 ### Problems Solved:
-1. **Unrealistic Budgeting & Cost Overruns**: Real-time business rules identify when projected spend exceeds total funds, actively offering specific line-item cuts and substitutions (e.g., buffet vs. plated dining, floral alternatives, digital invitations), paired with an interactive SVG donut chart and contract invoice tracking.
-2. **Timeline Compression & Short-Notice Scrambling**: Automatically recalculates milestone deadlines based on the planning horizon (long-range vs. short-notice < 21 days), surfacing urgent critical-path tasks immediately and exporting them directly to calendar apps via RFC 5545 iCalendar (`.ics`).
-3. **Day-of Execution Chaos**: Replaces scattered notes with a unified Day-of Run of Show master itinerary, assigning coordinators, vendor load-ins, buffer windows, and printable one-sheets.
-4. **Guest & RSVP Dietary Blindspots**: Automatically tracks attendance, plus-ones, table seating, and audits venue capacity against confirmed RSVPs while tallying dietary requirements (celiac, vegan, halal, nut allergies) for catering briefings.
-5. **Vendor Interview Uncertainty & Hallucination Prevention**: Avoids fake vendor profiles; instead, provides structured vendor category tracking, contact logging, and tailored interview questions users must ask prospective vendors.
+1. **Multi-Scale Indian Budgeting & Lakhs/Crores Formatting**: Native Indian Rupee (`₹`) currency with `en-IN` grouping (e.g., `₹35,00,000`, `₹35 Lakhs`, `₹2.5 Cr`), interactive SVG donut chart, and signed contract vs. actuals tracking.
+2. **Dedicated Pure Veg & Jain Dietary Isolation**: Automatic business rules flag the necessity of separate kitchen counters, distinct serving ladles, and clear dietary signage when Jain or Sattvic guests RSVP.
+3. **Baraat Sound Curfew & Police Permission Alerts**: Built-in municipal guidelines automatically warn planners of the strict 10:00 PM cutoff for outdoor amplified sound, brass bands, and dholaks, guiding the indoor Sangeet transition.
+4. **Vedic Ritual & Muhurat Pacing**: Day-of Run of Show pre-calibrated for Haldi ceremonies, Baraat processions, Milni & Varmala exchanges, Vedic Pheras around the Agni Kund, and emotional Bidaai.
+5. **Specialized Vendor Pipeline**: Dedicated vetting guides and samagri checklists for Pandit Ji / Priests, Mehendi henna artists, live Dhol squads, Safa/Turban masters, and Royal Thali caterers.
 
 ### Target Users:
-* **Couples & Families** planning intimate or large-scale weddings.
-* **Individuals & Parents** organizing milestone birthdays and private celebrations.
-* **Community Organizers, Non-Profits & Neighborhood Leaders** coordinating civic galas, cultural festivals, and fundraisers.
+* **Couples & Families** organizing multi-day Indian weddings (Destination Rajasthan, Farmhouses, Banquets).
+* **Individuals & Friends** planning milestone Bollywood-themed rooftop parties and celebrations.
+* **Community Trusts, RWA Committees & Mandals** coordinating Diwali Melas, Dandiya/Garba Utsavs, and community Mahaprasad feasts.
 
 ---
 
@@ -31,15 +32,15 @@ An intelligent, full-stack, personalized event planning assistant that helps use
 
 | Feature | Description | Key Differentiator |
 | :--- | :--- | :--- |
-| **Smart AI Event Planner** | Generates tailored plans for weddings, birthdays, and community events based on headcount, location, budget, and priorities. | Explains **why** choices were made; generates tiered alternatives (Budget, Balanced, Premium). |
-| **Interactive Budget Analytics & Actuals** | Visual SVG Donut chart with animated slice hover, category commitment %, and actual invoice vs. budget tracking. | Configurable contingency reserve (0–25%), live utilization tracker, and automated per-person cost scaling. |
-| **Guest List & RSVP Manager** | Tracks attendees, plus-ones, response status (`attending`, `pending`, `declined`), and table assignments. | Audits confirmed headcount against venue capacity and tallies dietary requirements for caterers. |
-| **Day-of Run of Show & Itinerary** | Minute-by-minute execution schedule for vendors, coordinators, and hosts with roles, locations, and notes. | Includes one-click printable run sheet and calendar sync with automated reminders. |
-| **RFC 5545 iCalendar (.ics) Sync** | Exports milestones, tasks, and day-of itinerary directly to Apple, Google, and Outlook calendars. | Injects automated `-P1D` (1-day advance) alarms for critical contract deadlines. |
-| **AI Copilot Drawer** | Slide-in planning assistant offering grounded advice on budget cuts, catering questions, and timeline critical paths. | Contextually aware of active event data; zero external dependencies required for core advice. |
-| **Date-Aware Timeline** | Intelligent preparation schedule adjusting milestones dynamically based on days remaining until the event. | Automatic overdue detection, short-notice triage warnings (< 14 and < 21 days), and milestone dependencies. |
-| **Vendor Checklist & Interview Guide** | Pipeline tracking (`Not Started` → `Contacted` → `Shortlisted` → `Booked` → `Completed`). | Category-specific vetting questions. Zero fabrication of fake vendor names or phony review scores. |
-| **Explainable Decision Engine** | Real-time rule evaluator checking budgets, venue weather contingency, attendee scaling, and accessibility. | 100% deterministic offline engine that runs without requiring external APIs or network connectivity. |
+| **Indian AI Event Planner** | Generates tailored plans for Indian weddings, birthdays, and community festivals. | Explains **why** choices were made; generates tiered alternatives in Lakhs and Crores. |
+| **Interactive Budget Analytics & Actuals** | Visual SVG Donut chart, commitment %, actual invoice vs. budget tracking in Indian Rupees (`₹`). | Configurable contingency reserve (0–25%), live utilization tracker, and automated per-person cost scaling. |
+| **Guest List & RSVP Manager** | Tracks attendees, plus-ones, status, table assignments, and dietary preferences. | First-class support for **Pure Vegetarian (Sattvic)** and **Jain (No Onion/Garlic/Roots)** dietary protocols. |
+| **Day-of Run of Show & Itinerary** | Minute-by-minute execution schedule for Haldi, Baraat, Varmala, Vedic Pheras, and Shahi Feast. | One-click printable run sheet and calendar sync with automated reminders. |
+| **RFC 5545 iCalendar (.ics) Sync** | Exports milestones, tasks, and day-of itinerary directly to Apple, Google, and Outlook calendars. | Injects automated `-P1D` (1-day advance) alarms for critical vendor deadlines. |
+| **AI Copilot Drawer** | Slide-in planning assistant offering grounded advice powered by Google Gemini API & fallback engine. | Contextually aware of active event data; responds in Indian Rupee metrics and cultural terminology. |
+| **Date-Aware Timeline** | Intelligent preparation schedule adjusting milestones dynamically based on days remaining. | Automatic overdue detection, short-notice triage warnings (< 14 and < 21 days), and milestone dependencies. |
+| **Vendor Checklist & Interview Guide** | Pipeline tracking with specialized vetting questions for Pandit Ji, Mehendi, Dhol, and Caterers. | Zero hallucination of fake vendor names; focused on actionable checklists and contracts. |
+| **Explainable Decision Engine** | Real-time rule evaluator checking budgets, venue weather contingency, Baraat sound curfew, and Jain dietary needs. | 100% deterministic offline engine that runs without requiring external APIs or network connectivity. |
 | **Theme System & Dark Mode** | Dual light/dark mode and event-specific color palettes (`wedding`, `birthday`, `community`). | WCAG AA contrast compliant with persistent theme preference in localStorage. |
 
 ---
@@ -51,7 +52,7 @@ An intelligent, full-stack, personalized event planning assistant that helps use
 * **Iconography**: Lucide React.
 * **Testing Framework**: Vitest 5, React Testing Library 16, `@testing-library/jest-dom`, JSDOM.
 * **Linter**: Oxlint.
-* **AI Provider (Optional)**: Google Gemini API (Gemini 1.5 Flash) via native HTTPS fetch with abort controller timeout protection, plus grounded deterministic copilot fallback.
+* **AI Provider**: Google Gemini API (`gemini-3.8-flash` & `gemini-2.5-flash-lite`) via native HTTPS fetch with abort controller timeout protection and multi-model fallback chain.
 
 ### Architecture Directory Structure:
 ```
@@ -59,31 +60,30 @@ src/
 ├── types/
 │   └── event.ts             # Domain models (EventPlan, BudgetItem, TaskItem, VendorItem, GuestItem, ScheduleItem, DecisionInsight)
 ├── services/
-│   ├── decisionEngine.ts    # Business rule engine, budget math, timeline auditor, RSVP capacity & dietary checks
-│   ├── fallbackPlanner.ts   # Deterministic expert planning engine with tiered recommendations & default schedules/guests
-│   ├── aiPlanner.ts         # Optional Gemini API integration with schema validation & fallback
+│   ├── decisionEngine.ts    # Business rule engine, budget math, timeline auditor, Jain dietary & Baraat curfew rules
+│   ├── fallbackPlanner.ts   # Deterministic Indian planning engine with tiered recommendations & default schedules/guests
+│   ├── aiPlanner.ts         # Multi-model Gemini API integration (3.8-flash -> 2.5-flash-lite) with schema validation & fallback
 │   ├── calendarService.ts   # RFC 5545 iCalendar (.ics) generation and download service with VALARM triggers
-│   ├── copilotService.ts    # Grounded AI Copilot assistant with contextual recommendations
-│   └── storageService.ts    # LocalStorage manager with corrupted JSON recovery & schema validator
+│   ├── copilotService.ts    # Grounded AI Copilot assistant with contextual recommendations & live Gemini streaming
+│   ├── storageService.ts    # LocalStorage manager with corrupted JSON recovery & schema validator
+│   └── formatters.ts        # Currency (₹ en-IN), Lakhs/Crores shorthand (formatIndianShort), and percentage utilities
 ├── data/
-│   └── sampleEvents.ts      # Curated templates for Wedding, Birthday, and Community Gala
+│   └── sampleEvents.ts      # Curated Indian templates: Rajasthan Wedding (₹35 Lakhs), Mumbai Bollywood Bash, Bengaluru Diwali Mela
 ├── hooks/
 │   └── useEventPlan.ts      # Central state hook with persistence, recalculation & dispatch
 ├── components/
 │   ├── layout/              # Header with theme toggle, Copilot trigger, iCal sync, and Responsive Navigation
 │   ├── dashboard/           # Metrics cards, countdown, utilization bar, urgent alerts, quick action shortcuts
-│   ├── setup/               # Wizard form for event creation/editing with input validation
+│   ├── setup/               # Wizard form with Indian city datalist, INR inputs, and Indian venue/food preferences
 │   ├── budget/              # Interactive SVG Donut chart, invoice contract tracking, expense table, contingency slider
 │   ├── timeline/            # Date-aware schedule, status filters, overdue badges
-│   ├── guests/              # Guest list, RSVP tracker, dietary counters, search, and add/edit modal
-│   ├── schedule/            # Day-of Run of Show, milestone cards, coordinator roles, iCal & print buttons
+│   ├── guests/              # Guest list, RSVP tracker, Jain & Pure Veg dietary badges, search, and add/edit modal
+│   ├── schedule/            # Day-of Run of Show, Vedic milestone cards, coordinator roles, iCal & print buttons
 │   ├── copilot/             # Slide-in AI Copilot drawer with suggested prompt chips and chat thread
-│   ├── vendors/             # Category pipeline, status badges, vendor interview questions
-│   ├── ideas/               # Themes, decor, activities, low/mid/high tiers, cost impact
-│   └── ai/                  # Business rule inspector & optional session API key configuration
-├── utils/
-│   └── formatters.ts        # Currency (en-US), number and percentage formatting utilities
-├── test/                    # Comprehensive unit, integration, and accessibility tests (11 suites, 53 tests)
+│   ├── vendors/             # Category pipeline, status badges, Pandit / Mehendi / Dhol interview questions
+│   ├── ideas/               # Themes, decor, activities, low/mid/high tiers, cost impact in INR
+│   └── ai/                  # Business rule inspector & active API key badge indicator
+├── test/                    # Comprehensive unit, integration, and accessibility tests (11 suites, 54 tests)
 ├── index.css                # Cohesive design system, dark mode tokens & printable schedule stylesheet
 ├── App.tsx                  # Main application orchestrator
 └── main.tsx                 # Application entry point
