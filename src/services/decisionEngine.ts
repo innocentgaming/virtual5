@@ -5,11 +5,13 @@ import type {
   BudgetCategory,
   TaskItem,
 } from '../types/event';
+import { formatCurrency } from '../utils/formatters';
 
 export function calculateBudgetSummary(
   totalBudget: number,
   items: EventPlan['budgetItems'],
-  contingencyRate: number = 0.10
+  contingencyRate: number = 0.10,
+  guestCount: number = 1
 ): BudgetSummary {
   const safeBudget = Math.max(0, isNaN(totalBudget) ? 0 : totalBudget);
   const safeContingencyRate = Math.max(0, Math.min(0.5, isNaN(contingencyRate) ? 0.10 : contingencyRate));
@@ -49,6 +51,9 @@ export function calculateBudgetSummary(
     : 0;
   const isOverBudget = totalEstimated > safeBudget;
 
+  const safeGuestCount = Math.max(1, isNaN(guestCount) ? 1 : guestCount);
+  const perGuestCost = Math.round(totalEstimated / safeGuestCount);
+
   return {
     totalBudget: safeBudget,
     totalEstimated,
@@ -57,7 +62,7 @@ export function calculateBudgetSummary(
     isOverBudget,
     contingencyAmount,
     categoryTotals,
-    perGuestCost: 0,
+    perGuestCost,
   };
 }
 
@@ -82,7 +87,7 @@ export function evaluateDecisionRules(
   const missingPrompts: string[] = [];
 
   const now = currentDateStr ? new Date(currentDateStr) : new Date();
-  const summary = calculateBudgetSummary(plan.totalBudget, plan.budgetItems, plan.contingencyRate);
+  const summary = calculateBudgetSummary(plan.totalBudget, plan.budgetItems, plan.contingencyRate, plan.guestCount);
 
   if (!plan.totalBudget || plan.totalBudget <= 0) {
     missingPrompts.push('What is your approximate overall budget? We used a baseline estimate.');
@@ -104,7 +109,7 @@ export function evaluateDecisionRules(
       type: 'warning',
       category: 'budget',
       title: 'Estimated Expenses Exceed Budget',
-      message: `Projected costs exceed your allocated budget by $${overage.toLocaleString()} (${summary.utilizationPercentage}% utilized). Consider switching plated meals to a buffet, reducing custom floral installations, or choosing digital invitations to recover approximately $${Math.round(overage * 0.7).toLocaleString()}.`,
+      message: `Projected costs exceed your allocated budget by ${formatCurrency(overage)} (${summary.utilizationPercentage}% utilized). Consider switching plated meals to a buffet, reducing custom floral installations, or choosing digital invitations to recover approximately ${formatCurrency(Math.round(overage * 0.7))}.`,
       actionLabel: 'Review Cost Reductions',
       actionType: 'NAVIGATE_BUDGET',
     });
@@ -114,7 +119,7 @@ export function evaluateDecisionRules(
       type: 'positive',
       category: 'budget',
       title: 'Healthy Budget Buffer Available',
-      message: `You have $${summary.remainingBalance.toLocaleString()} (unallocated funds). You can upgrade photography packages, enhance guest transport, or keep this as an extra cushion.`,
+      message: `You have ${formatCurrency(summary.remainingBalance)} (unallocated funds). You can upgrade photography packages, enhance guest transport, or keep this as an extra cushion.`,
     });
   }
 

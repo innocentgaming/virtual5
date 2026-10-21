@@ -15,6 +15,7 @@ import type {
   PriorityArea,
   EventPlan,
 } from '../../types/event';
+import { formatCurrency } from '../../utils/formatters';
 
 interface EventSetupFormProps {
   initialPlan?: EventPlan;
@@ -363,7 +364,7 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <label htmlFor="evt-contingency" className="form-label">Contingency Reserve: {contingencyRate}%</label>
               <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                Reserve: ${Math.round((totalBudget * contingencyRate) / 100).toLocaleString()}
+                Reserve: {formatCurrency(Math.round((totalBudget * contingencyRate) / 100))}
               </span>
             </div>
             <input

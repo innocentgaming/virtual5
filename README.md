@@ -71,6 +71,8 @@ src/
 │   ├── vendors/             # Category pipeline, status badges, vendor interview questions
 │   ├── ideas/               # Themes, decor, activities, low/mid/high tiers, cost impact
 │   └── ai/                  # Business rule inspector & optional session API key configuration
+├── utils/
+│   └── formatters.ts        # Currency (en-US), number and percentage formatting utilities
 ├── test/                    # Comprehensive unit, integration, and accessibility tests
 ├── index.css                # Cohesive design system & responsive layout styles
 ├── App.tsx                  # Main application orchestrator
@@ -200,27 +202,36 @@ npm test
 
 ### Actual Test Suite Results:
 ```text
- ✓ src/test/timeline.test.ts (3 tests)
- ✓ src/test/budget.test.ts (4 tests)
- ✓ src/test/fallbackPlanner.test.ts (3 tests)
- ✓ src/test/decisionEngine.test.ts (7 tests)
  ✓ src/test/aiPlanner.test.ts (3 tests)
+ ✓ src/test/timeline.test.ts (3 tests)
+ ✓ src/test/fallbackPlanner.test.ts (3 tests)
+ ✓ src/test/formatters.test.ts (5 tests)
+ ✓ src/test/budget.test.ts (5 tests)
+ ✓ src/test/decisionEngine.test.ts (7 tests)
  ✓ src/test/storage.test.ts (6 tests)
- ✓ src/test/components.test.tsx (6 tests)
+ ✓ src/test/components.test.tsx (8 tests)
 
-Test Files  7 passed (7)
-     Tests  32 passed (32)
-  Duration  16.38s
+Test Files  8 passed (8)
+     Tests  40 passed (40)
+  Duration  6.86s
+```
+
+### Linter Results:
+```text
+npm run lint
+Found 0 warnings and 0 errors.
+Finished in 47ms on 29 files with 115 rules using 12 threads.
 ```
 
 ### Production Build Results:
 ```text
 npm run build
-✓ 1948 modules transformed.
+vite v8.3.5 building client environment for production...
+✓ 1949 modules transformed.
 dist/index.html                   1.30 kB │ gzip:  0.72 kB
 dist/assets/index-CpAikywP.css    8.27 kB │ gzip:  2.25 kB
-dist/assets/index-BZ77tGHo.js   336.49 kB │ gzip: 99.02 kB
-✓ built in 1.64s (Exit Code: 0)
+dist/assets/index-BFO6G_zz.js   336.52 kB │ gzip: 99.16 kB
+✓ built in 1.29s (Exit Code: 0)
 ```
 
 ---

@@ -10,6 +10,7 @@ import type {
   PriorityArea,
 } from '../types/event';
 import { evaluateDecisionRules } from './decisionEngine';
+import { formatCurrency } from '../utils/formatters';
 
 interface PlanGenerationInput {
   title?: string;
@@ -478,8 +479,8 @@ export function generateFallbackPlan(input: PlanGenerationInput): EventPlan {
   const title = input.title?.trim() || `${theme} ${input.eventType.charAt(0).toUpperCase() + input.eventType.slice(1)}`;
 
   const explanation =
-    `Plan tailored for ${guestCount} guests in ${city} with a $${totalBudget.toLocaleString()} budget. ` +
-    `Allocations prioritize ${priorities.join(' & ')}, reserving a $${Math.round(totalBudget * contingencyRate).toLocaleString()} (${Math.round(contingencyRate * 100)}%) contingency reserve. ` +
+    `Plan tailored for ${guestCount} guests in ${city} with a ${formatCurrency(totalBudget)} budget. ` +
+    `Allocations prioritize ${priorities.join(' & ')}, reserving a ${formatCurrency(Math.round(totalBudget * contingencyRate))} (${Math.round(contingencyRate * 100)}%) contingency reserve. ` +
     `Timeline is calibrated across ${daysUntilEvent} days remaining until ${eventDate}.`;
 
   return {

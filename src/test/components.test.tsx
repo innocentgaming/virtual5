@@ -114,6 +114,35 @@ describe('EventWise AI UI & Workflow Integration Tests', () => {
     expect(screen.getByRole('alert')).toBeInTheDocument();
   });
 
+  it('allows updating vendor status in the Vendor Checklist', () => {
+    render(<App />);
+
+    // Navigate to vendor checklist
+    fireEvent.click(screen.getByRole('button', { name: /Vendor Checklist/i }));
+
+    // Find first vendor status select
+    const statusSelects = screen.getAllByRole('combobox');
+    expect(statusSelects.length).toBeGreaterThan(0);
+
+    // Change status of the first vendor to 'booked'
+    const firstStatusSelect = statusSelects[1]; // index 0 is the event picker in header
+    fireEvent.change(firstStatusSelect, { target: { value: 'booked' } });
+
+    expect(firstStatusSelect).toHaveValue('booked');
+  });
+
+  it('allows switching active events via the header event selector', () => {
+    render(<App />);
+
+    const select = screen.getByLabelText(/Select active event plan/i);
+    expect(select).toBeInTheDocument();
+
+    // Switch to Jordan's Birthday
+    fireEvent.change(select, { target: { value: 'evt-sample-birthday' } });
+
+    expect(screen.getByRole('heading', { name: /Jordan's 30th Rooftop Milestone Celebration/i })).toBeInTheDocument();
+  });
+
   it('meets accessibility basics with semantic landmarks and ARIA labels', () => {
     render(<App />);
 
@@ -127,3 +156,4 @@ describe('EventWise AI UI & Workflow Integration Tests', () => {
     expect(screen.getByRole('main')).toBeInTheDocument();
   });
 });
+

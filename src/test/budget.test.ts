@@ -72,4 +72,19 @@ describe('Budget Calculations & Boundary Tests', () => {
     const extremeLow = calculateBudgetSummary(10000, items, -0.20);
     expect(extremeLow.contingencyAmount).toBe(0); // floor at 0%
   });
+
+  it('calculates perGuestCost accurately across different guest counts', () => {
+    const items: BudgetItem[] = [
+      { id: '1', name: 'Catering', category: 'catering', estimatedCost: 4000, priority: 'essential' },
+    ];
+
+    // 4000 + 10% contingency (1000) = 5000 / 100 guests = 50 per guest
+    const summary100 = calculateBudgetSummary(10000, items, 0.10, 100);
+    expect(summary100.perGuestCost).toBe(50);
+
+    // With 0 or invalid guestCount, safely falls back to default divisor
+    const summaryZero = calculateBudgetSummary(10000, items, 0.10, 0);
+    expect(summaryZero.perGuestCost).toBe(5000);
+  });
 });
+
