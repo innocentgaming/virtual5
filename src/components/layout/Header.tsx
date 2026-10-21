@@ -1,23 +1,31 @@
 import React from 'react';
-import { Sparkles, Plus, Download, Sliders, ShieldCheck } from 'lucide-react';
+import { Sparkles, Plus, Download, Sliders, ShieldCheck, Sun, Moon, Calendar, Bot } from 'lucide-react';
 import type { EventPlan } from '../../types/event';
 
 interface HeaderProps {
   events: EventPlan[];
   activeEvent: EventPlan;
+  colorMode: 'light' | 'dark';
+  onToggleColorMode: () => void;
   onSelectEvent: (id: string) => void;
   onNewEvent: () => void;
   onExport: () => void;
+  onExportCalendar: () => void;
   onOpenAISettings: () => void;
+  onOpenCopilot: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   events,
   activeEvent,
+  colorMode,
+  onToggleColorMode,
   onSelectEvent,
   onNewEvent,
   onExport,
+  onExportCalendar,
   onOpenAISettings,
+  onOpenCopilot,
 }) => {
   const getBadgeClass = (type: string) => {
     switch (type) {
@@ -47,16 +55,29 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
         {/* Event Selector */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-          <label htmlFor="event-select" className="sr-only" style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 }}>
+          <label
+            htmlFor="event-select"
+            className="sr-only"
+            style={{
+              position: 'absolute',
+              width: 1,
+              height: 1,
+              padding: 0,
+              margin: -1,
+              overflow: 'hidden',
+              clip: 'rect(0,0,0,0)',
+              border: 0,
+            }}
+          >
             Select Active Event
           </label>
           <select
             id="event-select"
             className="form-control"
-            style={{ minWidth: '220px', fontWeight: 600 }}
+            style={{ minWidth: '200px', fontWeight: 600 }}
             value={activeEvent.id}
             onChange={(e) => onSelectEvent(e.target.value)}
             aria-label="Select active event plan"
@@ -68,6 +89,24 @@ export const Header: React.FC<HeaderProps> = ({
             ))}
           </select>
         </div>
+
+        {/* AI Copilot Quick Button */}
+        <button
+          type="button"
+          onClick={onOpenCopilot}
+          className="btn btn-secondary btn-sm"
+          style={{
+            borderColor: 'var(--brand-primary)',
+            color: 'var(--brand-primary)',
+            fontWeight: 600,
+          }}
+          title="Open EventWise AI Copilot Drawer"
+          aria-label="Open EventWise AI Copilot Drawer"
+          id="btn-open-copilot"
+        >
+          <Bot size={15} />
+          <span>Ask Copilot</span>
+        </button>
 
         {/* Engine Status Indicator */}
         <button
@@ -91,6 +130,18 @@ export const Header: React.FC<HeaderProps> = ({
           <Sliders size={12} style={{ marginLeft: 2, color: 'var(--text-muted)' }} />
         </button>
 
+        {/* Export Calendar .ics Button */}
+        <button
+          type="button"
+          onClick={onExportCalendar}
+          className="btn btn-secondary btn-sm"
+          title="Download RFC 5545 iCalendar (.ics) with timelines and schedule alerts"
+          aria-label="Download Event Calendar (.ics)"
+        >
+          <Calendar size={14} />
+          <span>Sync .ics</span>
+        </button>
+
         {/* Export JSON Button */}
         <button
           type="button"
@@ -101,6 +152,18 @@ export const Header: React.FC<HeaderProps> = ({
         >
           <Download size={14} />
           <span>Export Plan</span>
+        </button>
+
+        {/* Dark / Light Mode Toggle */}
+        <button
+          type="button"
+          onClick={onToggleColorMode}
+          className="btn btn-secondary btn-sm"
+          title={colorMode === 'dark' ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
+          aria-label={colorMode === 'dark' ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
+          style={{ padding: '0.45rem 0.65rem' }}
+        >
+          {colorMode === 'dark' ? <Sun size={15} color="#f59e0b" /> : <Moon size={15} />}
         </button>
 
         {/* Create New Event Button */}
@@ -117,3 +180,4 @@ export const Header: React.FC<HeaderProps> = ({
     </header>
   );
 };
+

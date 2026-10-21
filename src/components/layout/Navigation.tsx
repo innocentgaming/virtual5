@@ -7,6 +7,8 @@ import {
   Users2,
   Lightbulb,
   Bot,
+  Users,
+  Clock,
 } from 'lucide-react';
 import type { NavigationTab } from '../../hooks/useEventPlan';
 
@@ -74,6 +76,16 @@ export const Navigation: React.FC<NavigationProps> = ({
             {overdueTasksCount}
           </span>
         ) : undefined,
+    },
+    {
+      id: 'schedule',
+      label: 'Run of Show',
+      icon: <Clock size={18} />,
+    },
+    {
+      id: 'guests',
+      label: 'Guest List & RSVPs',
+      icon: <Users size={18} />,
     },
     {
       id: 'vendors',

@@ -51,6 +51,18 @@ describe('EventWise AI UI & Workflow Integration Tests', () => {
     fireEvent.click(ideasTab);
 
     expect(screen.getByText(/Personalized Event Concepts & Alternatives/i)).toBeInTheDocument();
+
+    // Click Guest List & RSVPs tab
+    const guestsTab = screen.getByRole('button', { name: /Guest List & RSVPs/i });
+    fireEvent.click(guestsTab);
+
+    expect(screen.getByText(/Guest List & RSVP Manager/i)).toBeInTheDocument();
+
+    // Click Run of Show tab
+    const scheduleTab = screen.getByRole('button', { name: /Run of Show/i });
+    fireEvent.click(scheduleTab);
+
+    expect(screen.getByText(/Run of Show & Day-of Itinerary/i)).toBeInTheDocument();
   });
 
   it('allows adding and editing an expense in the Budget Manager', () => {

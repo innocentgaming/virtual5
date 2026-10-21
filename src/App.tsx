@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useEventPlan } from './hooks/useEventPlan';
 import { Header } from './components/layout/Header';
 import { Navigation } from './components/layout/Navigation';
@@ -9,6 +9,10 @@ import { TimelineManager } from './components/timeline/TimelineManager';
 import { VendorChecklist } from './components/vendors/VendorChecklist';
 import { PersonalizedIdeas } from './components/ideas/PersonalizedIdeas';
 import { AIAssistantModal } from './components/ai/AIAssistantModal';
+import { GuestManager } from './components/guests/GuestManager';
+import { RunOfShowManager } from './components/schedule/RunOfShowManager';
+import { AICopilotDrawer } from './components/copilot/AICopilotDrawer';
+import { downloadEventCalendar } from './services/calendarService';
 import { Sparkles, RotateCcw } from 'lucide-react';
 import './index.css';
 
@@ -34,13 +38,33 @@ export function App() {
     updateTask,
     updateVendor,
     addVendor,
+    addGuest,
+    updateGuest,
+    deleteGuest,
+    addScheduleItem,
+    updateScheduleItem,
+    deleteScheduleItem,
     regenerateRecommendations,
     resetToDefaults,
     exportCurrentPlan,
   } = useEventPlan();
 
   const [isCreatingNew, setIsCreatingNew] = useState(false);
+  const [isCopilotOpen, setIsCopilotOpen] = useState(false);
+  const [colorMode, setColorMode] = useState<'light' | 'dark'>(() => {
+    const saved = localStorage.getItem('eventwise_color_mode');
+    return saved === 'dark' ? 'dark' : 'light';
+  });
   const [notification, setNotification] = useState<string | null>(null);
+
+  // Sync color mode to localStorage
+  useEffect(() => {
+    localStorage.setItem('eventwise_color_mode', colorMode);
+  }, [colorMode]);
+
+  const toggleColorMode = () => {
+    setColorMode((prev) => (prev === 'light' ? 'dark' : 'light'));
+  };
 
   const showToast = (msg: string) => {
     setNotification(msg);
@@ -64,8 +88,17 @@ export function App() {
     showToast('Personalized recommendations and alternatives refreshed!');
   };
 
+  const handleExportCalendar = () => {
+    downloadEventCalendar(activeEvent);
+    showToast('iCalendar (.ics) file exported with timeline reminders!');
+  };
+
   return (
-    <div data-theme={activeEvent.eventType} style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div
+      data-theme={activeEvent.eventType}
+      data-color-mode={colorMode}
+      style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}
+    >
       {/* Toast Notification */}
       {notification && (
         <div
@@ -104,10 +137,14 @@ export function App() {
       <Header
         events={events}
         activeEvent={activeEvent}
+        colorMode={colorMode}
+        onToggleColorMode={toggleColorMode}
         onSelectEvent={selectEvent}
         onNewEvent={() => setIsCreatingNew(true)}
         onExport={exportCurrentPlan}
+        onExportCalendar={handleExportCalendar}
         onOpenAISettings={() => setActiveTab('ai')}
+        onOpenCopilot={() => setIsCopilotOpen(true)}
       />
 
       <main className="app-container" style={{ flex: 1, marginTop: '1.25rem' }}>
@@ -173,6 +210,24 @@ export function App() {
               />
             )}
 
+            {activeTab === 'guests' && (
+              <GuestManager
+                plan={activeEvent}
+                onAddGuest={addGuest}
+                onUpdateGuest={updateGuest}
+                onDeleteGuest={deleteGuest}
+              />
+            )}
+
+            {activeTab === 'schedule' && (
+              <RunOfShowManager
+                plan={activeEvent}
+                onAddScheduleItem={addScheduleItem}
+                onUpdateScheduleItem={updateScheduleItem}
+                onDeleteScheduleItem={deleteScheduleItem}
+              />
+            )}
+
             {activeTab === 'vendors' && (
               <VendorChecklist
                 plan={activeEvent}
@@ -203,6 +258,13 @@ export function App() {
         )}
       </main>
 
+      {/* AI Copilot Drawer */}
+      <AICopilotDrawer
+        plan={activeEvent}
+        isOpen={isCopilotOpen}
+        onClose={() => setIsCopilotOpen(false)}
+      />
+
       {/* Accessible Footer */}
       <footer
         style={{
@@ -226,7 +288,7 @@ export function App() {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <strong>EventWise AI v1.0.0</strong> — Intelligent Event Planning Assistant for Weddings, Birthdays & Community Events.
+            <strong>EventWise AI v1.1.0</strong> — Intelligent Event Planning Assistant for Weddings, Birthdays & Community Events.
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
@@ -262,3 +324,4 @@ export function App() {
 }
 
 export default App;
+

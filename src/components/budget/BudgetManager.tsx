@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import type { BudgetItem, BudgetCategory, BudgetSummary, EventPlan } from '../../types/event';
 import { formatCurrency } from '../../utils/formatters';
+import { InteractiveBudgetChart } from './InteractiveBudgetChart';
 
 interface BudgetManagerProps {
   plan: EventPlan;
@@ -65,12 +66,16 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
   const [editCost, setEditCost] = useState<number>(0);
+  const [editActualCost, setEditActualCost] = useState<number | ''>('');
+  const [editIsPaid, setEditIsPaid] = useState<boolean>(false);
   const [editCategory, setEditCategory] = useState<BudgetCategory>('venue');
 
   const startEdit = (item: BudgetItem) => {
     setEditingId(item.id);
     setEditName(item.name);
     setEditCost(item.estimatedCost);
+    setEditActualCost(item.actualCost !== undefined ? item.actualCost : '');
+    setEditIsPaid(!!item.isPaid);
     setEditCategory(item.category);
   };
 
@@ -79,6 +84,8 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
     onUpdateExpense(id, {
       name: editName.trim() || 'Custom Expense',
       estimatedCost: validCost,
+      actualCost: editActualCost !== '' ? Math.max(0, Number(editActualCost)) : undefined,
+      isPaid: editIsPaid,
       category: editCategory,
     });
     setEditingId(null);
@@ -192,70 +199,53 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
         </div>
       </div>
 
-      {/* Visual Category Distribution Bar */}
+      {/* Actual Contract Invoiced Spend vs Budget */}
+      <div className="card" style={{ backgroundColor: 'var(--bg-card-subtle)', borderLeft: '4px solid var(--accent-primary)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+          <div>
+            <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-main)' }}>
+              Actual Contract Invoices & Realized Spend
+            </div>
+            <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
+              Track signed contracts and paid invoices against your estimated planning targets.
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', flexWrap: 'wrap' }}>
+            <div>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block' }}>Total Invoiced / Paid:</span>
+              <strong style={{ fontSize: '1.15rem', color: budgetSummary.isActualOverBudget ? 'var(--color-danger)' : 'var(--color-success)' }}>
+                {formatCurrency(budgetSummary.totalActual)}
+              </strong>
+            </div>
+            <div>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block' }}>Remaining Cash Buffer:</span>
+              <strong style={{ fontSize: '1.15rem', color: budgetSummary.variance < 0 ? 'var(--color-danger)' : 'var(--text-main)' }}>
+                {formatCurrency(budgetSummary.variance)}
+              </strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Visual Category Distribution Interactive Chart */}
       <div className="card">
         <div className="card-header">
-          <h3 className="card-title">Expense Distribution by Category</h3>
-          <span style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
-            {budgetSummary.utilizationPercentage}% of budget committed
+          <div>
+            <h3 className="card-title">Expense Distribution by Category</h3>
+            <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
+              Hover slices to inspect proportion of budget committed across services.
+            </p>
+          </div>
+          <span style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+            {budgetSummary.utilizationPercentage}% committed
           </span>
         </div>
 
-        {/* Stacked bar */}
-        <div
-          style={{
-            display: 'flex',
-            height: '24px',
-            borderRadius: 'var(--radius-sm)',
-            overflow: 'hidden',
-            backgroundColor: 'var(--bg-card-subtle)',
-            marginBottom: '1rem',
-          }}
-          role="progressbar"
-          aria-valuenow={budgetSummary.utilizationPercentage}
-          aria-valuemin={0}
-          aria-valuemax={100}
-        >
-          {(Object.keys(budgetSummary.categoryTotals) as BudgetCategory[]).map((cat) => {
-            const amount = budgetSummary.categoryTotals[cat];
-            if (amount <= 0 || budgetSummary.totalEstimated <= 0) return null;
-            const pct = (amount / budgetSummary.totalEstimated) * 100;
-            return (
-              <div
-                key={cat}
-                style={{
-                  width: `${pct}%`,
-                  backgroundColor: CATEGORY_COLORS[cat] || '#64748b',
-                  transition: 'width 0.3s ease',
-                }}
-                title={`${CATEGORY_LABELS[cat]}: ${formatCurrency(amount)} (${Math.round(pct)}%)`}
-              />
-            );
-          })}
-        </div>
-
-        {/* Legend */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', fontSize: '0.75rem' }}>
-          {(Object.keys(budgetSummary.categoryTotals) as BudgetCategory[]).map((cat) => {
-            const amount = budgetSummary.categoryTotals[cat];
-            if (amount <= 0) return null;
-            return (
-              <div key={cat} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <span
-                  style={{
-                    width: '10px',
-                    height: '10px',
-                    borderRadius: '2px',
-                    backgroundColor: CATEGORY_COLORS[cat] || '#64748b',
-                    display: 'inline-block',
-                  }}
-                />
-                <span style={{ color: 'var(--text-muted)' }}>{CATEGORY_LABELS[cat]}:</span>
-                <span style={{ fontWeight: 600 }}>{formatCurrency(amount)}</span>
-              </div>
-            );
-          })}
-        </div>
+        <InteractiveBudgetChart
+          budgetSummary={budgetSummary}
+          categoryLabels={CATEGORY_LABELS}
+          categoryColors={CATEGORY_COLORS}
+        />
       </div>
 
       {/* Expense Line Items List */}
@@ -391,6 +381,7 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
                 <th style={{ padding: '0.75rem 0.5rem' }}>Category</th>
                 <th style={{ padding: '0.75rem 0.5rem' }}>Priority</th>
                 <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right' }}>Estimated Cost</th>
+                <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right' }}>Actual / Paid</th>
                 <th style={{ padding: '0.75rem 0.5rem', textAlign: 'center' }}>Actions</th>
               </tr>
             </thead>
@@ -440,10 +431,32 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
                             min="0"
                             step="10"
                             className="form-control"
-                            style={{ width: '120px', marginLeft: 'auto', textAlign: 'right' }}
+                            style={{ width: '105px', marginLeft: 'auto', textAlign: 'right' }}
                             value={editCost}
                             onChange={(e) => setEditCost(Math.max(0, parseInt(e.target.value) || 0))}
                           />
+                        </td>
+                        <td style={{ padding: '0.75rem 0.5rem', textAlign: 'right' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.4rem' }}>
+                            <input
+                              type="number"
+                              min="0"
+                              step="10"
+                              placeholder="Actual $"
+                              className="form-control"
+                              style={{ width: '90px', textAlign: 'right', fontSize: '0.8125rem' }}
+                              value={editActualCost}
+                              onChange={(e) => setEditActualCost(e.target.value === '' ? '' : Math.max(0, parseInt(e.target.value) || 0))}
+                            />
+                            <label style={{ display: 'flex', alignItems: 'center', fontSize: '0.75rem', gap: '2px' }} title="Mark as Paid">
+                              <input
+                                type="checkbox"
+                                checked={editIsPaid}
+                                onChange={(e) => setEditIsPaid(e.target.checked)}
+                              />
+                              Paid
+                            </label>
+                          </div>
                         </td>
                         <td style={{ padding: '0.75rem 0.5rem', textAlign: 'center' }}>
                           <button
@@ -503,6 +516,32 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
                           {formatCurrency(item.estimatedCost)}
                           {item.isPerGuest && (
                             <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>per-guest scale</div>
+                          )}
+                        </td>
+                        <td style={{ padding: '0.75rem 0.5rem', textAlign: 'right' }}>
+                          {item.actualCost !== undefined ? (
+                            <div>
+                              <strong style={{ color: 'var(--text-main)' }}>{formatCurrency(item.actualCost)}</strong>
+                              <span
+                                style={{
+                                  display: 'block',
+                                  fontSize: '0.7rem',
+                                  color: item.isPaid ? 'var(--color-success)' : 'var(--text-muted)',
+                                  fontWeight: 600,
+                                }}
+                              >
+                                {item.isPaid ? '✓ Paid' : '⏳ Invoiced'}
+                              </span>
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => onUpdateExpense(item.id, { isPaid: !item.isPaid })}
+                              className={`badge ${item.isPaid ? 'badge-success' : 'badge-info'}`}
+                              style={{ cursor: 'pointer', border: 'none' }}
+                            >
+                              {item.isPaid ? '✓ Paid' : 'Mark Paid'}
+                            </button>
                           )}
                         </td>
                         <td style={{ padding: '0.75rem 0.5rem', textAlign: 'center' }}>

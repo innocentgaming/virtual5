@@ -44,6 +44,7 @@ export interface BudgetItem {
   category: BudgetCategory;
   estimatedCost: number;
   actualCost?: number;
+  isPaid?: boolean;
   isPerGuest?: boolean;
   notes?: string;
   priority: 'essential' | 'recommended' | 'optional';
@@ -117,6 +118,38 @@ export interface DecisionInsight {
   actionType?: string;
 }
 
+export type RsvpStatus = 'attending' | 'declined' | 'pending';
+
+export type DietaryRequirement =
+  | 'none'
+  | 'vegetarian'
+  | 'vegan'
+  | 'gluten_free'
+  | 'halal'
+  | 'kosher'
+  | 'nut_allergy';
+
+export interface GuestItem {
+  id: string;
+  name: string;
+  email?: string;
+  rsvpStatus: RsvpStatus;
+  dietary: DietaryRequirement;
+  plusOne: boolean;
+  plusOneName?: string;
+  tableNumber?: string;
+  notes?: string;
+}
+
+export interface ScheduleItem {
+  id: string;
+  time: string; // e.g. "09:00 AM" or "14:30"
+  activity: string;
+  location: string;
+  responsibleRole: string; // e.g. "Caterer", "DJ / Audio", "Officiant", "Photographer"
+  notes?: string;
+}
+
 export interface EventPlan {
   id: string;
   title: string;
@@ -140,6 +173,8 @@ export interface EventPlan {
   tasks: TaskItem[];
   vendors: VendorItem[];
   ideas: PersonalizedIdea[];
+  guests?: GuestItem[];
+  schedule?: ScheduleItem[];
   decisionInsights: DecisionInsight[];
   missingInfoPrompts: string[];
   generationExplanation: string;
@@ -154,4 +189,8 @@ export interface BudgetSummary {
   contingencyAmount: number;
   categoryTotals: Record<BudgetCategory, number>;
   perGuestCost: number;
+  totalActual: number;
+  variance: number;
+  isActualOverBudget: boolean;
 }
+
