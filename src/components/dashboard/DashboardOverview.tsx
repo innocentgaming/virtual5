@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Calendar,
   MapPin,
@@ -10,15 +10,17 @@ import {
   Sparkles,
   ArrowRight,
   TrendingUp,
-  ShieldCheck,
-  HelpCircle,
+  ShieldAlert,
   AlertCircle,
-  Check,
+  PartyPopper,
+  Heart,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
-import type { EventPlan, BudgetSummary } from '../../types/event';
+import type { EventPlan, BudgetSummary, DecisionInsight } from '../../types/event';
 import type { NavigationTab } from '../../hooks/useEventPlan';
-import { formatCurrency } from '../../utils/formatters';
-import { Card, CardHeader, Button, Badge } from '../ui';
+import { formatCurrency, formatIndianShort, formatPercent } from '../../utils/formatters';
+import { Card, CardHeader, Button, Badge, EmptyState, Skeleton, Toast } from '../ui';
 
 interface DashboardOverviewProps {
   plan: EventPlan;
@@ -33,6 +35,9 @@ interface DashboardOverviewProps {
   onNavigateTab: (tab: NavigationTab) => void;
   onToggleTask: (id: string) => void;
   onRegenerateIdeas: () => void;
+  onOpenCopilot?: () => void;
+  onExportCalendar?: () => void;
+  isGenerating?: boolean;
 }
 
 export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
@@ -41,24 +46,123 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   timelineAudit,
   onNavigateTab,
   onToggleTask,
-  onRegenerateIdeas,
+  onOpenCopilot,
+  onExportCalendar,
+  isGenerating = false,
 }) => {
-  // Days calculation
+  const [showAllAlerts, setShowAllAlerts] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Countdown in days
   const diffDays = useMemo(() => {
     const targetDate = new Date(plan.eventDate);
     const now = new Date();
     return Math.ceil((targetDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
   }, [plan.eventDate]);
 
-  // Vendor summary
+  // Vendor calculations
   const bookedVendors = useMemo(
     () => plan.vendors.filter((v) => v.status === 'booked' || v.status === 'completed').length,
     [plan.vendors]
   );
   const totalVendors = plan.vendors.length;
 
-  // Upcoming top tasks
-  const nextTasks = plan.tasks.filter((t) => !t.completed).slice(0, 4);
+  // Guest calculations (including plus-ones)
+  const confirmedGuests = useMemo(() => {
+    const guests = plan.guests || [];
+    return guests
+      .filter((g) => g.rsvpStatus === 'attending')
+      .reduce((acc, g) => acc + 1 + (g.plusOne ? 1 : 0), 0);
+  }, [plan.guests]);
+
+  // Per-guest cost
+  const perGuestCost = useMemo(() => {
+    return budgetSummary.perGuestCost || Math.round(budgetSummary.totalBudget / Math.max(plan.guestCount, 1));
+  }, [budgetSummary.perGuestCost, budgetSummary.totalBudget, plan.guestCount]);
+
+  // Budget utilization metrics for ring
+  const utilizationPercent = useMemo(() => {
+    if (typeof budgetSummary.utilizationPercentage === 'number') {
+      return Math.round(budgetSummary.utilizationPercentage);
+    }
+    if (!budgetSummary.totalBudget || budgetSummary.totalBudget <= 0) return 0;
+    return Math.round((budgetSummary.totalEstimated / budgetSummary.totalBudget) * 100);
+  }, [budgetSummary.utilizationPercentage, budgetSummary.totalEstimated, budgetSummary.totalBudget]);
+
+  const ringColor = useMemo(() => {
+    if (utilizationPercent >= 100) return 'var(--color-danger)';
+    if (utilizationPercent >= 80) return 'var(--color-warning)';
+    return 'var(--accent-primary)';
+  }, [utilizationPercent]);
+
+  // Ring circumference (radius = 38)
+  const ringRadius = 38;
+  const ringCircumference = 2 * Math.PI * ringRadius;
+  const ringOffset = ringCircumference * (1 - Math.min(utilizationPercent, 100) / 100);
+
+  // Decision engine insights sorted by severity
+  const sortedInsights = useMemo(() => {
+    const severityScore: Record<string, number> = {
+      action_required: 0,
+      warning: 1,
+      suggestion: 2,
+      positive: 3,
+    };
+    const insights = plan.decisionInsights || [];
+    return [...insights].sort((a, b) => {
+      const scoreA = severityScore[a.type] ?? 4;
+      const scoreB = severityScore[b.type] ?? 4;
+      return scoreA - scoreB;
+    });
+  }, [plan.decisionInsights]);
+
+  const displayedInsights = showAllAlerts ? sortedInsights : sortedInsights.slice(0, 3);
+
+  // Next up tasks (next 3 upcoming or overdue)
+  const nextUpTasks = useMemo(() => {
+    const uncompleted = plan.tasks.filter((t) => !t.completed);
+    const todayStr = new Date().toISOString().split('T')[0];
+    return uncompleted
+      .sort((a, b) => {
+        const isOverdueA = a.dueDate < todayStr;
+        const isOverdueB = b.dueDate < todayStr;
+        if (isOverdueA && !isOverdueB) return -1;
+        if (!isOverdueA && isOverdueB) return 1;
+        return a.dueDate.localeCompare(b.dueDate);
+      })
+      .slice(0, 3);
+  }, [plan.tasks]);
+
+  const handleTaskCheck = (taskId: string, title: string, isCurrentlyDone: boolean) => {
+    onToggleTask(taskId);
+    if (!isCurrentlyDone) {
+      setToastMessage(`✓ Task completed: ${title}`);
+    }
+  };
+
+  const getInsightIcon = (type: DecisionInsight['type']) => {
+    switch (type) {
+      case 'action_required':
+        return <AlertCircle size={18} color="var(--color-danger)" />;
+      case 'warning':
+        return <AlertTriangle size={18} color="var(--color-warning)" />;
+      case 'suggestion':
+        return <TrendingUp size={18} color="var(--accent-primary)" />;
+      default:
+        return <CheckCircle2 size={18} color="var(--color-success)" />;
+    }
+  };
+
+  const getEventTypeIcon = (type: string) => {
+    switch (type) {
+      case 'wedding':
+        return <Heart size={20} />;
+      case 'birthday':
+        return <PartyPopper size={20} />;
+      default:
+        return <Users size={20} />;
+    }
+  };
 
   const getBadgeVariant = (type: string): 'wedding' | 'birthday' | 'community' => {
     switch (type) {
@@ -71,371 +175,539 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
     }
   };
 
+  if (isGenerating) {
+    return (
+      <div className="dashboard-grid-12" aria-busy="true" aria-label="Loading event dashboard">
+        <div className="dashboard-hero-col">
+          <Skeleton shape="block" height={180} />
+        </div>
+        <div className="dashboard-metric-col"><Skeleton shape="block" height={100} /></div>
+        <div className="dashboard-metric-col"><Skeleton shape="block" height={100} /></div>
+        <div className="dashboard-metric-col"><Skeleton shape="block" height={100} /></div>
+        <div className="dashboard-metric-col"><Skeleton shape="block" height={100} /></div>
+        <div className="dashboard-main-col">
+          <Skeleton shape="block" height={260} />
+        </div>
+        <div className="dashboard-side-col">
+          <Skeleton shape="block" height={260} />
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      {/* 1. Hero Event Banner */}
-      <Card
-        className="hero-banner-card"
-        style={{
-          background: 'linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-subtle) 100%)',
-          position: 'relative',
-          overflow: 'hidden',
-          borderColor: 'var(--border-medium)',
-          boxShadow: 'var(--shadow-md)',
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1.25rem' }}>
-          <div style={{ flex: 1, minWidth: '280px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
-              <Badge variant={getBadgeVariant(plan.eventType)}>
-                {plan.eventType.toUpperCase()}
-              </Badge>
-              <span style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', fontWeight: 600 }}>
-                Theme: {plan.theme}
-              </span>
-              <span
+    <div className="dashboard-grid-12">
+      {toastMessage && (
+        <Toast
+          message={toastMessage}
+          type="success"
+          onClose={() => setToastMessage(null)}
+        />
+      )}
+
+      {/* =========================================================================
+          1. HERO EVENT BANNER CARD (Full 12 columns)
+          ========================================================================= */}
+      <div className="dashboard-hero-col">
+        <Card
+          className="hero-banner-card"
+          style={{
+            background: 'linear-gradient(135deg, var(--surface-raised) 0%, var(--surface-subtle) 100%)',
+            border: '1px solid var(--border)',
+            boxShadow: 'var(--shadow-md)',
+            position: 'relative',
+            overflow: 'hidden',
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-6)' }}>
+            {/* Left: Event Identity & Date */}
+            <div style={{ flex: '1 1 340px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-2)', flexWrap: 'wrap' }}>
+                <Badge variant={getBadgeVariant(plan.eventType)}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                    {getEventTypeIcon(plan.eventType)}
+                    <span>{plan.eventType.toUpperCase()}</span>
+                  </span>
+                </Badge>
+                <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', fontWeight: 600 }}>
+                  Theme: {plan.theme}
+                </span>
+                {plan.culturalTraditions && (
+                  <Badge variant="success" dot>
+                    Traditions Configured
+                  </Badge>
+                )}
+              </div>
+
+              <h2
                 style={{
-                  fontSize: '0.72rem',
-                  fontWeight: 700,
-                  padding: '2px 8px',
-                  borderRadius: '9999px',
-                  background: 'linear-gradient(135deg, rgba(249, 115, 22, 0.12), rgba(34, 197, 94, 0.12))',
-                  border: '1px solid rgba(249, 115, 22, 0.35)',
-                  color: 'var(--text-main)',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px',
+                  fontSize: 'var(--text-2xl)',
+                  fontFamily: 'var(--font-display)',
+                  color: 'var(--text)',
+                  marginBottom: 'var(--space-2)',
+                  lineHeight: 1.2,
                 }}
               >
-                🇮🇳 Made for India First
+                {plan.title}
+              </h2>
+
+              <div style={{ display: 'flex', gap: 'var(--space-4)', flexWrap: 'wrap', color: 'var(--text-muted)', fontSize: 'var(--text-sm)' }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-1)' }}>
+                  <MapPin size={16} />
+                  <span>{plan.city}</span>
+                </span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-1)' }}>
+                  <Calendar size={16} />
+                  <span>{new Date(plan.eventDate).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                </span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-1)' }}>
+                  <Users size={16} />
+                  <span className="tabular-nums">{plan.guestCount} guests invited</span>
+                </span>
+              </div>
+            </div>
+
+            {/* Middle: Big Countdown Badge */}
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: 'var(--space-3) var(--space-5)',
+                background: 'var(--surface)',
+                border: '1px solid var(--border)',
+                borderRadius: 'var(--radius-lg)',
+                minWidth: '130px',
+              }}
+            >
+              <span
+                className="tabular-nums"
+                style={{
+                  fontSize: '2.25rem',
+                  fontWeight: 800,
+                  color: diffDays <= 7 ? 'var(--color-danger)' : 'var(--text)',
+                  lineHeight: 1,
+                  fontFamily: 'var(--font-sans)',
+                }}
+              >
+                {diffDays < 0 ? '0' : diffDays}
+              </span>
+              <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: '4px' }}>
+                {diffDays === 0 ? 'Event Day 🎉' : diffDays === 1 ? 'Day to go' : 'Days to go'}
               </span>
             </div>
 
-            <h2 style={{ fontSize: '1.85rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.025em', lineHeight: 1.2 }}>
-              {plan.title}
-            </h2>
+            {/* Right: ₹ Budget Utilization Ring */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 'var(--space-4)',
+                background: 'var(--surface)',
+                border: '1px solid var(--border)',
+                borderRadius: 'var(--radius-lg)',
+                padding: 'var(--space-3) var(--space-5)',
+                minWidth: '260px',
+              }}
+            >
+              <div style={{ position: 'relative', width: '84px', height: '84px', flexShrink: 0 }}>
+                <svg width="84" height="84" viewBox="0 0 84 84">
+                  {/* Background Track */}
+                  <circle
+                    cx="42"
+                    cy="42"
+                    r={ringRadius}
+                    fill="transparent"
+                    stroke="var(--border)"
+                    strokeWidth="7"
+                  />
+                  {/* Animated Progress Ring */}
+                  <circle
+                    className="budget-ring-circle"
+                    cx="42"
+                    cy="42"
+                    r={ringRadius}
+                    fill="transparent"
+                    stroke={ringColor}
+                    strokeWidth="7"
+                    strokeDasharray={ringCircumference}
+                    strokeDashoffset={ringOffset}
+                    strokeLinecap="round"
+                    transform="rotate(-90 42 42)"
+                  />
+                </svg>
+                <div
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexDirection: 'column',
+                  }}
+                >
+                  <span className="tabular-nums" style={{ fontSize: '0.9rem', fontWeight: 800, color: ringColor, lineHeight: 1 }}>
+                    {utilizationPercent}%
+                  </span>
+                  <span style={{ fontSize: '0.55rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>
+                    used
+                  </span>
+                </div>
+              </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', marginTop: '0.75rem', flexWrap: 'wrap', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600 }}>
-                <Calendar size={16} color="var(--accent-primary)" />
-                {plan.eventDate} ({diffDays > 0 ? `${diffDays} days left` : diffDays === 0 ? 'Today!' : 'Passed'})
-              </span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <MapPin size={16} color="var(--accent-primary)" />
-                {plan.city} ({plan.venuePreference.replace(/_/g, ' ')})
-              </span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <Users size={16} color="var(--accent-primary)" />
-                {plan.guestCount} Confirmed Guests
-              </span>
+              <div>
+                <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  Budget Utilization
+                </div>
+                <div className="tabular-nums" style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text)', marginTop: '2px' }}>
+                  {formatIndianShort(budgetSummary.totalEstimated)}
+                  <span style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-muted)' }}> of </span>
+                  {formatIndianShort(budgetSummary.totalBudget)}
+                </div>
+                <div style={{ display: 'flex', gap: 'var(--space-1)', marginTop: '4px' }}>
+                  {utilizationPercent >= 100 ? (
+                    <Badge variant="danger">Budget Exceeded</Badge>
+                  ) : utilizationPercent >= 80 ? (
+                    <Badge variant="warning">Near Limit</Badge>
+                  ) : (
+                    <Badge variant="success">On Track</Badge>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
+        </Card>
+      </div>
 
-          <div style={{ display: 'flex', gap: '0.625rem', flexWrap: 'wrap' }}>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => onNavigateTab('setup')}
-            >
-              Edit Details
-            </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={onRegenerateIdeas}
-              leftIcon={<Sparkles size={14} />}
-              title="Refresh personalized ideas and recommendations"
-            >
-              Regenerate Ideas
-            </Button>
-          </div>
-        </div>
-
-        {/* Explainability note */}
-        <div className="estimate-disclaimer" style={{ marginTop: '1.25rem' }}>
-          {plan.plannerSource === 'ai' ? (
-            <Sparkles size={15} color="#6366f1" style={{ flexShrink: 0 }} />
-          ) : (
-            <ShieldCheck size={15} color="#059669" style={{ flexShrink: 0 }} />
-          )}
-          <span>
-            <strong>{plan.plannerSource === 'ai' ? 'AI Assisted Plan' : 'Deterministic Decision Engine Plan'}:</strong>{' '}
-            {plan.generationExplanation} All vendor costs and dates are calculated benchmarks for {plan.city}.
-          </span>
-        </div>
-      </Card>
-
-      {/* 2. Top Glanceable Metrics (Lead with the 3-4 things a planner needs at a glance) */}
-      <div className="grid-cols-4">
-        {/* Total Budget Card */}
-        <div className="stat-card">
+      {/* =========================================================================
+          2. FOUR CLICKABLE METRIC CARDS (3 columns each)
+          ========================================================================= */}
+      <div className="dashboard-metric-col">
+        <Card
+          interactive
+          onClick={() => onNavigateTab('budget')}
+          role="button"
+          tabIndex={0}
+          aria-label="Per-guest budget breakdown"
+          onKeyDown={(e) => { if (e.key === 'Enter') onNavigateTab('budget'); }}
+        >
           <div className="stat-label">
-            <DollarSign size={14} color="var(--accent-primary)" />
-            Total Budget
+            <DollarSign size={14} />
+            <span>Per-Guest Cost</span>
           </div>
-          <div className="stat-value">
-            {formatCurrency(budgetSummary.totalBudget)}
+          <div className="stat-value tabular-nums">
+            {formatCurrency(perGuestCost)}
           </div>
           <div className="stat-subtext">
-            Per person: <strong>{formatCurrency(budgetSummary.perGuestCost)}</strong> / guest
+            <span>Total Budget: </span>
+            <span className="tabular-nums" style={{ fontWeight: 600 }}>{formatIndianShort(budgetSummary.totalBudget)}</span>
           </div>
-        </div>
+        </Card>
+      </div>
 
-        {/* Estimated Spend & Utilization Card */}
-        <div className="stat-card">
+      <div className="dashboard-metric-col">
+        <Card
+          interactive
+          onClick={() => onNavigateTab('timeline')}
+          role="button"
+          tabIndex={0}
+          aria-label="Completed tasks summary"
+          onKeyDown={(e) => { if (e.key === 'Enter') onNavigateTab('timeline'); }}
+        >
           <div className="stat-label">
-            <TrendingUp size={14} color={budgetSummary.isOverBudget ? 'var(--color-danger)' : 'var(--color-success)'} />
-            Estimated Spend
+            <Clock size={14} />
+            <span>Tasks Done</span>
           </div>
-          <div className="stat-value" style={{ color: budgetSummary.isOverBudget ? 'var(--color-danger)' : 'var(--text-main)' }}>
-            {formatCurrency(budgetSummary.totalEstimated)}
+          <div className="stat-value tabular-nums">
+            {timelineAudit.completedCount} / {timelineAudit.totalCount}
           </div>
           <div className="stat-subtext">
-            {budgetSummary.isOverBudget ? (
-              <span style={{ color: 'var(--color-danger)', fontWeight: 700 }}>
-                Over by {formatCurrency(Math.abs(budgetSummary.remainingBalance))} ({budgetSummary.utilizationPercentage}%)
-              </span>
-            ) : (
-              <span style={{ color: 'var(--color-success)', fontWeight: 600 }}>
-                {formatCurrency(budgetSummary.remainingBalance)} remaining ({budgetSummary.utilizationPercentage}% used)
-              </span>
-            )}
+            <span>Task Completion: </span>
+            <span className="tabular-nums" style={{ fontWeight: 600 }}>{formatPercent(timelineAudit.progressPercentage)}</span>
           </div>
-        </div>
+        </Card>
+      </div>
 
-        {/* Task Completion Progress Card */}
-        <div className="stat-card">
+      <div className="dashboard-metric-col">
+        <Card
+          interactive
+          onClick={() => onNavigateTab('vendors')}
+          role="button"
+          tabIndex={0}
+          aria-label="Booked vendors summary"
+          onKeyDown={(e) => { if (e.key === 'Enter') onNavigateTab('vendors'); }}
+        >
           <div className="stat-label">
-            <CheckCircle2 size={14} color="var(--accent-primary)" />
-            Task Completion
+            <ShieldAlert size={14} />
+            <span>Vendors Booked</span>
           </div>
-          <div className="stat-value">
-            {timelineAudit.progressPercentage}%
-          </div>
-          <div className="stat-subtext">
-            {timelineAudit.completedCount} of {timelineAudit.totalCount} completed
-            {timelineAudit.overdueCount > 0 && (
-              <span style={{ color: 'var(--color-warning)', fontWeight: 700, marginLeft: '4px' }}>
-                ({timelineAudit.overdueCount} overdue)
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* Vendor Status Card */}
-        <div className="stat-card">
-          <div className="stat-label">
-            <Users size={14} color="var(--accent-primary)" />
-            Vendors Booked
-          </div>
-          <div className="stat-value">
+          <div className="stat-value tabular-nums">
             {bookedVendors} / {totalVendors}
           </div>
           <div className="stat-subtext">
-            {totalVendors - bookedVendors} vendors still in inquiry
-          </div>
-        </div>
-      </div>
-
-      {/* 3. Scannable Decision Engine Alerts (Severity color + icon + one-line action) */}
-      {plan.missingInfoPrompts && plan.missingInfoPrompts.length > 0 && (
-        <div className="alert-box alert-info" role="status">
-          <HelpCircle size={20} style={{ flexShrink: 0, marginTop: '2px' }} />
-          <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 700, marginBottom: '0.2rem' }}>Helpful Details to Refine Your Plan</div>
-            <ul style={{ paddingLeft: '1.2rem', fontSize: '0.875rem' }}>
-              {plan.missingInfoPrompts.map((p, idx) => (
-                <li key={idx}>{p}</li>
-              ))}
-            </ul>
-          </div>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => onNavigateTab('setup')}
-            style={{ alignSelf: 'center', whiteSpace: 'nowrap' }}
-          >
-            Provide Missing Info
-          </Button>
-        </div>
-      )}
-
-      {plan.decisionInsights && plan.decisionInsights.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          {plan.decisionInsights.map((insight) => {
-            const severityClass =
-              insight.type === 'action_required'
-                ? 'alert-danger'
-                : insight.type === 'warning'
-                ? 'alert-warning'
-                : insight.type === 'positive'
-                ? 'alert-success'
-                : 'alert-info';
-
-            const Icon =
-              insight.type === 'action_required'
-                ? AlertCircle
-                : insight.type === 'warning'
-                ? AlertTriangle
-                : insight.type === 'positive'
-                ? Check
-                : HelpCircle;
-
-            return (
-              <div
-                key={insight.id}
-                className={`alert-box ${severityClass}`}
-                role="alert"
-                style={{
-                  borderLeftWidth: '5px',
-                  alignItems: 'center',
-                  boxShadow: 'var(--shadow-xs)',
-                }}
-              >
-                <Icon size={22} style={{ flexShrink: 0 }} />
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 700, fontSize: '0.925rem' }}>{insight.title}</div>
-                  <div style={{ fontSize: '0.85rem', marginTop: '2px', opacity: 0.95 }}>{insight.message}</div>
-                </div>
-                {insight.actionLabel && (
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    style={{ whiteSpace: 'nowrap' }}
-                    onClick={() => {
-                      if (insight.actionType === 'NAVIGATE_BUDGET') onNavigateTab('budget');
-                      else if (insight.actionType === 'NAVIGATE_TIMELINE_URGENT') onNavigateTab('timeline');
-                    }}
-                  >
-                    {insight.actionLabel}
-                  </Button>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {/* 4. Secondary Previews: Budget & Priority Tasks */}
-      <div className="grid-cols-2">
-        {/* Budget Snapshot */}
-        <Card>
-          <CardHeader
-            title="Budget Allocation Overview"
-            icon={<DollarSign size={18} color="var(--accent-primary)" />}
-            action={
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => onNavigateTab('budget')}
-                rightIcon={<ArrowRight size={14} />}
-              >
-                Full Budget
-              </Button>
-            }
-          />
-
-          <div style={{ marginBottom: '1.25rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8125rem', marginBottom: '0.35rem', fontWeight: 600 }}>
-              <span>Budget Utilization</span>
-              <span style={{ color: budgetSummary.isOverBudget ? 'var(--color-danger)' : 'var(--text-main)', fontWeight: 700 }}>
-                {budgetSummary.utilizationPercentage}%
-              </span>
-            </div>
-            <div className="progress-track" style={{ height: '10px' }}>
-              <div
-                className="progress-fill"
-                style={{
-                  width: `${Math.min(100, budgetSummary.utilizationPercentage)}%`,
-                  backgroundColor: budgetSummary.isOverBudget
-                    ? 'var(--color-danger)'
-                    : budgetSummary.utilizationPercentage > 85
-                    ? 'var(--color-warning)'
-                    : 'var(--accent-primary)',
-                }}
-              />
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-            {plan.budgetItems.slice(0, 4).map((item) => (
-              <div
-                key={item.id}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '0.625rem 0.875rem',
-                  borderRadius: 'var(--radius-sm)',
-                  backgroundColor: 'var(--bg-card-subtle)',
-                  fontSize: '0.875rem',
-                  border: '1px solid var(--border-light)',
-                }}
-              >
-                <div>
-                  <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>{item.name}</div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                    Category: {item.category}
-                  </div>
-                </div>
-                <div style={{ fontWeight: 700 }}>{formatCurrency(item.estimatedCost)}</div>
-              </div>
-            ))}
+            <span>Estimated Spend: </span>
+            <span className="tabular-nums" style={{ fontWeight: 600 }}>{formatIndianShort(budgetSummary.totalEstimated)}</span>
           </div>
         </Card>
+      </div>
 
-        {/* Priority Action Items */}
+      <div className="dashboard-metric-col">
+        <Card
+          interactive
+          onClick={() => onNavigateTab('guests')}
+          role="button"
+          tabIndex={0}
+          aria-label="Confirmed guest count"
+          onKeyDown={(e) => { if (e.key === 'Enter') onNavigateTab('guests'); }}
+        >
+          <div className="stat-label">
+            <Users size={14} />
+            <span>RSVPs Confirmed</span>
+          </div>
+          <div className="stat-value tabular-nums">
+            {confirmedGuests} / {plan.guestCount}
+          </div>
+          <div className="stat-subtext">
+            <span>Attendance Rate: </span>
+            <span className="tabular-nums" style={{ fontWeight: 600 }}>
+              {formatPercent((confirmedGuests / Math.max(plan.guestCount, 1)) * 100)}
+            </span>
+          </div>
+        </Card>
+      </div>
+
+      {/* =========================================================================
+          3. MAIN COLUMN (8 cols): Next Up Tasks, Quick Actions, Cultural Insights
+          ========================================================================= */}
+      <div className="dashboard-main-col">
+        {/* Next Up Tasks Panel */}
         <Card>
           <CardHeader
-            title="Priority Action Items"
-            icon={<Clock size={18} color="var(--accent-primary)" />}
+            title="Next Up"
+            subtitle="Prioritized upcoming milestones & overdue tasks"
             action={
               <Button
-                variant="secondary"
+                variant="ghost"
                 size="sm"
                 onClick={() => onNavigateTab('timeline')}
                 rightIcon={<ArrowRight size={14} />}
               >
-                All Tasks
+                View all tasks ({plan.tasks.length})
               </Button>
             }
           />
 
-          {nextTasks.length === 0 ? (
-            <div style={{ padding: '2.5rem 1rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-              <CheckCircle2 size={40} color="var(--color-success)" style={{ margin: '0 auto 0.5rem auto' }} />
-              <p style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-main)' }}>All planned tasks are complete!</p>
-              <p style={{ fontSize: '0.8125rem' }}>Your event preparation is fully on track.</p>
-            </div>
+          {nextUpTasks.length === 0 ? (
+            <EmptyState
+              title="All tasks completed 🎉"
+              description="You have completed every scheduled preparation task for this event."
+            />
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-              {nextTasks.map((task) => (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+              {nextUpTasks.map((task) => {
+                const todayStr = new Date().toISOString().split('T')[0];
+                const isOverdue = task.dueDate < todayStr && !task.completed;
+
+                return (
+                  <div
+                    key={task.id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: 'var(--space-3) var(--space-4)',
+                      background: isOverdue ? 'var(--color-danger-bg)' : 'var(--surface-subtle)',
+                      border: `1px solid ${isOverdue ? 'var(--color-danger-border)' : 'var(--border)'}`,
+                      borderRadius: 'var(--radius-md)',
+                      gap: 'var(--space-3)',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', flex: 1 }}>
+                      <input
+                        type="checkbox"
+                        checked={task.completed}
+                        onChange={() => handleTaskCheck(task.id, task.title, task.completed)}
+                        style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--accent-primary)' }}
+                        aria-label={`Mark "${task.title}" complete`}
+                      />
+                      <div>
+                        <div style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--text)' }}>
+                          {task.title}
+                        </div>
+                        <div style={{ fontSize: 'var(--text-xs)', color: isOverdue ? 'var(--color-danger-text)' : 'var(--text-muted)' }}>
+                          Due: {task.dueDate} {isOverdue && '• Overdue'}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      {isOverdue ? (
+                        <Badge variant="danger">Overdue</Badge>
+                      ) : (
+                        <Badge variant="neutral">{task.category}</Badge>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </Card>
+
+        {/* Quick Action Bar */}
+        <Card>
+          <CardHeader
+            title="Quick Planner Actions"
+            subtitle="Frequently accessed workflows & on-ground exports"
+          />
+          <div style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
+            <Button
+              variant="outline"
+              size="md"
+              onClick={() => onNavigateTab('budget')}
+              leadingIcon={<DollarSign size={16} />}
+            >
+              Add Expense
+            </Button>
+            <Button
+              variant="outline"
+              size="md"
+              onClick={() => onNavigateTab('guests')}
+              leadingIcon={<Users size={16} />}
+            >
+              Add Guest
+            </Button>
+            {onExportCalendar && (
+              <Button
+                variant="outline"
+                size="md"
+                onClick={onExportCalendar}
+                leadingIcon={<Calendar size={16} />}
+              >
+                Export iCal
+              </Button>
+            )}
+            {onOpenCopilot && (
+              <Button
+                variant="primary"
+                size="md"
+                onClick={onOpenCopilot}
+                leadingIcon={<Sparkles size={16} />}
+              >
+                Ask Copilot
+              </Button>
+            )}
+          </div>
+        </Card>
+
+        {/* Cultural Notes & Weather Guardrails */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 'var(--space-5)' }}>
+          <Card variant="subtle">
+            <h4 style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
+              <span>🇮🇳</span>
+              <span>Cultural Protocols</span>
+            </h4>
+            <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+              Curated for {plan.eventType} in {plan.city}. Includes 10:00 PM sound curfew buffers and dedicated pure-veg / Jain food prep isolation.
+            </p>
+          </Card>
+
+          <Card variant="subtle">
+            <h4 style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-2)' }}>
+              <span>⛅</span>
+              <span>Weather & Seasonality</span>
+            </h4>
+            <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+              Event date is set in seasonal window for {plan.city}. Outdoor and rooftop ceremonies have mandatory rain contingency buffer.
+            </p>
+          </Card>
+        </div>
+      </div>
+
+      {/* =========================================================================
+          4. SIDE COLUMN (4 cols): Needs Attention Panel
+          ========================================================================= */}
+      <div className="dashboard-side-col">
+        <Card style={{ borderLeft: '4px solid var(--color-warning)' }}>
+          <CardHeader
+            title="Needs Attention"
+            subtitle={`${sortedInsights.length} active decision-engine alerts`}
+            action={
+              sortedInsights.length > 3 ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowAllAlerts((prev) => !prev)}
+                >
+                  {showAllAlerts ? (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      Less <ChevronUp size={14} />
+                    </span>
+                  ) : (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      View all ({sortedInsights.length}) <ChevronDown size={14} />
+                    </span>
+                  )}
+                </Button>
+              ) : null
+            }
+          />
+
+          {sortedInsights.length === 0 ? (
+            <EmptyState
+              title="All clear 🎉"
+              description="Your event preparation is running on schedule with zero high-priority conflicts."
+            />
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+              {displayedInsights.map((insight) => (
                 <div
-                  key={task.id}
+                  key={insight.id}
                   style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.75rem',
-                    padding: '0.75rem 0.875rem',
-                    borderRadius: 'var(--radius-sm)',
-                    backgroundColor: 'var(--bg-card-subtle)',
-                    border: '1px solid var(--border-light)',
-                    borderLeft: task.priority === 'urgent' ? '4px solid var(--color-danger)' : '4px solid var(--accent-primary)',
+                    padding: 'var(--space-3) var(--space-4)',
+                    background:
+                      insight.type === 'action_required'
+                        ? 'var(--color-danger-bg)'
+                        : insight.type === 'warning'
+                        ? 'var(--color-warning-bg)'
+                        : 'var(--surface-subtle)',
+                    border: `1px solid ${
+                      insight.type === 'action_required'
+                        ? 'var(--color-danger-border)'
+                        : insight.type === 'warning'
+                        ? 'var(--color-warning-border)'
+                        : 'var(--border)'
+                    }`,
+                    borderRadius: 'var(--radius-md)',
                   }}
                 >
-                  <input
-                    type="checkbox"
-                    checked={task.completed}
-                    onChange={() => onToggleTask(task.id)}
-                    style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--accent-primary)' }}
-                    aria-label={`Mark ${task.title} complete`}
-                  />
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-main)' }}>
-                      {task.title}
-                    </div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                      Due: {task.dueDate} · Priority: {task.priority.toUpperCase()}
+                  <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'flex-start' }}>
+                    <div style={{ marginTop: '2px' }}>{getInsightIcon(insight.type)}</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text)' }}>
+                        {insight.title}
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '2px 0 6px 0', lineHeight: 1.4 }}>
+                        {insight.message}
+                      </div>
+
+                      {insight.actionLabel && (
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          style={{ fontSize: '0.72rem', padding: '2px 8px', minHeight: '28px' }}
+                          onClick={() => {
+                            if (insight.category === 'budget') onNavigateTab('budget');
+                            else if (insight.category === 'timeline') onNavigateTab('timeline');
+                            else if (insight.category === 'vendors') onNavigateTab('vendors');
+                            else if (insight.category === 'capacity') onNavigateTab('guests');
+                            else onNavigateTab('budget');
+                          }}
+                        >
+                          {insight.actionLabel}
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -444,53 +716,6 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
           )}
         </Card>
       </div>
-
-      {/* 5. Made for India First Cultural & Financial Guardrails (Integrated below primary KPIs) */}
-      <Card variant="subtle" style={{ padding: '1rem 1.25rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-main)' }}>
-            <span>🇮🇳</span>
-            <span>Made for India First — Cultural & Financial Guardrails</span>
-          </div>
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-            Tailored for Indian celebrations, large guest sizes & Vedic traditions
-          </span>
-        </div>
-        <div className="grid-cols-4" style={{ gap: '0.75rem' }}>
-          <div style={{ padding: '0.625rem 0.75rem', backgroundColor: 'var(--bg-card)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)' }}>
-            <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span>₹</span> Lakhs & Crores Scale
-            </div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-              Native en-IN grouping, contingency reserve & per-plate breakdown
-            </div>
-          </div>
-          <div style={{ padding: '0.625rem 0.75rem', backgroundColor: 'var(--bg-card)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)' }}>
-            <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#059669', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span>🥗</span> Jain & Pure Veg Isolation
-            </div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-              Automated alerts for isolated counters and separate serving ladles
-            </div>
-          </div>
-          <div style={{ padding: '0.625rem 0.75rem', backgroundColor: 'var(--bg-card)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)' }}>
-            <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#d97706', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span>🥁</span> Baraat 10 PM Sound Curfew
-            </div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-              Municipal noise regulations pre-calibrating indoor Sangeet switch
-            </div>
-          </div>
-          <div style={{ padding: '0.625rem 0.75rem', backgroundColor: 'var(--bg-card)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)' }}>
-            <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#be185d', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span>🪔</span> Vedic Ritual Muhurats
-            </div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-              Day-of Haldi, Milni, Agni Kund Pheras & Pandit Ji samagri
-            </div>
-          </div>
-        </div>
-      </Card>
     </div>
   );
 };
