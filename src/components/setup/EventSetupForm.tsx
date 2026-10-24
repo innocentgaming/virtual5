@@ -139,10 +139,25 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
   return (
     <div className="card" style={{ maxWidth: '850px', margin: '0 auto' }}>
       <div className="card-header">
-        <h2 className="card-title">
-          <Sparkles size={20} color="var(--accent-primary)" />
-          {isEditing ? 'Edit Event Parameters' : 'Create & Personalize New Event'}
-        </h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+          <h2 className="card-title">
+            <Sparkles size={20} color="var(--accent-primary)" />
+            {isEditing ? 'Edit Event Parameters' : 'Create & Personalize New Event'}
+          </h2>
+          <span
+            style={{
+              fontSize: '0.72rem',
+              fontWeight: 700,
+              padding: '2px 8px',
+              borderRadius: '9999px',
+              background: 'linear-gradient(135deg, rgba(249, 115, 22, 0.15), rgba(34, 197, 94, 0.15))',
+              border: '1px solid rgba(249, 115, 22, 0.4)',
+              color: 'var(--text-main)',
+            }}
+          >
+            🇮🇳 Made for India First
+          </span>
+        </div>
         {onCancel && (
           <button type="button" onClick={onCancel} className="btn btn-secondary btn-sm">
             Cancel

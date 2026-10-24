@@ -287,8 +287,9 @@ export function App() {
             gap: '1rem',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <strong>EventWise AI v1.1.0</strong> — Intelligent Event Planning Assistant for Weddings, Birthdays & Community Events.
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <strong>EventWise AI — India Edition</strong>
+            <span>🇮🇳 Made for India First · Royal Weddings, Bollywood Birthdays & Community Melas (₹ en-IN)</span>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>

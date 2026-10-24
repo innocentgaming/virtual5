@@ -45,13 +45,30 @@ export const Header: React.FC<HeaderProps> = ({
           <Sparkles size={22} />
         </div>
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
             <h1 className="brand-title">EventWise AI</h1>
             <span className={`badge ${getBadgeClass(activeEvent.eventType)}`}>
               {activeEvent.eventType.toUpperCase()}
             </span>
+            <span
+              style={{
+                fontSize: '0.72rem',
+                fontWeight: 700,
+                padding: '2px 8px',
+                borderRadius: '9999px',
+                background: 'linear-gradient(135deg, rgba(249, 115, 22, 0.15), rgba(34, 197, 94, 0.15))',
+                border: '1px solid rgba(249, 115, 22, 0.4)',
+                color: 'var(--text-main)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+              }}
+              title="Engineered specifically for Indian Celebrations & Community Events"
+            >
+              🇮🇳 Made for India First
+            </span>
           </div>
-          <p className="brand-subtitle">Personalized Event Planning & Decision Engine</p>
+          <p className="brand-subtitle">Personalized Event Planning & Decision Engine · Made for India First (₹ en-IN)</p>
         </div>
       </div>
 
