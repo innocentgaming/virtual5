@@ -8,7 +8,7 @@ import {
   Info,
 } from 'lucide-react';
 import type { EventPlan } from '../../types/event';
-import { Card, CardHeader, Button, Badge } from '../common';
+import { Card, CardHeader, Button, Badge } from '../ui';
 
 interface AIAssistantModalProps {
   plan: EventPlan;

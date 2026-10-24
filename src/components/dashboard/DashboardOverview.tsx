@@ -18,7 +18,7 @@ import {
 import type { EventPlan, BudgetSummary } from '../../types/event';
 import type { NavigationTab } from '../../hooks/useEventPlan';
 import { formatCurrency } from '../../utils/formatters';
-import { Card, CardHeader, Button, Badge } from '../common';
+import { Card, CardHeader, Button, Badge } from '../ui';
 
 interface DashboardOverviewProps {
   plan: EventPlan;

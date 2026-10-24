@@ -10,7 +10,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import type { GuestItem, RsvpStatus, DietaryRequirement, EventPlan } from '../../types/event';
-import { Card, CardHeader, Button, Badge, Modal, EmptyState } from '../common';
+import { Card, CardHeader, Button, Badge, Modal, EmptyState } from '../ui';
 
 interface GuestManagerProps {
   plan: EventPlan;

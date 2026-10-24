@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import type { ScheduleItem, EventPlan } from '../../types/event';
 import { downloadEventCalendar } from '../../services/calendarService';
-import { Card, CardHeader, Button, Badge, Modal, EmptyState } from '../common';
+import { Card, CardHeader, Button, Badge, Modal, EmptyState } from '../ui';
 
 interface RunOfShowManagerProps {
   plan: EventPlan;

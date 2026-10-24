@@ -20,7 +20,7 @@ import type {
   EventPlan,
 } from '../../types/event';
 import { formatCurrency, formatIndianShort } from '../../utils/formatters';
-import { Card, CardHeader, Button } from '../common';
+import { Card, CardHeader, Button } from '../ui';
 
 interface EventSetupFormProps {
   initialPlan?: EventPlan;

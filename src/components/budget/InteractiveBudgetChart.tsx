@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { BudgetCategory, BudgetSummary } from '../../types/event';
 import { formatCurrency, formatIndianShort, formatPercent } from '../../utils/formatters';
-import { EmptyState } from '../common';
+import { EmptyState } from '../ui';
 import { DollarSign } from 'lucide-react';
 
 interface InteractiveBudgetChartProps {

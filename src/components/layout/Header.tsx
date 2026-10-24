@@ -11,7 +11,7 @@ import {
   Bot,
 } from 'lucide-react';
 import type { EventPlan } from '../../types/event';
-import { Badge, Button } from '../common';
+import { Badge, Button } from '../ui';
 
 interface HeaderProps {
   events: EventPlan[];

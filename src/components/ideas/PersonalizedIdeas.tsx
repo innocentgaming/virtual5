@@ -8,7 +8,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import type { PersonalizedIdea, EventPlan } from '../../types/event';
-import { Card, CardHeader, Button, Badge, EmptyState } from '../common';
+import { Card, CardHeader, Button, Badge, EmptyState } from '../ui';
 
 interface PersonalizedIdeasProps {
   plan: EventPlan;

@@ -14,7 +14,7 @@ import {
 import type { BudgetItem, BudgetCategory, BudgetSummary, EventPlan } from '../../types/event';
 import { formatCurrency, formatIndianShort } from '../../utils/formatters';
 import { InteractiveBudgetChart } from './InteractiveBudgetChart';
-import { Card, CardHeader, Button, Badge, EmptyState } from '../common';
+import { Card, CardHeader, Button, Badge, EmptyState } from '../ui';
 
 interface BudgetManagerProps {
   plan: EventPlan;
