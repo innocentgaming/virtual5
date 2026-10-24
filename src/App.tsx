@@ -219,6 +219,8 @@ export function App() {
               <PersonalizedIdeas
                 plan={activeEvent}
                 onRegenerateIdeas={handleRegenerateIdeas}
+                onAddBudgetItem={addBudgetItem}
+                onAddTask={addTask}
                 isGenerating={isGenerating}
               />
             )}

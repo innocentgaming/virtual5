@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import {
   Users2,
   Plus,
@@ -6,41 +6,128 @@ import {
   ChevronDown,
   ChevronUp,
   ShieldCheck,
+  CheckCircle2,
+  Phone,
+  Mail,
+  User,
+  Sparkles,
 } from 'lucide-react';
 import type { VendorItem, VendorStatus, VendorCategory, EventPlan } from '../../types/event';
 import { formatCurrency, formatIndianShort } from '../../utils/formatters';
-import { Card, CardHeader, Button, Badge, Modal } from '../ui';
+import { Card, CardHeader, Button, Badge, Modal, EmptyState, useToast } from '../ui';
 
 interface VendorChecklistProps {
   plan: EventPlan;
   onUpdateVendor: (id: string, updates: Partial<VendorItem>) => void;
   onAddVendor: (vendor: Omit<VendorItem, 'id'>) => void;
+  isLoading?: boolean;
 }
 
-const STATUS_LABELS: Record<VendorStatus, { label: string; variant: 'info' | 'warning' | 'wedding' | 'success' | 'community' }> = {
-  not_started: { label: 'Not Started', variant: 'info' },
-  contacted: { label: 'Contacted', variant: 'warning' },
-  shortlisted: { label: 'Shortlisted', variant: 'wedding' },
-  booked: { label: 'Booked', variant: 'success' },
-  completed: { label: 'Completed', variant: 'community' },
+const STAGES: { id: VendorStatus | 'all'; label: string; variant: 'neutral' | 'warning' | 'info' | 'success' }[] = [
+  { id: 'all', label: 'All Vendors', variant: 'neutral' },
+  { id: 'shortlisted', label: 'Shortlisted', variant: 'warning' },
+  { id: 'contacted', label: 'Contacted', variant: 'info' },
+  { id: 'booked', label: 'Booked', variant: 'success' },
+];
+
+const STANDARD_INTERVIEW_QUESTIONS: Record<string, string[]> = {
+  pandit: [
+    'What is the exact auspicious muhurat timing and duration for the Vedic pheras?',
+    'Will you provide the complete list of samagri and puja items in advance?',
+    'What are the dakshina, travel, and assistant pandit honorarium expectations?',
+    'Do you conduct havan ceremonies suited for both indoor banquet halls and outdoor mandaps?',
+  ],
+  mehendi: [
+    'How many hours are required for the bridal mehendi application before sangeet?',
+    'Do you guarantee 100% natural, chemical-free henna with rich dark stain delivery?',
+    'How many assistant mehendi artists will accompany you for the guest counters?',
+    'What is the per-hand pricing or package rate for guest ladies and bridesmaids?',
+  ],
+  dhol: [
+    'Can you coordinate procession beats with the groom arrival and baraat route?',
+    'Are you aware of the 10:00 PM municipal sound curfew and indoor sound handover?',
+    'Do you supply illuminated dhol gear or brass band uniforms matching the theme?',
+    'What is the backup plan in case of procession delays or extended dancing?',
+  ],
+  caterer: [
+    'Can you maintain a strictly segregated kitchen counter and cookware for Jain & Pure Veg guests?',
+    'Do you offer an advance menu tasting session for the family before final sign-off?',
+    'What live chaat and hot dessert counters are included in the per-plate quote?',
+    'What is your standard protocol for food replenishment, hygiene, and safe leftover management?',
+  ],
 };
+
+function getTailoredQuestions(role: string, category: string, existingQuestions: string[]): string[] {
+  if (existingQuestions && existingQuestions.length > 0) return existingQuestions;
+
+  const roleLower = role.toLowerCase();
+  const catLower = category.toLowerCase();
+
+  if (roleLower.includes('pandit') || roleLower.includes('priest') || catLower.includes('officiant')) {
+    return STANDARD_INTERVIEW_QUESTIONS.pandit;
+  }
+  if (roleLower.includes('mehendi') || roleLower.includes('henna')) {
+    return STANDARD_INTERVIEW_QUESTIONS.mehendi;
+  }
+  if (roleLower.includes('dhol') || roleLower.includes('band') || roleLower.includes('brass')) {
+    return STANDARD_INTERVIEW_QUESTIONS.dhol;
+  }
+  if (catLower.includes('cater') || roleLower.includes('cater') || roleLower.includes('halwai') || roleLower.includes('food')) {
+    return STANDARD_INTERVIEW_QUESTIONS.caterer;
+  }
+
+  return [
+    'What packages are available within our estimated budget tier?',
+    'What are the deposit milestones, cancellation terms, and refund policy?',
+    'Do you carry liability insurance and venue safety permits?',
+    'Who will be the dedicated on-site coordinator on the day of the event?',
+  ];
+}
 
 export const VendorChecklist: React.FC<VendorChecklistProps> = ({
   plan,
   onUpdateVendor,
   onAddVendor,
+  isLoading = false,
 }) => {
+  const toast = useToast();
+  const [activeStage, setActiveStage] = useState<VendorStatus | 'all'>('all');
   const [expandedVendorId, setExpandedVendorId] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
 
-  // New vendor form state
+  // New vendor form fields
   const [newRole, setNewRole] = useState('');
   const [newCategory, setNewCategory] = useState<VendorCategory>('caterer');
-  const [newCost, setNewCost] = useState<number>(1000);
+  const [newCost, setNewCost] = useState<number>(25000);
   const [newQuestions, setNewQuestions] = useState('');
 
+  const addVendorBtnRef = useRef<HTMLButtonElement>(null);
+
+  const vendors = useMemo(() => plan.vendors || [], [plan.vendors]);
+
+  // Stage counts
+  const stageCounts = useMemo(() => {
+    const counts = { all: vendors.length, shortlisted: 0, contacted: 0, booked: 0, not_started: 0, completed: 0 };
+    vendors.forEach((v) => {
+      if (counts[v.status] !== undefined) {
+        counts[v.status]++;
+      }
+    });
+    return counts;
+  }, [vendors]);
+
+  const filteredVendors = useMemo(() => {
+    if (activeStage === 'all') return vendors;
+    return vendors.filter((v) => v.status === activeStage);
+  }, [vendors, activeStage]);
+
   const toggleExpand = (id: string) => {
-    setExpandedVendorId(expandedVendorId === id ? null : id);
+    setExpandedVendorId((prev) => (prev === id ? null : id));
+  };
+
+  const handleStatusChange = (vendor: VendorItem, newStatus: VendorStatus) => {
+    onUpdateVendor(vendor.id, { status: newStatus });
+    toast.showToast(`Updated ${vendor.role} to ${newStatus.replace('_', ' ')}`, 'success');
   };
 
   const handleCreateVendor = (e: React.FormEvent) => {
@@ -55,48 +142,63 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
     onAddVendor({
       role: newRole.trim(),
       category: newCategory,
-      status: 'not_started',
+      status: 'shortlisted',
       estimatedCost: Math.max(0, isNaN(newCost) ? 0 : newCost),
       questionsToAsk:
         questionsList.length > 0
           ? questionsList
-          : [
-              'What packages are available within our estimated budget?',
-              'What are the deposit and cancellation refund terms?',
-              'Do you carry liability insurance?',
-            ],
+          : getTailoredQuestions(newRole, newCategory, []),
     });
 
     setNewRole('');
-    setNewCost(1000);
+    setNewCost(25000);
     setNewQuestions('');
     setShowAddModal(false);
+    toast.showToast(`Added vendor role: ${newRole.trim()}`, 'success');
+    addVendorBtnRef.current?.focus();
   };
 
+  if (isLoading) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+        <div style={{ height: '80px', background: 'var(--surface-raised)', borderRadius: 'var(--radius-lg)' }} className="ui-skeleton" />
+        <div style={{ height: '320px', background: 'var(--surface-raised)', borderRadius: 'var(--radius-lg)' }} className="ui-skeleton" />
+      </div>
+    );
+  }
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      {/* Transparency Banner */}
-      <div className="alert-box alert-info">
-        <ShieldCheck size={22} style={{ flexShrink: 0 }} />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+      {/* =====================================================================
+          1. TRANSPARENCY & SOURCING GUIDELINES BANNER
+          ===================================================================== */}
+      <div className="alert-box alert-info" role="status">
+        <ShieldCheck size={22} style={{ flexShrink: 0, marginTop: '2px' }} />
         <div>
-          <div style={{ fontWeight: 700 }}>Vendor Sourcing Guidelines & Ethical Guardrails</div>
-          <p style={{ fontSize: '0.875rem', marginTop: '0.2rem' }}>
-            EventWise AI organizes recommended vendor roles and estimated budgets for {plan.city}. We do not fabricate fake reviews, false availability, or pre-arranged contact directories. Use the tailored interview questions below when vetting local professionals.
+          <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>
+            Vendor Sourcing Guidelines & Ethical Guardrails
+          </div>
+          <p style={{ fontSize: 'var(--text-sm)', marginTop: '2px', lineHeight: 1.5 }}>
+            EventWise AI organizes recommended vendor roles and estimated market budgets for {plan.city}. We do not fabricate fake reviews or biased sponsor rankings. Use the tailored interview questions below when vetting local professionals for your celebration.
           </p>
         </div>
       </div>
 
+      {/* =====================================================================
+          2. STAGE TABS STRIP & HEADER
+          ===================================================================== */}
       <Card>
         <CardHeader
           title="Vendor Checklist & Interview Guide"
           icon={<Users2 size={20} color="var(--accent-primary)" />}
-          subtitle="Track outreach, negotiate quotes, and store verified contact details."
+          subtitle="Track contractor outreach, compare quotes, and review specialized interview cues."
           action={
             <Button
+              ref={addVendorBtnRef}
               variant="primary"
               size="sm"
               onClick={() => setShowAddModal(true)}
-              leftIcon={<Plus size={15} />}
+              leadingIcon={<Plus size={15} />}
               id="btn-add-vendor-modal"
             >
               Add Vendor Category
@@ -104,66 +206,111 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
           }
         />
 
-        {/* Vendor Cards List */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          {plan.vendors.map((vendor) => {
+        {/* Stage Filter Chips */}
+        <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap', alignItems: 'center' }}>
+          {STAGES.map((stage) => {
+            const count = stage.id === 'all' ? stageCounts.all : stageCounts[stage.id] || 0;
+            return (
+              <Button
+                key={stage.id}
+                variant={activeStage === stage.id ? 'primary' : 'secondary'}
+                size="sm"
+                onClick={() => setActiveStage(stage.id)}
+              >
+                {stage.label} ({count})
+              </Button>
+            );
+          })}
+        </div>
+      </Card>
+
+      {/* =====================================================================
+          3. VENDOR CARDS LIST
+          ===================================================================== */}
+      {filteredVendors.length === 0 ? (
+        <Card>
+          <EmptyState
+            icon={<CheckCircle2 size={38} color="var(--color-success)" />}
+            title="No Vendors in This Stage"
+            description="Select 'All Vendors' or click '+ Add Vendor Category' to add coordinators to your pipeline."
+            action={
+              <Button variant="secondary" size="sm" onClick={() => setActiveStage('all')}>
+                View All Vendors
+              </Button>
+            }
+          />
+        </Card>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+          {filteredVendors.map((vendor) => {
             const isExpanded = expandedVendorId === vendor.id;
-            const statusConfig = STATUS_LABELS[vendor.status] || STATUS_LABELS.not_started;
+            const questions = getTailoredQuestions(vendor.role, vendor.category, vendor.questionsToAsk);
 
             return (
               <div
                 key={vendor.id}
                 style={{
-                  border: '1px solid var(--border-light)',
+                  border: '1px solid var(--border)',
                   borderRadius: 'var(--radius-lg)',
-                  padding: '1.25rem',
-                  backgroundColor: 'var(--bg-card)',
+                  padding: 'var(--space-4)',
+                  backgroundColor: 'var(--surface-raised)',
                   boxShadow: 'var(--shadow-sm)',
-                  transition: 'all 0.18s ease',
+                  transition: 'all var(--transition-fast)',
                 }}
               >
+                {/* Top Row: Role, Category, Quote, Stage Selector & Expand Toggle */}
                 <div
                   style={{
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
                     flexWrap: 'wrap',
-                    gap: '0.75rem',
+                    gap: 'var(--space-3)',
                   }}
                 >
                   <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
-                      <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-main)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+                      <h4 style={{ fontSize: 'var(--text-base)', fontWeight: 700, color: 'var(--text)', margin: 0 }}>
                         {vendor.role}
                       </h4>
-                      <Badge variant={statusConfig.variant}>
-                        {statusConfig.label}
+                      <Badge
+                        variant={
+                          vendor.status === 'booked'
+                            ? 'success'
+                            : vendor.status === 'shortlisted'
+                            ? 'warning'
+                            : vendor.status === 'contacted'
+                            ? 'info'
+                            : 'neutral'
+                        }
+                      >
+                        {vendor.status.replace('_', ' ')}
                       </Badge>
                     </div>
-                    <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
-                      Category: {vendor.category} · Budget Estimate: <strong>{formatCurrency(vendor.estimatedCost)}</strong> ({formatIndianShort(vendor.estimatedCost)})
+
+                    <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginTop: '4px' }}>
+                      Category: {vendor.category} · Target Quote: <strong className="tabular-nums" style={{ color: 'var(--text)' }}>{formatCurrency(vendor.estimatedCost)}</strong> ({formatIndianShort(vendor.estimatedCost)})
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                    {/* Status Dropdown */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+                    {/* Stage Dropdown */}
                     <label
                       htmlFor={`vendor-status-${vendor.id}`}
                       className="sr-only"
-                      style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0 }}
                     >
                       Change Status
                     </label>
                     <select
                       id={`vendor-status-${vendor.id}`}
                       className="form-control"
-                      style={{ padding: '0.35rem 0.65rem', fontSize: '0.8125rem', width: '135px', height: '34px', minHeight: '34px' }}
+                      style={{ padding: '4px 8px', fontSize: 'var(--text-xs)', width: '130px', height: '36px' }}
                       value={vendor.status}
-                      onChange={(e) => onUpdateVendor(vendor.id, { status: e.target.value as VendorStatus })}
+                      onChange={(e) => handleStatusChange(vendor, e.target.value as VendorStatus)}
                     >
                       <option value="not_started">Not Started</option>
-                      <option value="contacted">Contacted</option>
                       <option value="shortlisted">Shortlisted</option>
+                      <option value="contacted">Contacted</option>
                       <option value="booked">Booked</option>
                       <option value="completed">Completed</option>
                     </select>
@@ -176,51 +323,64 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
                       aria-label="Toggle vendor questions and notes"
                       rightIcon={isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                     >
-                      {isExpanded ? 'Hide Details' : 'Questions & Notes'}
+                      {isExpanded ? 'Hide Details' : 'Interview & Notes'}
                     </Button>
                   </div>
                 </div>
 
-                {/* Expanded Details: Questions to Ask & Contact Form */}
+                {/* =====================================================================
+                    4. COLLAPSIBLE INTERVIEW GUIDE & NOTES
+                    ===================================================================== */}
                 {isExpanded && (
                   <div
                     style={{
-                      marginTop: '1.25rem',
-                      paddingTop: '1rem',
-                      borderTop: '1px solid var(--border-light)',
+                      marginTop: 'var(--space-4)',
+                      paddingTop: 'var(--space-4)',
+                      borderTop: '1px solid var(--border)',
                       display: 'flex',
                       flexDirection: 'column',
-                      gap: '1rem',
+                      gap: 'var(--space-4)',
                     }}
                   >
-                    {/* Questions to Ask */}
-                    <div style={{ backgroundColor: 'var(--bg-card-subtle)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-light)' }}>
-                      <div style={{ fontWeight: 700, fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.5rem', color: 'var(--text-main)' }}>
-                        <HelpCircle size={16} color="var(--accent-primary)" />
-                        Essential Questions to Ask {vendor.role}:
+                    {/* Collapsible Tailored Interview Questions */}
+                    <div
+                      style={{
+                        backgroundColor: 'var(--surface-subtle)',
+                        padding: 'var(--space-4)',
+                        borderRadius: 'var(--radius-md)',
+                        border: '1px solid var(--border)',
+                      }}
+                    >
+                      <div style={{ fontWeight: 700, fontSize: 'var(--text-xs)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', color: 'var(--text)' }}>
+                        <HelpCircle size={15} color="var(--accent-primary)" />
+                        Vetting & Interview Questions for {vendor.role}:
                       </div>
-                      <ul style={{ paddingLeft: '1.25rem', fontSize: '0.8125rem', display: 'flex', flexDirection: 'column', gap: '0.35rem', color: 'var(--text-main)' }}>
-                        {vendor.questionsToAsk.map((q, idx) => (
-                          <li key={idx}>{q}</li>
+                      <ul style={{ paddingLeft: '1.25rem', margin: 0, fontSize: 'var(--text-xs)', display: 'flex', flexDirection: 'column', gap: '6px', color: 'var(--text)' }}>
+                        {questions.map((q, idx) => (
+                          <li key={idx} style={{ lineHeight: 1.5 }}>{q}</li>
                         ))}
                       </ul>
                     </div>
 
-                    {/* Contact Info & Notes */}
-                    <div className="grid-cols-3">
+                    {/* Contact Info & Notes Form */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-3)' }}>
                       <div className="form-group">
-                        <label className="form-label" style={{ fontSize: '0.8125rem' }}>Contact Name</label>
+                        <label className="form-label" style={{ fontSize: 'var(--text-xs)' }}>
+                          <User size={12} style={{ marginRight: '4px' }} /> Contact Person
+                        </label>
                         <input
                           type="text"
                           className="form-control"
                           value={vendor.contactName || ''}
                           onChange={(e) => onUpdateVendor(vendor.id, { contactName: e.target.value })}
-                          placeholder="e.g. Sarah Jenkins"
+                          placeholder="e.g. Ramesh Chandra (Lead)"
                         />
                       </div>
 
                       <div className="form-group">
-                        <label className="form-label" style={{ fontSize: '0.8125rem' }}>Phone Number</label>
+                        <label className="form-label" style={{ fontSize: 'var(--text-xs)' }}>
+                          <Phone size={12} style={{ marginRight: '4px' }} /> Phone Number
+                        </label>
                         <input
                           type="text"
                           className="form-control"
@@ -231,25 +391,27 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
                       </div>
 
                       <div className="form-group">
-                        <label className="form-label" style={{ fontSize: '0.8125rem' }}>Email Address</label>
+                        <label className="form-label" style={{ fontSize: 'var(--text-xs)' }}>
+                          <Mail size={12} style={{ marginRight: '4px' }} /> Email Address
+                        </label>
                         <input
                           type="email"
                           className="form-control"
                           value={vendor.contactEmail || ''}
                           onChange={(e) => onUpdateVendor(vendor.id, { contactEmail: e.target.value })}
-                          placeholder="e.g. vendor@example.com"
+                          placeholder="e.g. info@vendor.com"
                         />
                       </div>
                     </div>
 
                     <div className="form-group">
-                      <label className="form-label" style={{ fontSize: '0.8125rem' }}>Negotiation & Interview Notes</label>
+                      <label className="form-label" style={{ fontSize: 'var(--text-xs)' }}>Negotiation & Interview Notes</label>
                       <textarea
                         rows={2}
                         className="form-control"
                         value={vendor.notes || ''}
                         onChange={(e) => onUpdateVendor(vendor.id, { notes: e.target.value })}
-                        placeholder="Package details, dietary capacity, extra hour surcharge..."
+                        placeholder="Package details, dietary capacity, extra hour surcharge, advance paid..."
                       />
                     </div>
                   </div>
@@ -258,32 +420,38 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
             );
           })}
         </div>
-      </Card>
+      )}
 
-      {/* Add Vendor Requirement Modal */}
+      {/* =====================================================================
+          5. ADD VENDOR REQUIREMENT MODAL
+          ===================================================================== */}
       <Modal
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
         title="Add Vendor Requirement"
-        subtitle="Specify vendor roles and estimated budgets for your celebration."
+        subtitle="Specify vendor roles and estimated market budgets for your celebration."
       >
-        <form onSubmit={handleCreateVendor} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <div className="grid-cols-3">
+        <form onSubmit={handleCreateVendor} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-3)' }}>
             <div className="form-group">
-              <label htmlFor="vnd-role" className="form-label">Vendor Role / Title *</label>
+              <label htmlFor="vnd-role" className="form-label">
+                <span>Vendor Role / Title *</span>
+              </label>
               <input
                 id="vnd-role"
                 type="text"
                 className="form-control"
                 value={newRole}
                 onChange={(e) => setNewRole(e.target.value)}
-                placeholder="e.g. Wedding Cake Designer"
+                placeholder="e.g. Wedding Cake Designer, Pandit Ji"
                 required
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="vnd-cat" className="form-label">Category</label>
+              <label htmlFor="vnd-cat" className="form-label">
+                <span>Category</span>
+              </label>
               <select
                 id="vnd-cat"
                 className="form-control"
@@ -297,13 +465,17 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
                 <option value="entertainment">Music & DJ</option>
                 <option value="baker">Cake & Bakery</option>
                 <option value="transport">Transportation</option>
-                <option value="officiant">Officiant / Host</option>
+                <option value="officiant">Officiant / Pandit Ji</option>
+                <option value="mehendi">Mehendi Artist</option>
+                <option value="dhol_band">Dhol & Brass Band</option>
                 <option value="other">Other Specialist</option>
               </select>
             </div>
 
             <div className="form-group">
-              <label htmlFor="vnd-cost" className="form-label">Target Budget (₹)</label>
+              <label htmlFor="vnd-cost" className="form-label">
+                <span>Target Quote (₹)</span>
+              </label>
               <input
                 id="vnd-cost"
                 type="number"
@@ -317,26 +489,29 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
           </div>
 
           <div className="form-group">
-            <label htmlFor="vnd-questions" className="form-label">Custom Questions to Ask (one per line)</label>
+            <label htmlFor="vnd-questions" className="form-label">
+              <span>Custom Interview Questions (Optional, one per line)</span>
+            </label>
             <textarea
               id="vnd-questions"
-              rows={2}
+              rows={3}
               className="form-control"
               value={newQuestions}
               onChange={(e) => setNewQuestions(e.target.value)}
-              placeholder="Ask about tastings, insurance, deposit refund terms..."
+              placeholder="Leave empty to automatically generate curated interview questions."
             />
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '0.75rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', marginTop: 'var(--space-2)' }}>
             <Button
               variant="secondary"
-              size="sm"
+              size="md"
+              type="button"
               onClick={() => setShowAddModal(false)}
             >
               Cancel
             </Button>
-            <Button variant="primary" size="sm" type="submit">
+            <Button variant="primary" size="md" type="submit" leadingIcon={<Sparkles size={16} />}>
               Save Vendor Role
             </Button>
           </div>
