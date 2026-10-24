@@ -12,10 +12,13 @@ import {
   TrendingUp,
   ShieldCheck,
   HelpCircle,
+  AlertCircle,
+  Check,
 } from 'lucide-react';
 import type { EventPlan, BudgetSummary } from '../../types/event';
 import type { NavigationTab } from '../../hooks/useEventPlan';
 import { formatCurrency } from '../../utils/formatters';
+import { Card, CardHeader, Button, Badge } from '../common';
 
 interface DashboardOverviewProps {
   plan: EventPlan;
@@ -55,26 +58,38 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   const totalVendors = plan.vendors.length;
 
   // Upcoming top tasks
-  const nextTasks = plan.tasks.filter((t) => !t.completed).slice(0, 3);
+  const nextTasks = plan.tasks.filter((t) => !t.completed).slice(0, 4);
+
+  const getBadgeVariant = (type: string): 'wedding' | 'birthday' | 'community' => {
+    switch (type) {
+      case 'wedding':
+        return 'wedding';
+      case 'birthday':
+        return 'birthday';
+      default:
+        return 'community';
+    }
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      {/* Hero Event Banner */}
-      <div
-        className="card"
+      {/* 1. Hero Event Banner */}
+      <Card
+        className="hero-banner-card"
         style={{
           background: 'linear-gradient(135deg, var(--bg-card) 0%, var(--bg-card-subtle) 100%)',
           position: 'relative',
           overflow: 'hidden',
           borderColor: 'var(--border-medium)',
+          boxShadow: 'var(--shadow-md)',
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.4rem', flexWrap: 'wrap' }}>
-              <span className={`badge badge-${plan.eventType}`}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1.25rem' }}>
+          <div style={{ flex: 1, minWidth: '280px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
+              <Badge variant={getBadgeVariant(plan.eventType)}>
                 {plan.eventType.toUpperCase()}
-              </span>
+              </Badge>
               <span style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', fontWeight: 600 }}>
                 Theme: {plan.theme}
               </span>
@@ -84,8 +99,8 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                   fontWeight: 700,
                   padding: '2px 8px',
                   borderRadius: '9999px',
-                  background: 'linear-gradient(135deg, rgba(249, 115, 22, 0.15), rgba(34, 197, 94, 0.15))',
-                  border: '1px solid rgba(249, 115, 22, 0.4)',
+                  background: 'linear-gradient(135deg, rgba(249, 115, 22, 0.12), rgba(34, 197, 94, 0.12))',
+                  border: '1px solid rgba(249, 115, 22, 0.35)',
                   color: 'var(--text-main)',
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -95,154 +110,62 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                 🇮🇳 Made for India First
               </span>
             </div>
-            <h2 style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
+
+            <h2 style={{ fontSize: '1.85rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.025em', lineHeight: 1.2 }}>
               {plan.title}
             </h2>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', marginTop: '0.5rem', flexWrap: 'wrap', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', marginTop: '0.75rem', flexWrap: 'wrap', color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600 }}>
                 <Calendar size={16} color="var(--accent-primary)" />
                 {plan.eventDate} ({diffDays > 0 ? `${diffDays} days left` : diffDays === 0 ? 'Today!' : 'Passed'})
               </span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                 <MapPin size={16} color="var(--accent-primary)" />
-                {plan.city} ({plan.venuePreference.replace('_', ' ')})
+                {plan.city} ({plan.venuePreference.replace(/_/g, ' ')})
               </span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                 <Users size={16} color="var(--accent-primary)" />
                 {plan.guestCount} Confirmed Guests
               </span>
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button
-              type="button"
+          <div style={{ display: 'flex', gap: '0.625rem', flexWrap: 'wrap' }}>
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={() => onNavigateTab('setup')}
-              className="btn btn-secondary btn-sm"
             >
               Edit Details
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
               onClick={onRegenerateIdeas}
-              className="btn btn-primary btn-sm"
+              leftIcon={<Sparkles size={14} />}
               title="Refresh personalized ideas and recommendations"
             >
-              <Sparkles size={14} />
-              <span>Regenerate Ideas</span>
-            </button>
+              Regenerate Ideas
+            </Button>
           </div>
         </div>
 
-        {/* Transparent generation note */}
-        <div className="estimate-disclaimer" style={{ marginTop: '1rem' }}>
-          {plan.plannerSource === 'ai' ? <Sparkles size={14} color="#6366f1" /> : <ShieldCheck size={14} color="#059669" />}
+        {/* Explainability note */}
+        <div className="estimate-disclaimer" style={{ marginTop: '1.25rem' }}>
+          {plan.plannerSource === 'ai' ? (
+            <Sparkles size={15} color="#6366f1" style={{ flexShrink: 0 }} />
+          ) : (
+            <ShieldCheck size={15} color="#059669" style={{ flexShrink: 0 }} />
+          )}
           <span>
             <strong>{plan.plannerSource === 'ai' ? 'AI Assisted Plan' : 'Deterministic Decision Engine Plan'}:</strong>{' '}
-            {plan.generationExplanation} All vendor costs and dates are calculated estimates to guide your budgeting.
+            {plan.generationExplanation} All vendor costs and dates are calculated benchmarks for {plan.city}.
           </span>
         </div>
-      </div>
+      </Card>
 
-      {/* Made for India First Cultural Guardrails Banner */}
-      <div
-        className="card"
-        style={{
-          padding: '0.875rem 1.25rem',
-          backgroundColor: 'var(--bg-card-subtle)',
-          borderColor: 'var(--border-medium)',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.5rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, fontSize: '0.875rem', color: 'var(--text-main)' }}>
-            <span>🇮🇳</span>
-            <span>Made for India First — Cultural & Financial Guardrails</span>
-          </div>
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Tailored for Indian celebrations, large guest sizes & Vedic traditions</span>
-        </div>
-        <div className="grid-cols-4" style={{ gap: '0.75rem' }}>
-          <div style={{ padding: '0.5rem 0.65rem', backgroundColor: 'var(--bg-card)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)' }}>
-            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span>₹</span> Lakhs & Crores Scale
-            </div>
-            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '2px' }}>Native en-IN grouping, contingency reserve, per-plate breakdown</div>
-          </div>
-          <div style={{ padding: '0.5rem 0.65rem', backgroundColor: 'var(--bg-card)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)' }}>
-            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#059669', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span>🥗</span> Jain & Pure Veg Isolation
-            </div>
-            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '2px' }}>Automated alerts for isolated counters and separate serving ladles</div>
-          </div>
-          <div style={{ padding: '0.5rem 0.65rem', backgroundColor: 'var(--bg-card)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)' }}>
-            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#d97706', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span>🥁</span> Baraat 10 PM Sound Curfew
-            </div>
-            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '2px' }}>Municipal noise regulations pre-calibrating indoor Sangeet switch</div>
-          </div>
-          <div style={{ padding: '0.5rem 0.65rem', backgroundColor: 'var(--bg-card)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)' }}>
-            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#be185d', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span>🪔</span> Vedic Ritual Muhurats
-            </div>
-            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '2px' }}>Day-of Haldi, Milni, Agni Kund Pheras & Pandit Ji samagri</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Decision Insights / Active Rule Alerts */}
-      {plan.missingInfoPrompts && plan.missingInfoPrompts.length > 0 && (
-        <div className="alert-box alert-info" role="status">
-          <HelpCircle size={20} style={{ flexShrink: 0, marginTop: '2px' }} />
-          <div>
-            <div style={{ fontWeight: 700, marginBottom: '0.2rem' }}>Helpful Details to Refine Your Plan</div>
-            <ul style={{ paddingLeft: '1.2rem', fontSize: '0.875rem' }}>
-              {plan.missingInfoPrompts.map((p, idx) => (
-                <li key={idx}>{p}</li>
-              ))}
-            </ul>
-            <button
-              type="button"
-              onClick={() => onNavigateTab('setup')}
-              className="btn btn-sm btn-secondary"
-              style={{ marginTop: '0.5rem' }}
-            >
-              Provide Missing Info
-            </button>
-          </div>
-        </div>
-      )}
-
-      {plan.decisionInsights && plan.decisionInsights.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          {plan.decisionInsights.map((insight) => (
-            <div
-              key={insight.id}
-              className={`alert-box alert-${insight.type === 'action_required' ? 'danger' : insight.type === 'warning' ? 'warning' : insight.type === 'positive' ? 'success' : 'info'}`}
-              role="alert"
-            >
-              <AlertTriangle size={20} style={{ flexShrink: 0, marginTop: '2px' }} />
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 700, marginBottom: '0.2rem' }}>{insight.title}</div>
-                <div style={{ fontSize: '0.875rem' }}>{insight.message}</div>
-              </div>
-              {insight.actionLabel && (
-                <button
-                  type="button"
-                  className="btn btn-secondary btn-sm"
-                  style={{ alignSelf: 'center', whiteSpace: 'nowrap' }}
-                  onClick={() => {
-                    if (insight.actionType === 'NAVIGATE_BUDGET') onNavigateTab('budget');
-                    else if (insight.actionType === 'NAVIGATE_TIMELINE_URGENT') onNavigateTab('timeline');
-                  }}
-                >
-                  {insight.actionLabel}
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* KPI Stat Cards Grid */}
+      {/* 2. Top Glanceable Metrics (Lead with the 3-4 things a planner needs at a glance) */}
       <div className="grid-cols-4">
         {/* Total Budget Card */}
         <div className="stat-card">
@@ -258,7 +181,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
           </div>
         </div>
 
-        {/* Estimated Expenses & Utilization Card */}
+        {/* Estimated Spend & Utilization Card */}
         <div className="stat-card">
           <div className="stat-label">
             <TrendingUp size={14} color={budgetSummary.isOverBudget ? 'var(--color-danger)' : 'var(--color-success)'} />
@@ -280,7 +203,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
           </div>
         </div>
 
-        {/* Timeline Tasks Progress Card */}
+        {/* Task Completion Progress Card */}
         <div className="stat-card">
           <div className="stat-label">
             <CheckCircle2 size={14} color="var(--accent-primary)" />
@@ -314,28 +237,110 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
         </div>
       </div>
 
-      {/* Snapshot Previews: Budget & Next Tasks */}
+      {/* 3. Scannable Decision Engine Alerts (Severity color + icon + one-line action) */}
+      {plan.missingInfoPrompts && plan.missingInfoPrompts.length > 0 && (
+        <div className="alert-box alert-info" role="status">
+          <HelpCircle size={20} style={{ flexShrink: 0, marginTop: '2px' }} />
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 700, marginBottom: '0.2rem' }}>Helpful Details to Refine Your Plan</div>
+            <ul style={{ paddingLeft: '1.2rem', fontSize: '0.875rem' }}>
+              {plan.missingInfoPrompts.map((p, idx) => (
+                <li key={idx}>{p}</li>
+              ))}
+            </ul>
+          </div>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => onNavigateTab('setup')}
+            style={{ alignSelf: 'center', whiteSpace: 'nowrap' }}
+          >
+            Provide Missing Info
+          </Button>
+        </div>
+      )}
+
+      {plan.decisionInsights && plan.decisionInsights.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          {plan.decisionInsights.map((insight) => {
+            const severityClass =
+              insight.type === 'action_required'
+                ? 'alert-danger'
+                : insight.type === 'warning'
+                ? 'alert-warning'
+                : insight.type === 'positive'
+                ? 'alert-success'
+                : 'alert-info';
+
+            const Icon =
+              insight.type === 'action_required'
+                ? AlertCircle
+                : insight.type === 'warning'
+                ? AlertTriangle
+                : insight.type === 'positive'
+                ? Check
+                : HelpCircle;
+
+            return (
+              <div
+                key={insight.id}
+                className={`alert-box ${severityClass}`}
+                role="alert"
+                style={{
+                  borderLeftWidth: '5px',
+                  alignItems: 'center',
+                  boxShadow: 'var(--shadow-xs)',
+                }}
+              >
+                <Icon size={22} style={{ flexShrink: 0 }} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 700, fontSize: '0.925rem' }}>{insight.title}</div>
+                  <div style={{ fontSize: '0.85rem', marginTop: '2px', opacity: 0.95 }}>{insight.message}</div>
+                </div>
+                {insight.actionLabel && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    style={{ whiteSpace: 'nowrap' }}
+                    onClick={() => {
+                      if (insight.actionType === 'NAVIGATE_BUDGET') onNavigateTab('budget');
+                      else if (insight.actionType === 'NAVIGATE_TIMELINE_URGENT') onNavigateTab('timeline');
+                    }}
+                  >
+                    {insight.actionLabel}
+                  </Button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* 4. Secondary Previews: Budget & Priority Tasks */}
       <div className="grid-cols-2">
         {/* Budget Snapshot */}
-        <div className="card">
-          <div className="card-header">
-            <h3 className="card-title">
-              <DollarSign size={18} color="var(--accent-primary)" />
-              Budget Allocation Overview
-            </h3>
-            <button
-              type="button"
-              className="btn btn-secondary btn-sm"
-              onClick={() => onNavigateTab('budget')}
-            >
-              Full Budget <ArrowRight size={14} />
-            </button>
-          </div>
+        <Card>
+          <CardHeader
+            title="Budget Allocation Overview"
+            icon={<DollarSign size={18} color="var(--accent-primary)" />}
+            action={
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => onNavigateTab('budget')}
+                rightIcon={<ArrowRight size={14} />}
+              >
+                Full Budget
+              </Button>
+            }
+          />
 
-          <div style={{ marginBottom: '1rem' }}>
+          <div style={{ marginBottom: '1.25rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8125rem', marginBottom: '0.35rem', fontWeight: 600 }}>
               <span>Budget Utilization</span>
-              <span>{budgetSummary.utilizationPercentage}%</span>
+              <span style={{ color: budgetSummary.isOverBudget ? 'var(--color-danger)' : 'var(--text-main)', fontWeight: 700 }}>
+                {budgetSummary.utilizationPercentage}%
+              </span>
             </div>
             <div className="progress-track" style={{ height: '10px' }}>
               <div
@@ -360,10 +365,11 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  padding: '0.5rem 0.75rem',
+                  padding: '0.625rem 0.875rem',
                   borderRadius: 'var(--radius-sm)',
                   backgroundColor: 'var(--bg-card-subtle)',
                   fontSize: '0.875rem',
+                  border: '1px solid var(--border-light)',
                 }}
               >
                 <div>
@@ -376,28 +382,30 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
               </div>
             ))}
           </div>
-        </div>
+        </Card>
 
-        {/* Urgent & Next Tasks Snapshot */}
-        <div className="card">
-          <div className="card-header">
-            <h3 className="card-title">
-              <Clock size={18} color="var(--accent-primary)" />
-              Priority Action Items
-            </h3>
-            <button
-              type="button"
-              className="btn btn-secondary btn-sm"
-              onClick={() => onNavigateTab('timeline')}
-            >
-              All Tasks <ArrowRight size={14} />
-            </button>
-          </div>
+        {/* Priority Action Items */}
+        <Card>
+          <CardHeader
+            title="Priority Action Items"
+            icon={<Clock size={18} color="var(--accent-primary)" />}
+            action={
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => onNavigateTab('timeline')}
+                rightIcon={<ArrowRight size={14} />}
+              >
+                All Tasks
+              </Button>
+            }
+          />
 
           {nextTasks.length === 0 ? (
-            <div style={{ padding: '2rem 1rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-              <CheckCircle2 size={36} color="var(--color-success)" style={{ margin: '0 auto 0.5rem auto' }} />
-              <p style={{ fontWeight: 600 }}>All planned tasks are complete!</p>
+            <div style={{ padding: '2.5rem 1rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+              <CheckCircle2 size={40} color="var(--color-success)" style={{ margin: '0 auto 0.5rem auto' }} />
+              <p style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-main)' }}>All planned tasks are complete!</p>
+              <p style={{ fontSize: '0.8125rem' }}>Your event preparation is fully on track.</p>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
@@ -408,9 +416,10 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                     display: 'flex',
                     alignItems: 'center',
                     gap: '0.75rem',
-                    padding: '0.65rem 0.75rem',
+                    padding: '0.75rem 0.875rem',
                     borderRadius: 'var(--radius-sm)',
                     backgroundColor: 'var(--bg-card-subtle)',
+                    border: '1px solid var(--border-light)',
                     borderLeft: task.priority === 'urgent' ? '4px solid var(--color-danger)' : '4px solid var(--accent-primary)',
                   }}
                 >
@@ -418,7 +427,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                     type="checkbox"
                     checked={task.completed}
                     onChange={() => onToggleTask(task.id)}
-                    style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                    style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--accent-primary)' }}
                     aria-label={`Mark ${task.title} complete`}
                   />
                   <div style={{ flex: 1 }}>
@@ -433,8 +442,55 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
               ))}
             </div>
           )}
-        </div>
+        </Card>
       </div>
+
+      {/* 5. Made for India First Cultural & Financial Guardrails (Integrated below primary KPIs) */}
+      <Card variant="subtle" style={{ padding: '1rem 1.25rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-main)' }}>
+            <span>🇮🇳</span>
+            <span>Made for India First — Cultural & Financial Guardrails</span>
+          </div>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+            Tailored for Indian celebrations, large guest sizes & Vedic traditions
+          </span>
+        </div>
+        <div className="grid-cols-4" style={{ gap: '0.75rem' }}>
+          <div style={{ padding: '0.625rem 0.75rem', backgroundColor: 'var(--bg-card)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)' }}>
+            <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span>₹</span> Lakhs & Crores Scale
+            </div>
+            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+              Native en-IN grouping, contingency reserve & per-plate breakdown
+            </div>
+          </div>
+          <div style={{ padding: '0.625rem 0.75rem', backgroundColor: 'var(--bg-card)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)' }}>
+            <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#059669', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span>🥗</span> Jain & Pure Veg Isolation
+            </div>
+            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+              Automated alerts for isolated counters and separate serving ladles
+            </div>
+          </div>
+          <div style={{ padding: '0.625rem 0.75rem', backgroundColor: 'var(--bg-card)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)' }}>
+            <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#d97706', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span>🥁</span> Baraat 10 PM Sound Curfew
+            </div>
+            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+              Municipal noise regulations pre-calibrating indoor Sangeet switch
+            </div>
+          </div>
+          <div style={{ padding: '0.625rem 0.75rem', backgroundColor: 'var(--bg-card)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)' }}>
+            <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#be185d', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span>🪔</span> Vedic Ritual Muhurats
+            </div>
+            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+              Day-of Haldi, Milni, Agni Kund Pheras & Pandit Ji samagri
+            </div>
+          </div>
+        </div>
+      </Card>
     </div>
   );
 };
