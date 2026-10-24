@@ -71,12 +71,28 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.4rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.4rem', flexWrap: 'wrap' }}>
               <span className={`badge badge-${plan.eventType}`}>
                 {plan.eventType.toUpperCase()}
               </span>
               <span style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', fontWeight: 600 }}>
                 Theme: {plan.theme}
+              </span>
+              <span
+                style={{
+                  fontSize: '0.72rem',
+                  fontWeight: 700,
+                  padding: '2px 8px',
+                  borderRadius: '9999px',
+                  background: 'linear-gradient(135deg, rgba(249, 115, 22, 0.15), rgba(34, 197, 94, 0.15))',
+                  border: '1px solid rgba(249, 115, 22, 0.4)',
+                  color: 'var(--text-main)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                }}
+              >
+                🇮🇳 Made for India First
               </span>
             </div>
             <h2 style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
@@ -125,6 +141,50 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
             <strong>{plan.plannerSource === 'ai' ? 'AI Assisted Plan' : 'Deterministic Decision Engine Plan'}:</strong>{' '}
             {plan.generationExplanation} All vendor costs and dates are calculated estimates to guide your budgeting.
           </span>
+        </div>
+      </div>
+
+      {/* Made for India First Cultural Guardrails Banner */}
+      <div
+        className="card"
+        style={{
+          padding: '0.875rem 1.25rem',
+          backgroundColor: 'var(--bg-card-subtle)',
+          borderColor: 'var(--border-medium)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, fontSize: '0.875rem', color: 'var(--text-main)' }}>
+            <span>🇮🇳</span>
+            <span>Made for India First — Cultural & Financial Guardrails</span>
+          </div>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Tailored for Indian celebrations, large guest sizes & Vedic traditions</span>
+        </div>
+        <div className="grid-cols-4" style={{ gap: '0.75rem' }}>
+          <div style={{ padding: '0.5rem 0.65rem', backgroundColor: 'var(--bg-card)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)' }}>
+            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span>₹</span> Lakhs & Crores Scale
+            </div>
+            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '2px' }}>Native en-IN grouping, contingency reserve, per-plate breakdown</div>
+          </div>
+          <div style={{ padding: '0.5rem 0.65rem', backgroundColor: 'var(--bg-card)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)' }}>
+            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#059669', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span>🥗</span> Jain & Pure Veg Isolation
+            </div>
+            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '2px' }}>Automated alerts for isolated counters and separate serving ladles</div>
+          </div>
+          <div style={{ padding: '0.5rem 0.65rem', backgroundColor: 'var(--bg-card)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)' }}>
+            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#d97706', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span>🥁</span> Baraat 10 PM Sound Curfew
+            </div>
+            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '2px' }}>Municipal noise regulations pre-calibrating indoor Sangeet switch</div>
+          </div>
+          <div style={{ padding: '0.5rem 0.65rem', backgroundColor: 'var(--bg-card)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)' }}>
+            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#be185d', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span>🪔</span> Vedic Ritual Muhurats
+            </div>
+            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '2px' }}>Day-of Haldi, Milni, Agni Kund Pheras & Pandit Ji samagri</div>
+          </div>
         </div>
       </div>
 
