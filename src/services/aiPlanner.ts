@@ -65,7 +65,7 @@ export async function generateAIEventPlan(request: AIPlanningRequest): Promise<E
     });
   }
 
-  const prompt = `You are EventWise AI, an expert event planner.
+  const prompt = `You are EventWise AI, an expert event planner specializing in weddings, birthdays, and community celebrations.
 Generate a comprehensive, realistic event plan in strictly valid JSON format.
 Event Specifications:
 - Event Type: ${request.eventType}
@@ -73,7 +73,7 @@ Event Specifications:
 - Date: ${request.eventDate}
 - City: ${request.city}
 - Guests: ${request.guestCount}
-- Overall Budget: $${request.totalBudget} USD
+- Overall Budget: ₹${request.totalBudget.toLocaleString('en-IN')} INR
 - Venue Preference: ${request.venuePreference || 'flexible'}
 - Food Preference: ${request.foodPreference || 'buffet'}
 - Theme: ${request.theme || 'modern elegant'}
@@ -83,8 +83,8 @@ Event Specifications:
 - Notes: ${request.specialNotes || 'none'}
 
 CRITICAL GUIDELINES:
-1. All costs MUST be realistic estimates only and sum up to within $${request.totalBudget}.
-2. Never invent real verified vendor names, phone numbers, or pretend you checked live bookings.
+1. All costs MUST be realistic planning estimates only, denominated in Indian Rupees (₹), and sum up to within the overall budget of ₹${request.totalBudget.toLocaleString('en-IN')}.
+2. Never invent real verified vendor names, phone numbers, or pretend you checked live bookings. Use realistic roles like "Heritage Haveli Coordinator", "Pandit Ji / Officiant", "Royal Thali Caterer", "Candid Photographer".
 3. Include categories: venue, catering, decor, photography, entertainment, logistics.
 4. Output ONLY pure raw JSON (no markdown fences, no explanatory chat).
 
@@ -92,13 +92,13 @@ JSON Structure:
 {
   "generationExplanation": "Short 2-sentence rationale for this plan",
   "budgetItems": [
-    { "id": "b1", "name": "Item name", "category": "venue", "estimatedCost": 2000, "priority": "essential", "notes": "Details" }
+    { "id": "b1", "name": "Item name", "category": "venue", "estimatedCost": 200000, "priority": "essential", "notes": "Details" }
   ],
   "tasks": [
     { "id": "t1", "title": "Task title", "category": "venue", "dueDate": "YYYY-MM-DD", "completed": false, "priority": "high", "notes": "Details" }
   ],
   "vendors": [
-    { "id": "v1", "category": "venue", "role": "Venue Manager", "status": "contacted", "estimatedCost": 2000, "questionsToAsk": ["Q1", "Q2"], "notes": "Guidance" }
+    { "id": "v1", "category": "venue", "role": "Venue Manager", "status": "contacted", "estimatedCost": 200000, "questionsToAsk": ["Q1", "Q2"], "notes": "Guidance" }
   ],
   "ideas": [
     { "id": "i1", "category": "decor", "title": "Idea title", "description": "Idea desc", "tier": "balanced", "costImpact": "Moderate", "reasoning": "Why it fits" }
@@ -107,7 +107,7 @@ JSON Structure:
 
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
 
     const candidateModels = ['gemini-3.8-flash', 'gemini-2.5-flash-lite', 'gemini-flash-latest', 'gemini-1.5-flash'];
     let response: Response | null = null;
