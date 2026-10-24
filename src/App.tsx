@@ -12,8 +12,9 @@ import { AIAssistantModal } from './components/ai/AIAssistantModal';
 import { GuestManager } from './components/guests/GuestManager';
 import { RunOfShowManager } from './components/schedule/RunOfShowManager';
 import { AICopilotDrawer } from './components/copilot/AICopilotDrawer';
+import { Toast } from './components/common/Toast';
 import { downloadEventCalendar } from './services/calendarService';
-import { Sparkles, RotateCcw } from 'lucide-react';
+import { RotateCcw } from 'lucide-react';
 import './index.css';
 
 export function App() {
@@ -101,36 +102,10 @@ export function App() {
     >
       {/* Toast Notification */}
       {notification && (
-        <div
-          style={{
-            position: 'fixed',
-            bottom: '24px',
-            right: '24px',
-            backgroundColor: 'var(--text-main)',
-            color: 'white',
-            padding: '12px 20px',
-            borderRadius: 'var(--radius-md)',
-            boxShadow: 'var(--shadow-xl)',
-            zIndex: 9999,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            fontSize: '0.875rem',
-            fontWeight: 600,
-          }}
-          role="status"
-        >
-          <Sparkles size={16} color="#fbbf24" />
-          <span>{notification}</span>
-          <button
-            type="button"
-            onClick={() => setNotification(null)}
-            style={{ background: 'transparent', border: 0, color: '#94a3b8', cursor: 'pointer', marginLeft: '8px' }}
-            aria-label="Dismiss notification"
-          >
-            ✕
-          </button>
-        </div>
+        <Toast
+          message={notification}
+          onDismiss={() => setNotification(null)}
+        />
       )}
 
       {/* Main Header */}
