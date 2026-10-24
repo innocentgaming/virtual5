@@ -136,6 +136,31 @@ export function evaluateDecisionRules(
     });
   }
 
+  // Vendor Cost Escalation & Chaos Trade-off Rule
+  const costSpikeItems = plan.budgetItems.filter(
+    (item) => item.actualCost !== undefined && item.actualCost > item.estimatedCost
+  );
+  if (costSpikeItems.length > 0) {
+    const totalSpike = costSpikeItems.reduce(
+      (sum, item) => sum + ((item.actualCost || 0) - item.estimatedCost),
+      0
+    );
+    const itemNames = costSpikeItems.map((i) => i.name).join(', ');
+    const decorItem = plan.budgetItems.find((b) => b.category === 'decor');
+    const decorCut = decorItem ? Math.round(decorItem.estimatedCost * 0.35) : Math.round(totalSpike * 0.5);
+    const guestCut = Math.max(5, Math.ceil(totalSpike / Math.max(500, summary.perGuestCost)));
+
+    insights.push({
+      id: 'rule-vendor-cost-spike',
+      type: 'warning',
+      category: 'budget',
+      title: 'Vendor Cost Escalation & Trade-off Required',
+      message: `Actual vendor quotes (${itemNames}) increased expenses by ${formatCurrency(totalSpike)}. Dynamic Decision Tradeoff: Trim decoration budget by ${formatCurrency(decorCut)} to offset the price spike, or reduce guest headcount by ~${guestCut} attendees to maintain per-guest cost.`,
+      actionLabel: 'Resolve Budget Trade-off',
+      actionType: 'NAVIGATE_BUDGET',
+    });
+  }
+
   if (plan.eventDate) {
     const targetDate = new Date(plan.eventDate);
     const diffTime = targetDate.getTime() - now.getTime();

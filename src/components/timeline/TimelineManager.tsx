@@ -347,8 +347,28 @@ export const TimelineManager: React.FC<TimelineManagerProps> = ({
                     )}
 
                     {task.dependencies && task.dependencies.length > 0 && (
-                      <div style={{ fontSize: '0.75rem', color: 'var(--accent-text)', marginTop: '0.2rem' }}>
-                        Requires completing prerequisite milestones first.
+                      <div style={{ fontSize: '0.75rem', marginTop: '0.35rem', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '4px' }}>
+                        <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>↳ Prerequisite:</span>
+                        {task.dependencies.map((depId) => {
+                          const depTask = plan.tasks.find((t) => t.id === depId);
+                          const isMet = depTask?.completed;
+                          return (
+                            <span
+                              key={depId}
+                              style={{
+                                padding: '1px 7px',
+                                borderRadius: '4px',
+                                fontSize: '0.72rem',
+                                backgroundColor: isMet ? 'rgba(34, 197, 94, 0.12)' : 'rgba(239, 68, 68, 0.12)',
+                                border: isMet ? '1px solid rgba(34, 197, 94, 0.3)' : '1px solid rgba(239, 68, 68, 0.3)',
+                                color: isMet ? 'var(--color-success)' : 'var(--color-danger)',
+                                fontWeight: 600,
+                              }}
+                            >
+                              {isMet ? '✓' : '⚠️'} {depTask ? depTask.title.slice(0, 36) + (depTask.title.length > 36 ? '...' : '') : depId}
+                            </span>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
