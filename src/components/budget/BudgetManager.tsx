@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Plus,
   Trash2,
@@ -7,10 +7,14 @@ import {
   Info,
   Sliders,
   ShieldAlert,
+  Search,
+  CheckCircle2,
+  X,
 } from 'lucide-react';
 import type { BudgetItem, BudgetCategory, BudgetSummary, EventPlan } from '../../types/event';
-import { formatCurrency } from '../../utils/formatters';
+import { formatCurrency, formatIndianShort } from '../../utils/formatters';
 import { InteractiveBudgetChart } from './InteractiveBudgetChart';
+import { Card, CardHeader, Button, Badge, EmptyState } from '../common';
 
 interface BudgetManagerProps {
   plan: EventPlan;
@@ -70,6 +74,10 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
   const [editIsPaid, setEditIsPaid] = useState<boolean>(false);
   const [editCategory, setEditCategory] = useState<BudgetCategory>('venue');
 
+  // Filter & search
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<'all' | BudgetCategory>('all');
+
   const startEdit = (item: BudgetItem) => {
     setEditingId(item.id);
     setEditName(item.name);
@@ -112,15 +120,28 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
     setShowAddForm(false);
   };
 
+  const filteredItems = useMemo(() => {
+    return plan.budgetItems.filter((item) => {
+      if (selectedCategoryFilter !== 'all' && item.category !== selectedCategoryFilter) return false;
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        if (!item.name.toLowerCase().includes(q) && !(item.notes && item.notes.toLowerCase().includes(q))) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [plan.budgetItems, selectedCategoryFilter, searchQuery]);
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       {/* Over-budget Warning Banner */}
       {budgetSummary.isOverBudget && (
         <div className="alert-box alert-danger" role="alert">
-          <ShieldAlert size={24} style={{ flexShrink: 0 }} />
+          <ShieldAlert size={26} style={{ flexShrink: 0, marginTop: '2px' }} />
           <div>
-            <div style={{ fontWeight: 700, fontSize: '1rem' }}>
-              Warning: Budget Exceeded by {formatCurrency(Math.abs(budgetSummary.remainingBalance))}
+            <div style={{ fontWeight: 700, fontSize: '1.05rem' }}>
+              Warning: Budget Exceeded by {formatCurrency(Math.abs(budgetSummary.remainingBalance))} ({formatIndianShort(Math.abs(budgetSummary.remainingBalance))})
             </div>
             <p style={{ fontSize: '0.875rem', marginTop: '0.25rem' }}>
               Your current estimated expenses ({formatCurrency(budgetSummary.totalEstimated)}) exceed your planned budget ({formatCurrency(budgetSummary.totalBudget)}) by {Math.round(budgetSummary.utilizationPercentage - 100)}%.
@@ -138,12 +159,14 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
         </div>
       )}
 
-      {/* Top Summary Cards */}
+      {/* Top Summary KPI Cards */}
       <div className="grid-cols-4">
         <div className="stat-card">
           <span className="stat-label">Total Event Budget</span>
           <span className="stat-value">{formatCurrency(budgetSummary.totalBudget)}</span>
-          <span className="stat-subtext">{formatCurrency(budgetSummary.perGuestCost)} / guest ({plan.guestCount} guests)</span>
+          <span className="stat-subtext">
+            {formatCurrency(budgetSummary.perGuestCost)} / guest ({plan.guestCount} guests) · {formatIndianShort(budgetSummary.totalBudget)}
+          </span>
         </div>
 
         <div className="stat-card">
@@ -171,12 +194,12 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
         </div>
       </div>
 
-      {/* Contingency Controller */}
-      <div className="card">
+      {/* Contingency Buffer Controller */}
+      <Card>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
-            <h3 style={{ fontSize: '1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <Sliders size={16} color="var(--accent-primary)" />
+            <h3 style={{ fontSize: '1.05rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Sliders size={18} color="var(--accent-primary)" />
               Configurable Contingency Buffer
             </h3>
             <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
@@ -184,7 +207,9 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
             </p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <span style={{ fontWeight: 700, fontSize: '1rem' }}>{Math.round(plan.contingencyRate * 100)}%</span>
+            <span style={{ fontWeight: 700, fontSize: '1.1rem', color: 'var(--accent-primary)' }}>
+              {Math.round(plan.contingencyRate * 100)}%
+            </span>
             <input
               type="range"
               min="0"
@@ -197,10 +222,10 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
             />
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* Actual Contract Invoiced Spend vs Budget */}
-      <div className="card" style={{ backgroundColor: 'var(--bg-card-subtle)', borderLeft: '4px solid var(--accent-primary)' }}>
+      <Card variant="subtle" style={{ borderLeft: '4px solid var(--accent-primary)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
             <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-main)' }}>
@@ -213,73 +238,70 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
           <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', flexWrap: 'wrap' }}>
             <div>
               <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block' }}>Total Invoiced / Paid:</span>
-              <strong style={{ fontSize: '1.15rem', color: budgetSummary.isActualOverBudget ? 'var(--color-danger)' : 'var(--color-success)' }}>
+              <strong style={{ fontSize: '1.25rem', color: budgetSummary.isActualOverBudget ? 'var(--color-danger)' : 'var(--color-success)' }}>
                 {formatCurrency(budgetSummary.totalActual)}
               </strong>
             </div>
             <div>
               <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block' }}>Remaining Cash Buffer:</span>
-              <strong style={{ fontSize: '1.15rem', color: budgetSummary.variance < 0 ? 'var(--color-danger)' : 'var(--text-main)' }}>
+              <strong style={{ fontSize: '1.25rem', color: budgetSummary.variance < 0 ? 'var(--color-danger)' : 'var(--text-main)' }}>
                 {formatCurrency(budgetSummary.variance)}
               </strong>
             </div>
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* Visual Category Distribution Interactive Chart */}
-      <div className="card">
-        <div className="card-header">
-          <div>
-            <h3 className="card-title">Expense Distribution by Category</h3>
-            <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
-              Hover slices to inspect proportion of budget committed across services.
-            </p>
-          </div>
-          <span style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', fontWeight: 600 }}>
-            {budgetSummary.utilizationPercentage}% committed
-          </span>
-        </div>
+      <Card>
+        <CardHeader
+          title="Expense Distribution by Category"
+          subtitle="Hover slices to inspect proportion of budget committed across services."
+          action={
+            <span style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', fontWeight: 700 }}>
+              {budgetSummary.utilizationPercentage}% committed
+            </span>
+          }
+        />
 
         <InteractiveBudgetChart
           budgetSummary={budgetSummary}
           categoryLabels={CATEGORY_LABELS}
           categoryColors={CATEGORY_COLORS}
         />
-      </div>
+      </Card>
 
       {/* Expense Line Items List */}
-      <div className="card">
-        <div className="card-header">
-          <div>
-            <h3 className="card-title">Expense Line Items</h3>
-            <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
-              Add, edit, or adjust estimates. All amounts are strictly validated against negative or invalid values.
-            </p>
-          </div>
-          <button
-            type="button"
-            className="btn btn-primary btn-sm"
-            onClick={() => setShowAddForm(true)}
-            id="btn-add-expense-modal"
-          >
-            <Plus size={16} />
-            <span>Add Custom Expense</span>
-          </button>
-        </div>
+      <Card>
+        <CardHeader
+          title="Expense Line Items"
+          subtitle="Add, edit, or adjust estimates. All amounts are strictly validated against negative or invalid values."
+          action={
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => setShowAddForm(true)}
+              leftIcon={<Plus size={16} />}
+              id="btn-add-expense-modal"
+            >
+              Add Custom Expense
+            </Button>
+          }
+        />
 
         {/* Add Item Modal / Inline Dropdown */}
         {showAddForm && (
           <div
             style={{
               padding: '1.25rem',
-              borderRadius: 'var(--radius-md)',
+              borderRadius: 'var(--radius-lg)',
               backgroundColor: 'var(--bg-card-subtle)',
               marginBottom: '1.5rem',
               border: '1px solid var(--border-medium)',
+              boxShadow: 'var(--shadow-sm)',
             }}
           >
-            <h4 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '0.75rem' }}>
+            <h4 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '0.75rem', color: 'var(--text-main)' }}>
               Add New Expense Item
             </h4>
             <form onSubmit={handleAddNewItem}>
@@ -345,250 +367,304 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
                 </div>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginTop: '0.5rem' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8125rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginTop: '0.75rem' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8125rem', cursor: 'pointer' }}>
                   <input
                     type="checkbox"
                     checked={newIsPerGuest}
                     onChange={(e) => setNewIsPerGuest(e.target.checked)}
+                    style={{ accentColor: 'var(--accent-primary)' }}
                   />
                   <span>Scale cost dynamically if guest count changes</span>
                 </label>
 
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <button
-                    type="button"
+                  <Button
+                    variant="secondary"
+                    size="sm"
                     onClick={() => setShowAddForm(false)}
-                    className="btn btn-secondary btn-sm"
                   >
                     Cancel
-                  </button>
-                  <button type="submit" className="btn btn-primary btn-sm">
+                  </Button>
+                  <Button variant="primary" size="sm" type="submit">
                     Save Expense
-                  </button>
+                  </Button>
                 </div>
               </div>
             </form>
           </div>
         )}
 
+        {/* Filter bar */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
+          <div style={{ position: 'relative', width: '260px' }}>
+            <Search size={15} style={{ position: 'absolute', left: '10px', top: '12px', color: 'var(--text-muted)' }} />
+            <input
+              type="text"
+              placeholder="Filter expenses..."
+              className="form-control"
+              style={{ paddingLeft: '32px', height: '36px', minHeight: '36px' }}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+
+          <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+            <Button
+              variant={selectedCategoryFilter === 'all' ? 'primary' : 'secondary'}
+              size="sm"
+              onClick={() => setSelectedCategoryFilter('all')}
+            >
+              All ({plan.budgetItems.length})
+            </Button>
+            {(['venue', 'catering', 'decor', 'photography', 'entertainment'] as BudgetCategory[]).map((cat) => (
+              <Button
+                key={cat}
+                variant={selectedCategoryFilter === cat ? 'primary' : 'secondary'}
+                size="sm"
+                onClick={() => setSelectedCategoryFilter(cat)}
+              >
+                {CATEGORY_LABELS[cat].split('&')[0].trim()}
+              </Button>
+            ))}
+          </div>
+        </div>
+
         {/* Expense Items Table */}
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem' }}>
-            <thead>
-              <tr style={{ borderBottom: '2px solid var(--border-light)', color: 'var(--text-muted)' }}>
-                <th style={{ padding: '0.75rem 0.5rem' }}>Item Description</th>
-                <th style={{ padding: '0.75rem 0.5rem' }}>Category</th>
-                <th style={{ padding: '0.75rem 0.5rem' }}>Priority</th>
-                <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right' }}>Estimated Cost</th>
-                <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right' }}>Actual / Paid</th>
-                <th style={{ padding: '0.75rem 0.5rem', textAlign: 'center' }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {plan.budgetItems.map((item) => {
-                const isEditing = editingId === item.id;
-                return (
-                  <tr
-                    key={item.id}
-                    style={{
-                      borderBottom: '1px solid var(--border-light)',
-                      backgroundColor: isEditing ? 'var(--bg-card-subtle)' : 'transparent',
-                    }}
-                  >
-                    {isEditing ? (
-                      <>
-                        <td style={{ padding: '0.75rem 0.5rem' }}>
-                          <input
-                            type="text"
-                            className="form-control"
-                            value={editName}
-                            onChange={(e) => setEditName(e.target.value)}
-                          />
-                        </td>
-                        <td style={{ padding: '0.75rem 0.5rem' }}>
-                          <select
-                            className="form-control"
-                            value={editCategory}
-                            onChange={(e) => setEditCategory(e.target.value as BudgetCategory)}
-                          >
-                            <option value="venue">Venue</option>
-                            <option value="catering">Catering</option>
-                            <option value="decor">Decor</option>
-                            <option value="photography">Photography</option>
-                            <option value="entertainment">Entertainment</option>
-                            <option value="logistics">Logistics</option>
-                            <option value="invitations">Invitations</option>
-                            <option value="other">Other</option>
-                          </select>
-                        </td>
-                        <td style={{ padding: '0.75rem 0.5rem' }}>
-                          <span className="badge badge-info">{item.priority}</span>
-                        </td>
-                        <td style={{ padding: '0.75rem 0.5rem', textAlign: 'right' }}>
-                          <input
-                            type="number"
-                            min="0"
-                            step="10"
-                            className="form-control"
-                            style={{ width: '105px', marginLeft: 'auto', textAlign: 'right' }}
-                            value={editCost}
-                            onChange={(e) => setEditCost(Math.max(0, parseInt(e.target.value) || 0))}
-                          />
-                        </td>
-                        <td style={{ padding: '0.75rem 0.5rem', textAlign: 'right' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.4rem' }}>
+        {filteredItems.length === 0 ? (
+          <EmptyState
+            icon={<CheckCircle2 size={36} color="var(--color-success)" />}
+            title="No matching expense items"
+            description="Clear your search filters or click 'Add Custom Expense' to track new line items."
+          />
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem' }}>
+              <thead>
+                <tr style={{ borderBottom: '2px solid var(--border-light)', color: 'var(--text-muted)' }}>
+                  <th style={{ padding: '0.75rem 0.5rem' }}>Item Description</th>
+                  <th style={{ padding: '0.75rem 0.5rem' }}>Category</th>
+                  <th style={{ padding: '0.75rem 0.5rem' }}>Priority</th>
+                  <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right' }}>Estimated Cost</th>
+                  <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right' }}>Actual / Paid</th>
+                  <th style={{ padding: '0.75rem 0.5rem', textAlign: 'center' }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredItems.map((item) => {
+                  const isEditing = editingId === item.id;
+                  const isSpike = item.actualCost !== undefined && item.actualCost > item.estimatedCost;
+
+                  return (
+                    <tr
+                      key={item.id}
+                      style={{
+                        borderBottom: '1px solid var(--border-light)',
+                        backgroundColor: isEditing
+                          ? 'var(--bg-card-subtle)'
+                          : isSpike
+                          ? 'var(--color-danger-bg)'
+                          : 'transparent',
+                        transition: 'background-color 0.15s ease',
+                      }}
+                    >
+                      {isEditing ? (
+                        <>
+                          <td style={{ padding: '0.75rem 0.5rem' }}>
+                            <input
+                              type="text"
+                              className="form-control"
+                              value={editName}
+                              onChange={(e) => setEditName(e.target.value)}
+                            />
+                          </td>
+                          <td style={{ padding: '0.75rem 0.5rem' }}>
+                            <select
+                              className="form-control"
+                              value={editCategory}
+                              onChange={(e) => setEditCategory(e.target.value as BudgetCategory)}
+                            >
+                              <option value="venue">Venue</option>
+                              <option value="catering">Catering</option>
+                              <option value="decor">Decor</option>
+                              <option value="photography">Photography</option>
+                              <option value="entertainment">Entertainment</option>
+                              <option value="logistics">Logistics</option>
+                              <option value="invitations">Invitations</option>
+                              <option value="other">Other</option>
+                            </select>
+                          </td>
+                          <td style={{ padding: '0.75rem 0.5rem' }}>
+                            <Badge variant="info">{item.priority}</Badge>
+                          </td>
+                          <td style={{ padding: '0.75rem 0.5rem', textAlign: 'right' }}>
                             <input
                               type="number"
                               min="0"
                               step="10"
-                              placeholder={`Actual ${plan.currency || '₹'}`}
                               className="form-control"
-                              style={{ width: '95px', textAlign: 'right', fontSize: '0.8125rem' }}
-                              value={editActualCost}
-                              onChange={(e) => setEditActualCost(e.target.value === '' ? '' : Math.max(0, parseInt(e.target.value) || 0))}
+                              style={{ width: '115px', marginLeft: 'auto', textAlign: 'right' }}
+                              value={editCost}
+                              onChange={(e) => setEditCost(Math.max(0, parseInt(e.target.value) || 0))}
                             />
-                            <label style={{ display: 'flex', alignItems: 'center', fontSize: '0.75rem', gap: '2px' }} title="Mark as Paid">
+                          </td>
+                          <td style={{ padding: '0.75rem 0.5rem', textAlign: 'right' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.4rem' }}>
                               <input
-                                type="checkbox"
-                                checked={editIsPaid}
-                                onChange={(e) => setEditIsPaid(e.target.checked)}
+                                type="number"
+                                min="0"
+                                step="10"
+                                placeholder={`Actual ${plan.currency || '₹'}`}
+                                className="form-control"
+                                style={{ width: '105px', textAlign: 'right', fontSize: '0.8125rem' }}
+                                value={editActualCost}
+                                onChange={(e) => setEditActualCost(e.target.value === '' ? '' : Math.max(0, parseInt(e.target.value) || 0))}
                               />
-                              Paid
-                            </label>
-                          </div>
-                        </td>
-                        <td style={{ padding: '0.75rem 0.5rem', textAlign: 'center' }}>
-                          <button
-                            type="button"
-                            className="btn btn-primary btn-sm"
-                            onClick={() => saveEdit(item.id)}
-                            style={{ marginRight: '4px' }}
-                          >
-                            <Check size={14} />
-                          </button>
-                          <button
-                            type="button"
-                            className="btn btn-secondary btn-sm"
-                            onClick={() => setEditingId(null)}
-                          >
-                            ✕
-                          </button>
-                        </td>
-                      </>
-                    ) : (
-                      <>
-                        <td style={{ padding: '0.75rem 0.5rem' }}>
-                          <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>{item.name}</div>
-                          {item.notes && (
-                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{item.notes}</div>
-                          )}
-                        </td>
-                        <td style={{ padding: '0.75rem 0.5rem' }}>
-                          <span
-                            style={{
-                              display: 'inline-block',
-                              padding: '2px 8px',
-                              borderRadius: '4px',
-                              fontSize: '0.75rem',
-                              fontWeight: 600,
-                              backgroundColor: 'var(--bg-card-subtle)',
-                              color: CATEGORY_COLORS[item.category] || 'inherit',
-                            }}
-                          >
-                            {CATEGORY_LABELS[item.category] || item.category}
-                          </span>
-                        </td>
-                        <td style={{ padding: '0.75rem 0.5rem' }}>
-                          <span
-                            className={`badge ${
-                              item.priority === 'essential'
-                                ? 'badge-danger'
-                                : item.priority === 'recommended'
-                                ? 'badge-warning'
-                                : 'badge-info'
-                            }`}
-                          >
-                            {item.priority}
-                          </span>
-                        </td>
-                        <td style={{ padding: '0.75rem 0.5rem', textAlign: 'right', fontWeight: 700 }}>
-                          {formatCurrency(item.estimatedCost)}
-                          {item.isPerGuest && (
-                            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>per-guest scale</div>
-                          )}
-                        </td>
-                        <td style={{ padding: '0.75rem 0.5rem', textAlign: 'right' }}>
-                          {item.actualCost !== undefined ? (
-                            <div>
-                              <strong style={{ color: item.actualCost > item.estimatedCost ? 'var(--color-danger)' : 'var(--text-main)' }}>
-                                {formatCurrency(item.actualCost)}
-                              </strong>
-                              {item.actualCost > item.estimatedCost && (
+                              <label style={{ display: 'flex', alignItems: 'center', fontSize: '0.75rem', gap: '2px', cursor: 'pointer' }} title="Mark as Paid">
+                                <input
+                                  type="checkbox"
+                                  checked={editIsPaid}
+                                  onChange={(e) => setEditIsPaid(e.target.checked)}
+                                  style={{ accentColor: 'var(--accent-primary)' }}
+                                />
+                                Paid
+                              </label>
+                            </div>
+                          </td>
+                          <td style={{ padding: '0.75rem 0.5rem', textAlign: 'center' }}>
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              onClick={() => saveEdit(item.id)}
+                              style={{ marginRight: '4px', padding: '4px 8px' }}
+                            >
+                              <Check size={14} />
+                            </Button>
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              onClick={() => setEditingId(null)}
+                              style={{ padding: '4px 8px' }}
+                            >
+                              <X size={14} />
+                            </Button>
+                          </td>
+                        </>
+                      ) : (
+                        <>
+                          <td style={{ padding: '0.75rem 0.5rem' }}>
+                            <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>{item.name}</div>
+                            {item.notes && (
+                              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{item.notes}</div>
+                            )}
+                          </td>
+                          <td style={{ padding: '0.75rem 0.5rem' }}>
+                            <span
+                              style={{
+                                display: 'inline-block',
+                                padding: '2px 8px',
+                                borderRadius: '4px',
+                                fontSize: '0.75rem',
+                                fontWeight: 700,
+                                backgroundColor: 'var(--bg-card-subtle)',
+                                color: CATEGORY_COLORS[item.category] || 'inherit',
+                                border: '1px solid var(--border-light)',
+                              }}
+                            >
+                              {CATEGORY_LABELS[item.category] || item.category}
+                            </span>
+                          </td>
+                          <td style={{ padding: '0.75rem 0.5rem' }}>
+                            <Badge
+                              variant={
+                                item.priority === 'essential'
+                                  ? 'danger'
+                                  : item.priority === 'recommended'
+                                  ? 'warning'
+                                  : 'info'
+                              }
+                            >
+                              {item.priority}
+                            </Badge>
+                          </td>
+                          <td style={{ padding: '0.75rem 0.5rem', textAlign: 'right', fontWeight: 700 }}>
+                            {formatCurrency(item.estimatedCost)}
+                            {item.isPerGuest && (
+                              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>per-guest scale</div>
+                            )}
+                          </td>
+                          <td style={{ padding: '0.75rem 0.5rem', textAlign: 'right' }}>
+                            {item.actualCost !== undefined ? (
+                              <div>
+                                <strong style={{ color: item.actualCost > item.estimatedCost ? 'var(--color-danger)' : 'var(--text-main)' }}>
+                                  {formatCurrency(item.actualCost)}
+                                </strong>
+                                {item.actualCost > item.estimatedCost && (
+                                  <span
+                                    style={{
+                                      display: 'block',
+                                      fontSize: '0.6875rem',
+                                      color: 'var(--color-danger)',
+                                      fontWeight: 800,
+                                    }}
+                                    title="Quote escalated above initial estimate"
+                                  >
+                                    ↑ +{formatCurrency(item.actualCost - item.estimatedCost)} Spike
+                                  </span>
+                                )}
                                 <span
                                   style={{
                                     display: 'block',
-                                    fontSize: '0.68rem',
-                                    color: 'var(--color-danger)',
-                                    fontWeight: 700,
+                                    fontSize: '0.7rem',
+                                    color: item.isPaid ? 'var(--color-success)' : 'var(--text-muted)',
+                                    fontWeight: 600,
                                   }}
-                                  title="Quote escalated above initial estimate"
                                 >
-                                  ↑ +{formatCurrency(item.actualCost - item.estimatedCost)} Spike
+                                  {item.isPaid ? '✓ Paid' : '⏳ Invoiced'}
                                 </span>
-                              )}
-                              <span
-                                style={{
-                                  display: 'block',
-                                  fontSize: '0.7rem',
-                                  color: item.isPaid ? 'var(--color-success)' : 'var(--text-muted)',
-                                  fontWeight: 600,
-                                }}
+                              </div>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => onUpdateExpense(item.id, { isPaid: !item.isPaid })}
+                                className={`badge ${item.isPaid ? 'badge-success' : 'badge-neutral'}`}
+                                style={{ cursor: 'pointer', border: 'none' }}
                               >
-                                {item.isPaid ? '✓ Paid' : '⏳ Invoiced'}
-                              </span>
-                            </div>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={() => onUpdateExpense(item.id, { isPaid: !item.isPaid })}
-                              className={`badge ${item.isPaid ? 'badge-success' : 'badge-info'}`}
-                              style={{ cursor: 'pointer', border: 'none' }}
+                                {item.isPaid ? '✓ Paid' : 'Mark Paid'}
+                              </button>
+                            )}
+                          </td>
+                          <td style={{ padding: '0.75rem 0.5rem', textAlign: 'center' }}>
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              onClick={() => startEdit(item)}
+                              style={{ padding: '4px 8px', marginRight: '4px' }}
+                              title="Edit this item"
+                              aria-label={`Edit ${item.name}`}
                             >
-                              {item.isPaid ? '✓ Paid' : 'Mark Paid'}
-                            </button>
-                          )}
-                        </td>
-                        <td style={{ padding: '0.75rem 0.5rem', textAlign: 'center' }}>
-                          <button
-                            type="button"
-                            onClick={() => startEdit(item)}
-                            className="btn btn-secondary btn-sm"
-                            style={{ padding: '4px 8px', marginRight: '4px' }}
-                            title="Edit this item"
-                            aria-label={`Edit ${item.name}`}
-                          >
-                            <Edit2 size={13} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => onDeleteExpense(item.id)}
-                            className="btn btn-secondary btn-sm"
-                            style={{ padding: '4px 8px', color: 'var(--color-danger)' }}
-                            title="Delete this item"
-                            aria-label={`Delete ${item.name}`}
-                          >
-                            <Trash2 size={13} />
-                          </button>
-                        </td>
-                      </>
-                    )}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                              <Edit2 size={13} />
+                            </Button>
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              onClick={() => onDeleteExpense(item.id)}
+                              style={{ padding: '4px 8px', color: 'var(--color-danger)' }}
+                              title="Delete this item"
+                              aria-label={`Delete ${item.name}`}
+                            >
+                              <Trash2 size={13} />
+                            </Button>
+                          </td>
+                        </>
+                      )}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {/* Disclaimer */}
         <div className="estimate-disclaimer">
@@ -597,7 +673,7 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
             <strong>Pricing Notice:</strong> All figures above are planning estimates based on regional averages in {plan.city}. Actual vendor quotes will vary based on dates, taxes, gratuities, and specific contract terms.
           </span>
         </div>
-      </div>
+      </Card>
     </div>
   );
 };
