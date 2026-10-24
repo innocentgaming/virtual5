@@ -151,6 +151,9 @@ export function App() {
                 onNavigateTab={setActiveTab}
                 onToggleTask={toggleTask}
                 onRegenerateIdeas={handleRegenerateIdeas}
+                onOpenCopilot={() => setIsCopilotOpen(true)}
+                onExportCalendar={handleExportCalendar}
+                isGenerating={isGenerating}
               />
             )}
 
