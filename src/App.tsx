@@ -12,7 +12,7 @@ import { AIAssistantModal } from './components/ai/AIAssistantModal';
 import { GuestManager } from './components/guests/GuestManager';
 import { RunOfShowManager } from './components/schedule/RunOfShowManager';
 import { AICopilotDrawer } from './components/copilot/AICopilotDrawer';
-import { Toast } from './components/ui';
+import { Toast, ToastProvider } from './components/ui';
 import { downloadEventCalendar } from './services/calendarService';
 import { RotateCcw } from 'lucide-react';
 import './index.css';
@@ -95,11 +95,12 @@ export function App() {
   };
 
   return (
-    <div
-      data-theme={activeEvent.eventType}
-      data-color-mode={colorMode}
-      style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}
-    >
+    <ToastProvider>
+      <div
+        data-theme={activeEvent.eventType}
+        data-color-mode={colorMode}
+        style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}
+      >
       {/* Toast Notification */}
       {notification && (
         <Toast
@@ -299,6 +300,7 @@ export function App() {
         </div>
       </footer>
     </div>
+    </ToastProvider>
   );
 }
 
