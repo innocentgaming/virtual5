@@ -32,7 +32,7 @@ export function generateCopilotAnswer(question: string, plan: EventPlan): string
       `Here is a targeted cost-saving strategy for your ${plan.title} (${formatCurrency(total)} budget):\n\n` +
       `1. **Catering Optimization**: Catering is typically your highest expense (${cateringItem ? formatCurrency(cateringItem.estimatedCost) : '~35%'}). Switching from formal plated service to a chef-attended buffet or action stations saves 18–22% on waitstaff and kitchen labor.\n` +
       `2. **Floral & Centerpiece Substitutions**: Repurpose ceremony flowers (arch pieces, aisle markers) as reception sweetheart and buffet decor rather than ordering separate reception arrangements.\n` +
-      `3. **Digital Stationery**: Utilize modern digital RSVPs and QR code menus. This saves $400–$800 in letterpress printing and postage while streamlining real-time attendee tracking.\n` +
+      `3. **Digital Stationery**: Utilize modern digital RSVPs, WhatsApp wedding e-invites, and QR code menus. This saves ${formatCurrency(25000)}–${formatCurrency(60000)} in physical box printing and courier costs while streamlining real-time attendee tracking.\n` +
       `4. **BYOB or Corkage Negotiation**: If ${plan.venuePreference.replace('_', ' ')} allows external beverage sourcing, purchasing wine and spirits wholesale with a flat bartender service fee can cut beverage costs by 30%.`
     );
   }
