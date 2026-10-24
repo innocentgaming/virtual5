@@ -1636,15 +1636,55 @@ h1, h2, h3, .heading-display {
   }
 }
 
-/* Print Stylesheet for Event Binder */
+/* Schedule Layout & Mobile Adaptation */
+.schedule-row {
+  display: flex;
+  gap: var(--space-4);
+  align-items: stretch;
+}
+
+.schedule-time-col {
+  width: 110px;
+  min-width: 110px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding-top: var(--space-3);
+}
+
+.schedule-card-col {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 640px) {
+  .schedule-row {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+  .schedule-time-col {
+    width: 100%;
+    min-width: 0;
+    align-items: flex-start;
+    padding-top: 0;
+  }
+}
+
+/* Print Stylesheet for Event Binder (STEP 6) */
 @media print {
   body {
-    background: white !important;
-    color: black !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt !important;
+    line-height: 1.4 !important;
   }
+  header,
+  nav,
   .header-bar,
   .nav-tabs,
   .mobile-bottom-nav,
+  .mobile-bottom-bar,
   footer,
   .btn,
   .ui-button,
@@ -1652,16 +1692,30 @@ h1, h2, h3, .heading-display {
   .modal-overlay,
   .ui-modal-backdrop,
   .toast-notification,
-  .ui-toast-container {
+  .ui-toast-container,
+  .no-print {
     display: none !important;
   }
-  .card, .stat-card, .ui-card {
+  .print-header {
+    display: block !important;
+    margin-bottom: 12pt !important;
+    padding-bottom: 6pt !important;
+    border-bottom: 2pt solid #000000 !important;
+  }
+  .schedule-row,
+  .schedule-card,
+  .timeline-node,
+  .card,
+  .stat-card,
+  .ui-card,
+  tr,
+  li {
     border: 1px solid #cbd5e1 !important;
     box-shadow: none !important;
-    break-inside: avoid;
-    page-break-inside: avoid;
-    background: white !important;
-    color: black !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    background: #ffffff !important;
+    color: #000000 !important;
   }
   .app-container {
     max-width: 100% !important;
@@ -1669,4 +1723,5 @@ h1, h2, h3, .heading-display {
     margin: 0 !important;
   }
 }
+
 
