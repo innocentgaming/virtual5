@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Sparkles,
   X,
@@ -6,6 +6,7 @@ import {
   Bot,
   User,
   Lightbulb,
+  ShieldCheck,
 } from 'lucide-react';
 import type { EventPlan } from '../../types/event';
 import {
@@ -14,6 +15,7 @@ import {
   generateCopilotAnswerAsync,
   type CopilotMessage,
 } from '../../services/copilotService';
+import { Button } from '../common';
 
 interface AICopilotDrawerProps {
   plan: EventPlan;
@@ -30,7 +32,7 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
     {
       id: 'msg-welcome',
       sender: 'assistant',
-      text: `Hello! I'm your EventWise Copilot. I'm actively analyzing **${plan.title}** (${plan.guestCount} guests in ${plan.city}). What can I help you optimize or plan today?`,
+      text: `Namaste! I'm your EventWise Copilot. I'm actively analyzing **${plan.title}** (${plan.guestCount} guests in ${plan.city}). What can I help you optimize or plan today?`,
       timestamp: 'Just now',
       suggestions: COPILOT_STARTER_PROMPTS,
     },
@@ -38,6 +40,21 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
 
   const [inputVal, setInputVal] = useState('');
   const [isThinking, setIsThinking] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Esc key listener and focus management
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, isThinking]);
 
   if (!isOpen) return null;
 
@@ -69,7 +86,7 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
       const assistantMsg: CopilotMessage = {
         id: 'ast-' + Date.now(),
         sender: 'assistant',
-        text: fallbackText,
+        text: `${fallbackText}\n\n*(Answered via deterministic rule engine)*`,
         timestamp: 'Just now',
       };
       setMessages((prev) => [...prev, assistantMsg]);
@@ -91,12 +108,16 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
         zIndex: 1000,
         display: 'flex',
         justifyContent: 'flex-end',
-        backgroundColor: 'rgba(15, 23, 42, 0.45)',
-        backdropFilter: 'blur(3px)',
+        backgroundColor: 'rgba(15, 23, 42, 0.55)',
+        backdropFilter: 'blur(4px)',
+        animation: 'fadeIn 0.2s ease',
       }}
       role="dialog"
       aria-modal="true"
       aria-label="EventWise AI Copilot Drawer"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
       <div
         style={{
@@ -108,7 +129,7 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
           display: 'flex',
           flexDirection: 'column',
           borderLeft: '1px solid var(--border-light)',
-          animation: 'slideInRight 0.25s ease-out',
+          animation: 'modalScale 0.22s cubic-bezier(0.16, 1, 0.3, 1)',
         }}
       >
         {/* Drawer Header */}
@@ -122,23 +143,24 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
             backgroundColor: 'var(--bg-card-subtle)',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <div
               style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: 'var(--radius-sm)',
+                width: '36px',
+                height: '36px',
+                borderRadius: 'var(--radius-md)',
                 backgroundColor: 'var(--accent-primary)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 color: 'white',
+                boxShadow: '0 2px 8px var(--accent-glow)',
               }}
             >
-              <Sparkles size={18} />
+              <Bot size={20} />
             </div>
             <div>
-              <h3 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-main)', margin: 0 }}>
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-main)', margin: 0 }}>
                 EventWise Copilot
               </h3>
               <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
@@ -166,7 +188,7 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
             padding: '1.25rem',
             display: 'flex',
             flexDirection: 'column',
-            gap: '1rem',
+            gap: '1.25rem',
           }}
         >
           {messages.map((m) => (
@@ -176,7 +198,7 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: m.sender === 'user' ? 'flex-end' : 'flex-start',
-                gap: '0.25rem',
+                gap: '0.35rem',
               }}
             >
               <div
@@ -186,53 +208,71 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
                   gap: '0.4rem',
                   fontSize: '0.75rem',
                   color: 'var(--text-muted)',
+                  fontWeight: 600,
                 }}
               >
                 {m.sender === 'assistant' ? <Bot size={13} color="var(--accent-primary)" /> : <User size={13} />}
-                <span>{m.sender === 'assistant' ? 'Copilot' : 'You'}</span>
+                <span>{m.sender === 'assistant' ? 'EventWise Copilot' : 'You'}</span>
               </div>
 
               <div
                 style={{
                   maxWidth: '92%',
-                  padding: '0.85rem 1rem',
-                  borderRadius: 'var(--radius-md)',
+                  padding: '0.85rem 1.125rem',
+                  borderRadius: 'var(--radius-lg)',
+                  borderBottomRightRadius: m.sender === 'user' ? '4px' : 'var(--radius-lg)',
+                  borderBottomLeftRadius: m.sender === 'assistant' ? '4px' : 'var(--radius-lg)',
                   backgroundColor: m.sender === 'user' ? 'var(--accent-primary)' : 'var(--bg-card-subtle)',
                   color: m.sender === 'user' ? 'white' : 'var(--text-main)',
                   fontSize: '0.875rem',
-                  lineHeight: '1.5',
+                  lineHeight: '1.55',
                   whiteSpace: 'pre-line',
                   boxShadow: 'var(--shadow-sm)',
+                  border: m.sender === 'assistant' ? '1px solid var(--border-light)' : 'none',
                 }}
               >
                 {m.text}
               </div>
 
               {m.suggestions && m.suggestions.length > 0 && (
-                <div style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.35rem', width: '100%' }}>
+                <div style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.4rem', width: '100%' }}>
                   <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <Lightbulb size={12} color="var(--color-warning)" /> Suggested Queries:
+                    <Lightbulb size={13} color="var(--color-warning)" /> Suggested Queries:
                   </span>
-                  {m.suggestions.map((s, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => handleSendPrompt(s)}
-                      style={{
-                        textAlign: 'left',
-                        padding: '6px 10px',
-                        borderRadius: 'var(--radius-sm)',
-                        border: '1px solid var(--border-light)',
-                        backgroundColor: 'var(--bg-card)',
-                        color: 'var(--text-main)',
-                        fontSize: '0.8rem',
-                        cursor: 'pointer',
-                        transition: 'background-color 0.15s ease',
-                      }}
-                    >
-                      {s}
-                    </button>
-                  ))}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                    {m.suggestions.map((s, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => handleSendPrompt(s)}
+                        style={{
+                          textAlign: 'left',
+                          padding: '8px 12px',
+                          borderRadius: 'var(--radius-sm)',
+                          border: '1px solid var(--border-light)',
+                          backgroundColor: 'var(--bg-card)',
+                          color: 'var(--text-main)',
+                          fontSize: '0.8125rem',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.borderColor = 'var(--accent-primary)';
+                          e.currentTarget.style.backgroundColor = 'var(--accent-subtle)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.borderColor = 'var(--border-light)';
+                          e.currentTarget.style.backgroundColor = 'var(--bg-card)';
+                        }}
+                      >
+                        <span style={{ color: 'var(--accent-primary)' }}>›</span>
+                        <span>{s}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -243,19 +283,27 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.5rem',
-                padding: '0.6rem 0.85rem',
-                borderRadius: 'var(--radius-sm)',
+                gap: '0.6rem',
+                padding: '0.75rem 1rem',
+                borderRadius: 'var(--radius-md)',
                 backgroundColor: 'var(--bg-card-subtle)',
                 color: 'var(--text-muted)',
                 fontSize: '0.8125rem',
                 width: 'fit-content',
+                border: '1px solid var(--border-light)',
               }}
             >
-              <Sparkles size={14} color="var(--brand-primary)" />
+              <Sparkles size={15} color="var(--accent-primary)" className="spin" />
               <span>Copilot is analyzing your plan with Gemini...</span>
             </div>
           )}
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* Bottom Offline Note */}
+        <div style={{ padding: '0.4rem 1rem', backgroundColor: 'var(--bg-card-subtle)', borderTop: '1px solid var(--border-light)', fontSize: '0.72rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <ShieldCheck size={12} color="#059669" />
+          <span>Offline Safe: Fallback rule engine activates automatically if Gemini is offline.</span>
         </div>
 
         {/* Input Form Bar */}
@@ -277,14 +325,15 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
             onChange={(e) => setInputVal(e.target.value)}
             style={{ fontSize: '0.875rem' }}
           />
-          <button
+          <Button
             type="submit"
-            className="btn btn-primary"
-            style={{ padding: '0 1rem', flexShrink: 0 }}
+            variant="primary"
+            style={{ padding: '0 1.125rem', flexShrink: 0 }}
             aria-label="Send message"
+            disabled={!inputVal.trim() || isThinking}
           >
             <Send size={15} />
-          </button>
+          </Button>
         </form>
       </div>
     </div>
