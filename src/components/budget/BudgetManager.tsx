@@ -442,9 +442,9 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
                               type="number"
                               min="0"
                               step="10"
-                              placeholder="Actual $"
+                              placeholder={`Actual ${plan.currency || '₹'}`}
                               className="form-control"
-                              style={{ width: '90px', textAlign: 'right', fontSize: '0.8125rem' }}
+                              style={{ width: '95px', textAlign: 'right', fontSize: '0.8125rem' }}
                               value={editActualCost}
                               onChange={(e) => setEditActualCost(e.target.value === '' ? '' : Math.max(0, parseInt(e.target.value) || 0))}
                             />
@@ -521,7 +521,22 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
                         <td style={{ padding: '0.75rem 0.5rem', textAlign: 'right' }}>
                           {item.actualCost !== undefined ? (
                             <div>
-                              <strong style={{ color: 'var(--text-main)' }}>{formatCurrency(item.actualCost)}</strong>
+                              <strong style={{ color: item.actualCost > item.estimatedCost ? 'var(--color-danger)' : 'var(--text-main)' }}>
+                                {formatCurrency(item.actualCost)}
+                              </strong>
+                              {item.actualCost > item.estimatedCost && (
+                                <span
+                                  style={{
+                                    display: 'block',
+                                    fontSize: '0.68rem',
+                                    color: 'var(--color-danger)',
+                                    fontWeight: 700,
+                                  }}
+                                  title="Quote escalated above initial estimate"
+                                >
+                                  ↑ +{formatCurrency(item.actualCost - item.estimatedCost)} Spike
+                                </span>
+                              )}
                               <span
                                 style={{
                                   display: 'block',

@@ -115,4 +115,35 @@ describe('Decision Engine Business Rules', () => {
     expect(capacityInsight).toBeDefined();
     expect(capacityInsight?.title).toContain('High Guest Count');
   });
+
+  it('detects vendor price escalation and generates actionable budget trade-offs', () => {
+    const priceEscalatedPlan = {
+      ...basePlan,
+      totalBudget: 800000,
+      budgetItems: [
+        {
+          id: 'b-cat',
+          name: 'Royal Feast Catering',
+          category: 'catering' as const,
+          estimatedCost: 300000,
+          actualCost: 360000, // 20% price increase
+          priority: 'essential' as const,
+        },
+        {
+          id: 'b-decor',
+          name: 'Mandap Floral Decor',
+          category: 'decor' as const,
+          estimatedCost: 150000,
+          priority: 'recommended' as const,
+        },
+      ],
+    };
+
+    const { insights } = evaluateDecisionRules(priceEscalatedPlan);
+    const spikeInsight = insights.find((i) => i.id === 'rule-vendor-cost-spike');
+    expect(spikeInsight).toBeDefined();
+    expect(spikeInsight?.title).toContain('Vendor Cost Escalation');
+    expect(spikeInsight?.message).toContain('Dynamic Decision Tradeoff');
+    expect(spikeInsight?.message).toContain('Trim decoration budget');
+  });
 });
