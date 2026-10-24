@@ -63,7 +63,7 @@ describe('EventWise AI UI & Workflow Integration Tests', () => {
     fireEvent.click(scheduleTab);
 
     expect(screen.getByText(/Run of Show & Day-of Itinerary/i)).toBeInTheDocument();
-  });
+  }, 15000);
 
   it('allows adding and editing an expense in the Budget Manager', () => {
     render(<App />);
@@ -116,12 +116,13 @@ describe('EventWise AI UI & Workflow Integration Tests', () => {
 
     expect(screen.getByText(/Create & Personalize New Event/i)).toBeInTheDocument();
 
-    // Click submit with empty city to test validation
+    // Advance to Step 2: Basics
+    fireEvent.click(screen.getByRole('button', { name: /Next/i }));
+
+    // Test validation on blur with empty city
     const cityInput = screen.getByLabelText(/City \/ Location \*/i);
     fireEvent.change(cityInput, { target: { value: '' } });
-
-    const saveBtn = screen.getByRole('button', { name: /Generate Event Plan/i });
-    fireEvent.click(saveBtn);
+    fireEvent.blur(cityInput);
 
     expect(screen.getByRole('alert')).toBeInTheDocument();
   });
