@@ -1,6 +1,17 @@
 import React from 'react';
-import { Sparkles, Plus, Download, Sliders, ShieldCheck, Sun, Moon, Calendar, Bot } from 'lucide-react';
+import {
+  Sparkles,
+  Plus,
+  Download,
+  Sliders,
+  ShieldCheck,
+  Sun,
+  Moon,
+  Calendar,
+  Bot,
+} from 'lucide-react';
 import type { EventPlan } from '../../types/event';
+import { Badge, Button } from '../common';
 
 interface HeaderProps {
   events: EventPlan[];
@@ -27,14 +38,14 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAISettings,
   onOpenCopilot,
 }) => {
-  const getBadgeClass = (type: string) => {
+  const getBadgeVariant = (type: string): 'wedding' | 'birthday' | 'community' => {
     switch (type) {
       case 'wedding':
-        return 'badge-wedding';
+        return 'wedding';
       case 'birthday':
-        return 'badge-birthday';
+        return 'birthday';
       default:
-        return 'badge-community';
+        return 'community';
     }
   };
 
@@ -47,17 +58,17 @@ export const Header: React.FC<HeaderProps> = ({
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
             <h1 className="brand-title">EventWise AI</h1>
-            <span className={`badge ${getBadgeClass(activeEvent.eventType)}`}>
+            <Badge variant={getBadgeVariant(activeEvent.eventType)}>
               {activeEvent.eventType.toUpperCase()}
-            </span>
+            </Badge>
             <span
               style={{
                 fontSize: '0.72rem',
                 fontWeight: 700,
                 padding: '2px 8px',
                 borderRadius: '9999px',
-                background: 'linear-gradient(135deg, rgba(249, 115, 22, 0.15), rgba(34, 197, 94, 0.15))',
-                border: '1px solid rgba(249, 115, 22, 0.4)',
+                background: 'linear-gradient(135deg, rgba(249, 115, 22, 0.12), rgba(34, 197, 94, 0.12))',
+                border: '1px solid rgba(249, 115, 22, 0.35)',
                 color: 'var(--text-main)',
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -68,12 +79,14 @@ export const Header: React.FC<HeaderProps> = ({
               🇮🇳 Made for India First
             </span>
           </div>
-          <p className="brand-subtitle">Personalized Event Planning & Decision Engine · Made for India First (₹ en-IN)</p>
+          <p className="brand-subtitle">
+            Personalized Event Planning & Decision Engine · Made for India First (₹ en-IN)
+          </p>
         </div>
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-        {/* Event Selector */}
+        {/* Event Selector Dropdown */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
           <label
             htmlFor="event-select"
@@ -94,7 +107,7 @@ export const Header: React.FC<HeaderProps> = ({
           <select
             id="event-select"
             className="form-control"
-            style={{ minWidth: '200px', fontWeight: 600 }}
+            style={{ minWidth: '210px', fontWeight: 600 }}
             value={activeEvent.id}
             onChange={(e) => onSelectEvent(e.target.value)}
             aria-label="Select active event plan"
@@ -108,93 +121,89 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* AI Copilot Quick Button */}
-        <button
-          type="button"
+        <Button
+          variant="secondary"
+          size="sm"
           onClick={onOpenCopilot}
-          className="btn btn-secondary btn-sm"
+          leftIcon={<Bot size={15} color="var(--accent-primary)" />}
           style={{
-            borderColor: 'var(--brand-primary)',
-            color: 'var(--brand-primary)',
-            fontWeight: 600,
+            borderColor: 'var(--accent-primary)',
+            color: 'var(--accent-primary)',
+            fontWeight: 700,
           }}
           title="Open EventWise AI Copilot Drawer"
           aria-label="Open EventWise AI Copilot Drawer"
           id="btn-open-copilot"
         >
-          <Bot size={15} />
-          <span>Ask Copilot</span>
-        </button>
+          Ask Copilot
+        </Button>
 
         {/* Engine Status Indicator */}
-        <button
-          type="button"
+        <Button
+          variant="secondary"
+          size="sm"
           onClick={onOpenAISettings}
-          className="btn btn-secondary btn-sm"
+          leftIcon={
+            activeEvent.plannerSource === 'ai' ? (
+              <Sparkles size={14} color="#6366f1" />
+            ) : (
+              <ShieldCheck size={14} color="#059669" />
+            )
+          }
+          rightIcon={<Sliders size={12} style={{ color: 'var(--text-muted)' }} />}
           title="Click to configure AI or view Decision Engine status"
           aria-label="AI and Decision Engine Settings"
         >
-          {activeEvent.plannerSource === 'ai' ? (
-            <>
-              <Sparkles size={14} color="#6366f1" />
-              <span>AI Mode Active</span>
-            </>
-          ) : (
-            <>
-              <ShieldCheck size={14} color="#059669" />
-              <span>Rule-Based Engine</span>
-            </>
-          )}
-          <Sliders size={12} style={{ marginLeft: 2, color: 'var(--text-muted)' }} />
-        </button>
+          {activeEvent.plannerSource === 'ai' ? 'AI Mode Active' : 'Rule-Based Engine'}
+        </Button>
 
         {/* Export Calendar .ics Button */}
-        <button
-          type="button"
+        <Button
+          variant="secondary"
+          size="sm"
           onClick={onExportCalendar}
-          className="btn btn-secondary btn-sm"
+          leftIcon={<Calendar size={14} />}
           title="Download RFC 5545 iCalendar (.ics) with timelines and schedule alerts"
           aria-label="Download Event Calendar (.ics)"
         >
-          <Calendar size={14} />
-          <span>Sync .ics</span>
-        </button>
+          Sync .ics
+        </Button>
 
         {/* Export JSON Button */}
-        <button
-          type="button"
+        <Button
+          variant="secondary"
+          size="sm"
           onClick={onExport}
-          className="btn btn-secondary btn-sm"
+          leftIcon={<Download size={14} />}
           title="Export complete event plan as structured JSON"
           aria-label="Export Event Plan as JSON"
         >
-          <Download size={14} />
-          <span>Export Plan</span>
-        </button>
+          Export Plan
+        </Button>
 
         {/* Dark / Light Mode Toggle */}
-        <button
-          type="button"
+        <Button
+          variant="secondary"
+          size="sm"
           onClick={onToggleColorMode}
-          className="btn btn-secondary btn-sm"
           title={colorMode === 'dark' ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
           aria-label={colorMode === 'dark' ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
           style={{ padding: '0.45rem 0.65rem' }}
         >
           {colorMode === 'dark' ? <Sun size={15} color="#f59e0b" /> : <Moon size={15} />}
-        </button>
+        </Button>
 
         {/* Create New Event Button */}
-        <button
-          type="button"
+        <Button
+          variant="primary"
+          size="sm"
           onClick={onNewEvent}
-          className="btn btn-primary btn-sm"
+          leftIcon={<Plus size={16} />}
           id="btn-create-new-event"
         >
-          <Plus size={16} />
-          <span>New Event</span>
-        </button>
+          New Event
+        </Button>
       </div>
     </header>
   );
 };
-
