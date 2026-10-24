@@ -36,16 +36,16 @@
   --shadow-lg: 0 12px 24px -4px rgba(15, 23, 42, 0.1), 0 4px 8px -2px rgba(15, 23, 42, 0.05);
   --shadow-xl: 0 20px 32px -6px rgba(15, 23, 42, 0.14), 0 8px 16px -4px rgba(15, 23, 42, 0.06);
 
-  /* Light Theme Surface Neutrals */
-  --bg-main: #f8fafc;
+  /* Light Theme Surface Neutrals (Warm Ivory & Crisp Notion Paper) */
+  --bg-main: #fbf9f5;
   --bg-card: #ffffff;
-  --bg-card-subtle: #f1f5f9;
-  --bg-card-hover: #f8fafc;
-  --text-main: #0f172a;
-  --text-muted: #475569;
-  --text-subtle: #64748b;
-  --border-light: #e2e8f0;
-  --border-medium: #cbd5e1;
+  --bg-card-subtle: #f5f0e8;
+  --bg-card-hover: #fdfaf6;
+  --text-main: #1c1917;
+  --text-muted: #57534e;
+  --text-subtle: #78716c;
+  --border-light: #e7e0d6;
+  --border-medium: #d6ccbe;
   --border-focus: #4f46e5;
 
   /* Semantic Alerts (WCAG AA Compliant) */
@@ -79,7 +79,7 @@
 }
 
 /* ==============================================================================
-   Themed Event Color Palettes (Wedding Crimson, Birthday Sunset, Community Emerald)
+   Themed Event Color Palettes (Wedding Crimson/Gold, Birthday Sunset Orange, Community Marigold/Emerald)
    ============================================================================== */
 
 /* Wedding Theme (Maharaja Crimson & Antique Gold) */
@@ -88,17 +88,18 @@
   --accent-primary-hover: #9d174d;
   --accent-subtle: #fdf2f8;
   --accent-text: #831843;
+  --accent-gold: #b45309;
   --accent-glow: rgba(190, 24, 93, 0.18);
   --brand-primary: var(--accent-primary);
 }
 
-/* Birthday Theme (Bollywood Sunset & Royal Violet) */
+/* Birthday Theme (Sunset Orange & Festive Amber) */
 [data-theme='birthday'] {
-  --accent-primary: #7c3aed;
-  --accent-primary-hover: #6d28d9;
-  --accent-subtle: #f5f3ff;
-  --accent-text: #5b21b6;
-  --accent-glow: rgba(124, 58, 237, 0.18);
+  --accent-primary: #ea580c;
+  --accent-primary-hover: #c2410c;
+  --accent-subtle: #fff7ed;
+  --accent-text: #9a3412;
+  --accent-glow: rgba(234, 88, 12, 0.18);
   --brand-primary: var(--accent-primary);
 }
 
@@ -108,23 +109,24 @@
   --accent-primary-hover: #047857;
   --accent-subtle: #ecfdf5;
   --accent-text: #064e3b;
+  --accent-gold: #d97706;
   --accent-glow: rgba(5, 150, 105, 0.18);
   --brand-primary: var(--accent-primary);
 }
 
 /* ==============================================================================
-   Dark Mode System (High-Contrast, WCAG AA Compliant)
+   Dark Mode System (Warm Notion Dark, WCAG AA Compliant)
    ============================================================================== */
 [data-color-mode="dark"] {
-  --bg-main: #0b0f19;
-  --bg-card: #131927;
-  --bg-card-subtle: #1c2438;
-  --bg-card-hover: #232d44;
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --text-subtle: #64748b;
-  --border-light: #242e44;
-  --border-medium: #334155;
+  --bg-main: #0e0d0c;
+  --bg-card: #181614;
+  --bg-card-subtle: #23201d;
+  --bg-card-hover: #2c2824;
+  --text-main: #f5f5f4;
+  --text-muted: #a8a29e;
+  --text-subtle: #78716c;
+  --border-light: #2e2a25;
+  --border-medium: #44403c;
   --border-focus: #818cf8;
 
   --color-success-bg: rgba(5, 150, 105, 0.15);
@@ -159,11 +161,11 @@
 }
 
 [data-color-mode="dark"][data-theme='birthday'] {
-  --accent-primary: #a78bfa;
-  --accent-primary-hover: #8b5cf6;
-  --accent-subtle: rgba(167, 139, 250, 0.15);
-  --accent-text: #ede9fe;
-  --accent-glow: rgba(167, 139, 250, 0.25);
+  --accent-primary: #fb923c;
+  --accent-primary-hover: #f97316;
+  --accent-subtle: rgba(251, 146, 60, 0.15);
+  --accent-text: #ffedd5;
+  --accent-glow: rgba(251, 146, 60, 0.25);
 }
 
 [data-color-mode="dark"][data-theme='community'] {
