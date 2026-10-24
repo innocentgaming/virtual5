@@ -298,3 +298,47 @@ dist/assets/index-2Bn4WLAU.js   394.56 kB │ gzip: 114.99 kB
   ```bash
   git push -u origin main
   ```
+
+---
+
+## 12. Prompt Flow & Tool Architecture (Hackathon Deliverable)
+
+### End-to-End Prompt Flow:
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as Planner / Host
+    participant UI as EventWise UI (React 19)
+    participant State as useEventPlan Hook
+    participant Engine as Decision Engine (Offline Rules)
+    participant AI as Gemini 3.8 Flash / 2.5 Flash Lite
+    participant Storage as LocalStorage v2
+
+    User->>UI: Selects Event Type (Wedding/Birthday/Mela), Budget (₹), City, Guests, Preferences
+    UI->>State: Dispatches createNewEvent() / updateParameters()
+    alt GenAI Mode Active & Key Configured
+        State->>AI: generateAIEventPlan(Prompt with strict JSON Schema & INR constraints)
+        AI-->>State: Structured JSON (BudgetItems, Tasks, Vendors, Ideas)
+        State->>State: Schema Validation & Fallback Verification
+    else Offline or No Key
+        State->>Engine: generateFallbackPlan(Culturally Grounded Indian Defaults)
+        Engine-->>State: Complete 100% Deterministic Event Roadmap
+    end
+    State->>Engine: evaluateDecisionRules(Calculates utilization, cost spikes, Jain dietary, curfew)
+    Engine-->>State: Active DecisionInsights & Missing Prompts
+    State->>Storage: Persists validated snapshot (ephemeral, 0 secrets stored)
+    State-->>UI: Updates Dashboard, SVG Donut Chart, Timeline & Vendors
+    User->>UI: Simulates Vendor Price Spike (e.g., Catering actual cost +20%)
+    UI->>State: updateExpense(actualCost)
+    State->>Engine: Re-evaluates rules
+    Engine-->>UI: Generates dynamic trade-off: "Cut decor by ₹52.5K or reduce 6 guests"
+```
+
+### Video Walkthrough Navigation Guide (No Voiceover Required — 90-120s):
+1. **0:00 – 0:20**: Open Dashboard (`http://localhost:5173/`). Show the **Aarav & Ananya's Royal Rajasthan Wedding** banner with `₹35 Lakhs` budget and `🇮🇳 Made for India First` badges.
+2. **0:20 – 0:40**: Switch to **Budget Manager**. Hover on the SVG Donut chart slices. Click *Edit* on Royal Shahi Catering, increase actual cost to `₹12,00,000`, save, and point to the red `↑ Spike` indicator.
+3. **0:40 – 0:55**: Return to **Dashboard**. Highlight the newly generated **Vendor Cost Escalation & Trade-off** alert showing the exact decor reduction vs. guest count tradeoff.
+4. **0:55 – 1:15**: Navigate to **Timeline & Tasks**. Show prerequisite dependency chips (`✓ Venue Booked`, `⚠️ Prerequisite`). Check off an overdue task.
+5. **1:15 – 1:30**: Navigate to **Guest List & RSVPs**. Show the **Jain (No Onion/Garlic/Roots)** and **Pure Veg** dietary badges and the corresponding kitchen isolation alert.
+6. **1:30 – 1:45**: Navigate to **Run of Show**. Show the 10:00 PM sound curfew transition, click **Print Sheet**, and click **Export iCal (.ics)**.
+7. **1:45 – 2:00**: Click **Ask Copilot** in the header. Click a suggestion chip or type a question to show grounded contextual answers in Indian Rupees. Switch to Dark Mode.
