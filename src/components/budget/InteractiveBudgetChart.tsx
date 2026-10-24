@@ -8,17 +8,21 @@ interface InteractiveBudgetChartProps {
   budgetSummary: BudgetSummary;
   categoryLabels: Record<BudgetCategory, string>;
   categoryColors: Record<BudgetCategory, string>;
+  selectedCategory?: 'all' | BudgetCategory;
+  onSelectCategory?: (category: 'all' | BudgetCategory) => void;
 }
 
 export const InteractiveBudgetChart: React.FC<InteractiveBudgetChartProps> = ({
   budgetSummary,
   categoryLabels,
   categoryColors,
+  selectedCategory = 'all',
+  onSelectCategory,
 }) => {
   const [hoveredCategory, setHoveredCategory] = useState<BudgetCategory | null>(null);
 
   const categories = Object.keys(budgetSummary.categoryTotals) as BudgetCategory[];
-  const validCategories = categories.filter((c) => budgetSummary.categoryTotals[c] > 0);
+  const validCategories = categories.filter((c) => (budgetSummary.categoryTotals[c] || 0) > 0);
 
   const total = budgetSummary.totalEstimated || 0;
 
@@ -40,9 +44,9 @@ export const InteractiveBudgetChart: React.FC<InteractiveBudgetChartProps> = ({
 
   let cumulativeOffset = 0;
 
-  const activeCategory = hoveredCategory || validCategories[0] || 'venue';
-  const activeAmount = budgetSummary.categoryTotals[activeCategory] || 0;
-  const activePct = total > 0 ? (activeAmount / total) * 100 : 0;
+  const activeCategory = hoveredCategory || (selectedCategory !== 'all' ? selectedCategory : null);
+  const activeAmount = activeCategory ? budgetSummary.categoryTotals[activeCategory] || 0 : 0;
+  const activePct = total > 0 && activeCategory ? (activeAmount / total) * 100 : 0;
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', flexWrap: 'wrap', gap: '2rem', padding: '0.75rem 0' }}>
@@ -54,7 +58,7 @@ export const InteractiveBudgetChart: React.FC<InteractiveBudgetChartProps> = ({
           viewBox="0 0 220 220"
           style={{ transform: 'rotate(-90deg)', overflow: 'visible' }}
           role="img"
-          aria-label={`Donut chart showing ${validCategories.length} expense categories`}
+          aria-label={`Donut chart showing ${validCategories.length} expense categories with ${budgetSummary.utilizationPercentage}% budget utilized`}
         >
           {/* Background Ring Track */}
           <circle
@@ -62,7 +66,7 @@ export const InteractiveBudgetChart: React.FC<InteractiveBudgetChartProps> = ({
             cy={center}
             r={radius}
             fill="transparent"
-            stroke="var(--bg-card-subtle)"
+            stroke="var(--surface-subtle)"
             strokeWidth={strokeWidth}
           />
 
@@ -75,6 +79,8 @@ export const InteractiveBudgetChart: React.FC<InteractiveBudgetChartProps> = ({
             cumulativeOffset += ratio * circumference;
 
             const isHovered = hoveredCategory === cat;
+            const isSelected = selectedCategory === cat;
+            const isDimmed = (hoveredCategory && !isHovered) || (selectedCategory !== 'all' && !isSelected && !hoveredCategory);
             const color = categoryColors[cat] || '#64748b';
 
             return (
@@ -85,29 +91,36 @@ export const InteractiveBudgetChart: React.FC<InteractiveBudgetChartProps> = ({
                 r={radius}
                 fill="transparent"
                 stroke={color}
-                strokeWidth={isHovered ? strokeWidth + 6 : strokeWidth}
+                strokeWidth={isHovered || isSelected ? strokeWidth + 6 : strokeWidth}
                 strokeDasharray={strokeDasharray}
                 strokeDashoffset={strokeDashoffset}
                 strokeLinecap="round"
                 tabIndex={0}
                 style={{
                   cursor: 'pointer',
-                  transition: 'stroke-width 0.22s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.22s ease, filter 0.22s ease',
-                  opacity: hoveredCategory && !isHovered ? 0.4 : 1,
-                  filter: isHovered ? `drop-shadow(0 0 6px ${color}66)` : 'none',
+                  transition: 'stroke-width var(--transition-normal), opacity var(--transition-normal), filter var(--transition-normal)',
+                  opacity: isDimmed ? 0.35 : 1,
+                  filter: isHovered || isSelected ? `drop-shadow(0 0 6px ${color}88)` : 'none',
                   outline: 'none',
+                }}
+                onClick={() => onSelectCategory?.(selectedCategory === cat ? 'all' : cat)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onSelectCategory?.(selectedCategory === cat ? 'all' : cat);
+                  }
                 }}
                 onMouseEnter={() => setHoveredCategory(cat)}
                 onMouseLeave={() => setHoveredCategory(null)}
                 onFocus={() => setHoveredCategory(cat)}
                 onBlur={() => setHoveredCategory(null)}
-                aria-label={`${categoryLabels[cat]}: ${formatCurrency(amount)} (${Math.round(ratio * 100)}%)`}
+                aria-label={`${categoryLabels[cat]}: ${formatCurrency(amount)} (${Math.round(ratio * 100)}%). Click to filter table.`}
               />
             );
           })}
         </svg>
 
-        {/* Center HUD Callout */}
+        {/* Center HUD Callout: shows active category or overall utilization */}
         <div
           style={{
             position: 'absolute',
@@ -124,39 +137,64 @@ export const InteractiveBudgetChart: React.FC<InteractiveBudgetChartProps> = ({
             padding: '12px',
           }}
         >
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-            {categoryLabels[activeCategory] || 'Allocated'}
-          </span>
-          <span style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.025em', lineHeight: 1.2 }}>
-            {formatCurrency(activeAmount)}
-          </span>
-          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600 }}>
-            {formatIndianShort(activeAmount)}
-          </span>
-          <span
-            style={{
-              fontSize: '0.6875rem',
-              fontWeight: 700,
-              padding: '2px 8px',
-              borderRadius: '999px',
-              backgroundColor: categoryColors[activeCategory] ? `${categoryColors[activeCategory]}22` : 'var(--bg-card-subtle)',
-              color: categoryColors[activeCategory] || 'var(--text-main)',
-              marginTop: '4px',
-              border: `1px solid ${categoryColors[activeCategory] ? `${categoryColors[activeCategory]}44` : 'var(--border-light)'}`,
-            }}
-          >
-            {formatPercent(activePct)} of spend
-          </span>
+          {activeCategory ? (
+            <>
+              <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                {categoryLabels[activeCategory]}
+              </span>
+              <span className="tabular-nums" style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.025em', lineHeight: 1.2 }}>
+                {formatIndianShort(activeAmount)}
+              </span>
+              <span
+                style={{
+                  fontSize: '0.6875rem',
+                  fontWeight: 700,
+                  padding: '2px 8px',
+                  borderRadius: '999px',
+                  backgroundColor: categoryColors[activeCategory] ? `${categoryColors[activeCategory]}22` : 'var(--surface-subtle)',
+                  color: categoryColors[activeCategory] || 'var(--text)',
+                  marginTop: '4px',
+                  border: `1px solid ${categoryColors[activeCategory] ? `${categoryColors[activeCategory]}44` : 'var(--border)'}`,
+                }}
+              >
+                {formatPercent(activePct)} of spend
+              </span>
+            </>
+          ) : (
+            <>
+              <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                Budget Utilized
+              </span>
+              <span className="tabular-nums" style={{ fontSize: '1.4rem', fontWeight: 800, color: budgetSummary.isOverBudget ? 'var(--color-danger)' : 'var(--text)', letterSpacing: '-0.025em' }}>
+                {budgetSummary.utilizationPercentage}%
+              </span>
+              <span className="tabular-nums" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+                {formatIndianShort(budgetSummary.totalEstimated)} / {formatIndianShort(budgetSummary.totalBudget)}
+              </span>
+            </>
+          )}
         </div>
+      </div>
+
+      {/* Accessible Text Alternative for Screen Readers */}
+      <div className="sr-only">
+        <h4>Expense category distribution details</h4>
+        <ul>
+          {validCategories.map((cat) => (
+            <li key={cat}>
+              {categoryLabels[cat]}: {formatCurrency(budgetSummary.categoryTotals[cat])} ({formatPercent((budgetSummary.categoryTotals[cat] / total) * 100)} of budget)
+            </li>
+          ))}
+        </ul>
       </div>
 
       {/* Interactive Category Legend with Mini Progress Bars */}
       <div style={{ flex: 1, minWidth: '260px', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
           <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-            Category Allocations
+            Category Allocations (Click to filter)
           </span>
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+          <span className="tabular-nums" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>
             Total: {formatCurrency(total)}
           </span>
         </div>
@@ -165,28 +203,47 @@ export const InteractiveBudgetChart: React.FC<InteractiveBudgetChartProps> = ({
           const amount = budgetSummary.categoryTotals[cat];
           const pct = (amount / total) * 100;
           const isHovered = hoveredCategory === cat;
+          const isSelected = selectedCategory === cat;
           const color = categoryColors[cat] || '#64748b';
 
           return (
             <div
               key={cat}
+              role="button"
+              tabIndex={0}
+              onClick={() => onSelectCategory?.(selectedCategory === cat ? 'all' : cat)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onSelectCategory?.(selectedCategory === cat ? 'all' : cat);
+                }
+              }}
               onMouseEnter={() => setHoveredCategory(cat)}
               onMouseLeave={() => setHoveredCategory(null)}
-              tabIndex={0}
               onFocus={() => setHoveredCategory(cat)}
               onBlur={() => setHoveredCategory(null)}
+              aria-pressed={isSelected}
               style={{
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '4px',
                 padding: '6px 10px',
                 borderRadius: 'var(--radius-sm)',
-                backgroundColor: isHovered ? 'var(--bg-card-subtle)' : 'transparent',
-                border: isHovered ? '1px solid var(--border-medium)' : '1px solid transparent',
+                backgroundColor: isSelected
+                  ? 'var(--accent-subtle)'
+                  : isHovered
+                  ? 'var(--surface-subtle)'
+                  : 'transparent',
+                border: isSelected
+                  ? '1px solid var(--accent-primary)'
+                  : isHovered
+                  ? '1px solid var(--border)'
+                  : '1px solid transparent',
                 cursor: 'pointer',
-                transition: 'all 0.16s ease',
+                transition: 'all var(--transition-fast)',
                 outline: 'none',
               }}
+              title={`Click to filter table by ${categoryLabels[cat]}`}
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
@@ -199,30 +256,35 @@ export const InteractiveBudgetChart: React.FC<InteractiveBudgetChartProps> = ({
                       flexShrink: 0,
                     }}
                   />
-                  <span style={{ fontSize: '0.85rem', fontWeight: isHovered ? 700 : 600, color: 'var(--text-main)' }}>
+                  <span style={{ fontSize: '0.85rem', fontWeight: isHovered || isSelected ? 700 : 600, color: 'var(--text)' }}>
                     {categoryLabels[cat]}
                   </span>
+                  {isSelected && (
+                    <span style={{ fontSize: '0.7rem', color: 'var(--accent-primary)', fontWeight: 700 }}>
+                      (Filtered)
+                    </span>
+                  )}
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)' }}>
+                  <span className="tabular-nums" style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text)' }}>
                     {formatCurrency(amount)}
                   </span>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', width: '38px', textAlign: 'right' }}>
+                  <span className="tabular-nums" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', width: '38px', textAlign: 'right' }}>
                     {Math.round(pct)}%
                   </span>
                 </div>
               </div>
 
               {/* Mini proportion bar */}
-              <div style={{ width: '100%', height: '4px', backgroundColor: 'var(--bg-card-subtle)', borderRadius: '2px', overflow: 'hidden' }}>
+              <div style={{ width: '100%', height: '4px', backgroundColor: 'var(--surface-subtle)', borderRadius: '2px', overflow: 'hidden' }}>
                 <div
                   style={{
                     width: `${pct}%`,
                     height: '100%',
                     backgroundColor: color,
                     borderRadius: '2px',
-                    transition: 'width 0.3s ease',
+                    transition: 'width var(--transition-normal)',
                   }}
                 />
               </div>
