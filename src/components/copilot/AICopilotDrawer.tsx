@@ -15,7 +15,7 @@ import {
   generateCopilotAnswerAsync,
   type CopilotMessage,
 } from '../../services/copilotService';
-import { Button } from '../common';
+import { Button } from '../ui';
 
 interface AICopilotDrawerProps {
   plan: EventPlan;

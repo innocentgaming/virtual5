@@ -12,7 +12,7 @@ import { AIAssistantModal } from './components/ai/AIAssistantModal';
 import { GuestManager } from './components/guests/GuestManager';
 import { RunOfShowManager } from './components/schedule/RunOfShowManager';
 import { AICopilotDrawer } from './components/copilot/AICopilotDrawer';
-import { Toast } from './components/common/Toast';
+import { Toast } from './components/ui';
 import { downloadEventCalendar } from './services/calendarService';
 import { RotateCcw } from 'lucide-react';
 import './index.css';

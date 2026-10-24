@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import type { VendorItem, VendorStatus, VendorCategory, EventPlan } from '../../types/event';
 import { formatCurrency, formatIndianShort } from '../../utils/formatters';
-import { Card, CardHeader, Button, Badge, Modal } from '../common';
+import { Card, CardHeader, Button, Badge, Modal } from '../ui';
 
 interface VendorChecklistProps {
   plan: EventPlan;

@@ -8,7 +8,7 @@ import {
   ShieldAlert,
 } from 'lucide-react';
 import type { TaskItem, TaskCategory, TaskPriority, EventPlan } from '../../types/event';
-import { Card, CardHeader, Button, Badge, Modal, EmptyState } from '../common';
+import { Card, CardHeader, Button, Badge, Modal, EmptyState } from '../ui';
 
 interface TimelineManagerProps {
   plan: EventPlan;
