@@ -80,8 +80,7 @@ function notifyStorageError(msg: string): void {
  * Strips any sensitive or credential fields and ephemeral derived data from an EventPlan before saving or exporting.
  */
 function sanitizeEventForStorage(event: EventPlan): EventPlan {
-  const result = validateAndSanitizeEventPlan(event);
-  const clean = { ...result.plan } as Record<string, unknown>;
+  const clean = { ...event } as Record<string, unknown>;
 
   // Ensure no API keys or secret fields can ever leak into storage or exports
   delete clean.apiKey;

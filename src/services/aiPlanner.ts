@@ -70,6 +70,10 @@ export function clearPlanCache(): void {
   inFlightRequests.clear();
 }
 
+export function getPlanCacheSize(): number {
+  return planMemoryCache.size;
+}
+
 function getRequestCacheKey(req: AIPlanningRequest): string {
   const normalized = {
     eventType: req.eventType,
@@ -266,7 +270,7 @@ Directives:
 
     const plan: EventPlan = {
       id: 'evt-ai-' + Date.now(),
-      title: request.title?.trim() || `${request.theme || 'Custom'} ${request.eventType.charAt(0).toUpperCase() + request.eventType.slice(1)}`,
+      title: request.title?.trim() || (typeof parsed.title === 'string' && parsed.title.trim()) || `${request.theme || 'Custom'} ${request.eventType.charAt(0).toUpperCase() + request.eventType.slice(1)}`,
       eventType: request.eventType,
       eventDate: request.eventDate,
       city: request.city,
