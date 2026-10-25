@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, Suspense } from 'react';
 import {
   Calendar,
   MapPin,
@@ -24,7 +24,11 @@ import type { NavigationTab, ScenarioInput } from '../../hooks/useEventPlan';
 import { useCountUp } from '../../hooks/useCountUp';
 import { formatCurrency, formatIndianShort, formatPercent } from '../../utils/formatters';
 import { Card, CardHeader, Button, Badge, EmptyState, Skeleton, Toast, Modal } from '../ui';
-import { ScenarioChangePanel } from '../scenarios/ScenarioChangePanel';
+import { lazyWithPreload } from '../../utils/lazyWithPreload';
+
+const ScenarioChangePanel = lazyWithPreload(() =>
+  import('../scenarios/ScenarioChangePanel').then((m) => ({ default: m.ScenarioChangePanel }))
+);
 
 interface DashboardOverviewProps {
   plan: EventPlan;
@@ -896,29 +900,31 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
           title="What Changed? — Stress-Test & Scenario Engine"
           size="lg"
         >
-          <ScenarioChangePanel
-            plan={plan}
-            budgetSummary={budgetSummary}
-            onApplyScenario={(s) => {
-              if (onApplyScenario) {
-                onApplyScenario(s);
-                setToastMessage(`✓ Applied scenario: ${s.scenarioName || 'Parameters updated'}`);
-              }
-            }}
-            onApplyTradeOff={(to, title) => {
-              if (onApplyTradeOff) {
-                onApplyTradeOff(to, title);
-                setToastMessage(`✓ Applied trade-off: ${to.label}`);
-              }
-            }}
-            onUndoLastChange={() => {
-              if (onUndoLastChange) {
-                onUndoLastChange();
-                setToastMessage('✓ Rolled back last change');
-              }
-            }}
-            onClose={() => setIsScenarioModalOpen(false)}
-          />
+          <Suspense fallback={null}>
+            <ScenarioChangePanel
+              plan={plan}
+              budgetSummary={budgetSummary}
+              onApplyScenario={(s) => {
+                if (onApplyScenario) {
+                  onApplyScenario(s);
+                  setToastMessage(`✓ Applied scenario: ${s.scenarioName || 'Parameters updated'}`);
+                }
+              }}
+              onApplyTradeOff={(to, title) => {
+                if (onApplyTradeOff) {
+                  onApplyTradeOff(to, title);
+                  setToastMessage(`✓ Applied trade-off: ${to.label}`);
+                }
+              }}
+              onUndoLastChange={() => {
+                if (onUndoLastChange) {
+                  onUndoLastChange();
+                  setToastMessage('✓ Rolled back last change');
+                }
+              }}
+              onClose={() => setIsScenarioModalOpen(false)}
+            />
+          </Suspense>
         </Modal>
       )}
 

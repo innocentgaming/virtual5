@@ -11,10 +11,11 @@ import {
   Trash2,
   Check,
 } from 'lucide-react';
-import type { EventPlan } from '../../types/event';
+import type { EventPlan, TradeOffOption } from '../../types/event';
 import {
   generateCopilotAnswer,
   generateCopilotAnswerAsync,
+  extractCopilotActions,
 } from '../../services/copilotService';
 import { Button, Badge, useToast } from '../ui';
 
@@ -22,6 +23,7 @@ interface AICopilotDrawerProps {
   plan: EventPlan;
   isOpen: boolean;
   onClose: () => void;
+  onApplyTradeOff?: (tradeOff: TradeOffOption, note?: string) => void;
 }
 
 interface ChatMessage {
@@ -30,6 +32,7 @@ interface ChatMessage {
   text: string;
   timestamp: string;
   isFallback?: boolean;
+  proposedActions?: TradeOffOption[];
 }
 
 const CONTEXT_SUGGESTIONS = [
@@ -90,6 +93,7 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
   plan,
   isOpen,
   onClose,
+  onApplyTradeOff,
 }) => {
   const toast = useToast();
   const drawerRef = useRef<HTMLDivElement>(null);
@@ -113,6 +117,7 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [lastUserPrompt, setLastUserPrompt] = useState<string>('');
   const [isAiOnline, setIsAiOnline] = useState<boolean>(true);
+  const [appliedActionIds, setAppliedActionIds] = useState<Set<string>>(new Set());
 
   // Focus restoration & initial focus with scroll lock
   useEffect(() => {
@@ -206,24 +211,28 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
 
     try {
       const answerText = await generateCopilotAnswerAsync(trimmedPrompt, plan);
+      const { cleanText, actions } = extractCopilotActions(answerText, plan);
       setIsAiOnline(true);
       const assistantMsg: ChatMessage = {
         id: 'ast-' + Date.now(),
         sender: 'assistant',
-        text: answerText,
+        text: cleanText,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         isFallback: false,
+        proposedActions: actions,
       };
       setMessages((prev) => [...prev, assistantMsg]);
     } catch {
       setIsAiOnline(false);
       const fallbackText = generateCopilotAnswer(trimmedPrompt, plan);
+      const { cleanText, actions } = extractCopilotActions(fallbackText, plan);
       const assistantMsg: ChatMessage = {
         id: 'ast-' + Date.now(),
         sender: 'assistant',
-        text: fallbackText,
+        text: cleanText,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         isFallback: true,
+        proposedActions: actions,
       };
       setMessages((prev) => [...prev, assistantMsg]);
     } finally {
@@ -501,6 +510,71 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
                 }}
               >
                 {renderMarkdownLight(m.text)}
+
+                {/* Grounded Action Proposals */}
+                {m.proposedActions && m.proposedActions.length > 0 && (
+                  <div
+                    style={{
+                      marginTop: 'var(--space-3)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 'var(--space-2)',
+                      padding: 'var(--space-2)',
+                      background: 'var(--bg-card, #ffffff)',
+                      border: '1px solid var(--border)',
+                      borderRadius: 'var(--radius-md)',
+                    }}
+                  >
+                    <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--accent-primary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      ⚡ Grounded Action Proposal
+                    </div>
+                    {m.proposedActions.map((action) => {
+                      const isApplied = appliedActionIds.has(action.id);
+                      return (
+                        <div
+                          key={action.id}
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '4px',
+                            padding: 'var(--space-2)',
+                            background: 'var(--surface-subtle)',
+                            borderRadius: 'var(--radius-sm)',
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                            <span style={{ fontWeight: 700, fontSize: 'var(--text-xs)', color: 'var(--text)' }}>
+                              {action.label}
+                            </span>
+                            <Badge variant="info" size="sm">
+                              {action.impactFormatted}
+                            </Badge>
+                          </div>
+                          <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-muted)' }}>
+                            {action.description}
+                          </p>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '4px' }}>
+                            <Button
+                              variant={isApplied ? 'secondary' : 'primary'}
+                              size="sm"
+                              disabled={isApplied}
+                              onClick={() => {
+                                if (onApplyTradeOff) {
+                                  onApplyTradeOff(action, `Copilot Action: ${action.label}`);
+                                  setAppliedActionIds((prev) => new Set(prev).add(action.id));
+                                  toast.showToast(`Applied change: ${action.label}`, 'success');
+                                }
+                              }}
+                              leadingIcon={isApplied ? <Check size={12} /> : <Sparkles size={12} />}
+                            >
+                              {isApplied ? 'Applied' : 'Apply this change'}
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
 
                 {/* Copy button & Fallback banner on assistant messages */}
                 {m.sender === 'assistant' && (
