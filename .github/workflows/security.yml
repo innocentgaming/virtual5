@@ -1,0 +1,52 @@
+name: Security & Continuous Integration
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Run daily security scans at 06:00 UTC
+    - cron: '0 6 * * *'
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  security-pipeline:
+    name: Lint, Test, Audit & Secret Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code with Full Git History
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Verified Dependencies (npm ci)
+        run: npm ci
+
+      - name: Static Code Analysis (oxlint)
+        run: npm run lint
+
+      - name: Automated Vitest Suite
+        run: npm test -- --run
+
+      - name: Production Bundle Verification (tsc & vite build)
+        run: npm run build
+
+      - name: Production Dependency Vulnerability Audit
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Secret Scan with Gitleaks (Full History)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: "free"
