@@ -1,21 +1,68 @@
-import { useState, useEffect } from 'react';
-import { useEventPlan } from './hooks/useEventPlan';
+import { useState, useEffect, Suspense, useCallback } from 'react';
+import { useEventPlan, type NavigationTab } from './hooks/useEventPlan';
 import { Header } from './components/layout/Header';
 import { Navigation } from './components/layout/Navigation';
 import { DashboardOverview } from './components/dashboard/DashboardOverview';
-import { EventSetupForm } from './components/setup/EventSetupForm';
-import { BudgetManager } from './components/budget/BudgetManager';
-import { TimelineManager } from './components/timeline/TimelineManager';
-import { VendorChecklist } from './components/vendors/VendorChecklist';
-import { PersonalizedIdeas } from './components/ideas/PersonalizedIdeas';
-import { AIAssistantModal } from './components/ai/AIAssistantModal';
-import { GuestManager } from './components/guests/GuestManager';
-import { RunOfShowManager } from './components/schedule/RunOfShowManager';
-import { AICopilotDrawer } from './components/copilot/AICopilotDrawer';
 import { Toast, ToastProvider } from './components/ui';
-import { downloadEventCalendar } from './services/calendarService';
 import { RotateCcw } from 'lucide-react';
+import { lazyWithPreload } from './utils/lazyWithPreload';
 import './index.css';
+
+// Code-split tabs and drawer via lazyWithPreload with prefetch & test bypass
+const EventSetupForm = lazyWithPreload(() =>
+  import('./components/setup/EventSetupForm').then((m) => ({ default: m.EventSetupForm }))
+);
+const BudgetManager = lazyWithPreload(() =>
+  import('./components/budget/BudgetManager').then((m) => ({ default: m.BudgetManager }))
+);
+const TimelineManager = lazyWithPreload(() =>
+  import('./components/timeline/TimelineManager').then((m) => ({ default: m.TimelineManager }))
+);
+const VendorChecklist = lazyWithPreload(() =>
+  import('./components/vendors/VendorChecklist').then((m) => ({ default: m.VendorChecklist }))
+);
+const PersonalizedIdeas = lazyWithPreload(() =>
+  import('./components/ideas/PersonalizedIdeas').then((m) => ({ default: m.PersonalizedIdeas }))
+);
+const AIAssistantModal = lazyWithPreload(() =>
+  import('./components/ai/AIAssistantModal').then((m) => ({ default: m.AIAssistantModal }))
+);
+const GuestManager = lazyWithPreload(() =>
+  import('./components/guests/GuestManager').then((m) => ({ default: m.GuestManager }))
+);
+const RunOfShowManager = lazyWithPreload(() =>
+  import('./components/schedule/RunOfShowManager').then((m) => ({ default: m.RunOfShowManager }))
+);
+const AICopilotDrawer = lazyWithPreload(() =>
+  import('./components/copilot/AICopilotDrawer').then((m) => ({ default: m.AICopilotDrawer }))
+);
+
+function TabSkeleton() {
+  return (
+    <div
+      className="card animate-pulse"
+      style={{
+        padding: '2rem',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '1.25rem',
+        minHeight: '400px',
+      }}
+      role="status"
+      aria-live="polite"
+      aria-label="Loading section content..."
+    >
+      <div style={{ height: '32px', width: '32%', backgroundColor: 'var(--border-subtle)', borderRadius: '6px' }} />
+      <div style={{ height: '18px', width: '65%', backgroundColor: 'var(--border-subtle)', borderRadius: '4px' }} />
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
+        <div style={{ height: '90px', backgroundColor: 'var(--border-subtle)', borderRadius: '8px' }} />
+        <div style={{ height: '90px', backgroundColor: 'var(--border-subtle)', borderRadius: '8px' }} />
+        <div style={{ height: '90px', backgroundColor: 'var(--border-subtle)', borderRadius: '8px' }} />
+      </div>
+      <div style={{ height: '220px', backgroundColor: 'var(--border-subtle)', borderRadius: '8px', marginTop: '1rem' }} />
+    </div>
+  );
+}
 
 export function App() {
   const {
@@ -89,10 +136,76 @@ export function App() {
     showToast('Personalized recommendations and alternatives refreshed!');
   };
 
-  const handleExportCalendar = () => {
+  const handleExportCalendar = async () => {
+    const { downloadEventCalendar } = await import('./services/calendarService');
     downloadEventCalendar(activeEvent);
     showToast('iCalendar (.ics) file exported with timeline reminders!');
   };
+
+  const handleTabHover = useCallback((tab: NavigationTab) => {
+    switch (tab) {
+      case 'budget':
+        BudgetManager.preload();
+        break;
+      case 'timeline':
+        TimelineManager.preload();
+        break;
+      case 'guests':
+        GuestManager.preload();
+        break;
+      case 'schedule':
+        RunOfShowManager.preload();
+        break;
+      case 'vendors':
+        VendorChecklist.preload();
+        break;
+      case 'ideas':
+        PersonalizedIdeas.preload();
+        break;
+      case 'ai':
+        AIAssistantModal.preload();
+        break;
+      case 'setup':
+        EventSetupForm.preload();
+        break;
+    }
+  }, []);
+
+  // Idle prefetch route chunks progressively after initial render
+  useEffect(() => {
+    const prefetchIdle = () => {
+      const items = [
+        BudgetManager,
+        TimelineManager,
+        GuestManager,
+        RunOfShowManager,
+        VendorChecklist,
+        PersonalizedIdeas,
+        AICopilotDrawer,
+      ];
+      let idx = 0;
+      const scheduleNext = () => {
+        if (idx < items.length) {
+          const comp = items[idx++];
+          if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+            (window as unknown as { requestIdleCallback: (cb: () => void) => void }).requestIdleCallback(() => {
+              comp.preload();
+              scheduleNext();
+            });
+          } else {
+            setTimeout(() => {
+              comp.preload();
+              scheduleNext();
+            }, 250);
+          }
+        }
+      };
+      scheduleNext();
+    };
+
+    const timer = setTimeout(prefetchIdle, 1800);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <ToastProvider>
@@ -120,7 +233,10 @@ export function App() {
         onExport={exportCurrentPlan}
         onExportCalendar={handleExportCalendar}
         onOpenAISettings={() => setActiveTab('ai')}
-        onOpenCopilot={() => setIsCopilotOpen(true)}
+        onOpenCopilot={() => {
+          AICopilotDrawer.preload();
+          setIsCopilotOpen(true);
+        }}
       />
 
       <main className="app-container" style={{ flex: 1, marginTop: '1.25rem' }}>
@@ -129,122 +245,130 @@ export function App() {
           <Navigation
             activeTab={activeTab}
             onTabChange={setActiveTab}
+            onTabHover={handleTabHover}
             overdueTasksCount={timelineAudit.overdueCount}
             isOverBudget={budgetSummary.isOverBudget}
           />
         )}
 
         {/* View Routing */}
-        {isCreatingNew ? (
-          <EventSetupForm
-            isEditing={false}
-            onSave={handleCreateNewSubmit}
-            onCancel={() => setIsCreatingNew(false)}
-            isGenerating={isGenerating}
-          />
-        ) : (
-          <>
-            {activeTab === 'dashboard' && (
-              <DashboardOverview
-                plan={activeEvent}
-                budgetSummary={budgetSummary}
-                timelineAudit={timelineAudit}
-                onNavigateTab={setActiveTab}
-                onToggleTask={toggleTask}
-                onRegenerateIdeas={handleRegenerateIdeas}
-                onOpenCopilot={() => setIsCopilotOpen(true)}
-                onExportCalendar={handleExportCalendar}
-                isGenerating={isGenerating}
-              />
-            )}
+        <Suspense fallback={<TabSkeleton />}>
+          {isCreatingNew ? (
+            <EventSetupForm
+              isEditing={false}
+              onSave={handleCreateNewSubmit}
+              onCancel={() => setIsCreatingNew(false)}
+              isGenerating={isGenerating}
+            />
+          ) : (
+            <>
+              {activeTab === 'dashboard' && (
+                <DashboardOverview
+                  plan={activeEvent}
+                  budgetSummary={budgetSummary}
+                  timelineAudit={timelineAudit}
+                  onNavigateTab={setActiveTab}
+                  onToggleTask={toggleTask}
+                  onRegenerateIdeas={handleRegenerateIdeas}
+                  onOpenCopilot={() => {
+                    AICopilotDrawer.preload();
+                    setIsCopilotOpen(true);
+                  }}
+                  onExportCalendar={handleExportCalendar}
+                  isGenerating={isGenerating}
+                />
+              )}
 
-            {activeTab === 'setup' && (
-              <EventSetupForm
-                initialPlan={activeEvent}
-                isEditing={true}
-                onSave={handleEditDetailsSubmit}
-                onCancel={() => setActiveTab('dashboard')}
-                isGenerating={isGenerating}
-              />
-            )}
+              {activeTab === 'setup' && (
+                <EventSetupForm
+                  initialPlan={activeEvent}
+                  isEditing={true}
+                  onSave={handleEditDetailsSubmit}
+                  onCancel={() => setActiveTab('dashboard')}
+                  isGenerating={isGenerating}
+                />
+              )}
 
-            {activeTab === 'budget' && (
-              <BudgetManager
-                plan={activeEvent}
-                budgetSummary={budgetSummary}
-                onAddExpense={addBudgetItem}
-                onUpdateExpense={updateBudgetItem}
-                onDeleteExpense={deleteBudgetItem}
-                onUpdateContingency={updateContingencyRate}
-              />
-            )}
+              {activeTab === 'budget' && (
+                <BudgetManager
+                  plan={activeEvent}
+                  budgetSummary={budgetSummary}
+                  onAddExpense={addBudgetItem}
+                  onUpdateExpense={updateBudgetItem}
+                  onDeleteExpense={deleteBudgetItem}
+                  onUpdateContingency={updateContingencyRate}
+                />
+              )}
 
-            {activeTab === 'timeline' && (
-              <TimelineManager
-                plan={activeEvent}
-                onToggleTask={toggleTask}
-                onAddTask={addTask}
-                onDeleteTask={deleteTask}
-                onUpdateTask={updateTask}
-              />
-            )}
+              {activeTab === 'timeline' && (
+                <TimelineManager
+                  plan={activeEvent}
+                  onToggleTask={toggleTask}
+                  onAddTask={addTask}
+                  onDeleteTask={deleteTask}
+                  onUpdateTask={updateTask}
+                />
+              )}
 
-            {activeTab === 'guests' && (
-              <GuestManager
-                plan={activeEvent}
-                onAddGuest={addGuest}
-                onUpdateGuest={updateGuest}
-                onDeleteGuest={deleteGuest}
-              />
-            )}
+              {activeTab === 'guests' && (
+                <GuestManager
+                  plan={activeEvent}
+                  onAddGuest={addGuest}
+                  onUpdateGuest={updateGuest}
+                  onDeleteGuest={deleteGuest}
+                />
+              )}
 
-            {activeTab === 'schedule' && (
-              <RunOfShowManager
-                plan={activeEvent}
-                onAddScheduleItem={addScheduleItem}
-                onUpdateScheduleItem={updateScheduleItem}
-                onDeleteScheduleItem={deleteScheduleItem}
-              />
-            )}
+              {activeTab === 'schedule' && (
+                <RunOfShowManager
+                  plan={activeEvent}
+                  onAddScheduleItem={addScheduleItem}
+                  onUpdateScheduleItem={updateScheduleItem}
+                  onDeleteScheduleItem={deleteScheduleItem}
+                />
+              )}
 
-            {activeTab === 'vendors' && (
-              <VendorChecklist
-                plan={activeEvent}
-                onUpdateVendor={updateVendor}
-                onAddVendor={addVendor}
-              />
-            )}
+              {activeTab === 'vendors' && (
+                <VendorChecklist
+                  plan={activeEvent}
+                  onUpdateVendor={updateVendor}
+                  onAddVendor={addVendor}
+                />
+              )}
 
-            {activeTab === 'ideas' && (
-              <PersonalizedIdeas
-                plan={activeEvent}
-                onRegenerateIdeas={handleRegenerateIdeas}
-                onAddBudgetItem={addBudgetItem}
-                onAddTask={addTask}
-                isGenerating={isGenerating}
-              />
-            )}
+              {activeTab === 'ideas' && (
+                <PersonalizedIdeas
+                  plan={activeEvent}
+                  onRegenerateIdeas={handleRegenerateIdeas}
+                  onAddBudgetItem={addBudgetItem}
+                  onAddTask={addTask}
+                  isGenerating={isGenerating}
+                />
+              )}
 
-            {activeTab === 'ai' && (
-              <AIAssistantModal
-                plan={activeEvent}
-                onRegeneratePlan={async (useAI, apiKey) => {
-                  await regenerateRecommendations(useAI, apiKey);
-                  showToast(useAI ? 'GenAI generation completed!' : 'Rule Engine plan re-evaluated!');
-                }}
-                isGenerating={isGenerating}
-              />
-            )}
-          </>
-        )}
+              {activeTab === 'ai' && (
+                <AIAssistantModal
+                  plan={activeEvent}
+                  onRegeneratePlan={async (useAI, apiKey) => {
+                    await regenerateRecommendations(useAI, apiKey);
+                    showToast(useAI ? 'GenAI generation completed!' : 'Rule Engine plan re-evaluated!');
+                  }}
+                  isGenerating={isGenerating}
+                />
+              )}
+            </>
+          )}
+        </Suspense>
       </main>
 
       {/* AI Copilot Drawer */}
-      <AICopilotDrawer
-        plan={activeEvent}
-        isOpen={isCopilotOpen}
-        onClose={() => setIsCopilotOpen(false)}
-      />
+      <Suspense fallback={null}>
+        <AICopilotDrawer
+          plan={activeEvent}
+          isOpen={isCopilotOpen}
+          onClose={() => setIsCopilotOpen(false)}
+        />
+      </Suspense>
 
       {/* Accessible Footer */}
       <footer

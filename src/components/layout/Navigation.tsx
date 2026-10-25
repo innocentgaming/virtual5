@@ -17,6 +17,7 @@ import type { NavigationTab } from '../../hooks/useEventPlan';
 interface NavigationProps {
   activeTab: NavigationTab;
   onTabChange: (tab: NavigationTab) => void;
+  onTabHover?: (tab: NavigationTab) => void;
   overdueTasksCount: number;
   isOverBudget: boolean;
 }
@@ -24,6 +25,7 @@ interface NavigationProps {
 export const Navigation: React.FC<NavigationProps> = ({
   activeTab,
   onTabChange,
+  onTabHover,
   overdueTasksCount,
   isOverBudget,
 }) => {
@@ -129,6 +131,8 @@ export const Navigation: React.FC<NavigationProps> = ({
             id={`nav-tab-${tab.id}`}
             className={`nav-tab-btn ${activeTab === tab.id ? 'active' : ''}`}
             onClick={() => onTabChange(tab.id)}
+            onMouseEnter={() => onTabHover?.(tab.id)}
+            onFocus={() => onTabHover?.(tab.id)}
             aria-current={activeTab === tab.id ? 'page' : undefined}
           >
             {tab.icon}
