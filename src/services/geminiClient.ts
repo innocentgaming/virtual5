@@ -17,6 +17,8 @@ export interface GeminiRequestOptions {
   apiKey?: string;
   temperature?: number;
   responseMimeType?: string;
+  responseSchema?: Record<string, unknown>;
+  maxOutputTokens?: number;
   timeoutMs?: number;
   maxResponseBytes?: number;
   models?: string[];
@@ -193,121 +195,153 @@ export async function requestGeminiContent(
 
   // Attempt models sequentially with fresh AbortController per attempt
   for (const model of models) {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+    let modelExhausted = false;
 
-    try {
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-        'x-goog-api-key': apiKey,
-      };
+    // Exponential backoff with jitter capped at 1 retry (max 2 attempts total per model)
+    for (let attempt = 1; attempt <= 2 && !modelExhausted; attempt++) {
+      if (attempt > 1) {
+        const jitter = Math.floor(Math.random() * 50);
+        await new Promise((r) => setTimeout(r, 40 + jitter));
+      }
 
-      const requestBody: {
-        contents: Array<{ parts: Array<{ text: string }> }>;
-        systemInstruction?: { parts: Array<{ text: string }> };
-        generationConfig: {
-          temperature: number;
-          responseMimeType?: string;
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+      try {
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': apiKey,
         };
-      } = {
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature,
-        },
-      };
 
-      if (responseMimeType) {
-        requestBody.generationConfig.responseMimeType = responseMimeType;
-      }
-
-      if (systemInstruction) {
-        requestBody.systemInstruction = {
-          parts: [{ text: systemInstruction }],
+        const requestBody: {
+          contents: Array<{ parts: Array<{ text: string }> }>;
+          systemInstruction?: { parts: Array<{ text: string }> };
+          generationConfig: {
+            temperature: number;
+            responseMimeType?: string;
+            responseSchema?: Record<string, unknown>;
+            maxOutputTokens?: number;
+          };
+        } = {
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature,
+            maxOutputTokens: options.maxOutputTokens || 2048,
+          },
         };
-      }
 
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers,
-        signal: controller.signal,
-        body: JSON.stringify(requestBody),
-      });
+        if (responseMimeType) {
+          requestBody.generationConfig.responseMimeType = responseMimeType;
+        }
+        if (options.responseSchema) {
+          requestBody.generationConfig.responseSchema = options.responseSchema;
+        }
 
-      clearTimeout(timeoutId);
+        if (systemInstruction) {
+          requestBody.systemInstruction = {
+            parts: [{ text: systemInstruction }],
+          };
+        }
 
-      // Check header content-length guard
-      const contentLength = res.headers?.get ? res.headers.get('content-length') : null;
-      if (contentLength && parseInt(contentLength, 10) > maxResponseBytes) {
-        lastError = `Response from ${model} exceeded limit of ${maxResponseBytes} bytes.`;
-        continue;
-      }
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers,
+          signal: controller.signal,
+          body: JSON.stringify(requestBody),
+        });
 
-      let rawText = '';
-      if (typeof res.text === 'function') {
-        rawText = await res.text();
-      } else if (typeof res.json === 'function') {
-        const parsed = await res.json();
-        rawText = typeof parsed === 'string' ? parsed : JSON.stringify(parsed);
-      }
+        clearTimeout(timeoutId);
 
-      if (rawText.length > maxResponseBytes) {
-        lastError = `Response payload from ${model} exceeded limit of ${maxResponseBytes} bytes.`;
-        continue;
-      }
+        // Check header content-length guard
+        const contentLength = res.headers?.get ? res.headers.get('content-length') : null;
+        if (contentLength && parseInt(contentLength, 10) > maxResponseBytes) {
+          lastError = `Response from ${model} exceeded limit of ${maxResponseBytes} bytes.`;
+          modelExhausted = true;
+          break;
+        }
 
-      if (res.status === 404) {
-        // Model not available for this key/tier, try next
-        lastError = `Model ${model} not available (404).`;
-        continue;
-      }
+        let rawText = '';
+        if (typeof res.text === 'function') {
+          rawText = await res.text();
+        } else if (typeof res.json === 'function') {
+          const parsed = await res.json();
+          rawText = typeof parsed === 'string' ? parsed : JSON.stringify(parsed);
+        }
 
-      if (!res.ok) {
-        lastError = `API error (${res.status}) on model ${model}: ${rawText.slice(0, 200)}`;
-        if (res.status === 400 || res.status === 403) {
+        if (rawText.length > maxResponseBytes) {
+          lastError = `Response payload from ${model} exceeded limit of ${maxResponseBytes} bytes.`;
+          modelExhausted = true;
+          break;
+        }
+
+        // 404: Model not available for this key/tier - skip retries and try next model
+        if (res.status === 404) {
+          lastError = `Model ${model} not available (404).`;
+          modelExhausted = true;
+          break;
+        }
+
+        // Stop immediately on 400, 401, 403, 429 - no pointless retries across models
+        if (res.status === 400 || res.status === 401 || res.status === 403 || res.status === 429) {
+          let errorMsg = `API error (${res.status}) on model ${model}: ${rawText.slice(0, 200)}`;
+          if (res.status === 429) {
+            const retryAfter = res.headers?.get ? res.headers.get('retry-after') : null;
+            errorMsg = `Gemini rate limit exceeded (429).${retryAfter ? ` Retry-After: ${retryAfter}s.` : ''} Switching to deterministic offline planner.`;
+          }
           return {
             success: false,
-            error: redactSecrets(lastError, apiKey),
+            error: redactSecrets(errorMsg, apiKey),
             statusCode: res.status,
           };
         }
-        continue;
-      }
 
-      let json: Record<string, unknown> = {};
-      try {
-        json = JSON.parse(rawText);
-      } catch {
-        // If already parsed or string, try to inspect
-        json = {};
-      }
-      const candidates = json.candidates as Array<{ content?: { parts?: Array<{ text?: string }> } }> | undefined;
-      const text = candidates?.[0]?.content?.parts?.[0]?.text;
+        // On 5xx: if attempt 1, retry once; if attempt 2, fall back to next model
+        if (!res.ok) {
+          lastError = `API error (${res.status}) on model ${model}: ${rawText.slice(0, 200)}`;
+          if (attempt === 2) {
+            modelExhausted = true;
+          }
+          continue;
+        }
 
-      if (text) {
-        return {
-          success: true,
-          text: String(text).trim(),
-          modelUsed: model,
-          statusCode: res.status,
-        };
-      }
+        let json: Record<string, unknown> = {};
+        try {
+          json = JSON.parse(rawText);
+        } catch {
+          json = {};
+        }
+        const candidates = json.candidates as Array<{ content?: { parts?: Array<{ text?: string }> } }> | undefined;
+        const text = candidates?.[0]?.content?.parts?.[0]?.text;
 
-      // If mock directly returned rawText or text is missing
-      if (rawText && !candidates) {
-        return {
-          success: true,
-          text: rawText.trim(),
-          modelUsed: model,
-          statusCode: res.status,
-        };
-      }
+        if (text) {
+          return {
+            success: true,
+            text: String(text).trim(),
+            modelUsed: model,
+            statusCode: res.status,
+          };
+        }
 
-      lastError = `Candidate text missing in response from ${model}.`;
-    } catch (err: unknown) {
-      clearTimeout(timeoutId);
-      const rawError = err instanceof Error ? err.message : String(err);
-      lastError = `Request attempt for ${model} failed: ${rawError}`;
+        // If mock directly returned rawText or text is missing
+        if (rawText && !candidates) {
+          return {
+            success: true,
+            text: rawText.trim(),
+            modelUsed: model,
+            statusCode: res.status,
+          };
+        }
+
+        lastError = `Candidate text missing in response from ${model}.`;
+      } catch (err: unknown) {
+        clearTimeout(timeoutId);
+        const rawError = err instanceof Error ? err.message : String(err);
+        lastError = `Request attempt for ${model} failed: ${rawError}`;
+        if (attempt === 2) {
+          modelExhausted = true;
+        }
+      }
     }
   }
 

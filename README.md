@@ -122,7 +122,7 @@ src/
 │   ├── fallbackPlanner.ts   # Deterministic Indian planning engine with tiered recommendations & default schedules/guests
 │   ├── aiPlanner.ts         # Multi-model Gemini API integration (3.8-flash -> 2.5-flash-lite) with schema validation & fallback
 │   ├── calendarService.ts   # RFC 5545 iCalendar (.ics) generation and download service with VALARM triggers
-│   ├── copilotService.ts    # Grounded AI Copilot assistant with contextual recommendations & live Gemini streaming
+│   ├── copilotService.ts    # Grounded AI Copilot assistant with contextual recommendations & deterministic fallback engine
 │   ├── storageService.ts    # LocalStorage manager with corrupted JSON recovery & schema validator
 │   └── formatters.ts        # Currency (₹ en-IN), Lakhs/Crores shorthand (formatIndianShort), and percentage utilities
 ├── data/
