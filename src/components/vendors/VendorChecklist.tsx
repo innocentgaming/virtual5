@@ -23,11 +23,12 @@ interface VendorChecklistProps {
   isLoading?: boolean;
 }
 
-const STAGES: { id: VendorStatus | 'all'; label: string; variant: 'neutral' | 'warning' | 'info' | 'success' }[] = [
+const STAGES: { id: VendorStatus | 'all'; label: string; variant: 'neutral' | 'warning' | 'info' | 'success' | 'danger' }[] = [
   { id: 'all', label: 'All Vendors', variant: 'neutral' },
   { id: 'shortlisted', label: 'Shortlisted', variant: 'warning' },
   { id: 'contacted', label: 'Contacted', variant: 'info' },
   { id: 'booked', label: 'Booked', variant: 'success' },
+  { id: 'cancelled', label: 'Cancelled', variant: 'danger' },
 ];
 
 const STANDARD_INTERVIEW_QUESTIONS: Record<string, string[]> = {
@@ -107,7 +108,15 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
 
   // Stage counts
   const stageCounts = useMemo(() => {
-    const counts = { all: vendors.length, shortlisted: 0, contacted: 0, booked: 0, not_started: 0, completed: 0 };
+    const counts: Record<VendorStatus | 'all', number> = {
+      all: vendors.length,
+      shortlisted: 0,
+      contacted: 0,
+      booked: 0,
+      not_started: 0,
+      completed: 0,
+      cancelled: 0,
+    };
     vendors.forEach((v) => {
       if (counts[v.status] !== undefined) {
         counts[v.status]++;

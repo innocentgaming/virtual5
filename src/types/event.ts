@@ -93,7 +93,7 @@ export type VendorCategory =
   | 'mithai_favors'
   | 'other';
 
-export type VendorStatus = 'not_started' | 'contacted' | 'shortlisted' | 'booked' | 'completed';
+export type VendorStatus = 'not_started' | 'contacted' | 'shortlisted' | 'booked' | 'completed' | 'cancelled';
 
 export interface VendorItem {
   id: string;
@@ -118,6 +118,28 @@ export interface PersonalizedIdea {
   reasoning: string;
 }
 
+export type TradeOffActionType =
+  | 'reduce_budget_item'
+  | 'increase_budget'
+  | 'adjust_guest_count'
+  | 'add_budget_item'
+  | 'update_vendor_status'
+  | 'replace_vendor'
+  | 'repace_timeline'
+  | 'add_task'
+  | 'update_venue'
+  | 'apply_dietary_counter';
+
+export interface TradeOffOption {
+  id: string;
+  label: string;
+  description: string;
+  impactRupees: number;
+  impactFormatted: string;
+  actionType: TradeOffActionType;
+  payload: Record<string, unknown>;
+}
+
 export interface DecisionInsight {
   id: string;
   type: 'warning' | 'suggestion' | 'action_required' | 'positive';
@@ -126,6 +148,7 @@ export interface DecisionInsight {
   message: string;
   actionLabel?: string;
   actionType?: string;
+  tradeOffs?: TradeOffOption[];
 }
 
 export type RsvpStatus = 'attending' | 'declined' | 'pending';
@@ -162,6 +185,32 @@ export interface ScheduleItem {
   notes?: string;
 }
 
+export interface PlanChangeLogEntry {
+  id: string;
+  timestamp: string;
+  changeTitle: string;
+  description: string;
+  tradeOffApplied?: string;
+  previousSnapshot: {
+    totalBudget: number;
+    guestCount: number;
+    eventDate: string;
+    venuePreference: VenuePreference;
+    budgetItems: BudgetItem[];
+    tasks: TaskItem[];
+    vendors: VendorItem[];
+  };
+  appliedSnapshot: {
+    totalBudget: number;
+    guestCount: number;
+    eventDate: string;
+    venuePreference: VenuePreference;
+    budgetItems: BudgetItem[];
+    tasks: TaskItem[];
+    vendors: VendorItem[];
+  };
+}
+
 export interface EventPlan {
   id: string;
   title: string;
@@ -190,6 +239,7 @@ export interface EventPlan {
   decisionInsights: DecisionInsight[];
   missingInfoPrompts: string[];
   generationExplanation: string;
+  changeLog?: PlanChangeLogEntry[];
 }
 
 export interface BudgetSummary {
