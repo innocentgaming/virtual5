@@ -404,6 +404,7 @@ export function App() {
           plan={activeEvent}
           isOpen={isCopilotOpen}
           onClose={() => setIsCopilotOpen(false)}
+          onApplyTradeOff={applyTradeOff}
         />
       </Suspense>
 
