@@ -16,7 +16,7 @@ describe('Decision Engine Business Rules', () => {
     foodPreference: 'buffet' as const,
     accessibilityNeeds: [],
     priorities: ['venue' as const, 'catering' as const],
-    city: 'Seattle, WA',
+    city: 'Jaipur, Rajasthan',
     tasks: [],
   };
 

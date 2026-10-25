@@ -276,7 +276,7 @@ Directives:
       city: request.city,
       guestCount: request.guestCount,
       totalBudget: request.totalBudget,
-      currency: '$',
+      currency: '₹',
       contingencyRate: request.contingencyRate ?? 0.10,
       venuePreference: request.venuePreference || 'banquet_hall',
       foodPreference: request.foodPreference || 'buffet',

@@ -646,6 +646,27 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
           }
         />
 
+        {/* Trust Disclaimer Notice */}
+        <div
+          style={{
+            padding: 'var(--space-2) var(--space-3)',
+            marginBottom: 'var(--space-4)',
+            backgroundColor: 'var(--surface-subtle)',
+            borderLeft: '3px solid var(--accent-primary)',
+            borderRadius: 'var(--radius-sm)',
+            fontSize: 'var(--text-xs)',
+            color: 'var(--text-muted)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 'var(--space-2)',
+          }}
+        >
+          <Info size={14} style={{ flexShrink: 0, color: 'var(--accent-primary)' }} />
+          <span>
+            <strong>Planning Estimates Only:</strong> Market rates and vendor quotes are planning benchmarks. Always verify quotes, seasonal surcharges, GST, and payment schedules directly with local vendors and municipal authorities.
+          </span>
+        </div>
+
         {/* Toolbar: Search & Filter Chips */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--space-3)', flexWrap: 'wrap', marginBottom: 'var(--space-4)' }}>
           <div style={{ position: 'relative', width: '280px', maxWidth: '100%' }}>

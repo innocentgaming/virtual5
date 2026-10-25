@@ -76,6 +76,17 @@ const ROTATING_STATUS_MESSAGES = [
   'Generating personalized Indian celebration plan...',
 ];
 
+const CEREMONY_STRUCTURES = [
+  { id: 'hindu_vedic', label: 'Vedic Hindu (Pheras, Mandap, Muhurat)', note: 'Vedic Pheras at auspicious Muhurat, Mandap havan kund, Baraat and Sangeet' },
+  { id: 'sikh_anand_karaj', label: 'Sikh (Anand Karaj & Laavan)', note: 'Morning Anand Karaj at Gurdwara, 4 Laavan hymns, followed by Langar and evening reception' },
+  { id: 'muslim_nikah', label: 'Muslim (Nikah & Walima)', note: 'Nikah ceremony with Ijab-e-Qubool and Mehr, followed by lavish Walima feast' },
+  { id: 'christian_ceremony', label: 'Christian (Church Vows)', note: 'Church wedding vows, ring exchange, choir processional, followed by banquet dinner' },
+  { id: 'jain_vivah', label: 'Jain (Hastamelap & Lagan Lekhan)', note: 'Strictly Satvik & Jain kitchen, Granthi blessings, Hastamelap, daytime pheras' },
+  { id: 'bengali_biye', label: 'Bengali (Saat Paak & Shubho Drishti)', note: 'Saat Paak, Shubho Drishti, Sindoor Daan, and traditional feast' },
+  { id: 'south_indian', label: 'South Indian (Muhurtham & Kalyanam)', note: 'Early morning auspicious Muhurtham, Kanyadaanam, traditional banana leaf feast' },
+  { id: 'contemporary', label: 'Contemporary / Custom Fusion', note: 'Fusion celebration blending multicultural rituals with modern reception' },
+];
+
 const DRAFT_STORAGE_KEY = 'eventwise_setup_draft_v2';
 
 export const EventSetupForm: React.FC<EventSetupFormProps> = ({
@@ -853,6 +864,37 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
               })}
             </div>
           </fieldset>
+
+          {/* Ceremony Tradition Selection */}
+          <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
+            <label htmlFor="setup-ceremony-tradition" className="form-label" style={{ marginBottom: 'var(--space-2)' }}>
+              <span>Ceremony Tradition & Cultural Structure</span>
+              <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', fontWeight: 400, display: 'block', marginTop: '2px' }}>
+                Select a ceremony structure to tailor rituals, muhurat timings, and vendor questions (or customize below):
+              </span>
+            </label>
+            <select
+              id="setup-ceremony-tradition"
+              className="form-control"
+              value={culturalTraditions}
+              onChange={(e) => {
+                const selectedVal = e.target.value;
+                setCulturalTraditions(selectedVal);
+                const matched = CEREMONY_STRUCTURES.find((c) => c.label === selectedVal);
+                if (matched && !specialNotes.includes(matched.note)) {
+                  setSpecialNotes((prev) => (prev ? `${prev}\n${matched.note}` : matched.note));
+                }
+              }}
+              style={{ minHeight: '44px' }}
+            >
+              <option value="">-- Choose Ceremony Structure (or leave custom) --</option>
+              {CEREMONY_STRUCTURES.map((t) => (
+                <option key={t.id} value={t.label}>
+                  {t.label}
+                </option>
+              ))}
+            </select>
+          </div>
 
           {/* Special Notes & Custom Traditions */}
           <div className="form-group">

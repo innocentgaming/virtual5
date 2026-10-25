@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import type { BudgetCategory, BudgetSummary } from '../../types/event';
 import { formatCurrency, formatIndianShort, formatPercent } from '../../utils/formatters';
 import { EmptyState } from '../ui';
-import { DollarSign } from 'lucide-react';
+import { IndianRupee } from 'lucide-react';
 
 interface InteractiveBudgetChartProps {
   budgetSummary: BudgetSummary;
@@ -29,7 +29,7 @@ const InteractiveBudgetChartComponent: React.FC<InteractiveBudgetChartProps> = (
   if (total === 0 || validCategories.length === 0) {
     return (
       <EmptyState
-        icon={<DollarSign size={36} />}
+        icon={<IndianRupee size={36} />}
         title="No Expenses Allocated Yet"
         description="Add expenses or adjust budget allocations below to see the interactive distribution chart."
       />

@@ -346,10 +346,13 @@ export const RunOfShowManager: React.FC<RunOfShowManagerProps> = ({
         <Volume2 size={24} style={{ flexShrink: 0, marginTop: '2px' }} />
         <div>
           <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>
-            Baraat & Sound Curfew Protocol (10:00 PM Municipal Regulation)
+            Baraat & Sound Curfew Protocol (10:00 PM Municipal Regulation — Guidance)
           </div>
           <p style={{ fontSize: '0.85rem', marginTop: '2px', lineHeight: 1.5 }}>
-            In accordance with Indian municipal environmental standards, outdoor amplified music, Dhol processions, and Baraats must conclude or transition indoors by 10:00 PM. EventWise AI pre-calibrates indoor banquet switches to avoid local authority citations.
+            Under central Noise Pollution Rules, outdoor amplified music, Dhol processions, and Baraats are guided to transition indoors by 10:00 PM. EventWise AI pre-calibrates indoor banquet switches to avoid disruptions.
+            <span style={{ display: 'block', marginTop: '4px', fontStyle: 'italic', color: 'var(--text-muted)' }}>
+              *Guidance note: Municipal rules and police permissions vary across city wards in {plan.city}. Always verify local sound permissions and loudspeaker NOCs with your local police station.*
+            </span>
           </p>
         </div>
       </div>

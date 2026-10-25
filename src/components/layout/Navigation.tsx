@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
   LayoutDashboard,
   Settings2,
-  DollarSign,
+  IndianRupee,
   CalendarDays,
   Users2,
   Lightbulb,
@@ -50,7 +50,7 @@ export const Navigation: React.FC<NavigationProps> = ({
     {
       id: 'budget',
       label: 'Budget Manager',
-      icon: <DollarSign size={18} />,
+      icon: <IndianRupee size={18} />,
       badge: isOverBudget ? (
         <span
           style={{
@@ -184,7 +184,7 @@ export const Navigation: React.FC<NavigationProps> = ({
           aria-label="Budget"
           aria-current={activeTab === 'budget' ? 'page' : undefined}
         >
-          <DollarSign size={20} />
+          <IndianRupee size={20} />
           <span>Budget</span>
         </button>
 
