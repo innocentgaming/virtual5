@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import type {
   EventPlan,
   BudgetItem,
@@ -14,6 +14,9 @@ import {
   loadActiveEventId,
   saveActiveEventId,
   exportPlanAsJson,
+  getStorageError,
+  subscribeStorageError,
+  clearStorageError,
 } from '../services/storageService';
 import { calculateBudgetSummary, evaluateDecisionRules, auditTimelineTasks } from '../services/decisionEngine';
 import { generateFallbackPlan } from '../services/fallbackPlanner';
@@ -35,22 +38,60 @@ export function useEventPlan() {
   const [events, setEvents] = useState<EventPlan[]>(() => loadSavedEvents());
   const [activeEventId, setActiveEventId] = useState<string>(() => {
     const savedId = loadActiveEventId();
-    if (savedId && events.some((e) => e.id === savedId)) {
-      return savedId;
-    }
-    return events[0]?.id || 'default-1';
+    return savedId || 'default-1';
   });
 
   const [activeTab, setActiveTab] = useState<NavigationTab>('dashboard');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationError, setGenerationError] = useState<string | null>(null);
+  const [storageError, setStorageError] = useState<string | null>(() => getStorageError());
 
-  // Synchronize events state to localStorage whenever modified
+  // Subscribe to storage quota errors
   useEffect(() => {
-    if (events.length > 0) {
-      saveEvents(events);
-    }
+    return subscribeStorageError(setStorageError);
+  }, []);
+
+  const eventsRef = useRef(events);
+  useEffect(() => {
+    eventsRef.current = events;
   }, [events]);
+
+  // Debounced synchronization of events to localStorage (400ms trailing)
+  useEffect(() => {
+    if (events.length === 0) return;
+
+    const timer = setTimeout(() => {
+      saveEvents(eventsRef.current);
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [events]);
+
+  // Immediate flush on pagehide, visibilitychange, or window unload
+  useEffect(() => {
+    const flush = () => {
+      if (eventsRef.current.length > 0) {
+        saveEvents(eventsRef.current);
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        flush();
+      }
+    };
+
+    window.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('pagehide', flush);
+    window.addEventListener('beforeunload', flush);
+
+    return () => {
+      window.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('pagehide', flush);
+      window.removeEventListener('beforeunload', flush);
+      flush();
+    };
+  }, []);
 
   // Synchronize active ID
   useEffect(() => {
@@ -500,5 +541,7 @@ export function useEventPlan() {
     deleteCurrentEvent,
     resetToDefaults,
     exportCurrentPlan,
+    storageError,
+    clearStorageError,
   };
 }

@@ -42,7 +42,42 @@ export function isValidEventPlan(data: unknown): data is EventPlan {
 }
 
 /**
- * Strips any sensitive or credential fields from an EventPlan before saving or exporting.
+ * Storage error listener and subscription mechanism.
+ */
+type StorageErrorListener = (errorMessage: string | null) => void;
+const storageErrorListeners = new Set<StorageErrorListener>();
+let currentStorageError: string | null = null;
+let lastSavedPayload: string | null = null;
+
+export function getStorageError(): string | null {
+  return currentStorageError;
+}
+
+export function subscribeStorageError(listener: StorageErrorListener): () => void {
+  storageErrorListeners.add(listener);
+  return () => {
+    storageErrorListeners.delete(listener);
+  };
+}
+
+export function clearStorageError(): void {
+  if (currentStorageError !== null) {
+    currentStorageError = null;
+    storageErrorListeners.forEach((listener) => listener(null));
+  }
+}
+
+export function clearStorageCache(): void {
+  lastSavedPayload = null;
+}
+
+function notifyStorageError(msg: string): void {
+  currentStorageError = msg;
+  storageErrorListeners.forEach((listener) => listener(msg));
+}
+
+/**
+ * Strips any sensitive or credential fields and ephemeral derived data from an EventPlan before saving or exporting.
  */
 function sanitizeEventForStorage(event: EventPlan): EventPlan {
   const result = validateAndSanitizeEventPlan(event);
@@ -53,6 +88,11 @@ function sanitizeEventForStorage(event: EventPlan): EventPlan {
   delete clean.customApiKey;
   delete clean.geminiApiKey;
   delete clean.secret;
+
+  // Lean storage payload: strip ephemeral derived decision rules and prompts
+  // which are deterministically recomputed by evaluateDecisionRules
+  delete clean.decisionInsights;
+  delete clean.missingInfoPrompts;
 
   return clean as unknown as EventPlan;
 }
@@ -121,7 +161,7 @@ export function loadSavedEvents(): EventPlan[] {
 }
 
 /**
- * Safely persists events into localStorage with size capping (2 MB) and quota error handling.
+ * Safely persists events into localStorage with size capping (2 MB), redundancy skips, and quota error handling.
  */
 export function saveEvents(events: EventPlan[]): boolean {
   try {
@@ -131,6 +171,11 @@ export function saveEvents(events: EventPlan[]): boolean {
 
     const serialized = JSON.stringify(validEvents);
 
+    // Skip redundant writes if localStorage or memory already holds this exact state
+    if (lastSavedPayload === serialized && localStorage.getItem(STORAGE_KEY_EVENTS) === serialized) {
+      return true;
+    }
+
     if (serialized.length > MAX_STORAGE_BYTES) {
       console.warn(`Storage payload exceeded limit of ${MAX_STORAGE_BYTES} bytes. Operation aborted.`);
       return false;
@@ -138,9 +183,19 @@ export function saveEvents(events: EventPlan[]): boolean {
 
     localStorage.setItem(STORAGE_KEY_EVENTS, serialized);
     localStorage.setItem(STORAGE_KEY_VERSION, String(STORAGE_SCHEMA_VERSION));
+    lastSavedPayload = serialized;
+    clearStorageError();
     return true;
   } catch (err: unknown) {
     console.error('Failed to save events to localStorage (quota exceeded or storage blocked).', err);
+    if (
+      err instanceof Error &&
+      (err.name === 'QuotaExceededError' ||
+        err.name === 'NS_ERROR_DOM_QUOTA_REACHED' ||
+        err.message?.toLowerCase().includes('quota'))
+    ) {
+      notifyStorageError('Browser storage quota exceeded. Please export or remove older plans to save new changes.');
+    }
     return false;
   }
 }
@@ -150,6 +205,8 @@ export function saveEvents(events: EventPlan[]): boolean {
  */
 export function clearAllStorageData(): void {
   try {
+    lastSavedPayload = null;
+    clearStorageError();
     localStorage.removeItem(STORAGE_KEY_EVENTS);
     localStorage.removeItem(STORAGE_KEY_ACTIVE_ID);
     localStorage.removeItem(STORAGE_KEY_VERSION);
@@ -174,11 +231,14 @@ export function loadActiveEventId(): string | null {
 }
 
 /**
- * Saves the active event ID safely.
+ * Saves the active event ID safely with redundancy skip.
  */
 export function saveActiveEventId(id: string): void {
   try {
     const cleanId = id.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 50);
+    if (localStorage.getItem(STORAGE_KEY_ACTIVE_ID) === cleanId) {
+      return;
+    }
     localStorage.setItem(STORAGE_KEY_ACTIVE_ID, cleanId);
   } catch (err) {
     console.error('Failed to save active event id', err);
