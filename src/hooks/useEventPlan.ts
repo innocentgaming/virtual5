@@ -7,6 +7,9 @@ import type {
   GuestItem,
   ScheduleItem,
   EventType,
+  TradeOffOption,
+  VenuePreference,
+  PlanChangeLogEntry,
 } from '../types/event';
 import {
   loadSavedEvents,
@@ -18,10 +21,27 @@ import {
   subscribeStorageError,
   clearStorageError,
 } from '../services/storageService';
-import { calculateBudgetSummary, evaluateDecisionRules, auditTimelineTasks } from '../services/decisionEngine';
+import {
+  calculateBudgetSummary,
+  evaluateDecisionRules,
+  auditTimelineTasks,
+  repaceTimelineTasks,
+} from '../services/decisionEngine';
 import { generateFallbackPlan } from '../services/fallbackPlanner';
 import { generateAIEventPlan } from '../services/aiPlanner';
 import { INITIAL_EVENTS } from '../data/sampleEvents';
+import { formatCurrency } from '../utils/formatters';
+
+export interface ScenarioInput {
+  vendorId?: string;
+  vendorPriceSpikePercent?: number;
+  guestDelta?: number;
+  dateShiftDays?: number;
+  newVenuePreference?: VenuePreference;
+  budgetDeltaPercent?: number;
+  cancelVendorId?: string;
+  scenarioName?: string;
+}
 
 export type NavigationTab =
   | 'dashboard'
@@ -450,6 +470,374 @@ export function useEventPlan() {
     [updateActiveEvent]
   );
 
+  // -------------------------------------------------------------------------
+  // CORE CHANGE-HANDLING LOOP: Trade-off Execution & Undo Log
+  // -------------------------------------------------------------------------
+
+  const applyTradeOff = useCallback(
+    (tradeOff: TradeOffOption, title?: string) => {
+      updateActiveEvent((prev) => {
+        const previousSnapshot = {
+          totalBudget: prev.totalBudget,
+          guestCount: prev.guestCount,
+          eventDate: prev.eventDate,
+          venuePreference: prev.venuePreference,
+          budgetItems: JSON.parse(JSON.stringify(prev.budgetItems)),
+          tasks: JSON.parse(JSON.stringify(prev.tasks)),
+          vendors: JSON.parse(JSON.stringify(prev.vendors)),
+        };
+
+        let updatedBudget = prev.totalBudget;
+        let updatedGuests = prev.guestCount;
+        let updatedVenue = prev.venuePreference;
+        let updatedDate = prev.eventDate;
+        let updatedBudgetItems = [...prev.budgetItems];
+        let updatedTasks = [...prev.tasks];
+        let updatedVendors = [...prev.vendors];
+
+        const p = tradeOff.payload || {};
+
+        switch (tradeOff.actionType) {
+          case 'reduce_budget_item': {
+            if (p.itemId) {
+              updatedBudgetItems = updatedBudgetItems.map((item) => {
+                if (item.id === p.itemId) {
+                  const cut = Number(p.amount || 0);
+                  const newCost = Math.max(0, item.estimatedCost - cut);
+                  return { ...item, estimatedCost: newCost };
+                }
+                return item;
+              });
+            } else if (p.category) {
+              updatedBudgetItems = updatedBudgetItems.map((item) => {
+                if (item.category === p.category) {
+                  const cut = Number(p.amount || 0);
+                  const newCost = Math.max(0, item.estimatedCost - cut);
+                  return { ...item, estimatedCost: newCost };
+                }
+                return item;
+              });
+            }
+            break;
+          }
+
+          case 'increase_budget': {
+            if (p.amount) {
+              updatedBudget = Math.max(0, updatedBudget + Number(p.amount));
+            }
+            break;
+          }
+
+          case 'adjust_guest_count': {
+            if (p.newGuestCount !== undefined) {
+              const nextGuestCount = Math.max(1, Number(p.newGuestCount));
+              const ratio = nextGuestCount / Math.max(1, prev.guestCount);
+              updatedGuests = nextGuestCount;
+              updatedBudgetItems = updatedBudgetItems.map((item) => {
+                if (item.isPerGuest) {
+                  return {
+                    ...item,
+                    estimatedCost: Math.round(item.estimatedCost * ratio),
+                    notes: `Auto-scaled for ${nextGuestCount} guests.`,
+                  };
+                }
+                return item;
+              });
+            }
+            break;
+          }
+
+          case 'add_budget_item': {
+            const newItem: BudgetItem = {
+              id: 'b-tradeoff-' + Date.now(),
+              name: String(p.name || 'New Budget Item'),
+              category: (p.category as BudgetItem['category']) || 'other',
+              estimatedCost: Math.max(0, Number(p.estimatedCost || 0)),
+              priority: (p.priority as BudgetItem['priority']) || 'essential',
+              notes: p.notes ? String(p.notes) : 'Added via decision trade-off action.',
+            };
+            updatedBudgetItems.push(newItem);
+            break;
+          }
+
+          case 'update_vendor_status': {
+            if (p.vendorId) {
+              updatedVendors = updatedVendors.map((v) =>
+                v.id === p.vendorId ? { ...v, status: (p.status as VendorItem['status']) || 'shortlisted' } : v
+              );
+            }
+            break;
+          }
+
+          case 'update_venue': {
+            if (p.venuePreference) {
+              updatedVenue = p.venuePreference as VenuePreference;
+            }
+            break;
+          }
+
+          case 'add_task': {
+            const newTask: TaskItem = {
+              id: 't-tradeoff-' + Date.now(),
+              title: String(p.title || p.taskTitle || 'New Action Task'),
+              category: (p.category as TaskItem['category']) || 'final',
+              dueDate: p.dueDate ? String(p.dueDate) : prev.eventDate,
+              completed: false,
+              priority: (p.priority as TaskItem['priority']) || 'high',
+              notes: p.notes ? String(p.notes) : 'Generated from decision engine trade-off.',
+            };
+            updatedTasks.push(newTask);
+            break;
+          }
+
+          case 'repace_timeline': {
+            const targetDate = p.newDate ? String(p.newDate) : prev.eventDate;
+            updatedTasks = repaceTimelineTasks(updatedTasks, prev.eventDate, targetDate);
+            if (p.newDate) {
+              updatedDate = targetDate;
+            }
+            break;
+          }
+
+          case 'apply_dietary_counter': {
+            const counterCost = Number(p.cost || 25000);
+            const counterItem: BudgetItem = {
+              id: 'b-jain-counter-' + Date.now(),
+              name: String(p.name || 'Dedicated Pure Veg & Jain Kitchen Counter Isolation'),
+              category: 'catering',
+              estimatedCost: counterCost,
+              priority: 'essential',
+              notes: 'Isolated preparation station, separate copper chafers, and distinct ladles.',
+            };
+            const counterTask: TaskItem = {
+              id: 't-jain-audit-' + Date.now(),
+              title: 'Audit Pure Veg & Jain Kitchen Separation with Head Chef',
+              category: 'catering',
+              dueDate: prev.eventDate,
+              completed: false,
+              priority: 'urgent',
+              notes: 'Verify separate ladles, no root vegetables, and distinct serving line.',
+            };
+            updatedBudgetItems.push(counterItem);
+            updatedTasks.push(counterTask);
+            break;
+          }
+        }
+
+        const appliedSnapshot = {
+          totalBudget: updatedBudget,
+          guestCount: updatedGuests,
+          eventDate: updatedDate,
+          venuePreference: updatedVenue,
+          budgetItems: JSON.parse(JSON.stringify(updatedBudgetItems)),
+          tasks: JSON.parse(JSON.stringify(updatedTasks)),
+          vendors: JSON.parse(JSON.stringify(updatedVendors)),
+        };
+
+        const logEntry: PlanChangeLogEntry = {
+          id: 'log-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6),
+          timestamp: new Date().toISOString(),
+          changeTitle: title || tradeOff.label,
+          description: tradeOff.description,
+          tradeOffApplied: tradeOff.id,
+          previousSnapshot,
+          appliedSnapshot,
+        };
+
+        const changeLog = [logEntry, ...(prev.changeLog || [])].slice(0, 20);
+
+        return {
+          ...prev,
+          totalBudget: updatedBudget,
+          guestCount: updatedGuests,
+          eventDate: updatedDate,
+          venuePreference: updatedVenue,
+          budgetItems: updatedBudgetItems,
+          tasks: updatedTasks,
+          vendors: updatedVendors,
+          changeLog,
+        };
+      });
+    },
+    [updateActiveEvent]
+  );
+
+  const undoLastChange = useCallback(() => {
+    updateActiveEvent((prev) => {
+      if (!prev.changeLog || prev.changeLog.length === 0) return prev;
+      const [latest, ...remainingLog] = prev.changeLog;
+      const snap = latest.previousSnapshot;
+
+      return {
+        ...prev,
+        totalBudget: snap.totalBudget,
+        guestCount: snap.guestCount,
+        eventDate: snap.eventDate,
+        venuePreference: snap.venuePreference,
+        budgetItems: snap.budgetItems,
+        tasks: snap.tasks,
+        vendors: snap.vendors,
+        changeLog: remainingLog,
+      };
+    });
+  }, [updateActiveEvent]);
+
+  const applyScenarioChange = useCallback(
+    (scenario: ScenarioInput) => {
+      updateActiveEvent((prev) => {
+        const previousSnapshot = {
+          totalBudget: prev.totalBudget,
+          guestCount: prev.guestCount,
+          eventDate: prev.eventDate,
+          venuePreference: prev.venuePreference,
+          budgetItems: JSON.parse(JSON.stringify(prev.budgetItems)),
+          tasks: JSON.parse(JSON.stringify(prev.tasks)),
+          vendors: JSON.parse(JSON.stringify(prev.vendors)),
+        };
+
+        let updatedBudget = prev.totalBudget;
+        let updatedGuests = prev.guestCount;
+        let updatedVenue = prev.venuePreference;
+        let updatedDate = prev.eventDate;
+        let updatedBudgetItems = [...prev.budgetItems];
+        let updatedTasks = [...prev.tasks];
+        let updatedVendors = [...prev.vendors];
+        const changeDescriptions: string[] = [];
+
+        // 1. Vendor price spike
+        if (scenario.vendorPriceSpikePercent && scenario.vendorPriceSpikePercent > 0) {
+          const targetCategory = scenario.vendorId
+            ? prev.vendors.find((v) => v.id === scenario.vendorId)?.category
+            : 'catering';
+          updatedBudgetItems = updatedBudgetItems.map((item) => {
+            if (item.category === targetCategory || (!targetCategory && item.category === 'catering')) {
+              const spikeAmount = Math.round(item.estimatedCost * (scenario.vendorPriceSpikePercent! / 100));
+              const newActual = (item.actualCost || item.estimatedCost) + spikeAmount;
+              changeDescriptions.push(
+                `${item.name} quote spiked by ${scenario.vendorPriceSpikePercent}% (+${formatCurrency(spikeAmount)})`
+              );
+              return {
+                ...item,
+                actualCost: newActual,
+                notes: `${item.notes ? item.notes + ' ' : ''}Spiked by ${scenario.vendorPriceSpikePercent}%.`,
+              };
+            }
+            return item;
+          });
+        }
+
+        // 2. Guest headcount delta
+        if (scenario.guestDelta && scenario.guestDelta !== 0) {
+          const nextGuests = Math.max(10, prev.guestCount + scenario.guestDelta);
+          const ratio = nextGuests / Math.max(1, prev.guestCount);
+          updatedGuests = nextGuests;
+          changeDescriptions.push(
+            `Guest count adjusted by ${scenario.guestDelta > 0 ? '+' : ''}${scenario.guestDelta} (now ${nextGuests})`
+          );
+          updatedBudgetItems = updatedBudgetItems.map((item) => {
+            if (item.isPerGuest) {
+              return {
+                ...item,
+                estimatedCost: Math.round(item.estimatedCost * ratio),
+                notes: `Auto-scaled for ${nextGuests} guests.`,
+              };
+            }
+            return item;
+          });
+        }
+
+        // 3. Date shift
+        if (scenario.dateShiftDays && scenario.dateShiftDays !== 0) {
+          const curr = new Date(prev.eventDate);
+          curr.setDate(curr.getDate() + scenario.dateShiftDays);
+          const yyyy = curr.getFullYear();
+          const mm = String(curr.getMonth() + 1).padStart(2, '0');
+          const dd = String(curr.getDate()).padStart(2, '0');
+          const newDateStr = `${yyyy}-${mm}-${dd}`;
+          updatedTasks = repaceTimelineTasks(updatedTasks, prev.eventDate, newDateStr);
+          updatedDate = newDateStr;
+          changeDescriptions.push(
+            `Event date shifted by ${scenario.dateShiftDays > 0 ? '+' : ''}${scenario.dateShiftDays} days (now ${newDateStr}); timeline re-paced`
+          );
+        }
+
+        // 4. Venue change
+        if (scenario.newVenuePreference && scenario.newVenuePreference !== prev.venuePreference) {
+          updatedVenue = scenario.newVenuePreference;
+          changeDescriptions.push(`Venue layout changed from ${prev.venuePreference} to ${scenario.newVenuePreference}`);
+        }
+
+        // 5. Budget delta percent
+        if (scenario.budgetDeltaPercent && scenario.budgetDeltaPercent !== 0) {
+          const delta = Math.round(prev.totalBudget * (scenario.budgetDeltaPercent / 100));
+          updatedBudget = Math.max(10000, prev.totalBudget + delta);
+          changeDescriptions.push(
+            `Budget adjusted by ${scenario.budgetDeltaPercent > 0 ? '+' : ''}${scenario.budgetDeltaPercent}% (${formatCurrency(delta)})`
+          );
+        }
+
+        // 6. Vendor cancel
+        if (scenario.cancelVendorId) {
+          const targetV = updatedVendors.find((v) => v.id === scenario.cancelVendorId);
+          if (targetV) {
+            updatedVendors = updatedVendors.map((v) =>
+              v.id === scenario.cancelVendorId ? { ...v, status: 'cancelled' as const } : v
+            );
+            changeDescriptions.push(`Vendor ${targetV.role} cancelled / marked unavailable`);
+          }
+        }
+
+        const appliedSnapshot = {
+          totalBudget: updatedBudget,
+          guestCount: updatedGuests,
+          eventDate: updatedDate,
+          venuePreference: updatedVenue,
+          budgetItems: JSON.parse(JSON.stringify(updatedBudgetItems)),
+          tasks: JSON.parse(JSON.stringify(updatedTasks)),
+          vendors: JSON.parse(JSON.stringify(updatedVendors)),
+        };
+
+        const logEntry: PlanChangeLogEntry = {
+          id: 'scenario-' + Date.now(),
+          timestamp: new Date().toISOString(),
+          changeTitle: scenario.scenarioName || 'Simulated Scenario Change',
+          description: changeDescriptions.join('; ') || 'Applied scenario parameters.',
+          previousSnapshot,
+          appliedSnapshot,
+        };
+
+        const changeLog = [logEntry, ...(prev.changeLog || [])].slice(0, 20);
+
+        return {
+          ...prev,
+          totalBudget: updatedBudget,
+          guestCount: updatedGuests,
+          eventDate: updatedDate,
+          venuePreference: updatedVenue,
+          budgetItems: updatedBudgetItems,
+          tasks: updatedTasks,
+          vendors: updatedVendors,
+          changeLog,
+        };
+      });
+    },
+    [updateActiveEvent]
+  );
+
+  const repaceTimeline = useCallback(
+    (newDateStr: string) => {
+      updateActiveEvent((prev) => {
+        const repaced = repaceTimelineTasks(prev.tasks, prev.eventDate, newDateStr);
+        return {
+          ...prev,
+          eventDate: newDateStr,
+          tasks: repaced,
+        };
+      });
+    },
+    [updateActiveEvent]
+  );
+
   // Regeneration without losing plan ID
   const regenerateRecommendations = useCallback(
     async (useAI = false, apiKey?: string) => {
@@ -541,6 +929,10 @@ export function useEventPlan() {
     deleteCurrentEvent,
     resetToDefaults,
     exportCurrentPlan,
+    applyTradeOff,
+    undoLastChange,
+    applyScenarioChange,
+    repaceTimeline,
     storageError,
     clearStorageError,
   };

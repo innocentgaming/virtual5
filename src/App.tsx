@@ -95,6 +95,9 @@ export function App() {
     regenerateRecommendations,
     resetToDefaults,
     exportCurrentPlan,
+    applyTradeOff,
+    undoLastChange,
+    applyScenarioChange,
     storageError,
     clearStorageError,
   } = useEventPlan();
@@ -306,6 +309,9 @@ export function App() {
                     setIsCopilotOpen(true);
                   }}
                   onExportCalendar={handleExportCalendar}
+                  onApplyTradeOff={applyTradeOff}
+                  onApplyScenario={applyScenarioChange}
+                  onUndoLastChange={undoLastChange}
                   isGenerating={isGenerating}
                 />
               )}

@@ -3,7 +3,7 @@ import {
   Calendar,
   MapPin,
   Users,
-  DollarSign,
+  IndianRupee,
   CheckCircle2,
   AlertTriangle,
   Clock,
@@ -16,12 +16,15 @@ import {
   Heart,
   ChevronDown,
   ChevronUp,
+  RotateCcw,
+  SlidersHorizontal,
 } from 'lucide-react';
-import type { EventPlan, BudgetSummary, DecisionInsight } from '../../types/event';
-import type { NavigationTab } from '../../hooks/useEventPlan';
+import type { EventPlan, BudgetSummary, DecisionInsight, TradeOffOption } from '../../types/event';
+import type { NavigationTab, ScenarioInput } from '../../hooks/useEventPlan';
 import { useCountUp } from '../../hooks/useCountUp';
 import { formatCurrency, formatIndianShort, formatPercent } from '../../utils/formatters';
-import { Card, CardHeader, Button, Badge, EmptyState, Skeleton, Toast } from '../ui';
+import { Card, CardHeader, Button, Badge, EmptyState, Skeleton, Toast, Modal } from '../ui';
+import { ScenarioChangePanel } from '../scenarios/ScenarioChangePanel';
 
 interface DashboardOverviewProps {
   plan: EventPlan;
@@ -38,6 +41,9 @@ interface DashboardOverviewProps {
   onRegenerateIdeas: () => void;
   onOpenCopilot?: () => void;
   onExportCalendar?: () => void;
+  onApplyTradeOff?: (tradeOff: TradeOffOption, title?: string) => void;
+  onApplyScenario?: (scenario: ScenarioInput) => void;
+  onUndoLastChange?: () => void;
   isGenerating?: boolean;
 }
 
@@ -49,10 +55,14 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   onToggleTask,
   onOpenCopilot,
   onExportCalendar,
+  onApplyTradeOff,
+  onApplyScenario,
+  onUndoLastChange,
   isGenerating = false,
 }) => {
   const [showAllAlerts, setShowAllAlerts] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [isScenarioModalOpen, setIsScenarioModalOpen] = useState(false);
 
   // Countdown in days
   const diffDays = useMemo(() => {
@@ -388,6 +398,98 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
       </div>
 
       {/* =========================================================================
+          1B. CHANGE HANDLING & SCENARIO HUB CALLOUT BANNER
+          ========================================================================= */}
+      <div style={{ gridColumn: 'span 12' }}>
+        <Card variant="subtle" style={{ border: '1px solid var(--accent-primary)', background: 'var(--surface-raised)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-3)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+              <div
+                style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: 'var(--radius-pill)',
+                  background: 'var(--accent-primary)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#fff',
+                  flexShrink: 0,
+                }}
+              >
+                <SlidersHorizontal size={18} />
+              </div>
+              <div>
+                <div style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--text)' }}>
+                  Dynamic Change & Chaos Engine
+                </div>
+                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+                  Stress-test catering price spikes, late guest surges, and date shifts with live ₹ trade-off resolution
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap', alignItems: 'center' }}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (onApplyScenario) {
+                    onApplyScenario({
+                      vendorPriceSpikePercent: 20,
+                      scenarioName: 'Caterer Price Hike (+20%)',
+                    });
+                    setToastMessage('✓ Caterer quote spike (+20%) simulated; see trade-offs below');
+                  }
+                }}
+              >
+                +20% Caterer Spike
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (onApplyScenario) {
+                    onApplyScenario({
+                      guestDelta: 50,
+                      scenarioName: 'RSVP Headcount Surge (+50)',
+                    });
+                    setToastMessage('✓ Guest surge (+50) simulated; capacity rules active');
+                  }
+                }}
+              >
+                +50 Guests Surge
+              </Button>
+
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setIsScenarioModalOpen(true)}
+                leadingIcon={<SlidersHorizontal size={14} />}
+              >
+                Simulate Scenario / What Changed?
+              </Button>
+
+              {plan.changeLog && plan.changeLog.length > 0 && onUndoLastChange && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    onUndoLastChange();
+                    setToastMessage('✓ Rolled back last change from history');
+                  }}
+                  leadingIcon={<RotateCcw size={14} />}
+                >
+                  Undo ({plan.changeLog.length})
+                </Button>
+              )}
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* =========================================================================
           2. FOUR CLICKABLE METRIC CARDS (3 columns each)
           ========================================================================= */}
       <div className="dashboard-metric-col">
@@ -401,7 +503,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
         >
           <dl style={{ margin: 0, padding: 0 }}>
             <dt className="stat-label">
-              <DollarSign size={14} aria-hidden="true" />
+              <IndianRupee size={14} aria-hidden="true" />
               <span>Per-Guest Cost</span>
             </dt>
             <dd className="stat-value tabular-nums" style={{ margin: 0 }}>
@@ -581,7 +683,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
               variant="outline"
               size="md"
               onClick={() => onNavigateTab('budget')}
-              leadingIcon={<DollarSign size={16} />}
+              leadingIcon={<IndianRupee size={16} />}
             >
               Add Expense
             </Button>
@@ -603,6 +705,14 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                 Export iCal
               </Button>
             )}
+            <Button
+              variant="outline"
+              size="md"
+              onClick={() => setIsScenarioModalOpen(true)}
+              leadingIcon={<SlidersHorizontal size={16} />}
+            >
+              What Changed?
+            </Button>
             {onOpenCopilot && (
               <Button
                 variant="primary"
@@ -707,11 +817,57 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                         {insight.message}
                       </div>
 
-                      {insight.actionLabel && (
+                      {/* 1-Click Actionable Trade-Offs */}
+                      {insight.tradeOffs && insight.tradeOffs.length > 0 && (
+                        <div style={{ marginTop: 'var(--space-2)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          <div style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+                            Trade-offs (1-Click Apply):
+                          </div>
+                          {insight.tradeOffs.map((to) => (
+                            <div
+                              key={to.id}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                background: 'var(--surface)',
+                                border: '1px solid var(--border)',
+                                borderRadius: 'var(--radius-sm)',
+                                padding: '4px 8px',
+                                gap: '6px',
+                              }}
+                            >
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text)' }}>
+                                  {to.label}
+                                </div>
+                                <div style={{ fontSize: '0.65rem', color: 'var(--accent-primary)', fontWeight: 600 }}>
+                                  {to.impactFormatted}
+                                </div>
+                              </div>
+                              <Button
+                                variant="primary"
+                                size="sm"
+                                style={{ fontSize: '0.68rem', padding: '2px 8px', height: '26px' }}
+                                onClick={() => {
+                                  if (onApplyTradeOff) {
+                                    onApplyTradeOff(to, insight.title);
+                                    setToastMessage(`✓ Applied: ${to.label}`);
+                                  }
+                                }}
+                              >
+                                Apply
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {insight.actionLabel && (!insight.tradeOffs || insight.tradeOffs.length === 0) && (
                         <Button
                           variant="secondary"
                           size="sm"
-                          style={{ fontSize: '0.72rem', padding: '2px 8px', minHeight: '28px' }}
+                          style={{ fontSize: '0.72rem', padding: '2px 8px', minHeight: '28px', marginTop: '4px' }}
                           onClick={() => {
                             if (insight.category === 'budget') onNavigateTab('budget');
                             else if (insight.category === 'timeline') onNavigateTab('timeline');
@@ -731,6 +887,48 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
           )}
         </Card>
       </div>
+
+      {/* Scenario Simulation Modal */}
+      {isScenarioModalOpen && (
+        <Modal
+          isOpen={isScenarioModalOpen}
+          onClose={() => setIsScenarioModalOpen(false)}
+          title="What Changed? — Stress-Test & Scenario Engine"
+          size="lg"
+        >
+          <ScenarioChangePanel
+            plan={plan}
+            budgetSummary={budgetSummary}
+            onApplyScenario={(s) => {
+              if (onApplyScenario) {
+                onApplyScenario(s);
+                setToastMessage(`✓ Applied scenario: ${s.scenarioName || 'Parameters updated'}`);
+              }
+            }}
+            onApplyTradeOff={(to, title) => {
+              if (onApplyTradeOff) {
+                onApplyTradeOff(to, title);
+                setToastMessage(`✓ Applied trade-off: ${to.label}`);
+              }
+            }}
+            onUndoLastChange={() => {
+              if (onUndoLastChange) {
+                onUndoLastChange();
+                setToastMessage('✓ Rolled back last change');
+              }
+            }}
+            onClose={() => setIsScenarioModalOpen(false)}
+          />
+        </Modal>
+      )}
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <Toast
+          message={toastMessage}
+          onDismiss={() => setToastMessage(null)}
+        />
+      )}
     </div>
   );
 };
