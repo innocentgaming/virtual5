@@ -35,14 +35,13 @@ export function foldIcsLine(line: string): string {
   if (line.length <= 75) {
     return line;
   }
-  const chunks: string[] = [];
-  chunks.push(line.slice(0, 75));
-  let remaining = line.slice(75);
-  while (remaining.length > 0) {
-    chunks.push(' ' + remaining.slice(0, 74));
-    remaining = remaining.slice(74);
+  let result = line.slice(0, 75);
+  let i = 75;
+  while (i < line.length) {
+    result += '\r\n ' + line.slice(i, i + 74);
+    i += 74;
   }
-  return chunks.join('\r\n');
+  return result;
 }
 
 /**

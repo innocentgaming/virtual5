@@ -252,11 +252,23 @@ export function evaluateDecisionRules(
     });
   }
 
-  // RSVP Capacity & Dietary checks
+  // RSVP Capacity & Dietary checks - single pass over guests
   if (plan.guests && plan.guests.length > 0) {
-    const confirmedCount = plan.guests
-      .filter((g) => g.rsvpStatus === 'attending')
-      .reduce((acc, g) => acc + (g.plusOne ? 2 : 1), 0);
+    let confirmedCount = 0;
+    let dietaryCount = 0;
+    let jainOrPureVegCount = 0;
+
+    for (const g of plan.guests) {
+      if (g.rsvpStatus === 'attending') {
+        confirmedCount += g.plusOne ? 2 : 1;
+        if (g.dietary && g.dietary !== 'none') {
+          dietaryCount++;
+        }
+        if (g.dietary === 'jain' || g.dietary === 'pure_veg') {
+          jainOrPureVegCount++;
+        }
+      }
+    }
 
     if (confirmedCount > plan.guestCount) {
       insights.push({
@@ -270,10 +282,6 @@ export function evaluateDecisionRules(
       });
     }
 
-    const dietaryCount = plan.guests.filter(
-      (g) => g.rsvpStatus === 'attending' && g.dietary && g.dietary !== 'none'
-    ).length;
-
     if (dietaryCount > 0) {
       insights.push({
         id: 'rule-dietary-alert',
@@ -283,10 +291,6 @@ export function evaluateDecisionRules(
         message: `${dietaryCount} confirmed guests have specific dietary needs. Confirm personalized meal plate tags with your caterer 14 days prior to the event.`,
       });
     }
-
-    const jainOrPureVegCount = plan.guests.filter(
-      (g) => g.rsvpStatus === 'attending' && (g.dietary === 'jain' || g.dietary === 'pure_veg')
-    ).length;
 
     if (jainOrPureVegCount > 0) {
       insights.push({
