@@ -82,8 +82,14 @@ export function useEventPlan() {
     return auditTimelineTasks(activeEvent.tasks);
   }, [activeEvent.tasks]);
 
-  // Re-evaluate decision rules dynamically
+  // Memoized decision rules selector - avoids re-evaluating unchanged rules
   const activeInsights = useMemo(() => {
+    if (activeEvent.decisionInsights && activeEvent.missingInfoPrompts) {
+      return {
+        insights: activeEvent.decisionInsights,
+        missingPrompts: activeEvent.missingInfoPrompts,
+      };
+    }
     const { insights, missingPrompts } = evaluateDecisionRules(activeEvent);
     return { insights, missingPrompts };
   }, [activeEvent]);

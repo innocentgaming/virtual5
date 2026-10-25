@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useCallback, useDeferredValue } from 'react';
 import {
   Users,
   Plus,
@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import type { GuestItem, RsvpStatus, DietaryRequirement, EventPlan } from '../../types/event';
 import { Card, CardHeader, Button, Badge, Modal, EmptyState, useToast } from '../ui';
+import { useVirtualList } from '../../hooks/useVirtualList';
 
 interface GuestManagerProps {
   plan: EventPlan;
@@ -73,6 +74,150 @@ type FilterChip =
 
 type SortOption = 'name_asc' | 'name_desc' | 'status' | 'table';
 
+interface GuestTableRowProps {
+  guest: GuestItem;
+  isSelected: boolean;
+  onToggleSelect: (id: string) => void;
+  onQuickRsvpChange: (guest: GuestItem, status: RsvpStatus) => void;
+  onOpenEdit: (guest: GuestItem) => void;
+  onDeleteGuest: (id: string, name: string) => void;
+}
+
+const GuestTableRow = React.memo<GuestTableRowProps>(({
+  guest,
+  isSelected,
+  onToggleSelect,
+  onQuickRsvpChange,
+  onOpenEdit,
+  onDeleteGuest,
+}) => {
+  return (
+    <tr
+      key={guest.id}
+      style={{
+        borderBottom: '1px solid var(--border)',
+        background: isSelected ? 'var(--accent-subtle)' : 'transparent',
+        transition: 'background var(--transition-fast)',
+      }}
+    >
+      <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}>
+        <input
+          type="checkbox"
+          checked={isSelected}
+          onChange={() => onToggleSelect(guest.id)}
+          aria-label={`Select ${guest.name}`}
+          style={{ accentColor: 'var(--accent-primary)', cursor: 'pointer' }}
+        />
+      </td>
+      <td style={{ padding: 'var(--space-3) var(--space-2)' }}>
+        <div style={{ fontWeight: 600, color: 'var(--text)' }}>{guest.name}</div>
+        {guest.email && (
+          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>{guest.email}</div>
+        )}
+        {guest.notes && (
+          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+            {guest.notes}
+          </div>
+        )}
+      </td>
+      <td style={{ padding: 'var(--space-3) var(--space-2)' }}>
+        <select
+          className="form-control"
+          style={{
+            fontSize: 'var(--text-xs)',
+            height: '32px',
+            minHeight: '32px',
+            width: '125px',
+            fontWeight: 600,
+            color:
+              guest.rsvpStatus === 'attending'
+                ? 'var(--color-success)'
+                : guest.rsvpStatus === 'declined'
+                ? 'var(--color-danger)'
+                : 'var(--color-warning)',
+          }}
+          value={guest.rsvpStatus}
+          onChange={(e) => onQuickRsvpChange(guest, e.target.value as RsvpStatus)}
+          aria-label={`Change RSVP status for ${guest.name}`}
+        >
+          <option value="attending">✓ Confirmed</option>
+          <option value="pending">⏳ Pending</option>
+          <option value="declined">✕ Declined</option>
+        </select>
+      </td>
+      <td style={{ padding: 'var(--space-3) var(--space-2)' }}>
+        {guest.dietary && guest.dietary !== 'none' ? (
+          <span
+            title={DIETARY_TOOLTIPS[guest.dietary]}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
+              padding: '2px 8px',
+              borderRadius: 'var(--radius-sm)',
+              fontSize: 'var(--text-xs)',
+              fontWeight: 700,
+              backgroundColor: 'var(--surface-subtle)',
+              color: DIETARY_BADGE_COLORS[guest.dietary],
+              border: `1px solid ${DIETARY_BADGE_COLORS[guest.dietary]}60`,
+              cursor: 'help',
+            }}
+          >
+            <Utensils size={12} />
+            {DIETARY_LABELS[guest.dietary]}
+          </span>
+        ) : (
+          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>Standard</span>
+        )}
+      </td>
+      <td style={{ padding: 'var(--space-3) var(--space-2)' }}>
+        {guest.plusOne ? (
+          <Badge variant="info">
+            +1 {guest.plusOneName ? `(${guest.plusOneName})` : ''}
+          </Badge>
+        ) : (
+          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>Solo</span>
+        )}
+      </td>
+      <td style={{ padding: 'var(--space-3) var(--space-2)' }}>
+        {guest.tableNumber ? (
+          <span style={{ fontWeight: 600, color: 'var(--text)', fontSize: 'var(--text-xs)' }}>
+            {guest.tableNumber}
+          </span>
+        ) : (
+          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+            Unassigned
+          </span>
+        )}
+      </td>
+      <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}>
+        <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => onOpenEdit(guest)}
+            style={{ padding: '4px 8px' }}
+            title="Edit guest details"
+            aria-label={`Edit ${guest.name}`}
+          >
+            <Edit2 size={13} />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onDeleteGuest(guest.id, guest.name)}
+            style={{ padding: '4px 8px', color: 'var(--color-danger)' }}
+            title="Delete guest"
+            aria-label={`Delete ${guest.name}`}
+          >
+            <Trash2 size={13} />
+          </Button>
+        </div>
+      </td>
+    </tr>
+  );
+});
+
 export const GuestManager: React.FC<GuestManagerProps> = ({
   plan,
   onAddGuest,
@@ -87,6 +232,9 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
   const [filterChip, setFilterChip] = useState<FilterChip>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('name_asc');
+
+  const deferredFilterChip = useDeferredValue(filterChip);
+  const deferredSearchQuery = useDeferredValue(searchQuery);
 
   // Multi-select state
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -111,58 +259,82 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
   // Focus restore ref
   const addGuestButtonRef = useRef<HTMLButtonElement>(null);
 
-  // Metrics computation (+1s included for headcount)
-  const stats = useMemo(() => {
+  // Metrics and filter counts in a single pass (+1s included for headcount)
+  const { stats, filterCounts } = useMemo(() => {
     let confirmedHeads = 0;
     let pendingCount = 0;
     let declinedCount = 0;
     let jainOrPureVegCount = 0;
 
-    guests.forEach((g) => {
+    const counts = {
+      all: guests.length,
+      confirmed: 0,
+      pending: 0,
+      declined: 0,
+      jain: 0,
+      pure_veg: 0,
+      halal: 0,
+      gluten_free: 0,
+      has_plus_one: 0,
+    };
+
+    for (const g of guests) {
       const seats = g.plusOne ? 2 : 1;
       if (g.rsvpStatus === 'attending') {
         confirmedHeads += seats;
+        counts.confirmed += 1;
         if (g.dietary === 'jain' || g.dietary === 'pure_veg') {
           jainOrPureVegCount += 1;
         }
       } else if (g.rsvpStatus === 'pending') {
         pendingCount += seats;
+        counts.pending += 1;
       } else if (g.rsvpStatus === 'declined') {
         declinedCount += seats;
+        counts.declined += 1;
       }
-    });
+
+      if (g.dietary === 'jain') counts.jain += 1;
+      if (g.dietary === 'pure_veg' || g.dietary === 'vegetarian') counts.pure_veg += 1;
+      if (g.dietary === 'halal') counts.halal += 1;
+      if (g.dietary === 'gluten_free') counts.gluten_free += 1;
+      if (g.plusOne) counts.has_plus_one += 1;
+    }
 
     const targetCapacity = Math.max(1, plan.guestCount);
     const capacityPct = Math.round((confirmedHeads / targetCapacity) * 100);
 
     return {
-      invited: plan.guestCount,
-      confirmedHeads,
-      pendingCount,
-      declinedCount,
-      jainOrPureVegCount,
-      capacityPct,
-      isCapacityWarning: capacityPct > 90 && capacityPct <= 100,
-      isCapacityDanger: capacityPct > 100,
+      stats: {
+        invited: plan.guestCount,
+        confirmedHeads,
+        pendingCount,
+        declinedCount,
+        jainOrPureVegCount,
+        capacityPct,
+        isCapacityWarning: capacityPct > 90 && capacityPct <= 100,
+        isCapacityDanger: capacityPct > 100,
+      },
+      filterCounts: counts,
     };
   }, [guests, plan.guestCount]);
 
-  // Filtered & Sorted guests list
+  // Filtered & Sorted guests list using deferred inputs for responsiveness
   const filteredGuests = useMemo(() => {
     let list = guests.filter((g) => {
       // Filter chip
-      if (filterChip === 'confirmed' && g.rsvpStatus !== 'attending') return false;
-      if (filterChip === 'pending' && g.rsvpStatus !== 'pending') return false;
-      if (filterChip === 'declined' && g.rsvpStatus !== 'declined') return false;
-      if (filterChip === 'jain' && g.dietary !== 'jain') return false;
-      if (filterChip === 'pure_veg' && g.dietary !== 'pure_veg' && g.dietary !== 'vegetarian' && g.dietary !== 'jain') return false;
-      if (filterChip === 'halal' && g.dietary !== 'halal') return false;
-      if (filterChip === 'gluten_free' && g.dietary !== 'gluten_free') return false;
-      if (filterChip === 'has_plus_one' && !g.plusOne) return false;
+      if (deferredFilterChip === 'confirmed' && g.rsvpStatus !== 'attending') return false;
+      if (deferredFilterChip === 'pending' && g.rsvpStatus !== 'pending') return false;
+      if (deferredFilterChip === 'declined' && g.rsvpStatus !== 'declined') return false;
+      if (deferredFilterChip === 'jain' && g.dietary !== 'jain') return false;
+      if (deferredFilterChip === 'pure_veg' && g.dietary !== 'pure_veg' && g.dietary !== 'vegetarian' && g.dietary !== 'jain') return false;
+      if (deferredFilterChip === 'halal' && g.dietary !== 'halal') return false;
+      if (deferredFilterChip === 'gluten_free' && g.dietary !== 'gluten_free') return false;
+      if (deferredFilterChip === 'has_plus_one' && !g.plusOne) return false;
 
       // Search query
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
+      if (deferredSearchQuery.trim()) {
+        const q = deferredSearchQuery.toLowerCase();
         const matchesName = g.name.toLowerCase().includes(q);
         const matchesPlusOne = g.plusOneName?.toLowerCase().includes(q);
         const matchesTable = g.tableNumber?.toLowerCase().includes(q);
@@ -183,25 +355,35 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
     });
 
     return list;
-  }, [guests, filterChip, searchQuery, sortBy]);
+  }, [guests, deferredFilterChip, deferredSearchQuery, sortBy]);
+
+  // Windowing for large guest sets (>100 items)
+  const {
+    visibleItems,
+    isVirtual,
+    topSpacerHeight,
+    bottomSpacerHeight,
+    containerRef,
+    onScroll,
+  } = useVirtualList(filteredGuests, { itemHeight: 64, threshold: 100 });
 
   // Bulk Selection Handlers
-  const handleToggleSelect = (id: string) => {
+  const handleToggleSelect = useCallback((id: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
       return next;
     });
-  };
+  }, []);
 
-  const handleSelectAll = () => {
+  const handleSelectAll = useCallback(() => {
     if (selectedIds.size === filteredGuests.length) {
       setSelectedIds(new Set());
     } else {
       setSelectedIds(new Set(filteredGuests.map((g) => g.id)));
     }
-  };
+  }, [selectedIds.size, filteredGuests]);
 
   const handleBulkMarkConfirmed = () => {
     selectedIds.forEach((id) => {
@@ -243,7 +425,7 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
     setShowModal(true);
   };
 
-  const handleOpenEdit = (guest: GuestItem) => {
+  const handleOpenEdit = useCallback((guest: GuestItem) => {
     setEditingGuestId(guest.id);
     setFormName(guest.name);
     setFormEmail(guest.email || '');
@@ -255,7 +437,7 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
     setFormNotes(guest.notes || '');
     setFormTouched(false);
     setShowModal(true);
-  };
+  }, []);
 
   const handleModalClose = () => {
     setShowModal(false);
@@ -298,10 +480,15 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
     handleModalClose();
   };
 
-  const handleQuickRsvpChange = (guest: GuestItem, newStatus: RsvpStatus) => {
+  const handleQuickRsvpChange = useCallback((guest: GuestItem, newStatus: RsvpStatus) => {
     onUpdateGuest(guest.id, { rsvpStatus: newStatus });
     toast.showToast(`RSVP updated to ${newStatus === 'attending' ? 'Confirmed' : newStatus}`, 'info');
-  };
+  }, [onUpdateGuest, toast]);
+
+  const handleDeleteGuest = useCallback((id: string, name: string) => {
+    onDeleteGuest(id);
+    toast.showToast(`Removed ${name}`, 'info');
+  }, [onDeleteGuest, toast]);
 
   if (isLoading) {
     return (
@@ -533,7 +720,7 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
               size="sm"
               onClick={() => setFilterChip('all')}
             >
-              All ({guests.length})
+              All ({filterCounts.all})
             </Button>
             <Button
               variant={filterChip === 'confirmed' ? 'primary' : 'secondary'}
@@ -541,7 +728,7 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
               onClick={() => setFilterChip('confirmed')}
               leadingIcon={<UserCheck size={13} />}
             >
-              Confirmed ({guests.filter((g) => g.rsvpStatus === 'attending').length})
+              Confirmed ({filterCounts.confirmed})
             </Button>
             <Button
               variant={filterChip === 'pending' ? 'primary' : 'secondary'}
@@ -549,7 +736,7 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
               onClick={() => setFilterChip('pending')}
               leadingIcon={<Clock size={13} />}
             >
-              Pending ({guests.filter((g) => g.rsvpStatus === 'pending').length})
+              Pending ({filterCounts.pending})
             </Button>
             <Button
               variant={filterChip === 'declined' ? 'primary' : 'secondary'}
@@ -557,7 +744,7 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
               onClick={() => setFilterChip('declined')}
               leadingIcon={<UserX size={13} />}
             >
-              Declined ({guests.filter((g) => g.rsvpStatus === 'declined').length})
+              Declined ({filterCounts.declined})
             </Button>
             <Button
               variant={filterChip === 'jain' ? 'primary' : 'secondary'}
@@ -565,7 +752,7 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
               onClick={() => setFilterChip('jain')}
               style={filterChip === 'jain' ? {} : { borderColor: '#ea580c', color: '#ea580c' }}
             >
-              🥗 Jain ({guests.filter((g) => g.dietary === 'jain').length})
+              🥗 Jain ({filterCounts.jain})
             </Button>
             <Button
               variant={filterChip === 'pure_veg' ? 'primary' : 'secondary'}
@@ -573,28 +760,28 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
               onClick={() => setFilterChip('pure_veg')}
               style={filterChip === 'pure_veg' ? {} : { borderColor: '#16a34a', color: '#16a34a' }}
             >
-              🌱 Pure Veg ({guests.filter((g) => g.dietary === 'pure_veg' || g.dietary === 'vegetarian').length})
+              🌱 Pure Veg ({filterCounts.pure_veg})
             </Button>
             <Button
               variant={filterChip === 'halal' ? 'primary' : 'secondary'}
               size="sm"
               onClick={() => setFilterChip('halal')}
             >
-              Halal ({guests.filter((g) => g.dietary === 'halal').length})
+              Halal ({filterCounts.halal})
             </Button>
             <Button
               variant={filterChip === 'gluten_free' ? 'primary' : 'secondary'}
               size="sm"
               onClick={() => setFilterChip('gluten_free')}
             >
-              Gluten-free ({guests.filter((g) => g.dietary === 'gluten_free').length})
+              Gluten-free ({filterCounts.gluten_free})
             </Button>
             <Button
               variant={filterChip === 'has_plus_one' ? 'primary' : 'secondary'}
               size="sm"
               onClick={() => setFilterChip('has_plus_one')}
             >
-              Has +1 ({guests.filter((g) => g.plusOne).length})
+              Has +1 ({filterCounts.has_plus_one})
             </Button>
           </div>
         </div>
@@ -655,7 +842,15 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
             }
           />
         ) : (
-          <div style={{ overflowX: 'auto' }}>
+          <div
+            ref={containerRef}
+            onScroll={onScroll}
+            style={{
+              overflowX: 'auto',
+              maxHeight: isVirtual ? '600px' : undefined,
+              overflowY: isVirtual ? 'auto' : undefined,
+            }}
+          >
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 'var(--text-sm)' }}>
               <thead>
                 <tr style={{ borderBottom: '2px solid var(--border)', color: 'var(--text-muted)' }}>
@@ -677,151 +872,30 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
                 </tr>
               </thead>
               <tbody>
-                {filteredGuests.map((guest) => {
+                {isVirtual && topSpacerHeight > 0 && (
+                  <tr style={{ height: `${topSpacerHeight}px` }} aria-hidden="true">
+                    <td colSpan={7} style={{ padding: 0, border: 'none' }} />
+                  </tr>
+                )}
+                {visibleItems.map((guest) => {
                   const isSelected = selectedIds.has(guest.id);
-
                   return (
-                    <tr
+                    <GuestTableRow
                       key={guest.id}
-                      style={{
-                        borderBottom: '1px solid var(--border)',
-                        background: isSelected ? 'var(--accent-subtle)' : 'transparent',
-                        transition: 'background var(--transition-fast)',
-                      }}
-                    >
-                      {/* Checkbox */}
-                      <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}>
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() => handleToggleSelect(guest.id)}
-                          aria-label={`Select ${guest.name}`}
-                          style={{ accentColor: 'var(--accent-primary)', cursor: 'pointer' }}
-                        />
-                      </td>
-
-                      {/* Name & Contact */}
-                      <td style={{ padding: 'var(--space-3) var(--space-2)' }}>
-                        <div style={{ fontWeight: 600, color: 'var(--text)' }}>{guest.name}</div>
-                        {guest.email && (
-                          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>{guest.email}</div>
-                        )}
-                        {guest.notes && (
-                          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                            {guest.notes}
-                          </div>
-                        )}
-                      </td>
-
-                      {/* Quick RSVP Select */}
-                      <td style={{ padding: 'var(--space-3) var(--space-2)' }}>
-                        <select
-                          className="form-control"
-                          style={{
-                            fontSize: 'var(--text-xs)',
-                            height: '32px',
-                            minHeight: '32px',
-                            width: '125px',
-                            fontWeight: 600,
-                            color:
-                              guest.rsvpStatus === 'attending'
-                                ? 'var(--color-success)'
-                                : guest.rsvpStatus === 'declined'
-                                ? 'var(--color-danger)'
-                                : 'var(--color-warning)',
-                          }}
-                          value={guest.rsvpStatus}
-                          onChange={(e) => handleQuickRsvpChange(guest, e.target.value as RsvpStatus)}
-                          aria-label={`Change RSVP status for ${guest.name}`}
-                        >
-                          <option value="attending">✓ Confirmed</option>
-                          <option value="pending">⏳ Pending</option>
-                          <option value="declined">✕ Declined</option>
-                        </select>
-                      </td>
-
-                      {/* Dietary Badge with Rich Tooltip */}
-                      <td style={{ padding: 'var(--space-3) var(--space-2)' }}>
-                        {guest.dietary && guest.dietary !== 'none' ? (
-                          <span
-                            title={DIETARY_TOOLTIPS[guest.dietary]}
-                            style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '4px',
-                              padding: '2px 8px',
-                              borderRadius: 'var(--radius-sm)',
-                              fontSize: 'var(--text-xs)',
-                              fontWeight: 700,
-                              backgroundColor: 'var(--surface-subtle)',
-                              color: DIETARY_BADGE_COLORS[guest.dietary],
-                              border: `1px solid ${DIETARY_BADGE_COLORS[guest.dietary]}60`,
-                              cursor: 'help',
-                            }}
-                          >
-                            <Utensils size={12} />
-                            {DIETARY_LABELS[guest.dietary]}
-                          </span>
-                        ) : (
-                          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>Standard</span>
-                        )}
-                      </td>
-
-                      {/* Plus One */}
-                      <td style={{ padding: 'var(--space-3) var(--space-2)' }}>
-                        {guest.plusOne ? (
-                          <Badge variant="info">
-                            +1 {guest.plusOneName ? `(${guest.plusOneName})` : ''}
-                          </Badge>
-                        ) : (
-                          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>Solo</span>
-                        )}
-                      </td>
-
-                      {/* Table Assignment */}
-                      <td style={{ padding: 'var(--space-3) var(--space-2)' }}>
-                        {guest.tableNumber ? (
-                          <span style={{ fontWeight: 600, color: 'var(--text)', fontSize: 'var(--text-xs)' }}>
-                            {guest.tableNumber}
-                          </span>
-                        ) : (
-                          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                            Unassigned
-                          </span>
-                        )}
-                      </td>
-
-                      {/* Actions */}
-                      <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}>
-                        <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => handleOpenEdit(guest)}
-                            style={{ padding: '4px 8px' }}
-                            title="Edit guest details"
-                            aria-label={`Edit ${guest.name}`}
-                          >
-                            <Edit2 size={13} />
-                          </Button>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => {
-                              onDeleteGuest(guest.id);
-                              toast.showToast(`Removed ${guest.name}`, 'info');
-                            }}
-                            style={{ padding: '4px 8px', color: 'var(--color-danger)' }}
-                            title="Remove guest"
-                            aria-label={`Remove ${guest.name}`}
-                          >
-                            <Trash2 size={13} />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
+                      guest={guest}
+                      isSelected={isSelected}
+                      onToggleSelect={handleToggleSelect}
+                      onQuickRsvpChange={handleQuickRsvpChange}
+                      onOpenEdit={handleOpenEdit}
+                      onDeleteGuest={handleDeleteGuest}
+                    />
                   );
                 })}
+                {isVirtual && bottomSpacerHeight > 0 && (
+                  <tr style={{ height: `${bottomSpacerHeight}px` }} aria-hidden="true">
+                    <td colSpan={7} style={{ padding: 0, border: 'none' }} />
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
