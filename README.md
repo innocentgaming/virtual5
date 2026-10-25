@@ -8,7 +8,7 @@
 [![Linter](https://img.shields.io/badge/Oxlint-0%20Warnings%20%2F%200%20Errors-success?style=flat-square)](https://oxc.rs/)
 [![Accessibility](https://img.shields.io/badge/WCAG-AA%20Compliant-blueviolet?style=flat-square)](https://www.w3.org/WAI/standards-guidelines/wcag/)
 [![Currency](https://img.shields.io/badge/Currency-INR%20(%E2%82%B9)%20en--IN-orange?style=flat-square)](#)
-[![Repo Size](https://img.shields.io/badge/Repo%20Size-~482%20KiB%20(%3C10MB)-brightgreen?style=flat-square)](#)
+[![Repo Size](https://img.shields.io/badge/Repo%20Size-~410%20KiB%20(%3C10MB)-brightgreen?style=flat-square)](#)
 
 An intelligent, full-stack, personalized event planning assistant engineered specifically for the Indian event planning ecosystem. EventWise AI organizes **Royal Destination Weddings**, **Bollywood Milestone Birthdays**, and **Grand Community Festivals / Melas** with context-aware recommendations, dynamic Indian Rupee (`₹`) budget management with Lakhs & Crores formatting (`en-IN`), Vedic timeline Run of Show itineraries, Jain & Pure Vegetarian dietary protocols, specialized vendor checklists (Pandit Ji, Mehendi Artists, Dhol Squads, Royal Thali Catering), and a 100% deterministic offline-capable decision engine.
 
@@ -41,7 +41,8 @@ An intelligent, full-stack, personalized event planning assistant engineered spe
 8. [Security Architecture & Threat Mitigation](#8-security-architecture--threat-mitigation)
 9. [Automated Verification & Test Suite](#9-automated-verification--test-suite)
 10. [Step-by-Step Indian Wedding Walkthrough](#10-step-by-step-indian-wedding-walkthrough)
-11. [Repository & Branch Governance](#11-repository--branch-governance)
+11. [Quickstart, Local Setup & Offline Verification](#11-quickstart-local-setup--offline-verification)
+12. [Repository & Branch Governance](#12-repository--branch-governance)
 
 ---
 
@@ -81,6 +82,7 @@ An intelligent, full-stack, personalized event planning assistant engineered spe
 | **Date-Aware Timeline** | Intelligent preparation schedule adjusting milestones dynamically based on days remaining. | Automatic overdue detection, short-notice triage warnings (< 14 and < 21 days), and milestone dependencies. |
 | **Vendor Checklist & Interview Guide** | Pipeline tracking with specialized vetting questions for Pandit Ji, Mehendi, Dhol, and Caterers. | Zero hallucination of fake vendor names; focused on actionable checklists and contracts. |
 | **Explainable Decision Engine** | Real-time rule evaluator checking budgets, venue weather contingency, Baraat sound curfew, and Jain dietary needs. | 100% deterministic offline engine that runs without requiring external APIs or network connectivity. |
+| **What-If Scenario Simulator & Trade-off Engine** | Interactive stress-testing for vendor cost hikes (+20%), guest surges, timeline crunches, and weather shifts. | Generates 2–3 quantified trade-offs in ₹ with 1-click execution and a 20-entry undo history stack. |
 | **Theme System & Dark Mode** | Dual light/dark mode and event-specific color palettes (`wedding`, `birthday`, `community`). | WCAG AA contrast compliant with persistent theme preference in localStorage. |
 
 ---
@@ -99,8 +101,9 @@ flowchart TD
     subgraph Core Engines & Domain Logic
         Hook --> Decision[decisionEngine - Business Rules & Math]
         Hook --> Fallback[fallbackPlanner - Indian Deterministic Planner]
-        Hook --> AI[aiPlanner - Gemini 3.8-Flash & 2.5-Flash-Lite]
+        Hook --> AI[aiPlanner - Gemini Flash Latest, 3.8-Flash & 2.5-Flash-Lite]
         Hook --> Copilot[copilotService - Grounded Asynchronous Assistant]
+        Hook --> Scenarios[Scenario Simulator - What-If & Trade-off Engine]
         Hook --> Calendar[calendarService - RFC 5545 iCal Generator]
         Hook --> Formatters[formatters - Indian Rupee, Lakhs & Crores]
     end
@@ -116,19 +119,23 @@ flowchart TD
 ```
 src/
 ├── types/
-│   └── event.ts             # Domain models (EventPlan, BudgetItem, TaskItem, VendorItem, GuestItem, ScheduleItem, DecisionInsight)
+│   └── event.ts             # Domain models (EventPlan, BudgetItem, TaskItem, VendorItem, GuestItem, ScheduleItem, ScenarioChange, DecisionInsight)
 ├── services/
 │   ├── decisionEngine.ts    # Business rule engine, budget math, timeline auditor, Jain dietary & Baraat curfew rules
 │   ├── fallbackPlanner.ts   # Deterministic Indian planning engine with tiered recommendations & default schedules/guests
-│   ├── aiPlanner.ts         # Multi-model Gemini API integration (3.8-flash -> 2.5-flash-lite) with schema validation & fallback
+│   ├── aiPlanner.ts         # Multi-model Gemini API integration (flash-latest -> 3.8-flash -> 2.5-flash-lite) with schema validation
+│   ├── geminiClient.ts      # Hardened HTTP client with header authentication, credential redaction & timeout controls
 │   ├── calendarService.ts   # RFC 5545 iCalendar (.ics) generation and download service with VALARM triggers
 │   ├── copilotService.ts    # Grounded AI Copilot assistant with contextual recommendations & deterministic fallback engine
-│   ├── storageService.ts    # LocalStorage manager with corrupted JSON recovery & schema validator
-│   └── formatters.ts        # Currency (₹ en-IN), Lakhs/Crores shorthand (formatIndianShort), and percentage utilities
+│   └── storageService.ts    # LocalStorage manager with corrupted JSON recovery & schema validator
+├── utils/
+│   ├── formatters.ts        # Currency (₹ en-IN), Lakhs/Crores shorthand (formatIndianShort), and percentage utilities
+│   ├── validators.ts        # Pure TypeScript validation, sanitization, and finite bounds checking
+│   └── lazyWithPreload.ts   # Prefetching and code-splitting utility for sub-second tab transitions
 ├── data/
 │   └── sampleEvents.ts      # Curated Indian templates: Rajasthan Wedding (₹35 Lakhs), Mumbai Bollywood Bash, Bengaluru Diwali Mela
 ├── hooks/
-│   └── useEventPlan.ts      # Central state hook with persistence, recalculation & dispatch
+│   └── useEventPlan.ts      # Central state hook with persistence, recalculation, trade-off execution & undo history
 ├── components/
 │   ├── layout/              # Header with theme toggle, Copilot trigger, iCal sync, and Responsive Navigation
 │   ├── dashboard/           # Metrics cards, countdown, utilization bar, urgent alerts, quick action shortcuts
@@ -137,11 +144,13 @@ src/
 │   ├── timeline/            # Date-aware schedule, status filters, overdue badges
 │   ├── guests/              # Guest list, RSVP tracker, Jain & Pure Veg dietary badges, search, and add/edit modal
 │   ├── schedule/            # Day-of Run of Show, Vedic milestone cards, coordinator roles, iCal & print buttons
+│   ├── scenarios/           # What-If Scenario Simulator with +20% vendor spike, guest surge & 1-click trade-offs
 │   ├── copilot/             # Slide-in AI Copilot drawer with suggested prompt chips and chat thread
 │   ├── vendors/             # Category pipeline, status badges, Pandit / Mehendi / Dhol interview questions
 │   ├── ideas/               # Themes, decor, activities, low/mid/high tiers, cost impact in INR
+│   ├── ui/                  # Accessible design system primitives (Button, Card, Badge, Modal, Toast, Skeleton, EmptyState)
 │   └── ai/                  # Business rule inspector & active API key badge indicator
-├── test/                    # Comprehensive unit, integration, and accessibility tests (11 suites, 54 tests)
+├── test/                    # Comprehensive unit, integration, and accessibility tests (23 suites, 127 tests)
 ├── index.css                # Cohesive design system, dark mode tokens & printable schedule stylesheet
 ├── App.tsx                  # Main application orchestrator
 └── main.tsx                 # Application entry point
@@ -185,21 +194,26 @@ EventWise AI features a multi-tiered architecture that guarantees 100% operation
 
 ```mermaid
 graph TD
-    Prompt[User Generates Plan / Asks Copilot] --> Tier1{Gemini 3.8 Flash}
+    Prompt[User Generates Plan / Asks Copilot] --> Tier1{Gemini Flash Latest}
     Tier1 -- Success --> Valid1{Validate JSON Schema}
     Valid1 -- Valid --> Output[Structured Indian Event Plan]
-    Valid1 -- Invalid --> Tier2{Gemini 2.5 Flash Lite}
+    Valid1 -- Invalid / Error --> Tier2{Gemini 3.8 Flash}
     Tier1 -- 404 / 500 / Network Error --> Tier2
     Tier2 -- Success --> Valid2{Validate JSON Schema}
     Valid2 -- Valid --> Output
-    Valid2 -- Invalid --> Fallback[Deterministic Rule Engine]
-    Tier2 -- Error / Quota / Offline --> Fallback
+    Valid2 -- Invalid / Error --> Tier3{Gemini 2.5 Flash Lite}
+    Tier2 -- 404 / 500 / Network Error --> Tier3
+    Tier3 -- Success --> Valid3{Validate JSON Schema}
+    Valid3 -- Valid --> Output
+    Tier3 -- Error / Quota / Offline --> Fallback[Deterministic Rule Engine]
+    Valid3 -- Invalid --> Fallback
     Fallback --> Output
 ```
 
-1. **Tier 1 — Gemini 3.8 Flash (`models/gemini-3.8-flash`)**: Google's latest high-speed multimodal reasoning model.
-2. **Tier 2 — Gemini 2.5 Flash Lite (`models/gemini-2.5-flash-lite`)**: Ultra-lightweight fallback model for maximum resilience.
-3. **Tier 3 — Deterministic Fallback Engine**: 100% offline rule-based expert engine providing complete plans with Indian wedding defaults, tasks, and vendors.
+1. **Tier 1 — Gemini Flash Latest (`models/gemini-flash-latest`)**: Google's production multimodal low-latency model.
+2. **Tier 2 — Gemini 3.8 Flash (`models/gemini-3.8-flash`)**: High-speed multimodal reasoning model.
+3. **Tier 3 — Gemini 2.5 Flash Lite (`models/gemini-2.5-flash-lite`)**: Ultra-lightweight fallback candidate.
+4. **Tier 4 — Deterministic Fallback Engine**: 100% offline rule-based expert engine providing complete plans with Indian wedding defaults, tasks, and vendors.
 
 ### Centralized Gemini Client (`src/services/geminiClient.ts`)
 All Gemini interactions are routed through a hardened HTTP client:
@@ -356,8 +370,12 @@ EventWise AI implements a defense-in-depth security model engineered specificall
 npm test
 ```
 
-### Actual Test Suite Results (19 Files, 99 Tests, 100% Passing):
+### Actual Test Suite Results (23 Files, 127 Tests, 100% Passing):
 ```text
+ ✓ src/test/scenarioChangeLoop.test.ts (11 tests)
+ ✓ src/test/copilotGrounding.test.ts (7 tests)
+ ✓ src/test/performanceOptimization.test.tsx (9 tests)
+ ✓ src/test/a11yBaselineScan.test.tsx (1 test)
  ✓ src/test/components.test.tsx (8 tests)
  ✓ src/test/qaAccessibility.test.tsx (5 tests)
  ✓ src/test/setupWizard.test.tsx (3 tests)
@@ -378,9 +396,9 @@ npm test
  ✓ src/test/schedule.test.ts (3 tests)
  ✓ src/test/copilot.test.ts (5 tests)
 
- Test Files  19 passed (19)
-      Tests  99 passed (99)
-   Duration  116.09s
+ Test Files  23 passed (23)
+      Tests  127 passed (127)
+   Duration  21.62s
 ```
 
 ### Linter Audit:
@@ -391,27 +409,29 @@ Found 0 warnings and 0 errors.
 Finished in 223ms on 68 files with 116 rules using 12 threads.
 ```
 
-### Production Build Metrics:
+### Production Build Metrics & Strict Performance Size Budget:
 ```bash
 npm run build
-> tsc -b && vite build
+> tsc -b && vite build && node scripts/check-size-budget.mjs
 vite v8.3.5 building client environment for production...
 transforming...
 ✓ 1967 modules transformed.
 rendering chunks...
 computing gzip size...
 dist/index.html                   1.95 kB │ gzip:   0.98 kB
-dist/assets/index-mTHxrf89.css   29.81 kB │ gzip:   6.00 kB
-dist/assets/index-ClAtF2I-.js   497.10 kB │ gzip: 140.41 kB
+dist/assets/index.css            29.96 kB │ gzip:   5.97 kB
+dist/assets/index.js           138.23 kB │ gzip:  42.04 kB
+dist/assets/vendor-react.js     218.74 kB │ gzip:  68.27 kB
 ✓ built in 2.03s
 ```
 
 ### Bundle Size Analysis:
-* **Production Bundle**: 497.10 kB JS / 140.41 kB gzip (CSS: 29.81 kB / 6.00 kB gzip).
+* **Code-Split Main JS Bundle**: **138.23 kB** raw / **42.04 kB** gzip (Limit: 150 kB / 50 kB budget).
+* **Main CSS Bundle**: **29.96 kB** raw / **5.97 kB** gzip (Limit: 50 kB / 15 kB budget).
 * **Zero New Runtime Dependencies**: All validation, security header generation, iCalendar escaping, and prompt isolation logic implemented in pure TypeScript.
 
 ### Repository Size Audit:
-* Git Pack / Objects Size: **~480 KiB** (Strictly $< 10\text{ MB}$ limit).
+* Git Pack / Objects Size: **~410 KiB** (Strictly $< 10\text{ MB}$ limit).
 * Branches: Single active branch (`main`).
 
 ---
@@ -444,11 +464,62 @@ dist/assets/index-ClAtF2I-.js   497.10 kB │ gzip: 140.41 kB
    - Click **Export iCal (.ics)** to sync all rituals to your calendar with automated alarms.
 6. **Ask the AI Copilot**:
    - Click **Ask Copilot** in the header.
-   - Ask: *"How should we handle the 10 PM sound curfew for our Baraat?"* or *"What questions should we ask our Mehendi artist?"* and receive culturally grounded advice in Indian Rupees and terminology.
+   - Ask: *"How should we handle the 10 PM sound curfew for our Baraat?"* or *"What questions should we ask our Mehendi artist?"* and receive culturally grounded advice in Indian Rupees and terminology with 1-click actionable structured proposals.
+7. **Simulate What-If Changes & 1-Click Trade-offs**:
+   - Click **Simulate Changes** on the Dashboard banner.
+   - Trigger a preset like **"Caterer +20% Hike"** or move the guest count slider.
+   - Review live impact: utilization %, per-guest cost variance, and triggered rules.
+   - Click **Apply** on a quantified trade-off (e.g., *"Trim Mandap Decor by ₹52,500"*).
+   - Verify plan updates immediately and records in the **Live Change Log** with full **Undo** capability.
 
 ---
 
-## 11. Repository & Branch Governance
+## 11. Quickstart, Local Setup & Offline Verification
+
+### Prerequisites
+* Node.js $\ge 18.0.0$ (LTS recommended)
+* npm $\ge 9.0.0$
+
+### 60-Second Setup:
+```bash
+# 1. Clone repository
+git clone https://github.com/innocentgaming/virtual5.git
+cd virtual5
+
+# 2. Install dependencies (pure React 19 + TypeScript stack, zero external bloat)
+npm install
+
+# 3. Launch development server
+npm run dev
+# -> Opens http://localhost:5173
+
+# 4. Run automated test suite (23 test files, 127/127 tests passing)
+npm test
+
+# 5. Run static lint check (Oxlint)
+npm run lint
+
+# 6. Run production build with performance size budget verification
+npm run build
+```
+
+### 100% Offline-First Verification (Zero API Key Needed):
+EventWise AI is engineered to run completely offline without requiring Google Gemini API credits:
+1. Open `http://localhost:5173` in any modern web browser.
+2. In browser DevTools (Network tab), select **Offline**.
+3. Click **Plan New Event** -> choose **Rajasthan Royal Destination Wedding** or customize parameters -> click **Generate Event Plan**.
+4. The Tier 4 Deterministic Rule Engine creates a comprehensive, culturally authentic Indian wedding plan in milliseconds.
+5. All calculations, What-If scenario simulations, 1-click trade-offs, and RFC 5545 iCalendar exports execute entirely in-browser.
+
+### Optional: Live Gemini API Integration
+To test live multimodal LLM responses:
+1. Click **Enter API Key** in the header.
+2. Supply your Google AI Studio API key (or set `VITE_GEMINI_API_KEY` in `.env` for local testing).
+3. Requests prioritize `models/gemini-flash-latest`, with seamless automated fallback to `models/gemini-3.8-flash`, `models/gemini-2.5-flash-lite`, and the local expert engine.
+
+---
+
+## 12. Repository & Branch Governance
 
 - **Remote Origin**: `https://github.com/innocentgaming/virtual5.git`
 - **Active Branch**: `main`
