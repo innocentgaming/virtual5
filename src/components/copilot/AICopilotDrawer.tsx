@@ -214,6 +214,14 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
     }
   };
 
+  const lastSuggestionClickRef = useRef(0);
+  const handleSuggestionClick = (chip: string) => {
+    const now = Date.now();
+    if (now - lastSuggestionClickRef.current < 400 || isThinking) return;
+    lastSuggestionClickRef.current = now;
+    handleSendPrompt(chip);
+  };
+
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     handleSendPrompt(inputVal);
@@ -575,7 +583,7 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
                 <button
                   key={idx}
                   type="button"
-                  onClick={() => handleSendPrompt(chip)}
+                  onClick={() => handleSuggestionClick(chip)}
                   style={{
                     padding: '4px 10px',
                     borderRadius: 'var(--radius-pill)',
