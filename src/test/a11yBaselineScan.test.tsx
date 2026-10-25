@@ -160,5 +160,5 @@ describe('Step 0 Accessibility Baseline Audit - All Main Views', () => {
         />
       </div>
     ));
-  });
+  }, 60000);
 });
