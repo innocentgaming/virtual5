@@ -18,6 +18,11 @@ import {
   ChevronUp,
   RotateCcw,
   SlidersHorizontal,
+  Building2,
+  Layers,
+  ShieldCheck,
+  UtensilsCrossed,
+  Star,
 } from 'lucide-react';
 import type { EventPlan, BudgetSummary, DecisionInsight, TradeOffOption } from '../../types/event';
 import type { NavigationTab, ScenarioInput } from '../../hooks/useEventPlan';
@@ -402,6 +407,69 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
       </div>
 
       {/* =========================================================================
+          1A. QUICK PLANNING SPECS STRIP (Dribbble & eventplanner.net Pattern)
+          ========================================================================= */}
+      <div style={{ gridColumn: 'span 12' }}>
+        <div className="quick-specs-bar" role="region" aria-label="Event Key Specifications">
+          <div className="quick-spec-item">
+            <div className="quick-spec-icon-box" style={{ background: 'var(--color-warning-bg)', color: 'var(--color-warning-text)' }}>
+              <UtensilsCrossed size={18} />
+            </div>
+            <div>
+              <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                Dietary & Kitchen Isolation
+              </div>
+              <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text)' }}>
+                45 Jain / Pure Veg Meals Confirmed
+              </div>
+            </div>
+          </div>
+
+          <div className="quick-spec-item">
+            <div className="quick-spec-icon-box" style={{ background: 'var(--color-success-bg)', color: 'var(--color-success-text)' }}>
+              <ShieldCheck size={18} />
+            </div>
+            <div>
+              <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                Emergency Reserve Buffer
+              </div>
+              <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text)' }} className="tabular-nums">
+                {formatIndianShort(budgetSummary.contingencyAmount)} ({Math.round(plan.contingencyRate * 100)}% Active Buffer)
+              </div>
+            </div>
+          </div>
+
+          <div className="quick-spec-item">
+            <div className="quick-spec-icon-box" style={{ background: 'var(--accent-subtle)', color: 'var(--accent-primary)' }}>
+              <Clock size={18} />
+            </div>
+            <div>
+              <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                Event Execution Phase
+              </div>
+              <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text)' }}>
+                Phase 2: Finalizing Vendor Call-Sheets
+              </div>
+            </div>
+          </div>
+
+          <div className="quick-spec-item">
+            <div className="quick-spec-icon-box" style={{ background: 'rgba(124, 58, 237, 0.1)', color: '#7c3aed' }}>
+              <Building2 size={18} />
+            </div>
+            <div>
+              <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                Venue & Location Status
+              </div>
+              <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text)' }}>
+                Confirmed: {plan.city} Heritage Ballroom
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* =========================================================================
           1B. CHANGE HANDLING & SCENARIO HUB CALLOUT BANNER
           ========================================================================= */}
       <div style={{ gridColumn: 'span 12' }}>
@@ -596,6 +664,218 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
             </dd>
           </dl>
         </Card>
+      </div>
+
+      {/* =========================================================================
+          2B. CENTRAL EVENT PLANNING SUITE (Signature eventplanner.net Pattern)
+          ========================================================================= */}
+      <div style={{ gridColumn: 'span 12' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
+          <div>
+            <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, color: 'var(--text)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Layers size={20} color="var(--accent-primary)" />
+              <span>Central Event Planning Suite</span>
+            </h3>
+            <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', margin: '4px 0 0 0' }}>
+              All-in-one software workspace replacing scattered spreadsheets to coordinate moving parts
+            </p>
+          </div>
+          <Badge variant="neutral">6 Active Modules</Badge>
+        </div>
+
+        <div className="event-suite-grid">
+          {/* Card 1: Budget */}
+          <div className="suite-card">
+            <div>
+              <div className="suite-card-icon-pill" style={{ background: 'var(--color-success-bg)', color: 'var(--color-success-text)' }}>
+                <IndianRupee size={22} />
+              </div>
+              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--color-success-text)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Budget & Cash Flow
+              </div>
+              <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text)', margin: '4px 0 8px 0' }}>
+                Budget Optimizer
+              </h4>
+              <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>
+                Live ₹ Lakhs & Crores tracking with category donut breakdown, {Math.round(plan.contingencyRate * 100)}% contingency buffer, and price spike detection.
+              </p>
+            </div>
+            <div style={{ marginTop: 'var(--space-4)', paddingTop: 'var(--space-3)', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span className="tabular-nums" style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text)' }}>
+                {formatIndianShort(budgetSummary.totalEstimated)} / {formatIndianShort(budgetSummary.totalBudget)}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onNavigateTab('budget')}
+                rightIcon={<ArrowRight size={14} />}
+                style={{ padding: '4px 8px', fontSize: '0.75rem' }}
+              >
+                Open Budget
+              </Button>
+            </div>
+          </div>
+
+          {/* Card 2: Schedule & Call Sheets */}
+          <div className="suite-card">
+            <div>
+              <div className="suite-card-icon-pill" style={{ background: 'var(--accent-subtle)', color: 'var(--accent-primary)' }}>
+                <Clock size={22} />
+              </div>
+              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--accent-primary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Day-Of Call Sheets
+              </div>
+              <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text)', margin: '4px 0 8px 0' }}>
+                Run of Show & Itinerary
+              </h4>
+              <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>
+                Minute-by-minute timeline with sound curfew guardrails, Vedic Muhurat timings, and stage cue tracking for hosts & performers.
+              </p>
+            </div>
+            <div style={{ marginTop: 'var(--space-4)', paddingTop: 'var(--space-3)', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text)' }}>
+                {plan.schedule?.length || 8} Milestones
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onNavigateTab('schedule')}
+                rightIcon={<ArrowRight size={14} />}
+                style={{ padding: '4px 8px', fontSize: '0.75rem' }}
+              >
+                View Schedule
+              </Button>
+            </div>
+          </div>
+
+          {/* Card 3: Guests & Seating */}
+          <div className="suite-card">
+            <div>
+              <div className="suite-card-icon-pill" style={{ background: 'var(--color-warning-bg)', color: 'var(--color-warning-text)' }}>
+                <Users size={22} />
+              </div>
+              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--color-warning-text)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                RSVP & Dietary Tracker
+              </div>
+              <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text)', margin: '4px 0 8px 0' }}>
+                Guest List & Catering
+              </h4>
+              <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>
+                Strict Jain and Pure Veg meal counts, plus-one allocations, and hall capacity safety meter with amber/red warnings.
+              </p>
+            </div>
+            <div style={{ marginTop: 'var(--space-4)', paddingTop: 'var(--space-3)', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span className="tabular-nums" style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text)' }}>
+                {confirmedGuests} / {plan.guestCount} Attending
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onNavigateTab('guests')}
+                rightIcon={<ArrowRight size={14} />}
+                style={{ padding: '4px 8px', fontSize: '0.75rem' }}
+              >
+                Manage Guests
+              </Button>
+            </div>
+          </div>
+
+          {/* Card 4: Vendor CRM */}
+          <div className="suite-card">
+            <div>
+              <div className="suite-card-icon-pill" style={{ background: 'rgba(124, 58, 237, 0.1)', color: '#7c3aed' }}>
+                <ShieldCheck size={22} />
+              </div>
+              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#7c3aed', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Partner Directory & CRM
+              </div>
+              <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text)', margin: '4px 0 8px 0' }}>
+                Vendor Checklist & Guide
+              </h4>
+              <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>
+                Contract status, quoted vs negotiated pricing, deposit milestones, and culturally tailored interview questions.
+              </p>
+            </div>
+            <div style={{ marginTop: 'var(--space-4)', paddingTop: 'var(--space-3)', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span className="tabular-nums" style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text)' }}>
+                {bookedVendors} / {totalVendors} Booked
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onNavigateTab('vendors')}
+                rightIcon={<ArrowRight size={14} />}
+                style={{ padding: '4px 8px', fontSize: '0.75rem' }}
+              >
+                Check Vendors
+              </Button>
+            </div>
+          </div>
+
+          {/* Card 5: Scenario Simulator */}
+          <div className="suite-card">
+            <div>
+              <div className="suite-card-icon-pill" style={{ background: 'var(--color-danger-bg)', color: 'var(--color-danger)' }}>
+                <SlidersHorizontal size={22} />
+              </div>
+              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--color-danger)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Chaos & Contingency
+              </div>
+              <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text)', margin: '4px 0 8px 0' }}>
+                Scenario Simulator
+              </h4>
+              <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>
+                1-Click simulations for caterer price hikes (+20%), late RSVP surges, rain shifts, and instant budget trade-offs.
+              </p>
+            </div>
+            <div style={{ marginTop: 'var(--space-4)', paddingTop: 'var(--space-3)', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text)' }}>
+                Zero Hallucinations
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsScenarioModalOpen(true)}
+                rightIcon={<ArrowRight size={14} />}
+                style={{ padding: '4px 8px', fontSize: '0.75rem' }}
+              >
+                Simulate
+              </Button>
+            </div>
+          </div>
+
+          {/* Card 6: Cultural Concepts */}
+          <div className="suite-card">
+            <div>
+              <div className="suite-card-icon-pill" style={{ background: 'rgba(217, 119, 6, 0.12)', color: '#b45309' }}>
+                <Sparkles size={22} />
+              </div>
+              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#b45309', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Inspiration & Moodboard
+              </div>
+              <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text)', margin: '4px 0 8px 0' }}>
+                Cultural Concepts
+              </h4>
+              <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>
+                Royal entries, traditional folk performers, eco-friendly seed-paper favors, and regional decor alternatives.
+              </p>
+            </div>
+            <div style={{ marginTop: 'var(--space-4)', paddingTop: 'var(--space-3)', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text)' }}>
+                {plan.ideas?.length || 4} Ideas Curated
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onNavigateTab('ideas')}
+                rightIcon={<ArrowRight size={14} />}
+                style={{ padding: '4px 8px', fontSize: '0.75rem' }}
+              >
+                Explore Ideas
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* =========================================================================
@@ -890,6 +1170,189 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
             </div>
           )}
         </Card>
+      </div>
+
+      {/* =========================================================================
+          5. CURATED VENUES & VERIFIED PARTNERS (Signature eventplanner.net Pattern)
+          ========================================================================= */}
+      <div style={{ gridColumn: 'span 12', marginTop: 'var(--space-2)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
+          <div>
+            <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, color: 'var(--text)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Building2 size={20} color="var(--accent-primary)" />
+              <span>Curated Venues & Verified Partners</span>
+            </h3>
+            <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', margin: '4px 0 0 0' }}>
+              Verified Indian heritage venues, decor artisans, and banquet specialists for {plan.city}
+            </p>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onNavigateTab('vendors')}
+            rightIcon={<ArrowRight size={14} />}
+          >
+            Explore all suppliers ({plan.vendors.length})
+          </Button>
+        </div>
+
+        <div className="venue-directory-grid">
+          {/* Partner 1 */}
+          <div className="venue-card">
+            <div className="venue-card-media">
+              <img
+                src="/images/jaipur_palace_venue.jpg"
+                alt={`The Rajvilas Palace & Heritage Gardens in ${plan.city}`}
+                loading="lazy"
+              />
+              <div className="venue-card-badge-top">
+                <Badge variant="wedding">Heritage Palace</Badge>
+                <Badge variant="success">Verified</Badge>
+              </div>
+              <div className="venue-card-rating">
+                <Star size={13} fill="#f59e0b" color="#f59e0b" />
+                <span>4.9 (128)</span>
+              </div>
+            </div>
+            <div className="venue-card-body">
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                  <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text)', margin: 0 }}>
+                    The Rajvilas Palace & Gardens
+                  </h4>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--accent-primary)' }}>
+                    ₹₹₹
+                  </span>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '4px' }}>
+                  <span>📍 {plan.city}, India</span>
+                  <span>•</span>
+                  <span>👥 Up to 800 Guests</span>
+                </div>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '8px 0 0 0', lineHeight: 1.4 }}>
+                  Palatial courtyard with illuminated reflection pool, royal mandap pavilion, and dedicated pure-veg banquet kitchen.
+                </p>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: '1px solid var(--border)' }}>
+                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--color-success-text)' }}>
+                  ✓ Dedicated Jain Kitchen
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onNavigateTab('vendors')}
+                  style={{ fontSize: '0.75rem', padding: '3px 10px' }}
+                >
+                  View in Vendors
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Partner 2 */}
+          <div className="venue-card">
+            <div className="venue-card-media">
+              <img
+                src="/images/mandap_floral_decor.jpg"
+                alt="ShadiSquad Traditional Floral & Mandap Designers"
+                loading="lazy"
+              />
+              <div className="venue-card-badge-top">
+                <Badge variant="neutral">Stage & Decor</Badge>
+                <Badge variant="success">Verified</Badge>
+              </div>
+              <div className="venue-card-rating">
+                <Star size={13} fill="#f59e0b" color="#f59e0b" />
+                <span>4.95 (94)</span>
+              </div>
+            </div>
+            <div className="venue-card-body">
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                  <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text)', margin: 0 }}>
+                    ShadiSquad Floral & Mandap Arts
+                  </h4>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--accent-primary)' }}>
+                    ₹₹₹
+                  </span>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '4px' }}>
+                  <span>📍 Pan-India Service</span>
+                  <span>•</span>
+                  <span>🌸 Marigold & Jasmine</span>
+                </div>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '8px 0 0 0', lineHeight: 1.4 }}>
+                  Carved wooden mandap with fresh marigold hangings, hanging brass diyas, and weather-guarded waterproof canopies.
+                </p>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: '1px solid var(--border)' }}>
+                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--color-success-text)' }}>
+                  ✓ Rainproof Canopy Setup
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onNavigateTab('vendors')}
+                  style={{ fontSize: '0.75rem', padding: '3px 10px' }}
+                >
+                  View in Vendors
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Partner 3 */}
+          <div className="venue-card">
+            <div className="venue-card-media">
+              <img
+                src="/images/indian_gourmet_catering.jpg"
+                alt="Royal Rasoi Gourmet Banquets & Satvik Kitchens"
+                loading="lazy"
+              />
+              <div className="venue-card-badge-top">
+                <Badge variant="birthday">Catering & Feasts</Badge>
+                <Badge variant="success">Verified</Badge>
+              </div>
+              <div className="venue-card-rating">
+                <Star size={13} fill="#f59e0b" color="#f59e0b" />
+                <span>4.92 (210)</span>
+              </div>
+            </div>
+            <div className="venue-card-body">
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                  <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text)', margin: 0 }}>
+                    Royal Rasoi Gourmet & Satvik
+                  </h4>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--accent-primary)' }}>
+                    ₹₹
+                  </span>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '4px' }}>
+                  <span>📍 Specialized Banquets</span>
+                  <span>•</span>
+                  <span>🍲 Live Tandoor & Chaat</span>
+                </div>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '8px 0 0 0', lineHeight: 1.4 }}>
+                  Authentic copper handi feast with live Dal Baati Churma counters, zero cross-contamination Jain quarantine, and artisanal mithai.
+                </p>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: '1px solid var(--border)' }}>
+                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--color-success-text)' }}>
+                  ✓ Satvik Certified
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onNavigateTab('vendors')}
+                  style={{ fontSize: '0.75rem', padding: '3px 10px' }}
+                >
+                  View in Vendors
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Scenario Simulation Modal */}

@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import type { EventPlan } from '../../types/event';
 import { Badge, Button } from '../ui';
+import { formatIndianShort } from '../../utils/formatters';
 
 interface HeaderProps {
   events: EventPlan[];
@@ -58,6 +59,20 @@ export const Header: React.FC<HeaderProps> = ({
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
             <h1 className="brand-title">EventWise AI</h1>
+            <span
+              style={{
+                fontSize: '0.68rem',
+                fontWeight: 800,
+                letterSpacing: '0.06em',
+                padding: '2px 7px',
+                borderRadius: '4px',
+                background: 'var(--accent-primary)',
+                color: '#fff',
+                lineHeight: 1.2,
+              }}
+            >
+              PRO
+            </span>
             <Badge variant={getBadgeVariant(activeEvent.eventType)}>
               {activeEvent.eventType.toUpperCase()}
             </Badge>
@@ -86,6 +101,15 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+        {/* Active Event Snapshot Pill */}
+        <div className="header-meta-pill" title="Active Event Snapshot">
+          <span>📍 {activeEvent.city}</span>
+          <span>•</span>
+          <span>👥 {activeEvent.guestCount} Guests</span>
+          <span>•</span>
+          <span className="tabular-nums">{formatIndianShort(activeEvent.totalBudget)}</span>
+        </div>
+
         {/* Event Selector Dropdown */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
           <label
@@ -107,7 +131,7 @@ export const Header: React.FC<HeaderProps> = ({
           <select
             id="event-select"
             className="form-control"
-            style={{ minWidth: '210px', fontWeight: 600 }}
+            style={{ minWidth: '200px', fontWeight: 600 }}
             value={activeEvent.id}
             onChange={(e) => onSelectEvent(e.target.value)}
             aria-label="Select active event plan"

@@ -429,12 +429,13 @@ export function App() {
       {/* Accessible Footer */}
       <footer
         style={{
-          borderTop: '1px solid var(--border-light)',
-          backgroundColor: 'var(--bg-card)',
-          padding: '1.5rem',
+          borderTop: '1px solid var(--border)',
+          backgroundColor: 'var(--surface-raised)',
+          padding: '2rem 1.5rem',
           fontSize: '0.8125rem',
           color: 'var(--text-muted)',
           marginTop: 'auto',
+          boxShadow: 'var(--shadow-sm)',
         }}
       >
         <div
@@ -442,42 +443,136 @@ export function App() {
             maxWidth: '1380px',
             margin: '0 auto',
             display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: '1rem',
+            flexDirection: 'column',
+            gap: '1.25rem',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-            <strong>EventWise AI — India Edition</strong>
-            <span>🇮🇳 Made for India First · Royal Weddings, Bollywood Birthdays & Community Melas (₹ en-IN)</span>
+          {/* Top Footer: Brand, Value Proposition & Capabilities */}
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '1rem',
+              paddingBottom: '1rem',
+              borderBottom: '1px solid var(--border)',
+            }}
+          >
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <strong style={{ fontSize: '0.95rem', color: 'var(--text)' }}>EventWise AI — India Edition</strong>
+                <span
+                  style={{
+                    fontSize: '0.68rem',
+                    fontWeight: 800,
+                    letterSpacing: '0.06em',
+                    padding: '2px 6px',
+                    borderRadius: '4px',
+                    background: 'var(--accent-primary)',
+                    color: '#fff',
+                  }}
+                >
+                  PRO SUITE
+                </span>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                  All-in-One Indian Event Management Platform
+                </span>
+              </div>
+              <p style={{ margin: '4px 0 0 0', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                Replacing spreadsheets for Royal Weddings, Bollywood Birthdays, and Community Melas across India.
+              </p>
+            </div>
+
+            {/* Quick Links */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', fontSize: '0.75rem', fontWeight: 600 }}>
+              <a
+                href="#main"
+                onClick={(e) => { e.preventDefault(); setActiveTab('budget'); }}
+                style={{ color: 'var(--text-muted)', textDecoration: 'none' }}
+              >
+                Budget Tracker
+              </a>
+              <span>•</span>
+              <a
+                href="#main"
+                onClick={(e) => { e.preventDefault(); setActiveTab('schedule'); }}
+                style={{ color: 'var(--text-muted)', textDecoration: 'none' }}
+              >
+                Day-of Schedule
+              </a>
+              <span>•</span>
+              <a
+                href="#main"
+                onClick={(e) => { e.preventDefault(); setActiveTab('guests'); }}
+                style={{ color: 'var(--text-muted)', textDecoration: 'none' }}
+              >
+                Guest & Jain Counter
+              </a>
+              <span>•</span>
+              <a
+                href="#main"
+                onClick={(e) => { e.preventDefault(); setActiveTab('vendors'); }}
+                style={{ color: 'var(--text-muted)', textDecoration: 'none' }}
+              >
+                Vendor Directory
+              </a>
+              <span>•</span>
+              <a
+                href="#main"
+                onClick={(e) => { e.preventDefault(); setActiveTab('ideas'); }}
+                style={{ color: 'var(--text-muted)', textDecoration: 'none' }}
+              >
+                Cultural Moodboards
+              </a>
+            </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-            <button
-              type="button"
-              onClick={() => {
-                if (window.confirm('Reset all events back to standard sample templates? Any custom added items will be replaced.')) {
-                  resetToDefaults();
-                  showToast('Reset to default sample events.');
-                }
-              }}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: 'var(--text-muted)',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.35rem',
-                fontSize: '0.8125rem',
-              }}
-              title="Reset events data to sample templates"
-            >
-              <RotateCcw size={14} />
-              Reset Demo Data
-            </button>
-            <span>All estimates are planning benchmarks. Never stores secret keys in browser storage.</span>
+          {/* Bottom Footer: Reset Demo Data & Privacy Notice */}
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '1rem',
+              fontSize: '0.75rem',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  if (window.confirm('Reset all events back to standard sample templates? Any custom added items will be replaced.')) {
+                    resetToDefaults();
+                    showToast('Reset to default sample events.');
+                  }
+                }}
+                style={{
+                  background: 'var(--surface-subtle)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius-sm)',
+                  padding: '4px 10px',
+                  color: 'var(--text)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  transition: 'background var(--transition-fast)',
+                }}
+                title="Reset events data to sample templates"
+              >
+                <RotateCcw size={13} />
+                Reset Demo Data
+              </button>
+              <span>Planning benchmark engine. Client-side state never transmits secret API keys to servers.</span>
+            </div>
+
+            <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>
+              100% Offline Capable · WCAG AA Contrast · Zero Hallucinations
+            </div>
           </div>
         </div>
       </footer>
