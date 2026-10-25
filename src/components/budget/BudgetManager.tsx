@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useEffect, useCallback, useDeferredValue } from 'react';
 import {
   Plus,
   Trash2,
@@ -17,6 +17,7 @@ import type { BudgetItem, BudgetCategory, BudgetSummary, EventPlan } from '../..
 import { formatCurrency, formatIndianShort } from '../../utils/formatters';
 import { InteractiveBudgetChart } from './InteractiveBudgetChart';
 import { Card, CardHeader, Button, Badge, EmptyState, Modal, useToast } from '../ui';
+import { useVirtualList } from '../../hooks/useVirtualList';
 
 interface BudgetManagerProps {
   plan: EventPlan;
@@ -55,6 +56,127 @@ const CATEGORY_COLORS: Record<BudgetCategory, string> = {
 type SortField = 'name' | 'category' | 'estimatedCost' | 'actualCost' | 'variance';
 type SortDirection = 'asc' | 'desc';
 
+interface BudgetItemRowProps {
+  item: BudgetItem;
+  onStartEdit: (item: BudgetItem) => void;
+  onTogglePaid: (item: BudgetItem) => void;
+  onDeleteExpense: (id: string, name: string) => void;
+}
+
+const BudgetItemRow = React.memo<BudgetItemRowProps>(({
+  item,
+  onStartEdit,
+  onTogglePaid,
+  onDeleteExpense,
+}) => {
+  const hasActual = item.actualCost !== undefined;
+  const diff = hasActual ? item.actualCost! - item.estimatedCost : 0;
+  const diffPct = item.estimatedCost > 0 ? (diff / item.estimatedCost) * 100 : 0;
+  const isSpike = diffPct >= 20;
+
+  return (
+    <tr
+      key={item.id}
+      style={{
+        borderBottom: '1px solid var(--border)',
+        backgroundColor: isSpike ? 'var(--color-danger-bg)' : 'transparent',
+        transition: 'background-color var(--transition-fast)',
+      }}
+    >
+      <td style={{ padding: 'var(--space-3) var(--space-2)' }}>
+        <div style={{ fontWeight: 600, color: 'var(--text)' }}>{item.name}</div>
+        {item.notes && (
+          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>{item.notes}</div>
+        )}
+      </td>
+      <td style={{ padding: 'var(--space-3) var(--space-2)' }}>
+        <span
+          style={{
+            display: 'inline-block',
+            padding: '2px 8px',
+            borderRadius: 'var(--radius-sm)',
+            fontSize: 'var(--text-xs)',
+            fontWeight: 700,
+            backgroundColor: 'var(--surface-subtle)',
+            color: CATEGORY_COLORS[item.category] || 'inherit',
+            border: '1px solid var(--border)',
+          }}
+        >
+          {CATEGORY_LABELS[item.category] || item.category}
+        </span>
+      </td>
+      <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'right', fontWeight: 700 }} className="tabular-nums">
+        {formatCurrency(item.estimatedCost)}
+        {item.isPerGuest && (
+          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>per-guest scale</div>
+        )}
+      </td>
+      <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'right' }} className="tabular-nums">
+        {hasActual ? (
+          <strong style={{ color: diff > 0 ? 'var(--color-danger)' : 'var(--text)' }}>
+            {formatCurrency(item.actualCost!)}
+          </strong>
+        ) : (
+          <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>Pending quote</span>
+        )}
+      </td>
+      <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}>
+        {!hasActual ? (
+          <Badge variant="neutral">Estimated</Badge>
+        ) : diff <= 0 ? (
+          <Badge variant="success">✓ On budget</Badge>
+        ) : diffPct <= 10 ? (
+          <Badge variant="warning">+{formatIndianShort(diff)} (+{Math.round(diffPct)}%)</Badge>
+        ) : (
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <Badge variant="danger">+{formatIndianShort(diff)} (+{Math.round(diffPct)}%)</Badge>
+            {isSpike && (
+              <Badge variant="danger" title="Quote escalated >= 20% above estimate">
+                ↑ Spike
+              </Badge>
+            )}
+          </div>
+        )}
+      </td>
+      <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}>
+        <button
+          type="button"
+          onClick={() => onTogglePaid(item)}
+          className={`badge ${item.isPaid ? 'badge-success' : 'badge-neutral'}`}
+          style={{ cursor: 'pointer', border: 'none' }}
+          title="Click to toggle paid status"
+        >
+          {item.isPaid ? '✓ Paid' : '⏳ Invoiced'}
+        </button>
+      </td>
+      <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}>
+        <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => onStartEdit(item)}
+            style={{ padding: '4px 8px' }}
+            title="Edit this item"
+            aria-label={`Edit ${item.name}`}
+          >
+            <Edit2 size={13} />
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => onDeleteExpense(item.id, item.name)}
+            style={{ padding: '4px 8px', color: 'var(--color-danger)' }}
+            title="Delete this item"
+            aria-label={`Delete ${item.name}`}
+          >
+            <Trash2 size={13} />
+          </Button>
+        </div>
+      </td>
+    </tr>
+  );
+});
+
 export const BudgetManager: React.FC<BudgetManagerProps> = ({
   plan,
   budgetSummary,
@@ -90,6 +212,9 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
   const [sortField, setSortField] = useState<SortField>('estimatedCost');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
+  const deferredSearchQuery = useDeferredValue(searchQuery);
+  const deferredCategoryFilter = useDeferredValue(selectedCategoryFilter);
+
   // Focus inline edit input when editing begins
   useEffect(() => {
     if (editingId && editInputRef.current) {
@@ -105,6 +230,20 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
     setEditIsPaid(!!item.isPaid);
     setEditCategory(item.category);
   };
+
+  const handleStartEdit = useCallback((item: BudgetItem) => {
+    startEdit(item);
+  }, []);
+
+  const handleTogglePaid = useCallback((item: BudgetItem) => {
+    onUpdateExpense(item.id, { isPaid: !item.isPaid });
+    toast.showToast(item.isPaid ? 'Marked as unpaid' : 'Marked as paid', 'info');
+  }, [onUpdateExpense, toast]);
+
+  const handleDeleteExpense = useCallback((id: string, name: string) => {
+    onDeleteExpense(id);
+    toast.showToast(`Deleted ${name}`, 'info');
+  }, [onDeleteExpense, toast]);
 
   const cancelEdit = () => {
     setEditingId(null);
@@ -193,9 +332,9 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
   // Filter and sort items
   const filteredAndSortedItems = useMemo(() => {
     const list = plan.budgetItems.filter((item) => {
-      if (selectedCategoryFilter !== 'all' && item.category !== selectedCategoryFilter) return false;
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
+      if (deferredCategoryFilter !== 'all' && item.category !== deferredCategoryFilter) return false;
+      if (deferredSearchQuery.trim()) {
+        const q = deferredSearchQuery.toLowerCase();
         if (!item.name.toLowerCase().includes(q) && !(item.notes && item.notes.toLowerCase().includes(q))) {
           return false;
         }
@@ -224,7 +363,17 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
     });
 
     return list;
-  }, [plan.budgetItems, selectedCategoryFilter, searchQuery, sortField, sortDirection]);
+  }, [plan.budgetItems, deferredCategoryFilter, deferredSearchQuery, sortField, sortDirection]);
+
+  // Windowing for large expense sets (>100 items)
+  const {
+    visibleItems,
+    isVirtual,
+    topSpacerHeight,
+    bottomSpacerHeight,
+    containerRef,
+    onScroll,
+  } = useVirtualList(filteredAndSortedItems, { itemHeight: 56, threshold: 100 });
 
   // Current calculated contingency amount
   const liveContingencyAmount = Math.round(plan.totalBudget * plan.contingencyRate);
@@ -553,7 +702,15 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
             }
           />
         ) : (
-          <div style={{ overflowX: 'auto' }}>
+          <div
+            ref={containerRef}
+            onScroll={onScroll}
+            style={{
+              overflowX: 'auto',
+              maxHeight: isVirtual ? '600px' : undefined,
+              overflowY: isVirtual ? 'auto' : undefined,
+            }}
+          >
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 'var(--text-sm)' }}>
               <thead>
                 <tr style={{ borderBottom: '2px solid var(--border)', color: 'var(--text-muted)' }}>
@@ -607,228 +764,137 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
                 </tr>
               </thead>
               <tbody>
-                {filteredAndSortedItems.map((item) => {
+                {isVirtual && topSpacerHeight > 0 && (
+                  <tr style={{ height: `${topSpacerHeight}px` }} aria-hidden="true">
+                    <td colSpan={7} style={{ padding: 0, border: 'none' }} />
+                  </tr>
+                )}
+                {visibleItems.map((item) => {
                   const isEditing = editingId === item.id;
-                  const hasActual = item.actualCost !== undefined;
-                  const diff = hasActual ? item.actualCost! - item.estimatedCost : 0;
-                  const diffPct = item.estimatedCost > 0 ? (diff / item.estimatedCost) * 100 : 0;
-                  const isSpike = diffPct >= 20;
-
-                  return (
-                    <tr
-                      key={item.id}
-                      style={{
-                        borderBottom: '1px solid var(--border)',
-                        backgroundColor: isEditing
-                          ? 'var(--surface-subtle)'
-                          : isSpike
-                          ? 'var(--color-danger-bg)'
-                          : 'transparent',
-                        transition: 'background-color var(--transition-fast)',
-                      }}
-                    >
-                      {isEditing ? (
-                        <>
-                          <td style={{ padding: 'var(--space-3) var(--space-2)' }}>
-                            <input
-                              ref={editInputRef}
-                              type="text"
-                              className="form-control"
-                              value={editName}
-                              onChange={(e) => setEditName(e.target.value)}
-                              onKeyDown={(e) => handleInlineKeyDown(e, item.id)}
-                              aria-label="Edit item name"
-                              required
-                            />
-                          </td>
-                          <td style={{ padding: 'var(--space-3) var(--space-2)' }}>
-                            <select
-                              className="form-control"
-                              value={editCategory}
-                              onChange={(e) => setEditCategory(e.target.value as BudgetCategory)}
-                              onKeyDown={(e) => handleInlineKeyDown(e, item.id)}
-                              aria-label="Edit category"
-                            >
-                              {(Object.keys(CATEGORY_LABELS) as BudgetCategory[]).map((c) => (
-                                <option key={c} value={c}>
-                                  {CATEGORY_LABELS[c]}
-                                </option>
-                              ))}
-                            </select>
-                          </td>
-                          <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'right' }}>
+                  if (isEditing) {
+                    return (
+                      <tr
+                        key={item.id}
+                        style={{
+                          borderBottom: '1px solid var(--border)',
+                          backgroundColor: 'var(--surface-subtle)',
+                          transition: 'background-color var(--transition-fast)',
+                        }}
+                      >
+                        <td style={{ padding: 'var(--space-3) var(--space-2)' }}>
+                          <input
+                            ref={editInputRef}
+                            type="text"
+                            className="form-control"
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                            onKeyDown={(e) => handleInlineKeyDown(e, item.id)}
+                            aria-label="Edit item name"
+                            required
+                          />
+                        </td>
+                        <td style={{ padding: 'var(--space-3) var(--space-2)' }}>
+                          <select
+                            className="form-control"
+                            value={editCategory}
+                            onChange={(e) => setEditCategory(e.target.value as BudgetCategory)}
+                            onKeyDown={(e) => handleInlineKeyDown(e, item.id)}
+                            aria-label="Edit category"
+                          >
+                            {(Object.keys(CATEGORY_LABELS) as BudgetCategory[]).map((c) => (
+                              <option key={c} value={c}>
+                                {CATEGORY_LABELS[c]}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+                        <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'right' }}>
+                          <input
+                            type="number"
+                            min="0"
+                            step="500"
+                            className="form-control tabular-nums"
+                            style={{ width: '120px', marginLeft: 'auto', textAlign: 'right' }}
+                            value={editCost}
+                            onChange={(e) => setEditCost(Math.max(0, parseInt(e.target.value, 10) || 0))}
+                            onKeyDown={(e) => handleInlineKeyDown(e, item.id)}
+                            aria-label="Edit estimated cost"
+                          />
+                        </td>
+                        <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'right' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
                             <input
                               type="number"
                               min="0"
                               step="500"
+                              placeholder="Actual ₹"
                               className="form-control tabular-nums"
-                              style={{ width: '120px', marginLeft: 'auto', textAlign: 'right' }}
-                              value={editCost}
-                              onChange={(e) => setEditCost(Math.max(0, parseInt(e.target.value, 10) || 0))}
+                              style={{ width: '110px', textAlign: 'right', fontSize: 'var(--text-xs)' }}
+                              value={editActualCost}
+                              onChange={(e) =>
+                                setEditActualCost(
+                                  e.target.value === '' ? '' : Math.max(0, parseInt(e.target.value, 10) || 0)
+                                )
+                              }
                               onKeyDown={(e) => handleInlineKeyDown(e, item.id)}
-                              aria-label="Edit estimated cost"
+                              aria-label="Edit actual cost"
                             />
-                          </td>
-                          <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'right' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
-                              <input
-                                type="number"
-                                min="0"
-                                step="500"
-                                placeholder="Actual ₹"
-                                className="form-control tabular-nums"
-                                style={{ width: '110px', textAlign: 'right', fontSize: 'var(--text-xs)' }}
-                                value={editActualCost}
-                                onChange={(e) =>
-                                  setEditActualCost(
-                                    e.target.value === '' ? '' : Math.max(0, parseInt(e.target.value, 10) || 0)
-                                  )
-                                }
-                                onKeyDown={(e) => handleInlineKeyDown(e, item.id)}
-                                aria-label="Edit actual cost"
-                              />
-                            </div>
-                          </td>
-                          <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}>
-                            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>—</span>
-                          </td>
-                          <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}>
-                            <label style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: 'var(--text-xs)', cursor: 'pointer' }}>
-                              <input
-                                type="checkbox"
-                                checked={editIsPaid}
-                                onChange={(e) => setEditIsPaid(e.target.checked)}
-                                style={{ accentColor: 'var(--accent-primary)' }}
-                              />
-                              Paid
-                            </label>
-                          </td>
-                          <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}>
-                            <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
-                              <Button
-                                variant="primary"
-                                size="sm"
-                                onClick={() => saveEdit(item.id)}
-                                style={{ padding: '4px 8px' }}
-                                aria-label="Save changes"
-                              >
-                                <Check size={14} />
-                              </Button>
-                              <Button
-                                variant="secondary"
-                                size="sm"
-                                onClick={cancelEdit}
-                                style={{ padding: '4px 8px' }}
-                                aria-label="Cancel editing"
-                              >
-                                <X size={14} />
-                              </Button>
-                            </div>
-                          </td>
-                        </>
-                      ) : (
-                        <>
-                          <td style={{ padding: 'var(--space-3) var(--space-2)' }}>
-                            <div style={{ fontWeight: 600, color: 'var(--text)' }}>{item.name}</div>
-                            {item.notes && (
-                              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>{item.notes}</div>
-                            )}
-                          </td>
-                          <td style={{ padding: 'var(--space-3) var(--space-2)' }}>
-                            <span
-                              style={{
-                                display: 'inline-block',
-                                padding: '2px 8px',
-                                borderRadius: 'var(--radius-sm)',
-                                fontSize: 'var(--text-xs)',
-                                fontWeight: 700,
-                                backgroundColor: 'var(--surface-subtle)',
-                                color: CATEGORY_COLORS[item.category] || 'inherit',
-                                border: '1px solid var(--border)',
-                              }}
+                          </div>
+                        </td>
+                        <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}>
+                          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>—</span>
+                        </td>
+                        <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}>
+                          <label style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: 'var(--text-xs)', cursor: 'pointer' }}>
+                            <input
+                              type="checkbox"
+                              checked={editIsPaid}
+                              onChange={(e) => setEditIsPaid(e.target.checked)}
+                              style={{ accentColor: 'var(--accent-primary)' }}
+                            />
+                            Paid
+                          </label>
+                        </td>
+                        <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}>
+                          <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              onClick={() => saveEdit(item.id)}
+                              style={{ padding: '4px 8px' }}
+                              aria-label="Save changes"
                             >
-                              {CATEGORY_LABELS[item.category] || item.category}
-                            </span>
-                          </td>
-                          <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'right', fontWeight: 700 }} className="tabular-nums">
-                            {formatCurrency(item.estimatedCost)}
-                            {item.isPerGuest && (
-                              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>per-guest scale</div>
-                            )}
-                          </td>
-                          <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'right' }} className="tabular-nums">
-                            {hasActual ? (
-                              <strong style={{ color: diff > 0 ? 'var(--color-danger)' : 'var(--text)' }}>
-                                {formatCurrency(item.actualCost!)}
-                              </strong>
-                            ) : (
-                              <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>Pending quote</span>
-                            )}
-                          </td>
-                          <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}>
-                            {!hasActual ? (
-                              <Badge variant="neutral">Estimated</Badge>
-                            ) : diff <= 0 ? (
-                              <Badge variant="success">✓ On budget</Badge>
-                            ) : diffPct <= 10 ? (
-                              <Badge variant="warning">+{formatIndianShort(diff)} (+{Math.round(diffPct)}%)</Badge>
-                            ) : (
-                              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                                <Badge variant="danger">+{formatIndianShort(diff)} (+{Math.round(diffPct)}%)</Badge>
-                                {isSpike && (
-                                  <Badge variant="danger" title="Quote escalated >= 20% above estimate">
-                                    ↑ Spike
-                                  </Badge>
-                                )}
-                              </div>
-                            )}
-                          </td>
-                          <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                onUpdateExpense(item.id, { isPaid: !item.isPaid });
-                                toast.showToast(item.isPaid ? 'Marked as unpaid' : 'Marked as paid', 'info');
-                              }}
-                              className={`badge ${item.isPaid ? 'badge-success' : 'badge-neutral'}`}
-                              style={{ cursor: 'pointer', border: 'none' }}
-                              title="Click to toggle paid status"
+                              <Check size={14} />
+                            </Button>
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              onClick={cancelEdit}
+                              style={{ padding: '4px 8px' }}
+                              aria-label="Cancel editing"
                             >
-                              {item.isPaid ? '✓ Paid' : '⏳ Invoiced'}
-                            </button>
-                          </td>
-                          <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}>
-                            <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
-                              <Button
-                                variant="secondary"
-                                size="sm"
-                                onClick={() => startEdit(item)}
-                                style={{ padding: '4px 8px' }}
-                                title="Edit this item"
-                                aria-label={`Edit ${item.name}`}
-                              >
-                                <Edit2 size={13} />
-                              </Button>
-                              <Button
-                                variant="secondary"
-                                size="sm"
-                                onClick={() => {
-                                  onDeleteExpense(item.id);
-                                  toast.showToast(`Deleted ${item.name}`, 'info');
-                                }}
-                                style={{ padding: '4px 8px', color: 'var(--color-danger)' }}
-                                title="Delete this item"
-                                aria-label={`Delete ${item.name}`}
-                              >
-                                <Trash2 size={13} />
-                              </Button>
-                            </div>
-                          </td>
-                        </>
-                      )}
-                    </tr>
+                              <X size={14} />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  }
+                  return (
+                    <BudgetItemRow
+                      key={item.id}
+                      item={item}
+                      onStartEdit={handleStartEdit}
+                      onTogglePaid={handleTogglePaid}
+                      onDeleteExpense={handleDeleteExpense}
+                    />
                   );
                 })}
+                {isVirtual && bottomSpacerHeight > 0 && (
+                  <tr style={{ height: `${bottomSpacerHeight}px` }} aria-hidden="true">
+                    <td colSpan={7} style={{ padding: 0, border: 'none' }} />
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

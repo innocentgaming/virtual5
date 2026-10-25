@@ -12,7 +12,7 @@ interface InteractiveBudgetChartProps {
   onSelectCategory?: (category: 'all' | BudgetCategory) => void;
 }
 
-export const InteractiveBudgetChart: React.FC<InteractiveBudgetChartProps> = ({
+const InteractiveBudgetChartComponent: React.FC<InteractiveBudgetChartProps> = ({
   budgetSummary,
   categoryLabels,
   categoryColors,
@@ -295,3 +295,5 @@ export const InteractiveBudgetChart: React.FC<InteractiveBudgetChartProps> = ({
     </div>
   );
 };
+
+export const InteractiveBudgetChart = React.memo(InteractiveBudgetChartComponent);

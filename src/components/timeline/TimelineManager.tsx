@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import {
   CalendarDays,
   Plus,
@@ -57,6 +57,211 @@ const PHASES = [
     description: 'Mandap havan setup, sound curfew compliance, and rehearsal coordination.',
   },
 ] as const;
+
+interface TaskNodeItemProps {
+  task: TaskItem;
+  todayTime: number;
+  taskMap: Map<string, TaskItem>;
+  onToggle: (task: TaskItem) => void;
+  onDelete: (id: string, title: string) => void;
+}
+
+const TaskNodeItem = React.memo<TaskNodeItemProps>(({
+  task,
+  todayTime,
+  taskMap,
+  onToggle,
+  onDelete,
+}) => {
+  const taskDate = new Date(task.dueDate);
+  taskDate.setHours(0, 0, 0, 0);
+  const isOverdue = !task.completed && taskDate.getTime() < todayTime;
+  const daysOverdue = isOverdue
+    ? Math.ceil((todayTime - taskDate.getTime()) / (1000 * 60 * 60 * 24))
+    : 0;
+
+  // Prerequisites resolution via Map O(1)
+  const prereqTasks = (task.dependencies || [])
+    .map((depId) => taskMap.get(depId))
+    .filter(Boolean) as TaskItem[];
+
+  const isBlocked = prereqTasks.some((p) => !p.completed);
+
+  return (
+    <li
+      className="timeline-node"
+      style={{
+        position: 'relative',
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: 'var(--space-3)',
+        padding: 'var(--space-4)',
+        borderRadius: 'var(--radius-lg)',
+        backgroundColor: task.completed ? 'var(--surface-subtle)' : 'var(--surface-raised)',
+        border: '1px solid var(--border)',
+        borderLeft: task.completed
+          ? '5px solid var(--color-success)'
+          : isOverdue
+          ? '5px solid var(--color-danger)'
+          : task.priority === 'urgent'
+          ? '5px solid var(--color-warning)'
+          : '5px solid var(--accent-primary)',
+        boxShadow: 'var(--shadow-sm)',
+        opacity: task.completed ? 0.75 : 1,
+        transition: 'all var(--transition-fast)',
+      }}
+    >
+      {/* Node Marker Dot */}
+      <div
+        style={{
+          position: 'absolute',
+          left: '-1.85rem',
+          top: '1.25rem',
+          width: '14px',
+          height: '14px',
+          borderRadius: '50%',
+          backgroundColor: task.completed
+            ? 'var(--color-success)'
+            : isOverdue
+            ? 'var(--color-danger)'
+            : task.priority === 'urgent'
+            ? 'var(--color-warning)'
+            : 'var(--accent-primary)',
+          border: '2px solid var(--surface)',
+          boxShadow: '0 0 0 2px var(--border)',
+        }}
+        aria-hidden="true"
+      />
+
+      {/* Inline Complete Checkbox */}
+      <input
+        type="checkbox"
+        checked={task.completed}
+        onChange={() => onToggle(task)}
+        style={{
+          width: '20px',
+          height: '20px',
+          marginTop: '2px',
+          cursor: 'pointer',
+          accentColor: 'var(--accent-primary)',
+        }}
+        aria-label={`Mark task completed: ${task.title}`}
+      />
+
+      {/* Task Content */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+            <h4
+              style={{
+                fontSize: 'var(--text-base)',
+                fontWeight: 700,
+                color: 'var(--text)',
+                margin: 0,
+                textDecoration: task.completed ? 'line-through' : 'none',
+              }}
+            >
+              {task.title}
+            </h4>
+
+            {/* Blocked lock icon & tooltip */}
+            {isBlocked && (
+              <span
+                title="Blocked: Requires prerequisite task to be completed first"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  color: 'var(--color-warning-text)',
+                  fontSize: 'var(--text-xs)',
+                  fontWeight: 700,
+                }}
+              >
+                <Lock size={14} color="var(--color-warning)" />
+                <span>Blocked</span>
+              </span>
+            )}
+          </div>
+
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => onDelete(task.id, task.title)}
+            style={{ padding: '2px 8px', color: 'var(--color-danger)' }}
+            title="Delete task"
+            aria-label={`Delete task ${task.title}`}
+          >
+            <Trash2 size={13} />
+          </Button>
+        </div>
+
+        {/* Task Meta: Due Date, Category, Status badge */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginTop: '6px', flexWrap: 'wrap', fontSize: 'var(--text-xs)' }}>
+          <span style={{ color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+            <Clock size={12} />
+            Due: <time dateTime={task.dueDate}>{task.dueDate}</time>
+          </span>
+
+          <Badge variant="neutral">
+            {CATEGORY_NAMES[task.category] || task.category}
+          </Badge>
+
+          {/* Status with Text + Icon (Never color alone) */}
+          {task.completed ? (
+            <Badge variant="success">
+              <Check size={12} style={{ marginRight: '4px' }} /> Done
+            </Badge>
+          ) : isOverdue ? (
+            <Badge variant="danger">
+              <AlertCircle size={12} style={{ marginRight: '4px' }} />
+              Overdue ({daysOverdue} {daysOverdue === 1 ? 'day' : 'days'} overdue)
+            </Badge>
+          ) : task.priority === 'urgent' ? (
+            <Badge variant="warning">
+              <AlertCircle size={12} style={{ marginRight: '4px' }} /> Urgent
+            </Badge>
+          ) : (
+            <Badge variant="info">
+              <CalendarDays size={12} style={{ marginRight: '4px' }} /> Upcoming
+            </Badge>
+          )}
+        </div>
+
+        {/* Prerequisite chips */}
+        {prereqTasks.length > 0 && (
+          <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: '8px', flexWrap: 'wrap' }}>
+            {prereqTasks.map((prereq) => (
+              <span
+                key={prereq.id}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  fontSize: 'var(--text-xs)',
+                  fontWeight: 600,
+                  padding: '2px 8px',
+                  borderRadius: 'var(--radius-sm)',
+                  background: prereq.completed ? 'var(--color-success-bg)' : 'var(--color-warning-bg)',
+                  color: prereq.completed ? 'var(--color-success-text)' : 'var(--color-warning-text)',
+                  border: `1px solid ${prereq.completed ? 'var(--color-success-border)' : 'var(--color-warning-border)'}`,
+                }}
+                title={prereq.completed ? 'Prerequisite completed' : 'Prerequisite pending completion'}
+              >
+                {prereq.completed ? `✓ ${prereq.title}` : `⚠ Needs: ${prereq.title}`}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {task.notes && (
+          <p style={{ margin: '8px 0 0 0', fontSize: 'var(--text-xs)', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+            {task.notes}
+          </p>
+        )}
+      </div>
+    </li>
+  );
+});
 
 export const TimelineManager: React.FC<TimelineManagerProps> = ({
   plan,
@@ -179,13 +384,20 @@ export const TimelineManager: React.FC<TimelineManagerProps> = ({
     return map;
   }, [filteredTasks, plan.eventDate]);
 
-  const handleToggle = (task: TaskItem) => {
+  const taskMap = useMemo(() => new Map(plan.tasks.map((t) => [t.id, t])), [plan.tasks]);
+
+  const handleToggle = useCallback((task: TaskItem) => {
     onToggleTask(task.id);
     toast.showToast(
       task.completed ? `Task reopened: ${task.title}` : `Completed task: ${task.title} 🎉`,
       'success'
     );
-  };
+  }, [onToggleTask, toast]);
+
+  const handleDelete = useCallback((id: string, title: string) => {
+    onDeleteTask(id);
+    toast.showToast(`Deleted task: ${title}`, 'info');
+  }, [onDeleteTask, toast]);
 
   const handleCreateTask = (e: React.FormEvent) => {
     e.preventDefault();
@@ -399,200 +611,16 @@ export const TimelineManager: React.FC<TimelineManagerProps> = ({
                     aria-hidden="true"
                   />
 
-                  {phaseTasks.map((task) => {
-                    const taskDate = new Date(task.dueDate);
-                    taskDate.setHours(0, 0, 0, 0);
-                    const isOverdue = !task.completed && taskDate.getTime() < today.getTime();
-                    const daysOverdue = isOverdue
-                      ? Math.ceil((today.getTime() - taskDate.getTime()) / (1000 * 60 * 60 * 24))
-                      : 0;
-
-                    // Prerequisites resolution
-                    const prereqTasks = (task.dependencies || [])
-                      .map((depId) => plan.tasks.find((t) => t.id === depId))
-                      .filter(Boolean) as TaskItem[];
-
-                    const isBlocked = prereqTasks.some((p) => !p.completed);
-
-                    return (
-                      <li
-                        key={task.id}
-                        className="timeline-node"
-                        style={{
-                          position: 'relative',
-                          display: 'flex',
-                          alignItems: 'flex-start',
-                          gap: 'var(--space-3)',
-                          padding: 'var(--space-4)',
-                          borderRadius: 'var(--radius-lg)',
-                          backgroundColor: task.completed ? 'var(--surface-subtle)' : 'var(--surface-raised)',
-                          border: '1px solid var(--border)',
-                          borderLeft: task.completed
-                            ? '5px solid var(--color-success)'
-                            : isOverdue
-                            ? '5px solid var(--color-danger)'
-                            : task.priority === 'urgent'
-                            ? '5px solid var(--color-warning)'
-                            : '5px solid var(--accent-primary)',
-                          boxShadow: 'var(--shadow-sm)',
-                          opacity: task.completed ? 0.75 : 1,
-                          transition: 'all var(--transition-fast)',
-                        }}
-                      >
-                        {/* Node Marker Dot */}
-                        <div
-                          style={{
-                            position: 'absolute',
-                            left: '-1.85rem',
-                            top: '1.25rem',
-                            width: '14px',
-                            height: '14px',
-                            borderRadius: '50%',
-                            backgroundColor: task.completed
-                              ? 'var(--color-success)'
-                              : isOverdue
-                              ? 'var(--color-danger)'
-                              : task.priority === 'urgent'
-                              ? 'var(--color-warning)'
-                              : 'var(--accent-primary)',
-                            border: '2px solid var(--surface)',
-                            boxShadow: '0 0 0 2px var(--border)',
-                          }}
-                          aria-hidden="true"
-                        />
-
-                        {/* Inline Complete Checkbox */}
-                        <input
-                          type="checkbox"
-                          checked={task.completed}
-                          onChange={() => handleToggle(task)}
-                          style={{
-                            width: '20px',
-                            height: '20px',
-                            marginTop: '2px',
-                            cursor: 'pointer',
-                            accentColor: 'var(--accent-primary)',
-                          }}
-                          aria-label={`Mark task completed: ${task.title}`}
-                        />
-
-                        {/* Task Content */}
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
-                              <h4
-                                style={{
-                                  fontSize: 'var(--text-base)',
-                                  fontWeight: 700,
-                                  color: 'var(--text)',
-                                  margin: 0,
-                                  textDecoration: task.completed ? 'line-through' : 'none',
-                                }}
-                              >
-                                {task.title}
-                              </h4>
-
-                              {/* Blocked lock icon & tooltip */}
-                              {isBlocked && (
-                                <span
-                                  title={`Blocked: Requires prerequisite task to be completed first`}
-                                  style={{
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: '4px',
-                                    color: 'var(--color-warning-text)',
-                                    fontSize: 'var(--text-xs)',
-                                    fontWeight: 700,
-                                  }}
-                                >
-                                  <Lock size={14} color="var(--color-warning)" />
-                                  <span>Blocked</span>
-                                </span>
-                              )}
-                            </div>
-
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              onClick={() => {
-                                onDeleteTask(task.id);
-                                toast.showToast(`Deleted task: ${task.title}`, 'info');
-                              }}
-                              style={{ padding: '2px 8px', color: 'var(--color-danger)' }}
-                              title="Delete task"
-                              aria-label={`Delete task ${task.title}`}
-                            >
-                              <Trash2 size={13} />
-                            </Button>
-                          </div>
-
-                          {/* Task Meta: Due Date, Category, Status badge */}
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginTop: '6px', flexWrap: 'wrap', fontSize: 'var(--text-xs)' }}>
-                            <span style={{ color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                              <Clock size={12} />
-                              Due: <time dateTime={task.dueDate}>{task.dueDate}</time>
-                            </span>
-
-                            <Badge variant="neutral">
-                              {CATEGORY_NAMES[task.category] || task.category}
-                            </Badge>
-
-                            {/* Status with Text + Icon (Never color alone) */}
-                            {task.completed ? (
-                              <Badge variant="success">
-                                <Check size={12} style={{ marginRight: '4px' }} /> Done
-                              </Badge>
-                            ) : isOverdue ? (
-                              <Badge variant="danger">
-                                <AlertCircle size={12} style={{ marginRight: '4px' }} />
-                                Overdue ({daysOverdue} {daysOverdue === 1 ? 'day' : 'days'} overdue)
-                              </Badge>
-                            ) : task.priority === 'urgent' ? (
-                              <Badge variant="warning">
-                                <AlertCircle size={12} style={{ marginRight: '4px' }} /> Urgent
-                              </Badge>
-                            ) : (
-                              <Badge variant="info">
-                                <CalendarDays size={12} style={{ marginRight: '4px' }} /> Upcoming
-                              </Badge>
-                            )}
-                          </div>
-
-                          {/* Prerequisite chips */}
-                          {prereqTasks.length > 0 && (
-                            <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: '8px', flexWrap: 'wrap' }}>
-                              {prereqTasks.map((prereq) => (
-                                <span
-                                  key={prereq.id}
-                                  style={{
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: '4px',
-                                    fontSize: 'var(--text-xs)',
-                                    fontWeight: 600,
-                                    padding: '2px 8px',
-                                    borderRadius: 'var(--radius-sm)',
-                                    background: prereq.completed ? 'var(--color-success-bg)' : 'var(--color-warning-bg)',
-                                    color: prereq.completed ? 'var(--color-success-text)' : 'var(--color-warning-text)',
-                                    border: `1px solid ${prereq.completed ? 'var(--color-success-border)' : 'var(--color-warning-border)'}`,
-                                  }}
-                                  title={prereq.completed ? 'Prerequisite completed' : 'Prerequisite pending completion'}
-                                >
-                                  {prereq.completed ? `✓ ${prereq.title}` : `⚠ Needs: ${prereq.title}`}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-
-                          {task.notes && (
-                            <p style={{ margin: '8px 0 0 0', fontSize: 'var(--text-xs)', color: 'var(--text-muted)', lineHeight: 1.5 }}>
-                              {task.notes}
-                            </p>
-                          )}
-                        </div>
-                      </li>
-                    );
-                  })}
+                  {phaseTasks.map((task) => (
+                    <TaskNodeItem
+                      key={task.id}
+                      task={task}
+                      todayTime={today.getTime()}
+                      taskMap={taskMap}
+                      onToggle={handleToggle}
+                      onDelete={handleDelete}
+                    />
+                  ))}
                 </ol>
               </section>
             );
