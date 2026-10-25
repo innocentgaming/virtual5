@@ -3,20 +3,20 @@ import { generateFallbackPlan } from '../services/fallbackPlanner';
 
 // Calculate realistic upcoming dates
 const now = new Date();
-const weddingDate = new Date(now.getTime() + 120 * 86400000).toISOString().split('T')[0];
 const birthdayDate = new Date(now.getTime() + 18 * 86400000).toISOString().split('T')[0];
 const galaDate = new Date(now.getTime() + 45 * 86400000).toISOString().split('T')[0];
 
 export const SAMPLE_WEDDING: EventPlan = generateFallbackPlan({
   title: "Aarav & Ananya's Royal Rajasthan Wedding",
   eventType: 'wedding',
-  eventDate: weddingDate,
+  eventDate: '2027-02-22',
   city: 'Jaipur, Rajasthan',
+  venueName: 'Rambagh Palace / The Oberoi Rajvilas',
   guestCount: 350,
   totalBudget: 3500000,
   venuePreference: 'heritage_haveli',
   foodPreference: 'royal_thali',
-  theme: 'Marigold & Royal Rajputana Heritage',
+  theme: 'Royal Marigold & Antique Gold',
   priorities: ['venue', 'catering', 'photography'],
   accessibilityNeeds: ['Wheelchair ramp to Mandap stage', 'Senior citizen buggy cart shuttle'],
   culturalTraditions: 'Vedic Pheras at Lagna Muhurat, Sangeet family dance face-off, Baraat with traditional Dhol & Brass band',

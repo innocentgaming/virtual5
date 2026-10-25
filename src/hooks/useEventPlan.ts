@@ -189,6 +189,7 @@ export function useEventPlan() {
         eventType: EventType;
         eventDate: string;
         city: string;
+        venueName?: string;
         guestCount: number;
         totalBudget: number;
         venuePreference?: EventPlan['venuePreference'];

@@ -10,6 +10,7 @@ import {
   ArrowLeft,
   ShieldCheck,
   Edit2,
+  RotateCcw,
 } from 'lucide-react';
 import type {
   EventType,
@@ -40,6 +41,7 @@ interface EventSetupFormProps {
       culturalTraditions: string;
       specialNotes: string;
       contingencyRate: number;
+      venueName?: string;
     },
     useAI: boolean
   ) => void;
@@ -87,6 +89,36 @@ const CEREMONY_STRUCTURES = [
   { id: 'contemporary', label: 'Contemporary / Custom Fusion', note: 'Fusion celebration blending multicultural rituals with modern reception' },
 ];
 
+function formatToIndianDate(isoStr: string): string {
+  if (!isoStr) return '';
+  const parts = isoStr.split('-');
+  if (parts.length === 3) {
+    return `${parts[2]}-${parts[1]}-${parts[0]}`;
+  }
+  return isoStr;
+}
+
+function getEventDateDescription(isoStr: string): string {
+  if (!isoStr) return '';
+  try {
+    const [y, m, d] = isoStr.split('-').map(Number);
+    const date = new Date(y, m - 1, d);
+    if (isNaN(date.getTime())) return '';
+    const day = date.toLocaleDateString('en-IN', { weekday: 'long' });
+    const formatted = date.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+    const month = date.getMonth() + 1;
+    const season =
+      month >= 11 || month <= 2
+        ? 'Auspicious Winter Wedding Season'
+        : month >= 3 && month <= 6
+        ? 'Summer Auspicious Window'
+        : 'Festive Autumn / Post-Monsoon Season';
+    return `${formatted} (${day}) • ${season}`;
+  } catch {
+    return '';
+  }
+}
+
 const DRAFT_STORAGE_KEY = 'eventwise_setup_draft_v2';
 
 export const EventSetupForm: React.FC<EventSetupFormProps> = ({
@@ -125,6 +157,7 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
   const [venuePreference, setVenuePreference] = useState<VenuePreference>(() =>
     initialPlan?.venuePreference || initialDraft?.venuePreference || 'heritage_haveli'
   );
+  const [customVenueName, setCustomVenueName] = useState(() => initialPlan?.venueName || initialDraft?.customVenueName || '');
   const [foodPreference, setFoodPreference] = useState<FoodPreference>(() =>
     initialPlan?.foodPreference || initialDraft?.foodPreference || 'royal_thali'
   );
@@ -160,6 +193,7 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
           totalBudget,
           contingencyRate,
           venuePreference,
+          customVenueName,
           foodPreference,
           theme,
         };
@@ -168,7 +202,7 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
         // Ignore localStorage error
       }
     }
-  }, [eventType, title, eventDate, city, guestCount, totalBudget, contingencyRate, venuePreference, foodPreference, theme, isEditing]);
+  }, [eventType, title, eventDate, city, guestCount, totalBudget, contingencyRate, venuePreference, customVenueName, foodPreference, theme, isEditing]);
 
   // Rotating status message during generation
   useEffect(() => {
@@ -304,8 +338,12 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
         priorities,
         accessibilityNeeds,
         culturalTraditions: [culturalTraditions, ...dietaryRequirements].filter(Boolean).join(', '),
-        specialNotes,
+        specialNotes: [
+          customVenueName.trim() ? `Venue: ${customVenueName.trim()}` : null,
+          specialNotes.trim() || null,
+        ].filter(Boolean).join('\n'),
         contingencyRate: contingencyRate / 100,
+        venueName: customVenueName.trim() || undefined,
       },
       useAI
     );
@@ -557,13 +595,95 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
             STEP 2: BASICS (Name, City, Date, Venue)
             ===================================================================== */}
         <div style={{ display: currentStep === 2 ? 'block' : 'none' }}>
-          <h3
-            ref={currentStep === 2 ? stepHeadingRef : undefined}
-            tabIndex={-1}
-            style={{ fontSize: 'var(--text-xl)', marginBottom: 'var(--space-4)', outline: 'none' }}
+          <div style={{ marginBottom: 'var(--space-4)' }}>
+            <h3
+              ref={currentStep === 2 ? stepHeadingRef : undefined}
+              tabIndex={-1}
+              style={{ fontSize: 'var(--text-xl)', marginBottom: 'var(--space-1)', outline: 'none' }}
+            >
+              Step 2: Event Basics & Venue
+            </h3>
+            <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', margin: 0 }}>
+              Specify your celebration title, city, date, and preferred venue style, or use 1-click sample presets.
+            </p>
+          </div>
+
+          {/* Quick Pre-fill Helper Banner */}
+          <div
+            style={{
+              background: 'var(--surface-subtle)',
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-lg)',
+              padding: 'var(--space-3) var(--space-4)',
+              marginBottom: 'var(--space-4)',
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 'var(--space-3)',
+            }}
           >
-            Step 2: Event Basics & Venue
-          </h3>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+              <Sparkles size={16} color="var(--accent-primary)" style={{ flexShrink: 0 }} />
+              <span style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--text)' }}>
+                Quick Pre-fill & Custom Options:
+              </span>
+            </div>
+            <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setTitle("Aarav & Ananya's Royal Rajasthan Wedding");
+                  setCity('Jaipur, Rajasthan');
+                  setEventDate('2027-02-22');
+                  setVenuePreference('heritage_haveli');
+                  setCustomVenueName('Rambagh Palace, Jaipur');
+                  setTheme('Royal Marigold & Antique Gold');
+                  setTouched((prev) => ({ ...prev, title: true, city: true, eventDate: true }));
+                  setGeneralError(null);
+                }}
+                style={{
+                  background: 'var(--accent-primary)',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: 'var(--radius-pill)',
+                  padding: '4px 12px',
+                  fontSize: 'var(--text-xs)',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                }}
+              >
+                <span>⚡ Fill Sample Details (Aarav & Ananya)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setTitle('');
+                  setCustomVenueName('');
+                  setTouched((prev) => ({ ...prev, title: false }));
+                }}
+                style={{
+                  background: 'transparent',
+                  color: 'var(--text)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius-pill)',
+                  padding: '4px 12px',
+                  fontSize: 'var(--text-xs)',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                }}
+              >
+                <RotateCcw size={12} />
+                <span>Clear for Custom Info</span>
+              </button>
+            </div>
+          </div>
 
           <div className="form-group">
             <label htmlFor="setup-title" className="form-label">
@@ -585,6 +705,35 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
                 Event title cannot be empty.
               </span>
             )}
+            <div style={{ marginTop: 'var(--space-2)', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600 }}>Quick Suggestions:</span>
+              {[
+                "Aarav & Ananya's Royal Rajasthan Wedding",
+                "Meera & Kabir's Sangeet & Vivah",
+                "Rohan & Priya's Sunset Vows",
+              ].map((suggested) => (
+                <button
+                  key={suggested}
+                  type="button"
+                  onClick={() => {
+                    setTitle(suggested);
+                    setTouched((prev) => ({ ...prev, title: true }));
+                  }}
+                  style={{
+                    background: title === suggested ? 'var(--surface-selected, rgba(158, 42, 43, 0.1))' : 'var(--surface-raised)',
+                    border: `1px solid ${title === suggested ? 'var(--accent-primary)' : 'var(--border)'}`,
+                    color: title === suggested ? 'var(--accent-primary)' : 'var(--text)',
+                    borderRadius: 'var(--radius-pill)',
+                    padding: '2px 10px',
+                    fontSize: '0.72rem',
+                    cursor: 'pointer',
+                    transition: 'all var(--transition-fast)',
+                  }}
+                >
+                  {suggested}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 'var(--space-4)' }}>
@@ -616,6 +765,30 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
                   City / location is required.
                 </span>
               )}
+              <div style={{ marginTop: 'var(--space-2)', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600 }}>Popular Hubs:</span>
+                {['Jaipur, Rajasthan', 'Udaipur, Rajasthan', 'Mumbai, Maharashtra', 'Delhi NCR', 'Goa'].map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => {
+                      setCity(c);
+                      setTouched((prev) => ({ ...prev, city: true }));
+                    }}
+                    style={{
+                      background: city === c ? 'var(--surface-selected, rgba(158, 42, 43, 0.1))' : 'var(--surface-raised)',
+                      border: `1px solid ${city === c ? 'var(--accent-primary)' : 'var(--border)'}`,
+                      color: city === c ? 'var(--accent-primary)' : 'var(--text)',
+                      borderRadius: 'var(--radius-pill)',
+                      padding: '2px 8px',
+                      fontSize: '0.72rem',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {c.split(',')[0]}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div className="form-group">
@@ -632,6 +805,66 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
                 onBlur={() => handleBlur('eventDate')}
                 required
               />
+              <div style={{ marginTop: 'var(--space-2)' }}>
+                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '4px' }}>
+                  <strong>Indian Format:</strong> <span style={{ color: 'var(--accent-primary)', fontWeight: 700 }}>{formatToIndianDate(eventDate)}</span> {getEventDateDescription(eventDate) ? `• ${getEventDateDescription(eventDate)}` : ''}
+                </div>
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                  <button
+                    type="button"
+                    onClick={() => setEventDate('2027-02-22')}
+                    style={{
+                      background: eventDate === '2027-02-22' ? 'var(--surface-selected, rgba(158, 42, 43, 0.1))' : 'var(--surface-raised)',
+                      border: `1px solid ${eventDate === '2027-02-22' ? 'var(--accent-primary)' : 'var(--border)'}`,
+                      color: eventDate === '2027-02-22' ? 'var(--accent-primary)' : 'var(--text)',
+                      borderRadius: 'var(--radius-pill)',
+                      padding: '2px 8px',
+                      fontSize: '0.72rem',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    22-02-2027 (Canonical Date)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const d = new Date();
+                      d.setDate(d.getDate() + 90);
+                      setEventDate(d.toISOString().split('T')[0]);
+                    }}
+                    style={{
+                      background: 'var(--surface-raised)',
+                      border: '1px solid var(--border)',
+                      color: 'var(--text)',
+                      borderRadius: 'var(--radius-pill)',
+                      padding: '2px 8px',
+                      fontSize: '0.72rem',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    +3 Months
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const d = new Date();
+                      d.setDate(d.getDate() + 180);
+                      setEventDate(d.toISOString().split('T')[0]);
+                    }}
+                    style={{
+                      background: 'var(--surface-raised)',
+                      border: '1px solid var(--border)',
+                      color: 'var(--text)',
+                      borderRadius: 'var(--radius-pill)',
+                      padding: '2px 8px',
+                      fontSize: '0.72rem',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    +6 Months
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -655,20 +888,85 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
                 <option value="beach">Beachfront Resort</option>
                 <option value="hotel">5-Star Hotel Ballroom</option>
               </select>
+              <div style={{ marginTop: '4px', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                Determines layout calculations, power backup, and curfew parameters.
+              </div>
             </div>
 
             <div className="form-group">
-              <label htmlFor="setup-theme" className="form-label">
-                <span>Aesthetic & Decor Theme</span>
+              <label htmlFor="setup-venue-name" className="form-label">
+                <span>Specific Venue Name / Landmark (Optional)</span>
               </label>
               <input
-                id="setup-theme"
+                id="setup-venue-name"
                 type="text"
                 className="form-control"
-                value={theme}
-                onChange={(e) => setTheme(e.target.value)}
-                placeholder="e.g. Traditional Marigold & Antique Gold"
+                value={customVenueName}
+                onChange={(e) => setCustomVenueName(e.target.value)}
+                placeholder="e.g. The Oberoi Rajvilas, Rambagh Palace"
               />
+              <div style={{ marginTop: 'var(--space-2)', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600 }}>Jaipur Landmarks:</span>
+                {['Rambagh Palace', 'The Oberoi Rajvilas', 'Jai Mahal Palace', 'Fairmont Jaipur'].map((landmark) => (
+                  <button
+                    key={landmark}
+                    type="button"
+                    onClick={() => setCustomVenueName(landmark)}
+                    style={{
+                      background: customVenueName === landmark ? 'var(--surface-selected, rgba(158, 42, 43, 0.1))' : 'var(--surface-raised)',
+                      border: `1px solid ${customVenueName === landmark ? 'var(--accent-primary)' : 'var(--border)'}`,
+                      color: customVenueName === landmark ? 'var(--accent-primary)' : 'var(--text)',
+                      borderRadius: 'var(--radius-pill)',
+                      padding: '2px 8px',
+                      fontSize: '0.72rem',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {landmark}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="setup-theme" className="form-label">
+              <span>Aesthetic & Decor Theme</span>
+            </label>
+            <input
+              id="setup-theme"
+              type="text"
+              className="form-control"
+              value={theme}
+              onChange={(e) => setTheme(e.target.value)}
+              placeholder="e.g. Royal Marigold & Antique Gold"
+            />
+            <div style={{ marginTop: 'var(--space-2)', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600 }}>Theme Suggestions:</span>
+              {[
+                'Royal Marigold & Antique Gold',
+                'Pastel Floral & Minimalist Mandap',
+                'Rajputana Crimson & Emerald',
+                'Sunset Amber & Terracotta Diyas',
+                'Bollywood Neon & Retro Glitz',
+              ].map((preset) => (
+                <button
+                  key={preset}
+                  type="button"
+                  onClick={() => setTheme(preset)}
+                  style={{
+                    background: theme === preset ? 'var(--surface-selected, rgba(158, 42, 43, 0.1))' : 'var(--surface-raised)',
+                    border: `1px solid ${theme === preset ? 'var(--accent-primary)' : 'var(--border)'}`,
+                    color: theme === preset ? 'var(--accent-primary)' : 'var(--text)',
+                    borderRadius: 'var(--radius-pill)',
+                    padding: '2px 8px',
+                    fontSize: '0.72rem',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {preset}
+                </button>
+              ))}
             </div>
           </div>
         </div>
@@ -950,7 +1248,7 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
                 </Button>
               </div>
               <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', marginTop: '4px' }}>
-                <strong>{title}</strong> in <strong>{city}</strong> on <strong>{eventDate}</strong> • Venue: {venuePreference}
+                <strong>{title}</strong> in <strong>{city}</strong> on <strong>{formatToIndianDate(eventDate)}</strong> • Style: {venuePreference.replace('_', ' ')}{customVenueName ? ` (${customVenueName})` : ''} • Theme: {theme}
               </div>
             </div>
 

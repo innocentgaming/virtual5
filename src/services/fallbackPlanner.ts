@@ -19,6 +19,7 @@ interface PlanGenerationInput {
   eventType: EventType;
   eventDate: string; // YYYY-MM-DD
   city: string;
+  venueName?: string;
   guestCount: number;
   totalBudget: number;
   venuePreference?: VenuePreference;
@@ -93,7 +94,9 @@ export function generateFallbackPlan(input: PlanGenerationInput): EventPlan {
     budgetItems.push(
       {
         id: 'b-venue',
-        name: `Heritage Venue / Royal Banquet Booking (${venuePref.replace('_', ' ')})`,
+        name: input.venueName
+          ? `${input.venueName} — Venue Booking (${venuePref.replace('_', ' ')})`
+          : `Heritage Venue / Royal Banquet Booking (${venuePref.replace('_', ' ')})`,
         category: 'venue',
         estimatedCost: Math.round(availableBudget * venueWeight),
         priority: 'essential',
@@ -610,6 +613,7 @@ function generateDefaultSchedule(eventType: EventType): ScheduleItem[] {
     eventType: input.eventType,
     eventDate,
     city,
+    venueName: input.venueName,
     guestCount,
     totalBudget,
     currency: '₹',

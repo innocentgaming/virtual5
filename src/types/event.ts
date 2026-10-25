@@ -217,6 +217,7 @@ export interface EventPlan {
   eventType: EventType;
   eventDate: string; // YYYY-MM-DD
   city: string;
+  venueName?: string; // Optional specific venue or landmark (e.g. "Rambagh Palace, Jaipur")
   guestCount: number;
   totalBudget: number;
   currency: string;
