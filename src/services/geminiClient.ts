@@ -33,9 +33,9 @@ export interface GeminiClientResult {
 }
 
 const DEFAULT_MODELS = [
+  'gemini-flash-latest',
   'gemini-3.8-flash',
   'gemini-2.5-flash-lite',
-  'gemini-flash-latest',
   'gemini-1.5-flash',
 ];
 

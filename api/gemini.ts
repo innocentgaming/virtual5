@@ -123,7 +123,7 @@ export default async function handler(req: ExtendedRequest, res: ServerResponse)
     return;
   }
 
-  const { prompt, systemInstruction, temperature = 0.3, responseMimeType, model = 'gemini-2.5-flash-lite' } = bodyData;
+  const { prompt, systemInstruction, temperature = 0.3, responseMimeType, model = 'gemini-flash-latest' } = bodyData;
 
   if (!prompt || typeof prompt !== 'string' || prompt.length > 20000) {
     res.statusCode = 400;
