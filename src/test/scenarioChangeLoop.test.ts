@@ -17,7 +17,7 @@ describe('Comprehensive Core Loop & Change Scenarios (Step 5)', () => {
     totalBudget: 3000000,
     currency: '₹',
     contingencyRate: 0.1,
-    venuePreference: 'palace_heritage',
+    venuePreference: 'heritage_haveli',
     foodPreference: 'royal_thali',
     theme: 'Royal Rajputana Heritage',
     priorities: ['venue', 'catering'],
@@ -30,18 +30,18 @@ describe('Comprehensive Core Loop & Change Scenarios (Step 5)', () => {
     missingInfoPrompts: [],
     generationExplanation: '',
     budgetItems: [
-      { id: 'b-cat', category: 'catering', name: 'Royal Catering', estimatedCost: 1000000, actualCost: 1000000 },
-      { id: 'b-dec', category: 'decor', name: 'Palace Mandap Decor', estimatedCost: 500000, actualCost: 500000 },
-      { id: 'b-ven', category: 'venue', name: 'Courtyard Venue', estimatedCost: 800000, actualCost: 800000 },
-      { id: 'b-ent', category: 'entertainment', name: 'Dhol & DJ', estimatedCost: 300000, actualCost: 300000 },
-      { id: 'b-pho', category: 'photography', name: 'Candid Photography', estimatedCost: 400000, actualCost: 400000 },
+      { id: 'b-cat', category: 'catering', name: 'Royal Catering', estimatedCost: 1000000, actualCost: 1000000, priority: 'essential' },
+      { id: 'b-dec', category: 'decor', name: 'Palace Mandap Decor', estimatedCost: 500000, actualCost: 500000, priority: 'recommended' },
+      { id: 'b-ven', category: 'venue', name: 'Courtyard Venue', estimatedCost: 800000, actualCost: 800000, priority: 'essential' },
+      { id: 'b-ent', category: 'entertainment', name: 'Dhol & DJ', estimatedCost: 300000, actualCost: 300000, priority: 'optional' },
+      { id: 'b-pho', category: 'photography', name: 'Candid Photography', estimatedCost: 400000, actualCost: 400000, priority: 'recommended' },
     ] as BudgetItem[],
     tasks: [
-      { id: 't-venue', title: 'Confirm Venue Booking', category: 'venue', dueDate: '2026-12-01', completed: true },
-      { id: 't-caterer', title: 'Lock Caterer Contract & Menu', category: 'catering', dueDate: '2026-12-15', completed: false, dependencies: ['t-venue'] },
-      { id: 't-tasting', title: 'Conduct Food Tasting Session', category: 'catering', dueDate: '2027-01-05', completed: false, dependencies: ['t-caterer'] },
-      { id: 't-permit', title: 'Procure Police Loudspeaker & Sound Permit', category: 'permits', dueDate: '2027-01-20', completed: false },
-      { id: 't-baraat', title: 'Coordinate Baraat Procession Route & Dhol Pacing', category: 'ceremony', dueDate: '2027-02-10', completed: false },
+      { id: 't-venue', title: 'Confirm Venue Booking', category: 'venue', dueDate: '2026-12-01', completed: true, priority: 'urgent' },
+      { id: 't-caterer', title: 'Lock Caterer Contract & Menu', category: 'catering', dueDate: '2026-12-15', completed: false, dependencies: ['t-venue'], priority: 'high' },
+      { id: 't-tasting', title: 'Conduct Food Tasting Session', category: 'catering', dueDate: '2027-01-05', completed: false, dependencies: ['t-caterer'], priority: 'medium' },
+      { id: 't-permit', title: 'Procure Police Loudspeaker & Sound Permit', category: 'logistics', dueDate: '2027-01-20', completed: false, priority: 'urgent' },
+      { id: 't-baraat', title: 'Coordinate Baraat Procession Route & Dhol Pacing', category: 'final', dueDate: '2027-02-10', completed: false, priority: 'high' },
     ] as TaskItem[],
     vendors: [
       { id: 'v-caterer', category: 'caterer', role: 'Royal Halwai', status: 'booked', estimatedCost: 1000000, questionsToAsk: [] },
@@ -206,8 +206,8 @@ describe('Comprehensive Core Loop & Change Scenarios (Step 5)', () => {
     const blockedPlan: EventPlan = {
       ...basePlan,
       tasks: [
-        { id: 't-1', title: 'Prerequisite Overdue Task', category: 'venue', dueDate: '2026-10-01', completed: false },
-        { id: 't-2', title: 'Dependent Task', category: 'catering', dueDate: '2026-10-15', completed: false, dependencies: ['t-1'] },
+        { id: 't-1', title: 'Prerequisite Overdue Task', category: 'venue', dueDate: '2026-10-01', completed: false, priority: 'urgent' },
+        { id: 't-2', title: 'Dependent Task', category: 'catering', dueDate: '2026-10-15', completed: false, dependencies: ['t-1'], priority: 'high' },
       ],
     };
 
