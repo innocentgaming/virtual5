@@ -22,7 +22,7 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
   isGenerating = false,
 }) => {
   const [apiKey, setApiKey] = useState('');
-  const hasEnvKey = Boolean(import.meta.env.VITE_GEMINI_API_KEY);
+  const hasEnvKey = !import.meta.env.PROD && Boolean(import.meta.env.VITE_GEMINI_API_KEY);
 
   const handleRunAI = () => {
     onRegeneratePlan(true, apiKey.trim() || undefined);
@@ -211,32 +211,35 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
               {hasEnvKey && (
                 <Badge variant="success" icon={<ShieldCheck size={12} />}>
-                  Active Key in .env
+                  Dev .env Active
                 </Badge>
               )}
-              <Badge variant="info">Zero-Storage Security</Badge>
+              <Badge variant="info">In-Memory Session Only</Badge>
             </div>
           }
         />
 
         <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '1.25rem', lineHeight: 1.55 }}>
-          EventWise AI uses Google Gemini (3.8 Flash / 2.5 Flash Lite) to generate enriched descriptions. API keys are kept strictly in browser memory or secured via local environment variables, and are <strong>never stored in public repository code</strong>.
+          EventWise AI uses Google Gemini (3.8 Flash / 2.5 Flash Lite) to generate enriched descriptions. API keys are kept strictly in ephemeral browser memory, never logged, and never stored to disk or localStorage.
         </p>
 
         <div className="form-group">
-          <label htmlFor="gemini-key" className="form-label">Google Gemini API Key</label>
+          <label htmlFor="gemini-key" className="form-label">Google Gemini API Key (In-Memory Session Key)</label>
           <input
             id="gemini-key"
             type="password"
+            autoComplete="off"
+            autoCorrect="off"
+            spellCheck={false}
             className="form-control"
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
-            placeholder={hasEnvKey ? "Active API key loaded from .env (or enter custom key)" : "AIzaSy... or AQ.... (leave blank to use Rule Engine)"}
+            placeholder={hasEnvKey ? "Local dev key active from .env (or enter custom key)" : "AIzaSy... (leave blank to use offline rule engine)"}
           />
           <span className="form-hint">
             {hasEnvKey
-              ? "Defaulting to active key configured in .env. You can also override with a temporary session key."
-              : "If left blank, the app uses either VITE_GEMINI_API_KEY from .env or the high-fidelity deterministic rule engine."}
+              ? "Dev Mode: Ambient key from local .env detected. Override with a temporary session key anytime."
+              : "Session key is held in volatile memory only and never written to storage or sent in URLs. Leave blank to run offline."}
           </span>
         </div>
 

@@ -10,6 +10,12 @@ import type {
 } from '../types/event';
 import { generateFallbackPlan } from './fallbackPlanner';
 import { evaluateDecisionRules } from './decisionEngine';
+import {
+  getActiveApiKey,
+  canCallGemini,
+  requestGeminiContent,
+  redactSecrets,
+} from './geminiClient';
 
 export interface AIPlanningRequest {
   eventType: EventType;
@@ -42,11 +48,7 @@ function validateAIPlanResponse(data: unknown): data is Partial<EventPlan> {
 }
 
 export async function generateAIEventPlan(request: AIPlanningRequest): Promise<EventPlan> {
-  const apiKey =
-    request.customApiKey?.trim() ||
-    (import.meta.env.VITE_GEMINI_API_KEY as string | undefined)?.trim();
-
-  if (!apiKey) {
+  if (!canCallGemini(request.customApiKey)) {
     return generateFallbackPlan({
       title: request.title,
       eventType: request.eventType,
@@ -64,6 +66,8 @@ export async function generateAIEventPlan(request: AIPlanningRequest): Promise<E
       contingencyRate: request.contingencyRate,
     });
   }
+
+  const apiKey = getActiveApiKey(request.customApiKey);
 
   const prompt = `You are EventWise AI, an expert event planner specializing in weddings, birthdays, and community celebrations.
 Generate a comprehensive, realistic event plan in strictly valid JSON format.
@@ -106,57 +110,23 @@ JSON Structure:
 }`;
 
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    const result = await requestGeminiContent({
+      prompt,
+      apiKey,
+      timeoutMs: 10000,
+      responseMimeType: 'application/json',
+      temperature: 0.3,
+    });
 
-    const candidateModels = ['gemini-3.8-flash', 'gemini-2.5-flash-lite', 'gemini-flash-latest', 'gemini-1.5-flash'];
-    let response: Response | null = null;
-
-    for (const model of candidateModels) {
-      try {
-        const candidateRes = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            signal: controller.signal,
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: prompt }] }],
-              generationConfig: {
-                temperature: 0.3,
-                responseMimeType: 'application/json',
-              },
-            }),
-          }
-        );
-        if (candidateRes.ok) {
-          response = candidateRes;
-          break;
-        } else if (candidateRes.status === 404) {
-          continue; // Model not available for this key, check next candidate
-        } else {
-          response = candidateRes;
-          break;
-        }
-      } catch {
-        break;
-      }
-    }
-
-    clearTimeout(timeoutId);
-
-    if (!response || !response.ok) {
-      console.warn('AI API returned status ' + (response ? response.status : 'timeout') + ', falling back to rule engine.');
+    if (!result.success || !result.text) {
+      console.warn(
+        'AI API returned status ' + (result.statusCode || 'timeout') + ', falling back to rule engine: ' +
+          redactSecrets(result.error || 'Unknown error', apiKey)
+      );
       return generateFallbackPlan(request);
     }
 
-    const json = await response.json();
-    const rawText = json.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    if (!rawText) {
-      return generateFallbackPlan(request);
-    }
-
+    const rawText = result.text;
     const cleanedJson = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
     const parsed = JSON.parse(cleanedJson);
 
