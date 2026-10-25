@@ -586,18 +586,7 @@ export const TimelineManager: React.FC<TimelineManagerProps> = ({
                   </p>
                 </div>
 
-                {/* Semantic ordered list for accessibility */}
-                <ol
-                  style={{
-                    position: 'relative',
-                    listStyle: 'none',
-                    padding: '0 0 0 1.75rem',
-                    margin: 0,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 'var(--space-3)',
-                  }}
-                >
+                <div style={{ position: 'relative' }}>
                   {/* Vertical spine line */}
                   <div
                     style={{
@@ -611,17 +600,29 @@ export const TimelineManager: React.FC<TimelineManagerProps> = ({
                     aria-hidden="true"
                   />
 
-                  {phaseTasks.map((task) => (
-                    <TaskNodeItem
-                      key={task.id}
-                      task={task}
-                      todayTime={today.getTime()}
-                      taskMap={taskMap}
-                      onToggle={handleToggle}
-                      onDelete={handleDelete}
-                    />
-                  ))}
-                </ol>
+                  {/* Semantic ordered list for accessibility */}
+                  <ol
+                    style={{
+                      listStyle: 'none',
+                      padding: '0 0 0 1.75rem',
+                      margin: 0,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 'var(--space-3)',
+                    }}
+                  >
+                    {phaseTasks.map((task) => (
+                      <TaskNodeItem
+                        key={task.id}
+                        task={task}
+                        todayTime={today.getTime()}
+                        taskMap={taskMap}
+                        onToggle={handleToggle}
+                        onDelete={handleDelete}
+                      />
+                    ))}
+                  </ol>
+                </div>
               </section>
             );
           })}

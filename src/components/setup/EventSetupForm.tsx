@@ -429,22 +429,25 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 'var(--space-4)' }}>
               {/* Wedding Card */}
-              <div
-                role="button"
-                tabIndex={0}
+              <button
+                type="button"
+                aria-pressed={eventType === 'wedding'}
                 onClick={() => {
                   setEventType('wedding');
                   setTheme('Royal Marigold & Antique Gold');
                   setVenuePreference('heritage_haveli');
                   setFoodPreference('royal_thali');
                 }}
-                onKeyDown={(e) => { if (e.key === 'Enter') setEventType('wedding'); }}
                 style={{
                   border: `2px solid ${eventType === 'wedding' ? '#9E2A2B' : 'var(--border)'}`,
                   background: eventType === 'wedding' ? 'rgba(158, 42, 43, 0.05)' : 'var(--surface-raised)',
                   borderRadius: 'var(--radius-lg)',
                   padding: 'var(--space-5)',
                   cursor: 'pointer',
+                  width: '100%',
+                  textAlign: 'left',
+                  font: 'inherit',
+                  color: 'inherit',
                   transition: 'all var(--transition-fast)',
                 }}
               >
@@ -457,28 +460,31 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
                 <h4 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, color: 'var(--text)', marginBottom: 'var(--space-1)' }}>
                   Traditional Vivah / Wedding
                 </h4>
-                <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>
                   Theme: Crimson & Antique Gold. Includes Haldi, Mehendi, Sangeet, Baraat, Pheras, and sound curfew guardrails.
                 </p>
-              </div>
+              </button>
 
               {/* Birthday Card */}
-              <div
-                role="button"
-                tabIndex={0}
+              <button
+                type="button"
+                aria-pressed={eventType === 'birthday'}
                 onClick={() => {
                   setEventType('birthday');
                   setTheme('Bollywood Rooftop & Retro Neon');
                   setVenuePreference('rooftop');
                   setFoodPreference('live_chaat_counters');
                 }}
-                onKeyDown={(e) => { if (e.key === 'Enter') setEventType('birthday'); }}
                 style={{
                   border: `2px solid ${eventType === 'birthday' ? '#E76F51' : 'var(--border)'}`,
                   background: eventType === 'birthday' ? 'rgba(231, 111, 81, 0.05)' : 'var(--surface-raised)',
                   borderRadius: 'var(--radius-lg)',
                   padding: 'var(--space-5)',
                   cursor: 'pointer',
+                  width: '100%',
+                  textAlign: 'left',
+                  font: 'inherit',
+                  color: 'inherit',
                   transition: 'all var(--transition-fast)',
                 }}
               >
@@ -491,28 +497,31 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
                 <h4 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, color: 'var(--text)', marginBottom: 'var(--space-1)' }}>
                   Milestone Birthday
                 </h4>
-                <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>
                   Theme: Sunset Orange & Amber. High energy, rooftop/club venues, live chaat, cocktails, DJ and cake cutting ceremony.
                 </p>
-              </div>
+              </button>
 
               {/* Community Card */}
-              <div
-                role="button"
-                tabIndex={0}
+              <button
+                type="button"
+                aria-pressed={eventType === 'community'}
                 onClick={() => {
                   setEventType('community');
                   setTheme('Festive Dandiya & Diwali Utsav');
                   setVenuePreference('community_center');
                   setFoodPreference('buffet');
                 }}
-                onKeyDown={(e) => { if (e.key === 'Enter') setEventType('community'); }}
                 style={{
                   border: `2px solid ${eventType === 'community' ? '#2A9D8F' : 'var(--border)'}`,
                   background: eventType === 'community' ? 'rgba(42, 157, 143, 0.05)' : 'var(--surface-raised)',
                   borderRadius: 'var(--radius-lg)',
                   padding: 'var(--space-5)',
                   cursor: 'pointer',
+                  width: '100%',
+                  textAlign: 'left',
+                  font: 'inherit',
+                  color: 'inherit',
                   transition: 'all var(--transition-fast)',
                 }}
               >
@@ -525,10 +534,10 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
                 <h4 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, color: 'var(--text)', marginBottom: 'var(--space-1)' }}>
                   Community & Cultural Mela
                 </h4>
-                <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>
                   Theme: Marigold & Emerald. Diwali, Dandiya, Holi, or society celebrations with crowd safety, bhog, and performances.
                 </p>
-              </div>
+              </button>
             </div>
           </fieldset>
         </div>

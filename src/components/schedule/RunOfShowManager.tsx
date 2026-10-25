@@ -48,6 +48,16 @@ interface RitualMeta {
   badgeVariant: 'warning' | 'danger' | 'info' | 'success' | 'neutral';
 }
 
+function formatRitualLabelWithLang(label: string): React.ReactNode {
+  const parts = label.split(/(Haldi|Baraat|Milni|Varmala|Pheras|Sangeet|Vidaai|Muhurat|Mandap)/gi);
+  return parts.map((part, i) => {
+    if (/^(Haldi|Baraat|Milni|Varmala|Pheras|Sangeet|Vidaai|Muhurat|Mandap)$/i.test(part)) {
+      return <span key={i} lang="hi">{part}</span>;
+    }
+    return part;
+  });
+}
+
 function getRitualMeta(activity: string, notes?: string): RitualMeta {
   const text = `${activity} ${notes || ''}`.toLowerCase();
 
@@ -426,39 +436,41 @@ export const RunOfShowManager: React.FC<RunOfShowManagerProps> = ({
                 <React.Fragment key={item.id || idx}>
                   {/* Curfew Divider at 10:00 PM */}
                   {shouldRenderCurfewBefore && (
-                    <div
-                      className="curfew-divider"
-                      role="note"
-                      aria-label="10:00 PM Municipal Sound Curfew"
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 'var(--space-3)',
-                        padding: 'var(--space-3) var(--space-4)',
-                        margin: 'var(--space-2) 0',
-                        borderRadius: 'var(--radius-lg)',
-                        backgroundColor: 'var(--color-warning-bg)',
-                        border: '2px dashed var(--color-warning-border)',
-                        color: 'var(--color-warning-text)',
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontWeight: 800, fontSize: 'var(--text-sm)', whiteSpace: 'nowrap' }}>
-                        <Volume2 size={18} color="var(--color-warning)" />
-                        <span>Curfew: Move Indoors (10:00 PM)</span>
-                      </div>
+                    <li className="curfew-divider-item" style={{ listStyle: 'none' }}>
                       <div
+                        className="curfew-divider"
+                        role="note"
+                        aria-label="10:00 PM Municipal Sound Curfew"
                         style={{
-                          fontSize: 'var(--text-xs)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 'var(--space-3)',
+                          padding: 'var(--space-3) var(--space-4)',
+                          margin: 'var(--space-2) 0',
+                          borderRadius: 'var(--radius-lg)',
+                          backgroundColor: 'var(--color-warning-bg)',
+                          border: '2px dashed var(--color-warning-border)',
                           color: 'var(--color-warning-text)',
-                          lineHeight: 1.4,
-                          borderLeft: '2px solid var(--color-warning-border)',
-                          paddingLeft: 'var(--space-3)',
                         }}
-                        title="Rule 9 Protocol: Outdoor amplified music, Dhol processions, and Baraats must transition indoors by 10:00 PM."
                       >
-                        <strong>Rule 9 Protocol:</strong> Transition all outdoor music, Dhol, and Baraat activities into soundproofed banquet halls.
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontWeight: 800, fontSize: 'var(--text-sm)', whiteSpace: 'nowrap' }}>
+                          <Volume2 size={18} color="var(--color-warning)" />
+                          <span>Curfew: Move Indoors (10:00 PM)</span>
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 'var(--text-xs)',
+                            color: 'var(--color-warning-text)',
+                            lineHeight: 1.4,
+                            borderLeft: '2px solid var(--color-warning-border)',
+                            paddingLeft: 'var(--space-3)',
+                          }}
+                          title="Rule 9 Protocol: Outdoor amplified music, Dhol processions, and Baraats must transition indoors by 10:00 PM."
+                        >
+                          <strong>Rule 9 Protocol:</strong> Transition all outdoor music, Dhol, and Baraat activities into soundproofed banquet halls.
+                        </div>
                       </div>
-                    </div>
+                    </li>
                   )}
 
                   {/* Schedule Item Row */}
@@ -510,7 +522,7 @@ export const RunOfShowManager: React.FC<RunOfShowManagerProps> = ({
                             </div>
 
                             <Badge variant={ritual.badgeVariant}>
-                              {ritual.label}
+                              {formatRitualLabelWithLang(ritual.label)}
                             </Badge>
 
                             {isPastCurfew && (
