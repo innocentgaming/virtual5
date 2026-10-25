@@ -95,6 +95,8 @@ export function App() {
     regenerateRecommendations,
     resetToDefaults,
     exportCurrentPlan,
+    storageError,
+    clearStorageError,
   } = useEventPlan();
 
   const [isCreatingNew, setIsCreatingNew] = useState(false);
@@ -219,6 +221,13 @@ export function App() {
         <Toast
           message={notification}
           onDismiss={() => setNotification(null)}
+        />
+      )}
+      {storageError && (
+        <Toast
+          message={storageError}
+          type="danger"
+          onDismiss={() => clearStorageError()}
         />
       )}
 
