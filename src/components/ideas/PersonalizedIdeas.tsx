@@ -159,6 +159,7 @@ export const PersonalizedIdeas: React.FC<PersonalizedIdeasProps> = ({
               variant={selectedTier === 'all' ? 'primary' : 'secondary'}
               size="sm"
               onClick={() => setSelectedTier('all')}
+              aria-pressed={selectedTier === 'all'}
             >
               All Tiers ({ideas.length})
             </Button>
@@ -167,6 +168,7 @@ export const PersonalizedIdeas: React.FC<PersonalizedIdeasProps> = ({
               size="sm"
               onClick={() => setSelectedTier('budget')}
               leadingIcon={<TrendingDown size={13} color="var(--color-success)" />}
+              aria-pressed={selectedTier === 'budget'}
             >
               Low (Cost Savers)
             </Button>
@@ -175,6 +177,7 @@ export const PersonalizedIdeas: React.FC<PersonalizedIdeasProps> = ({
               size="sm"
               onClick={() => setSelectedTier('balanced')}
               leadingIcon={<Scale size={13} />}
+              aria-pressed={selectedTier === 'balanced'}
             >
               Mid (Balanced)
             </Button>
@@ -183,6 +186,7 @@ export const PersonalizedIdeas: React.FC<PersonalizedIdeasProps> = ({
               size="sm"
               onClick={() => setSelectedTier('premium')}
               leadingIcon={<TrendingUp size={13} color="var(--accent-primary)" />}
+              aria-pressed={selectedTier === 'premium'}
             >
               High (Luxe / Elevated)
             </Button>

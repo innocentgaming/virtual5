@@ -114,17 +114,34 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
   const [lastUserPrompt, setLastUserPrompt] = useState<string>('');
   const [isAiOnline, setIsAiOnline] = useState<boolean>(true);
 
-  // Focus restoration & initial focus
+  // Focus restoration & initial focus with scroll lock
   useEffect(() => {
-    if (isOpen) {
-      previouslyFocusedElementRef.current = document.activeElement as HTMLElement;
-      // Focus textarea or close button
-      setTimeout(() => {
-        textareaRef.current?.focus();
-      }, 50);
-    } else {
-      previouslyFocusedElementRef.current?.focus();
+    if (!isOpen) return;
+
+    previouslyFocusedElementRef.current = document.activeElement as HTMLElement | null;
+
+    // Lock body scroll without layout shift
+    const originalOverflow = document.body.style.overflow;
+    const originalPaddingRight = document.body.style.paddingRight;
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
     }
+    document.body.style.overflow = 'hidden';
+
+    // Focus textarea
+    const timeoutId = setTimeout(() => {
+      textareaRef.current?.focus();
+    }, 50);
+
+    return () => {
+      clearTimeout(timeoutId);
+      document.body.style.overflow = originalOverflow;
+      document.body.style.paddingRight = originalPaddingRight;
+      if (previouslyFocusedElementRef.current && typeof previouslyFocusedElementRef.current.focus === 'function') {
+        previouslyFocusedElementRef.current.focus();
+      }
+    };
   }, [isOpen]);
 
   // Trap focus and Esc
@@ -285,6 +302,21 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
         if (e.target === e.currentTarget) onClose();
       }}
     >
+      {/* Pre-guard for focus trapping */}
+      <div
+        tabIndex={0}
+        aria-hidden="true"
+        style={{ position: 'fixed', top: 0, left: 0, width: 0, height: 0, opacity: 0, pointerEvents: 'none' }}
+        onFocus={() => {
+          if (drawerRef.current) {
+            const focusable = drawerRef.current.querySelectorAll<HTMLElement>(
+              'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+            );
+            if (focusable.length > 0) focusable[focusable.length - 1].focus();
+          }
+        }}
+      />
+
       <div
         ref={drawerRef}
         className="copilot-drawer-container"
@@ -657,6 +689,21 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
           </Button>
         </form>
       </div>
+
+      {/* Post-guard for focus trapping */}
+      <div
+        tabIndex={0}
+        aria-hidden="true"
+        style={{ position: 'fixed', top: 0, left: 0, width: 0, height: 0, opacity: 0, pointerEvents: 'none' }}
+        onFocus={() => {
+          if (drawerRef.current) {
+            const focusable = drawerRef.current.querySelectorAll<HTMLElement>(
+              'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+            );
+            if (focusable.length > 0) focusable[0].focus();
+          }
+        }}
+      />
     </div>
   );
 };

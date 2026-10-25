@@ -122,17 +122,37 @@ export const Navigation: React.FC<NavigationProps> = ({
     setIsMobileMenuOpen(false);
   };
 
+  const handleTabKeyDown = (e: React.KeyboardEvent, index: number) => {
+    let nextIndex = index;
+    if (e.key === 'ArrowRight') {
+      nextIndex = (index + 1) % tabs.length;
+    } else if (e.key === 'ArrowLeft') {
+      nextIndex = (index - 1 + tabs.length) % tabs.length;
+    } else if (e.key === 'Home') {
+      nextIndex = 0;
+    } else if (e.key === 'End') {
+      nextIndex = tabs.length - 1;
+    } else {
+      return;
+    }
+    e.preventDefault();
+    const nextTab = tabs[nextIndex];
+    onTabChange(nextTab.id);
+    document.getElementById(`nav-tab-${nextTab.id}`)?.focus();
+  };
+
   return (
     <>
       {/* Desktop / Tablet Horizontal Tab Navigation */}
       <nav className="nav-tabs" aria-label="Main Navigation">
-        {tabs.map((tab) => (
+        {tabs.map((tab, idx) => (
           <button
             key={tab.id}
             type="button"
             id={`nav-tab-${tab.id}`}
             className={`nav-tab-btn ${activeTab === tab.id ? 'active' : ''}`}
             onClick={() => onTabChange(tab.id)}
+            onKeyDown={(e) => handleTabKeyDown(e, idx)}
             onMouseEnter={() => onTabHover?.(tab.id)}
             onFocus={() => onTabHover?.(tab.id)}
             aria-current={activeTab === tab.id ? 'page' : undefined}
@@ -228,6 +248,9 @@ export const Navigation: React.FC<NavigationProps> = ({
             aria-label="More Features"
             style={{ width: '100%', maxWidth: '420px', margin: '0 auto' }}
             onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') setIsMobileMenuOpen(false);
+            }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
               <strong style={{ fontSize: '1rem' }}>More Features</strong>

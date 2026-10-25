@@ -845,8 +845,10 @@ h1, h2, h3, .heading-display {
   min-height: 40px;
 }
 
-.form-control:focus {
-  outline: none;
+.form-control:focus,
+.form-control:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 1px;
   border-color: var(--accent-primary);
   box-shadow: 0 0 0 3px var(--accent-glow);
 }

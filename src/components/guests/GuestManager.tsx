@@ -148,6 +148,9 @@ const GuestTableRow = React.memo<GuestTableRowProps>(({
       <td style={{ padding: 'var(--space-3) var(--space-2)' }}>
         {guest.dietary && guest.dietary !== 'none' ? (
           <span
+            tabIndex={0}
+            role="note"
+            aria-label={`${DIETARY_LABELS[guest.dietary]}: ${DIETARY_TOOLTIPS[guest.dietary]}`}
             title={DIETARY_TOOLTIPS[guest.dietary]}
             style={{
               display: 'inline-flex',
@@ -719,6 +722,7 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
               variant={filterChip === 'all' ? 'primary' : 'secondary'}
               size="sm"
               onClick={() => setFilterChip('all')}
+              aria-pressed={filterChip === 'all'}
             >
               All ({filterCounts.all})
             </Button>
@@ -727,6 +731,7 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
               size="sm"
               onClick={() => setFilterChip('confirmed')}
               leadingIcon={<UserCheck size={13} />}
+              aria-pressed={filterChip === 'confirmed'}
             >
               Confirmed ({filterCounts.confirmed})
             </Button>
@@ -735,6 +740,7 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
               size="sm"
               onClick={() => setFilterChip('pending')}
               leadingIcon={<Clock size={13} />}
+              aria-pressed={filterChip === 'pending'}
             >
               Pending ({filterCounts.pending})
             </Button>
@@ -743,6 +749,7 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
               size="sm"
               onClick={() => setFilterChip('declined')}
               leadingIcon={<UserX size={13} />}
+              aria-pressed={filterChip === 'declined'}
             >
               Declined ({filterCounts.declined})
             </Button>
@@ -751,6 +758,7 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
               size="sm"
               onClick={() => setFilterChip('jain')}
               style={filterChip === 'jain' ? {} : { borderColor: '#ea580c', color: '#ea580c' }}
+              aria-pressed={filterChip === 'jain'}
             >
               🥗 Jain ({filterCounts.jain})
             </Button>
@@ -759,6 +767,7 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
               size="sm"
               onClick={() => setFilterChip('pure_veg')}
               style={filterChip === 'pure_veg' ? {} : { borderColor: '#16a34a', color: '#16a34a' }}
+              aria-pressed={filterChip === 'pure_veg'}
             >
               🌱 Pure Veg ({filterCounts.pure_veg})
             </Button>
@@ -766,6 +775,7 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
               variant={filterChip === 'halal' ? 'primary' : 'secondary'}
               size="sm"
               onClick={() => setFilterChip('halal')}
+              aria-pressed={filterChip === 'halal'}
             >
               Halal ({filterCounts.halal})
             </Button>
@@ -773,6 +783,7 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
               variant={filterChip === 'gluten_free' ? 'primary' : 'secondary'}
               size="sm"
               onClick={() => setFilterChip('gluten_free')}
+              aria-pressed={filterChip === 'gluten_free'}
             >
               Gluten-free ({filterCounts.gluten_free})
             </Button>
@@ -780,6 +791,7 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
               variant={filterChip === 'has_plus_one' ? 'primary' : 'secondary'}
               size="sm"
               onClick={() => setFilterChip('has_plus_one')}
+              aria-pressed={filterChip === 'has_plus_one'}
             >
               Has +1 ({filterCounts.has_plus_one})
             </Button>

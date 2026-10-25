@@ -32,8 +32,13 @@ export const Modal: React.FC<ModalProps> = ({
     // Save previous active element to restore focus on close
     previousActiveElement.current = document.activeElement as HTMLElement | null;
 
-    // Lock body scroll
+    // Lock body scroll without layout shift
     const originalOverflow = document.body.style.overflow;
+    const originalPaddingRight = document.body.style.paddingRight;
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
     document.body.style.overflow = 'hidden';
 
     // Focus first focusable element inside modal
@@ -87,6 +92,7 @@ export const Modal: React.FC<ModalProps> = ({
     return () => {
       clearTimeout(timeoutId);
       document.body.style.overflow = originalOverflow;
+      document.body.style.paddingRight = originalPaddingRight;
       window.removeEventListener('keydown', handleKeyDown);
       // Restore focus on close
       if (previousActiveElement.current && typeof previousActiveElement.current.focus === 'function') {
@@ -112,6 +118,21 @@ export const Modal: React.FC<ModalProps> = ({
       onClick={handleBackdropClick}
       data-testid="modal-backdrop"
     >
+      {/* Pre-guard for focus trapping */}
+      <div
+        tabIndex={0}
+        aria-hidden="true"
+        style={{ position: 'fixed', top: 0, left: 0, width: 0, height: 0, opacity: 0, pointerEvents: 'none' }}
+        onFocus={() => {
+          if (modalRef.current) {
+            const focusable = modalRef.current.querySelectorAll<HTMLElement>(
+              'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+            );
+            if (focusable.length > 0) focusable[focusable.length - 1].focus();
+          }
+        }}
+      />
+
       <div
         ref={modalRef}
         role="dialog"
@@ -146,6 +167,21 @@ export const Modal: React.FC<ModalProps> = ({
 
         {footer && <div className="ui-modal-footer modal-footer">{footer}</div>}
       </div>
+
+      {/* Post-guard for focus trapping */}
+      <div
+        tabIndex={0}
+        aria-hidden="true"
+        style={{ position: 'fixed', top: 0, left: 0, width: 0, height: 0, opacity: 0, pointerEvents: 'none' }}
+        onFocus={() => {
+          if (modalRef.current) {
+            const focusable = modalRef.current.querySelectorAll<HTMLElement>(
+              'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+            );
+            if (focusable.length > 0) focusable[0].focus();
+          }
+        }}
+      />
     </div>
   );
 };
