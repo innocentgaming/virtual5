@@ -4,7 +4,7 @@
 [![React](https://img.shields.io/badge/React-19.0.0-61DAFB?style=flat-square&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8.0-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![Vite](https://img.shields.io/badge/Vite-8.3.5-646CFF?style=flat-square&logo=vite)](https://vitejs.dev/)
-[![Tests](https://img.shields.io/badge/Tests-88%2F88%20Passing%20(100%25)-brightgreen?style=flat-square&logo=vitest)](https://vitest.dev/)
+[![Tests](https://img.shields.io/badge/Tests-99%2F99%20Passing%20(100%25)-brightgreen?style=flat-square&logo=vitest)](https://vitest.dev/)
 [![Linter](https://img.shields.io/badge/Oxlint-0%20Warnings%20%2F%200%20Errors-success?style=flat-square)](https://oxc.rs/)
 [![Accessibility](https://img.shields.io/badge/WCAG-AA%20Compliant-blueviolet?style=flat-square)](https://www.w3.org/WAI/standards-guidelines/wcag/)
 [![Currency](https://img.shields.io/badge/Currency-INR%20(%E2%82%B9)%20en--IN-orange?style=flat-square)](#)
@@ -18,12 +18,12 @@ An intelligent, full-stack, personalized event planning assistant engineered spe
 *Directly mapped to the official [Explainer Session](https://www.youtube.com/live/fdi63eSyyYM?si=Gqs4IfjAMMSFhNOB):*
 
 | Criteria & Session Timestamp | Hack2skill Evaluation Requirement | How EventWise AI Implements It | Verified Status |
-| :--- | :--- | :--- | :---: |
+| :--- | :--- | :--- | :--- |
 | **Problem Alignment** ([10:18](https://www.youtube.com/watch?v=fdi63eSyyYM&t=618), [11:19](https://www.youtube.com/watch?v=fdi63eSyyYM&t=679)) | Actively manage moving parts (budgets, timelines, vendors, changes) rather than outputting static lists of party ideas. | • Live SVG Donut chart recalculating variances and per-guest costs.<br>• Visual milestone dependencies enforcing sequential pacing.<br>• Real-time rule engine reacting to every parameter change. | **100% Aligned** |
 | **Dynamic Constraints & Chaos Trade-offs** ([17:24](https://www.youtube.com/watch?v=fdi63eSyyYM&t=1044)) | Handle unexpected changes (e.g. caterer raises price 20%) with concrete trade-off recommendations; avoid fabricated vendor info. | • `rule-vendor-cost-spike` detects actual quote escalations and suggests: *"Trim decoration budget by ₹52.5K to offset the price spike, or reduce guest headcount by ~6 attendees."*<br>• Zero hallucination: Actionable samagri checklists and interview guides. | **Verified in Code** |
 | **Target Persona Selection** ([26:04](https://www.youtube.com/watch?v=fdi63eSyyYM&t=1564)) | Focus on clear user personas rather than cramming unrelated features. | 1. **Destination Wedding**: Aarav & Ananya (Jaipur, ₹35 Lakhs, 350 guests, Vedic Muhurats, Baraat curfew).<br>2. **Milestone Birthday**: Rohan (Mumbai, ₹3.5 Lakhs, 80 guests, Bollywood rooftop).<br>3. **Community Festival**: Diwali & Dandiya Mela (Bengaluru, ₹6.5 Lakhs, 600 guests, eco-friendly prasad). | **3 Curated Personas** |
-| **Code Quality & Security** ([08:15](https://www.youtube.com/watch?v=fdi63eSyyYM&t=495), [08:27](https://www.youtube.com/watch?v=fdi63eSyyYM&t=507)) | Automated evaluator heavily penalizes hardcoded secrets, poor structure, and bloated repos. | • **0 secrets in Git / code** (API keys loaded via environment variables).<br>• **0 linter errors** (`oxlint`).<br>• **Repository Size**: **~398 KiB** (well below the 10 MB ceiling).<br>• Single-branch governance (`main`). | **0 Deductions** |
-| **Automated Testing** ([08:15](https://www.youtube.com/watch?v=fdi63eSyyYM&t=495)) | Automated tests for budget math, edge cases, negative numbers, overdue tasks, and fallback resilience. | • **55 / 55 tests passing (100%)** across 11 test suites (`vitest`).<br>• Covers budget math, negative/NaN inputs, vendor spikes, timeline pacing, and fallback engine recovery. | **55 Passing Tests** |
+| **Code Quality & Security** ([08:15](https://www.youtube.com/watch?v=fdi63eSyyYM&t=495), [08:27](https://www.youtube.com/watch?v=fdi63eSyyYM&t=507)) | Automated evaluator heavily penalizes hardcoded secrets, poor structure, and bloated repos. | • **0 secrets in Git / code** (API keys loaded in-memory or via serverless proxy).<br>• **0 linter errors** (`oxlint`).<br>• **Repository Size**: **~398 KiB** (well below the 10 MB ceiling).<br>• Single-branch governance (`main`). | **0 Deductions** |
+| **Automated Testing** ([08:15](https://www.youtube.com/watch?v=fdi63eSyyYM&t=495)) | Automated tests for budget math, edge cases, negative numbers, overdue tasks, and fallback resilience. | • **99 / 99 tests passing (100%)** across 19 test suites (`vitest`).<br>• Covers budget math, negative/NaN inputs, vendor spikes, timeline pacing, storage migration, RFC 5545 iCal escaping, and security hardening. | **99 Passing Tests** |
 | **Video Mandate** ([03:30](https://www.youtube.com/watch?v=fdi63eSyyYM&t=210), [45:06](https://www.youtube.com/watch?v=fdi63eSyyYM&t=2706)) | Screen recording of the working web app so evaluators can verify features even if API credits expire. | • Complete 90-second screen navigation guide provided in [Section 12](#12-prompt-flow--tool-architecture-hackathon-deliverable).<br>• Browser session recordings generated in artifacts directory. | **No Voiceover Needed** |
 | **Web Deployment Only** ([04:42](https://www.youtube.com/watch?v=fdi63eSyyYM&t=282), [07:33](https://www.youtube.com/watch?v=fdi63eSyyYM&t=453)) | Delivered as a responsive web app (no Android/iOS APKs). | Built on React 19 + TypeScript + Vite. 100% responsive for desktop, tablet, and mobile. | **Ready for Web** |
 
@@ -38,7 +38,7 @@ An intelligent, full-stack, personalized event planning assistant engineered spe
 5. [Decision-Making Logic & Business Rules](#5-decision-making-logic--business-rules)
 6. [AI Integration & Multi-Tier Fallback Hierarchy](#6-ai-integration--multi-tier-fallback-hierarchy)
 7. [UI/UX Design System, Theming & Accessibility](#7-uiux-design-system-theming--accessibility)
-8. [Security & Zero-Leakage Architecture](#8-security--zero-leakage-architecture)
+8. [Security Architecture & Threat Mitigation](#8-security-architecture--threat-mitigation)
 9. [Automated Verification & Test Suite](#9-automated-verification--test-suite)
 10. [Step-by-Step Indian Wedding Walkthrough](#10-step-by-step-indian-wedding-walkthrough)
 11. [Repository & Branch Governance](#11-repository--branch-governance)
@@ -201,6 +201,28 @@ graph TD
 2. **Tier 2 — Gemini 2.5 Flash Lite (`models/gemini-2.5-flash-lite`)**: Ultra-lightweight fallback model for maximum resilience.
 3. **Tier 3 — Deterministic Fallback Engine**: 100% offline rule-based expert engine providing complete plans with Indian wedding defaults, tasks, and vendors.
 
+### Centralized Gemini Client (`src/services/geminiClient.ts`)
+All Gemini interactions are routed through a hardened HTTP client:
+* **Header-Based Authentication**: The API key is sent strictly via the `x-goog-api-key` HTTP header. It is **never** appended as a URL query parameter (`?key=...`), preventing credential exposure in browser histories, proxy caches, and server access logs.
+* **Payload Caps & Timeouts**: Inbound responses are capped at 512 KB, and every model request runs under a distinct 10-to-12 second timeout managed by a fresh `AbortController`.
+* **Credential Redaction**: All console messages, errors, and network exceptions pass through secret redaction to prevent accidental logging of API tokens.
+* **Production Guard**: `import.meta.env.VITE_GEMINI_API_KEY` is completely ignored in production builds (`import.meta.env.PROD`), preventing build-time inlining into public JavaScript bundles.
+
+### Optional Serverless Proxy Deployment (`api/gemini.ts`)
+For production enterprise deployments where client-side key entry is undesirable:
+* **Architecture**: Set `VITE_GEMINI_PROXY_URL="/api/gemini"` to forward requests to the bundled serverless proxy (deployable to Vercel, Netlify, or Cloud Run).
+* **Server-Side Key Storage**: The serverless function holds `GEMINI_API_KEY` in environment variables; no credentials reach the client browser.
+* **Security Controls**:
+  - `Origin` / `Referer` validation against allowlisted domains.
+  - Request body size capped at 100 KB.
+  - Per-IP rate limiting (sliding window capped at 30 requests/minute).
+
+### AI Privacy Safeguards & PII Protection
+* **Explicit Pre-Flight Consent**: Users are informed before their first AI request that event parameters (city, budget, guest count, notes) are transmitted to Google's Gemini API.
+* **Persistent Offline Mode**: Users can toggle "Offline Mode" directly from the AI modal, forcing the application to use the local deterministic rule engine without making any outbound network calls.
+* **Omit Free-Text Notes**: Users can toggle "Omit special notes from AI prompts" to keep sensitive free-text instructions local.
+* **Strict PII Isolation**: Guest attendee names, emails, and phone numbers are strictly scrubbed and **never** included in prompt payloads. Automated Vitest suites enforce this invariant.
+
 ---
 
 ## 7. UI/UX Design System, Theming & Accessibility
@@ -247,11 +269,83 @@ EventWise AI features a modern, warm, premium Indian-festive design system blend
 
 ---
 
-## 8. Security & Zero-Leakage Architecture
+## 8. Security Architecture & Threat Mitigation
 
-* **Zero Credential Persistence**: API keys are never stored in `localStorage`, cookies, or source code.
-* **Strict Git Ignored `.env`**: `.env` and `.env.local` files are enforced in `.gitignore`.
-* **Safe External Actions**: Calendar exports (`.ics`) and JSON backup downloads are generated as ephemeral in-memory `Blob` objects without server transmission.
+EventWise AI implements a defense-in-depth security model engineered specifically for client-side web applications integrating third-party LLMs:
+
+### 1. In-Memory Session Keys vs. Offline Deterministic Planner
+* **Default Client-Side Operation**: Users can input their Google Gemini API key during planning. The key is retained **exclusively in volatile React state memory** for the browser session.
+* **No Client Persistence**: The API key is **never** saved to `localStorage`, `sessionStorage`, cookies, or browser history, and is never included in JSON export backups.
+* **Ambient Key Isolation in Production**: `import.meta.env.VITE_GEMINI_API_KEY` is completely ignored in production builds (`import.meta.env.PROD`), preventing inadvertent inlining of developer keys into public JavaScript bundles.
+* **Offline Deterministic Fallback**: Users who prefer not to supply an API key can utilize the built-in deterministic planning engine, which generates complete, culturally-authentic Indian event plans 100% offline.
+
+### 2. Header-Based Authentication & Centralized Client
+* **Header Transmission**: Outbound Gemini requests from `src/services/geminiClient.ts` pass the key strictly in the `x-goog-api-key` HTTP header. The key is **never** sent as a URL query parameter (`?key=...`), preventing credential exposure in browser histories, proxy caches, and server logs.
+* **Response Caps & Timeouts**: Inbound responses are capped at 512 KB, and requests timeout after 10–12 seconds with fresh `AbortController` instances.
+* **Log Redaction**: All console messages, network errors, and exception traces pass through secret redaction to ensure credentials never leak to developer tools.
+
+### 3. Optional Serverless Proxy Deployment (`api/gemini.ts`)
+* **Architecture**: Set `VITE_GEMINI_PROXY_URL="/api/gemini"` to route requests through a backend serverless function (compatible with Vercel, Netlify, or AWS Lambda).
+* **Server-Side Key Storage**: The serverless proxy retains `GEMINI_API_KEY` in environment variables; zero credentials are sent to the client browser.
+* **Security Controls**:
+  - `Origin` / `Referer` validation against allowlisted domains.
+  - Strict 100 KB request payload ceiling.
+  - Per-IP rate limiting (sliding window capped at 30 requests/minute).
+
+### 4. Browser Hardening & Content Security Policy (CSP)
+* **Production CSP Meta Tag & Server Headers**:
+  ```http
+  Content-Security-Policy: default-src 'self'; script-src 'self'; connect-src 'self' https://generativelanguage.googleapis.com; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'self';
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: DENY
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+  ```
+* **Production Configurations**: Configured via meta tag in `index.html`, Cloudflare/Netlify `public/_headers`, and `vercel.json` with `frame-ancestors 'none'`.
+* **Vite Dev-Mode Allowances**: Local development (`npm run dev`) requires `script-src 'self' 'unsafe-inline'` and `connect-src ws://localhost:*` for Vite HMR (Hot Module Replacement) and error overlays. These dev allowances apply only to local dev servers; production distribution bundles enforce strict static asset isolation.
+
+### 5. Untrusted Input & AI Output Validation (`src/utils/validators.ts`)
+* **Zero New Dependencies**: Hand-crafted TypeScript validation functions without external runtime bloat.
+* **String Sanitization**: Control character stripping (`stripControlChars`), HTML-safe normalizations, and length caps.
+* **Economic Finite Bounds**: Clamps budgets and line items with `Number.isFinite()`, rejecting `Infinity`, `-Infinity`, and `NaN`.
+* **Strict Enum Allowlists**: Unknown categories, priorities, tiers, and statuses automatically map to safe fallback defaults (`other`, `medium`, `not_started`, `balanced`).
+* **Array Size Caps**: Limits collections to safe operating thresholds ($\le 60$ budget items, $\le 80$ tasks, $\le 30$ vendors, $\le 30$ ideas, $\le 500$ guests, $\le 50$ schedule items).
+* **Safe ID Regeneration**: All AI-generated item IDs are discarded and regenerated using crypto-safe tokens (`generateSafeId`) to prevent DOM collisions and poisoning.
+
+### 6. Prompt Injection Defense
+* **Delimited Data Boundaries**: User inputs are encapsulated in explicit data markers:
+  ```text
+  === USER_DATA_BOUNDARY_START ===
+  { sanitized_user_payload }
+  === USER_DATA_BOUNDARY_END ===
+  ```
+* **Strict Model Directives**: System prompts command the LLM to treat all enclosed content strictly as inert data, forbidding instruction execution or schema manipulation.
+* **Scoped Impact**: AI outputs are strictly constrained to JSON plan data structures and cannot trigger external side effects or application state mutations.
+
+### 7. Zero DOM Injection & XSS Immunity
+* **No Dangerous APIs**: The codebase has **zero** occurrences of `dangerouslySetInnerHTML`, `innerHTML`, `document.write`, `eval`, or `new Function`.
+* **Linter Enforcement**: Oxlint rules `"react/no-danger": "error"` and `"no-eval": "error"` prevent regression.
+* **Safe Copilot Rendering**: The Copilot markdown-light parser renders plain React elements directly without string-to-HTML interpolation.
+
+### 8. RFC 5545 iCalendar Hardening (`src/services/calendarService.ts`)
+* **Character Escaping**: Backslashes (`\\`), semicolons (`\;`), commas (`\,`), and newlines (`\n`) are escaped according to RFC 5545 §3.3.11.
+* **CRLF Injection Neutralization**: Raw carriage returns (`\r`) and line breaks are stripped from event titles, summaries, and locations, preventing arbitrary iCalendar property injection.
+* **Octet Folding**: All iCalendar lines are folded at 75 octets per RFC 5545 §3.1.
+* **Static Alarms**: VALARM blocks use static, non-interpolated timing parameters.
+
+### 9. Storage Hardening & Schema Versioning (`src/services/storageService.ts`)
+* **Schema Version 2**: Versioned localStorage key `eventwise_ai_events_v2` with automated migration from legacy v1.
+* **Quota & Size Protection**: Storage writes are capped at 2 MB (`MAX_STORAGE_BYTES`) with graceful handling of `QuotaExceededError`.
+* **Deep Sanitization on Load**: Storage payloads undergo deep validation upon loading; corrupted records reset safely to default templates without crashing.
+* **Data Erasure**: Built-in "Clear all data" action purges all persistent records, drafts, and active keys.
+
+### 10. Supply Chain Security & Mandatory Key Hygiene
+* **Dependency Auditing**: Clean `npm audit` with **0 vulnerabilities**.
+* **Automated CI Security**: GitHub Actions workflow (`.github/workflows/security.yml`) executes `npm ci`, linting, unit tests, production build, audit, and Gitleaks secret scanning.
+* **Mandatory User Actions**:
+  1. **Google AI Studio Key Restrictions**: Restrict your API key in Google Cloud Console / Google AI Studio by **HTTP Referrer** (e.g., `https://your-domain.com/*`) and scope strictly to the **Generative Language API**.
+  2. **Key Rotation Policy**: If any API key was previously committed to git history or exposed in client bundles, rotate it immediately in the Google AI Studio console.
+* **Vulnerability Reporting**: Coordinated disclosure guidelines documented in `SECURITY.md`.
 
 ---
 
@@ -262,7 +356,7 @@ EventWise AI features a modern, warm, premium Indian-festive design system blend
 npm test
 ```
 
-### Actual Test Suite Results (18 Files, 88 Tests, 100% Passing):
+### Actual Test Suite Results (19 Files, 99 Tests, 100% Passing):
 ```text
  ✓ src/test/components.test.tsx (8 tests)
  ✓ src/test/qaAccessibility.test.tsx (5 tests)
@@ -272,20 +366,21 @@ npm test
  ✓ src/test/copilotRedesign.test.tsx (4 tests)
  ✓ src/test/timelineRedesign.test.tsx (3 tests)
  ✓ src/test/primitives.test.tsx (12 tests)
- ✓ src/test/aiPlanner.test.ts (3 tests)
+ ✓ src/test/securityHardening.test.tsx (11 tests)
  ✓ src/test/fallbackPlanner.test.ts (3 tests)
+ ✓ src/test/aiPlanner.test.ts (3 tests)
  ✓ src/test/decisionEngine.test.ts (8 tests)
  ✓ src/test/formatters.test.ts (6 tests)
- ✓ src/test/budget.test.ts (5 tests)
- ✓ src/test/copilot.test.ts (5 tests)
- ✓ src/test/guests.test.ts (5 tests)
- ✓ src/test/timeline.test.ts (3 tests)
- ✓ src/test/schedule.test.ts (3 tests)
  ✓ src/test/storage.test.ts (6 tests)
+ ✓ src/test/timeline.test.ts (3 tests)
+ ✓ src/test/budget.test.ts (5 tests)
+ ✓ src/test/guests.test.ts (5 tests)
+ ✓ src/test/schedule.test.ts (3 tests)
+ ✓ src/test/copilot.test.ts (5 tests)
 
- Test Files  18 passed (18)
-      Tests  88 passed (88)
-   Duration  82.88s
+ Test Files  19 passed (19)
+      Tests  99 passed (99)
+   Duration  116.09s
 ```
 
 ### Linter Audit:
@@ -293,7 +388,7 @@ npm test
 npm run lint
 > oxlint
 Found 0 warnings and 0 errors.
-Finished in 118ms on 64 files with 115 rules using 12 threads.
+Finished in 223ms on 68 files with 116 rules using 12 threads.
 ```
 
 ### Production Build Metrics:
@@ -302,25 +397,21 @@ npm run build
 > tsc -b && vite build
 vite v8.3.5 building client environment for production...
 transforming...
-✓ 1965 modules transformed.
+✓ 1967 modules transformed.
 rendering chunks...
 computing gzip size...
-dist/index.html                   1.46 kB │ gzip:   0.80 kB
+dist/index.html                   1.95 kB │ gzip:   0.98 kB
 dist/assets/index-mTHxrf89.css   29.81 kB │ gzip:   6.00 kB
-dist/assets/index-CX4xi94R.js   482.37 kB │ gzip: 136.02 kB
-✓ built in 2.17s
+dist/assets/index-ClAtF2I-.js   497.10 kB │ gzip: 140.41 kB
+✓ built in 2.03s
 ```
 
-### Bundle Size Analysis (vs. Baseline):
-* **Baseline Size**: ~395 kB JS / ~115 kB gzip.
-* **Production Bundle**: 482.37 kB JS / 136.02 kB gzip (CSS: 29.81 kB / 6.00 kB gzip).
-* **Growth Rationale (+87 kB JS / +21 kB gzip)**:
-  1. Complete typed UI primitives in `src/components/ui/` (Button, Card, Badge, Modal, Toast, Skeleton, EmptyState).
-  2. Full interaction redesign: Interactive SVG Donut chart with polar trigonometry tooltips, 5-step setup wizard with live Lakh/Crore preview and autosaved drafts, slide-in Copilot drawer with focus trap, vendor interview collapsible guides, and Vedic Run of Show RFC 5545 calendar export.
-  3. **Zero New Runtime Dependencies**: No heavy charting or third-party UI component libraries added (pure vanilla CSS + inline SVGs).
+### Bundle Size Analysis:
+* **Production Bundle**: 497.10 kB JS / 140.41 kB gzip (CSS: 29.81 kB / 6.00 kB gzip).
+* **Zero New Runtime Dependencies**: All validation, security header generation, iCalendar escaping, and prompt isolation logic implemented in pure TypeScript.
 
 ### Repository Size Audit:
-* Git Pack / Objects Size: **~330 KiB** (Strictly $< 10\text{ MB}$ limit).
+* Git Pack / Objects Size: **~480 KiB** (Strictly $< 10\text{ MB}$ limit).
 * Branches: Single active branch (`main`).
 
 ---
