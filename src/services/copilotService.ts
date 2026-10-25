@@ -128,7 +128,11 @@ export async function generateCopilotAnswerAsync(
   plan: EventPlan,
   customApiKey?: string
 ): Promise<string> {
-  if (!canCallGemini(customApiKey)) {
+  const isOfflineMode = typeof window !== 'undefined' &&
+    window.localStorage &&
+    window.localStorage.getItem('eventwise_ai_offline_mode') === 'true';
+
+  if (isOfflineMode || !canCallGemini(customApiKey)) {
     return generateCopilotAnswer(question, plan);
   }
 

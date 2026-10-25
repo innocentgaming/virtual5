@@ -39,6 +39,7 @@ export interface AIPlanningRequest {
   specialNotes?: string;
   contingencyRate?: number;
   customApiKey?: string;
+  omitNotes?: boolean;
 }
 
 function validateAIPlanResponse(data: unknown): data is Partial<EventPlan> {
@@ -54,7 +55,12 @@ function validateAIPlanResponse(data: unknown): data is Partial<EventPlan> {
 }
 
 export async function generateAIEventPlan(request: AIPlanningRequest): Promise<EventPlan> {
-  if (!canCallGemini(request.customApiKey)) {
+  // Check persistent offline mode preference
+  const isOfflineMode = typeof window !== 'undefined' &&
+    window.localStorage &&
+    window.localStorage.getItem('eventwise_ai_offline_mode') === 'true';
+
+  if (isOfflineMode || !canCallGemini(request.customApiKey)) {
     return generateFallbackPlan({
       title: request.title,
       eventType: request.eventType,
@@ -80,7 +86,9 @@ export async function generateAIEventPlan(request: AIPlanningRequest): Promise<E
   const safeCity = sanitizeString(request.city, LIMITS.MAX_CITY_LENGTH, 'City');
   const safeTheme = sanitizeString(request.theme, LIMITS.MAX_THEME_LENGTH, 'modern elegant');
   const safeTraditions = sanitizeString(request.culturalTraditions, LIMITS.MAX_TRADITIONS_LENGTH, 'standard');
-  const safeNotes = sanitizeString(request.specialNotes, LIMITS.MAX_NOTES_LENGTH, 'none');
+  const safeNotes = request.omitNotes
+    ? 'none (omitted by user for privacy)'
+    : sanitizeString(request.specialNotes, LIMITS.MAX_NOTES_LENGTH, 'none');
 
   const prompt = `You are EventWise AI, an expert event planner specializing in weddings, birthdays, and community celebrations in India.
 Generate a comprehensive, realistic event plan in strictly valid JSON format.
