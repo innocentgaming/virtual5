@@ -144,6 +144,23 @@ export function App() {
     showToast('iCalendar (.ics) file exported with timeline reminders!');
   };
 
+  // Dynamic document title update per active section
+  useEffect(() => {
+    const tabTitles: Record<NavigationTab, string> = {
+      dashboard: 'Dashboard Overview',
+      setup: 'Event Setup',
+      budget: 'Budget Planner & Expenses',
+      timeline: 'Timeline & Tasks',
+      schedule: 'Run of Show & Schedule',
+      guests: 'Guest List & RSVPs',
+      vendors: 'Vendor Checklist & Procurement',
+      ideas: 'Personalized Ideas',
+      ai: 'AI Assistant',
+    };
+    const viewName = isCreatingNew ? 'Create New Celebration' : tabTitles[activeTab] || 'Dashboard';
+    document.title = `${viewName} — ${activeEvent.title} | EventWise AI`;
+  }, [activeTab, activeEvent.title, isCreatingNew]);
+
   const handleTabHover = useCallback((tab: NavigationTab) => {
     switch (tab) {
       case 'budget':
@@ -216,6 +233,11 @@ export function App() {
         data-color-mode={colorMode}
         style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}
       >
+      {/* Accessibility Skip-To-Main Link */}
+      <a href="#main" className="skip-link">
+        Skip to main content
+      </a>
+
       {/* Toast Notification */}
       {notification && (
         <Toast
@@ -248,7 +270,7 @@ export function App() {
         }}
       />
 
-      <main className="app-container" style={{ flex: 1, marginTop: '1.25rem' }}>
+      <main id="main" tabIndex={-1} className="app-container" style={{ flex: 1, marginTop: '1.25rem', outline: 'none' }}>
         {/* Navigation Tabs */}
         {!isCreatingNew && (
           <Navigation

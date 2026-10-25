@@ -397,19 +397,21 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
           role="button"
           tabIndex={0}
           aria-label="Per-guest budget breakdown"
-          onKeyDown={(e) => { if (e.key === 'Enter') onNavigateTab('budget'); }}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigateTab('budget'); } }}
         >
-          <div className="stat-label">
-            <DollarSign size={14} />
-            <span>Per-Guest Cost</span>
-          </div>
-          <div className="stat-value tabular-nums">
-            {formatCurrency(perGuestCost)}
-          </div>
-          <div className="stat-subtext">
-            <span>Total Budget: </span>
-            <span className="tabular-nums" style={{ fontWeight: 600 }}>{formatIndianShort(budgetSummary.totalBudget)}</span>
-          </div>
+          <dl style={{ margin: 0, padding: 0 }}>
+            <dt className="stat-label">
+              <DollarSign size={14} aria-hidden="true" />
+              <span>Per-Guest Cost</span>
+            </dt>
+            <dd className="stat-value tabular-nums" style={{ margin: 0 }}>
+              {formatCurrency(perGuestCost)}
+            </dd>
+            <dd className="stat-subtext" style={{ margin: 0 }}>
+              <span>Total Budget: </span>
+              <span className="tabular-nums" style={{ fontWeight: 600 }}>{formatIndianShort(budgetSummary.totalBudget)}</span>
+            </dd>
+          </dl>
         </Card>
       </div>
 
@@ -420,19 +422,21 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
           role="button"
           tabIndex={0}
           aria-label="Completed tasks summary"
-          onKeyDown={(e) => { if (e.key === 'Enter') onNavigateTab('timeline'); }}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigateTab('timeline'); } }}
         >
-          <div className="stat-label">
-            <Clock size={14} />
-            <span>Tasks Done</span>
-          </div>
-          <div className="stat-value tabular-nums">
-            {animatedCompleted} / {timelineAudit.totalCount}
-          </div>
-          <div className="stat-subtext">
-            <span>Task Completion: </span>
-            <span className="tabular-nums" style={{ fontWeight: 600 }}>{formatPercent(timelineAudit.progressPercentage)}</span>
-          </div>
+          <dl style={{ margin: 0, padding: 0 }}>
+            <dt className="stat-label">
+              <Clock size={14} aria-hidden="true" />
+              <span>Tasks Done</span>
+            </dt>
+            <dd className="stat-value tabular-nums" style={{ margin: 0 }}>
+              {animatedCompleted} / {timelineAudit.totalCount}
+            </dd>
+            <dd className="stat-subtext" style={{ margin: 0 }}>
+              <span>Task Completion: </span>
+              <span className="tabular-nums" style={{ fontWeight: 600 }}>{formatPercent(timelineAudit.progressPercentage)}</span>
+            </dd>
+          </dl>
         </Card>
       </div>
 
@@ -443,19 +447,21 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
           role="button"
           tabIndex={0}
           aria-label="Booked vendors summary"
-          onKeyDown={(e) => { if (e.key === 'Enter') onNavigateTab('vendors'); }}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigateTab('vendors'); } }}
         >
-          <div className="stat-label">
-            <ShieldAlert size={14} />
-            <span>Vendors Booked</span>
-          </div>
-          <div className="stat-value tabular-nums">
-            {animatedBookedVendors} / {totalVendors}
-          </div>
-          <div className="stat-subtext">
-            <span>Estimated Spend: </span>
-            <span className="tabular-nums" style={{ fontWeight: 600 }}>{formatIndianShort(budgetSummary.totalEstimated)}</span>
-          </div>
+          <dl style={{ margin: 0, padding: 0 }}>
+            <dt className="stat-label">
+              <ShieldAlert size={14} aria-hidden="true" />
+              <span>Vendors Booked</span>
+            </dt>
+            <dd className="stat-value tabular-nums" style={{ margin: 0 }}>
+              {animatedBookedVendors} / {totalVendors}
+            </dd>
+            <dd className="stat-subtext" style={{ margin: 0 }}>
+              <span>Estimated Spend: </span>
+              <span className="tabular-nums" style={{ fontWeight: 600 }}>{formatIndianShort(budgetSummary.totalEstimated)}</span>
+            </dd>
+          </dl>
         </Card>
       </div>
 
@@ -466,21 +472,23 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
           role="button"
           tabIndex={0}
           aria-label="Confirmed guest count"
-          onKeyDown={(e) => { if (e.key === 'Enter') onNavigateTab('guests'); }}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigateTab('guests'); } }}
         >
-          <div className="stat-label">
-            <Users size={14} />
-            <span>RSVPs Confirmed</span>
-          </div>
-          <div className="stat-value tabular-nums">
-            {animatedConfirmedGuests} / {plan.guestCount}
-          </div>
-          <div className="stat-subtext">
-            <span>Attendance Rate: </span>
-            <span className="tabular-nums" style={{ fontWeight: 600 }}>
-              {formatPercent((confirmedGuests / Math.max(plan.guestCount, 1)) * 100)}
-            </span>
-          </div>
+          <dl style={{ margin: 0, padding: 0 }}>
+            <dt className="stat-label">
+              <Users size={14} aria-hidden="true" />
+              <span>RSVPs Confirmed</span>
+            </dt>
+            <dd className="stat-value tabular-nums" style={{ margin: 0 }}>
+              {animatedConfirmedGuests} / {plan.guestCount}
+            </dd>
+            <dd className="stat-subtext" style={{ margin: 0 }}>
+              <span>Attendance Rate: </span>
+              <span className="tabular-nums" style={{ fontWeight: 600 }}>
+                {formatPercent((confirmedGuests / Math.max(plan.guestCount, 1)) * 100)}
+              </span>
+            </dd>
+          </dl>
         </Card>
       </div>
 

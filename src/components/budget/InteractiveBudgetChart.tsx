@@ -95,26 +95,16 @@ const InteractiveBudgetChartComponent: React.FC<InteractiveBudgetChartProps> = (
                 strokeDasharray={strokeDasharray}
                 strokeDashoffset={strokeDashoffset}
                 strokeLinecap="round"
-                tabIndex={0}
+                aria-hidden="true"
                 style={{
                   cursor: 'pointer',
                   transition: 'stroke-width var(--transition-normal), opacity var(--transition-normal), filter var(--transition-normal)',
                   opacity: isDimmed ? 0.35 : 1,
                   filter: isHovered || isSelected ? `drop-shadow(0 0 6px ${color}88)` : 'none',
-                  outline: 'none',
                 }}
                 onClick={() => onSelectCategory?.(selectedCategory === cat ? 'all' : cat)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    onSelectCategory?.(selectedCategory === cat ? 'all' : cat);
-                  }
-                }}
                 onMouseEnter={() => setHoveredCategory(cat)}
                 onMouseLeave={() => setHoveredCategory(null)}
-                onFocus={() => setHoveredCategory(cat)}
-                onBlur={() => setHoveredCategory(null)}
-                aria-label={`${categoryLabels[cat]}: ${formatCurrency(amount)} (${Math.round(ratio * 100)}%). Click to filter table.`}
               />
             );
           })}
@@ -178,7 +168,7 @@ const InteractiveBudgetChartComponent: React.FC<InteractiveBudgetChartProps> = (
 
       {/* Accessible Text Alternative for Screen Readers */}
       <div className="sr-only">
-        <h4>Expense category distribution details</h4>
+        <h3>Expense category distribution details</h3>
         <ul>
           {validCategories.map((cat) => (
             <li key={cat}>
@@ -207,17 +197,10 @@ const InteractiveBudgetChartComponent: React.FC<InteractiveBudgetChartProps> = (
           const color = categoryColors[cat] || '#64748b';
 
           return (
-            <div
+            <button
               key={cat}
-              role="button"
-              tabIndex={0}
+              type="button"
               onClick={() => onSelectCategory?.(selectedCategory === cat ? 'all' : cat)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  onSelectCategory?.(selectedCategory === cat ? 'all' : cat);
-                }
-              }}
               onMouseEnter={() => setHoveredCategory(cat)}
               onMouseLeave={() => setHoveredCategory(null)}
               onFocus={() => setHoveredCategory(cat)}
@@ -227,6 +210,7 @@ const InteractiveBudgetChartComponent: React.FC<InteractiveBudgetChartProps> = (
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '4px',
+                width: '100%',
                 padding: '6px 10px',
                 borderRadius: 'var(--radius-sm)',
                 backgroundColor: isSelected
@@ -240,8 +224,9 @@ const InteractiveBudgetChartComponent: React.FC<InteractiveBudgetChartProps> = (
                   ? '1px solid var(--border)'
                   : '1px solid transparent',
                 cursor: 'pointer',
+                font: 'inherit',
+                textAlign: 'left',
                 transition: 'all var(--transition-fast)',
-                outline: 'none',
               }}
               title={`Click to filter table by ${categoryLabels[cat]}`}
             >
@@ -288,7 +273,7 @@ const InteractiveBudgetChartComponent: React.FC<InteractiveBudgetChartProps> = (
                   }}
                 />
               </div>
-            </div>
+            </button>
           );
         })}
       </div>

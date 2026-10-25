@@ -109,7 +109,7 @@ const GuestTableRow = React.memo<GuestTableRowProps>(({
           style={{ accentColor: 'var(--accent-primary)', cursor: 'pointer' }}
         />
       </td>
-      <td style={{ padding: 'var(--space-3) var(--space-2)' }}>
+      <th scope="row" style={{ padding: 'var(--space-3) var(--space-2)', fontWeight: 'normal', textAlign: 'left' }}>
         <div style={{ fontWeight: 600, color: 'var(--text)' }}>{guest.name}</div>
         {guest.email && (
           <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>{guest.email}</div>
@@ -119,7 +119,7 @@ const GuestTableRow = React.memo<GuestTableRowProps>(({
             {guest.notes}
           </div>
         )}
-      </td>
+      </th>
       <td style={{ padding: 'var(--space-3) var(--space-2)' }}>
         <select
           className="form-control"
@@ -852,6 +852,7 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
             }}
           >
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 'var(--text-sm)' }}>
+              <caption className="sr-only">Guest list with RSVP status, dietary preferences, and seating assignments</caption>
               <thead>
                 <tr style={{ borderBottom: '2px solid var(--border)', color: 'var(--text-muted)' }}>
                   <th scope="col" style={{ padding: 'var(--space-3) var(--space-2)', width: '40px', textAlign: 'center' }}>

@@ -83,12 +83,12 @@ const BudgetItemRow = React.memo<BudgetItemRowProps>(({
         transition: 'background-color var(--transition-fast)',
       }}
     >
-      <td style={{ padding: 'var(--space-3) var(--space-2)' }}>
+      <th scope="row" style={{ padding: 'var(--space-3) var(--space-2)', fontWeight: 'normal', textAlign: 'left' }}>
         <div style={{ fontWeight: 600, color: 'var(--text)' }}>{item.name}</div>
         {item.notes && (
           <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>{item.notes}</div>
         )}
-      </td>
+      </th>
       <td style={{ padding: 'var(--space-3) var(--space-2)' }}>
         <span
           style={{
@@ -712,9 +712,14 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
             }}
           >
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 'var(--text-sm)' }}>
+              <caption className="sr-only">Detailed breakdown of event budget items, estimates, actual costs, and variance</caption>
               <thead>
                 <tr style={{ borderBottom: '2px solid var(--border)', color: 'var(--text-muted)' }}>
-                  <th style={{ padding: 'var(--space-3) var(--space-2)' }}>
+                  <th
+                    scope="col"
+                    aria-sort={sortField === 'name' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+                    style={{ padding: 'var(--space-3) var(--space-2)' }}
+                  >
                     <button
                       type="button"
                       onClick={() => handleSort('name')}
@@ -723,7 +728,11 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
                       Item Description <ArrowUpDown size={12} />
                     </button>
                   </th>
-                  <th style={{ padding: 'var(--space-3) var(--space-2)' }}>
+                  <th
+                    scope="col"
+                    aria-sort={sortField === 'category' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+                    style={{ padding: 'var(--space-3) var(--space-2)' }}
+                  >
                     <button
                       type="button"
                       onClick={() => handleSort('category')}
@@ -732,7 +741,11 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
                       Category <ArrowUpDown size={12} />
                     </button>
                   </th>
-                  <th style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'right' }}>
+                  <th
+                    scope="col"
+                    aria-sort={sortField === 'estimatedCost' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+                    style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'right' }}
+                  >
                     <button
                       type="button"
                       onClick={() => handleSort('estimatedCost')}
@@ -741,7 +754,11 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
                       Estimated Cost <ArrowUpDown size={12} />
                     </button>
                   </th>
-                  <th style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'right' }}>
+                  <th
+                    scope="col"
+                    aria-sort={sortField === 'actualCost' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+                    style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'right' }}
+                  >
                     <button
                       type="button"
                       onClick={() => handleSort('actualCost')}
@@ -750,7 +767,11 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
                       Actual / Paid <ArrowUpDown size={12} />
                     </button>
                   </th>
-                  <th style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}>
+                  <th
+                    scope="col"
+                    aria-sort={sortField === 'variance' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+                    style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}
+                  >
                     <button
                       type="button"
                       onClick={() => handleSort('variance')}
@@ -759,8 +780,8 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
                       Variance <ArrowUpDown size={12} />
                     </button>
                   </th>
-                  <th style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}>Status</th>
-                  <th style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}>Actions</th>
+                  <th scope="col" style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}>Status</th>
+                  <th scope="col" style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>

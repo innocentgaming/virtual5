@@ -64,6 +64,7 @@ export const Navigation: React.FC<NavigationProps> = ({
           title="Over Budget"
         >
           !
+          <span className="sr-only"> (Warning: Over Budget)</span>
         </span>
       ) : undefined,
     },
@@ -85,6 +86,7 @@ export const Navigation: React.FC<NavigationProps> = ({
             title={`${overdueTasksCount} overdue tasks`}
           >
             {overdueTasksCount}
+            <span className="sr-only"> ({overdueTasksCount} overdue tasks)</span>
           </span>
         ) : undefined,
     },
@@ -149,6 +151,7 @@ export const Navigation: React.FC<NavigationProps> = ({
           className={`mobile-nav-btn ${activeTab === 'dashboard' ? 'active' : ''}`}
           onClick={() => handleMobileNavClick('dashboard')}
           aria-label="Dashboard Overview"
+          aria-current={activeTab === 'dashboard' ? 'page' : undefined}
         >
           <LayoutDashboard size={20} />
           <span>Overview</span>
@@ -159,6 +162,7 @@ export const Navigation: React.FC<NavigationProps> = ({
           className={`mobile-nav-btn ${activeTab === 'budget' ? 'active' : ''}`}
           onClick={() => handleMobileNavClick('budget')}
           aria-label="Budget"
+          aria-current={activeTab === 'budget' ? 'page' : undefined}
         >
           <DollarSign size={20} />
           <span>Budget</span>
@@ -169,6 +173,7 @@ export const Navigation: React.FC<NavigationProps> = ({
           className={`mobile-nav-btn ${activeTab === 'timeline' ? 'active' : ''}`}
           onClick={() => handleMobileNavClick('timeline')}
           aria-label="Tasks"
+          aria-current={activeTab === 'timeline' ? 'page' : undefined}
         >
           <CalendarDays size={20} />
           <span>Tasks</span>
@@ -179,6 +184,7 @@ export const Navigation: React.FC<NavigationProps> = ({
           className={`mobile-nav-btn ${activeTab === 'guests' ? 'active' : ''}`}
           onClick={() => handleMobileNavClick('guests')}
           aria-label="Guests"
+          aria-current={activeTab === 'guests' ? 'page' : undefined}
         >
           <Users size={20} />
           <span>Guests</span>
@@ -189,6 +195,7 @@ export const Navigation: React.FC<NavigationProps> = ({
           className={`mobile-nav-btn ${activeTab === 'schedule' ? 'active' : ''}`}
           onClick={() => handleMobileNavClick('schedule')}
           aria-label="Itinerary"
+          aria-current={activeTab === 'schedule' ? 'page' : undefined}
         >
           <Clock size={20} />
           <span>Schedule</span>
@@ -199,6 +206,8 @@ export const Navigation: React.FC<NavigationProps> = ({
           className={`mobile-nav-btn ${isMobileMenuOpen ? 'active' : ''}`}
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           aria-label="More navigation options"
+          aria-expanded={isMobileMenuOpen}
+          aria-haspopup="dialog"
         >
           {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
           <span>More</span>
@@ -214,6 +223,9 @@ export const Navigation: React.FC<NavigationProps> = ({
         >
           <div
             className="card"
+            role="dialog"
+            aria-modal="true"
+            aria-label="More Features"
             style={{ width: '100%', maxWidth: '420px', margin: '0 auto' }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -223,6 +235,7 @@ export const Navigation: React.FC<NavigationProps> = ({
                 type="button"
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="btn btn-ghost btn-sm"
+                aria-label="Close more features menu"
               >
                 ✕
               </button>
