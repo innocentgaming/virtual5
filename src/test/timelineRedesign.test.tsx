@@ -1,5 +1,5 @@
+import '@testing-library/jest-dom/vitest';
 import { describe, it, expect, vi } from 'vitest';
-import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { TimelineManager } from '../components/timeline/TimelineManager';
 import { RunOfShowManager } from '../components/schedule/RunOfShowManager';
