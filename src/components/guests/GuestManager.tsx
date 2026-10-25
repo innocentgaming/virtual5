@@ -454,9 +454,9 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-3)' }}>
             <AlertTriangle size={20} color="#ea580c" style={{ flexShrink: 0, marginTop: '2px' }} />
             <div>
-              <h4 style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: '#ea580c', margin: '0 0 2px 0' }}>
+              <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: '#ea580c', margin: '0 0 2px 0' }}>
                 Dedicated Pure Veg / Jain Kitchen Counter Required
-              </h4>
+              </h3>
               <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text)', margin: 0, lineHeight: 1.5 }}>
                 <strong>{stats.jainOrPureVegCount} guests</strong> require Jain (no onion/garlic/root veg) or Sattvic Pure Vegetarian preparation. Ensure your caterer sets up an isolated preparation counter, distinct serving ladles, and clear signage.
               </p>
@@ -470,6 +470,7 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
           ===================================================================== */}
       <Card>
         <CardHeader
+          headingLevel="h2"
           title="Guest List & RSVP Manager"
           icon={<Users size={20} color="var(--accent-primary)" />}
           subtitle="Track invitations, dietary protocols, plus-ones, and seating arrangements."

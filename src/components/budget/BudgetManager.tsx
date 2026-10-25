@@ -382,9 +382,9 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
             <div style={{ display: 'flex', gap: 'var(--space-3)', flex: 1, minWidth: '280px' }}>
               <ShieldAlert size={22} color="var(--color-warning-text)" style={{ flexShrink: 0, marginTop: '2px' }} />
               <div>
-                <h4 style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--color-warning-text)', margin: '0 0 4px 0' }}>
+                <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--color-warning-text)', margin: '0 0 4px 0' }}>
                   Vendor Cost Escalation & Decision Trade-off
-                </h4>
+                </h3>
                 <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-warning-text)', margin: 0, lineHeight: 1.5 }}>
                   Actual vendor quotes escalated expenses by <strong>{formatCurrency(totalSpike)}</strong> ({formatIndianShort(totalSpike)}).
                   Dynamic Decision Tradeoff: Trim decoration budget by <strong>{formatCurrency(decorCut)}</strong> to offset the price spike, or reduce guest headcount by ~{Math.max(5, Math.ceil(totalSpike / Math.max(500, budgetSummary.perGuestCost)))} attendees.
@@ -445,6 +445,7 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
           ===================================================================== */}
       <Card>
         <CardHeader
+          headingLevel="h2"
           title="Expense Distribution by Category"
           subtitle="Click any slice or category in the legend to filter line items below."
           action={
@@ -480,6 +481,7 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
           ===================================================================== */}
       <Card>
         <CardHeader
+          headingLevel="h2"
           title="Expense Line Items"
           subtitle="Inline edit amounts (Enter to save, Esc to cancel). Variance chips indicate cost escalations."
           action={
@@ -529,6 +531,11 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
               </Button>
             ))}
           </div>
+        </div>
+
+        {/* Live region for assistive screen readers */}
+        <div aria-live="polite" role="status" className="sr-only">
+          Showing {filteredAndSortedItems.length} of {plan.budgetItems.length} expenses
         </div>
 
         {/* Expenses: Desktop Table & Mobile Card Layout */}

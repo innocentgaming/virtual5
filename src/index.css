@@ -289,6 +289,11 @@ html {
   scroll-behavior: smooth;
 }
 
+:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
 body {
   font-family: var(--font-ui);
   background-color: var(--bg-main);
@@ -959,6 +964,8 @@ h1, h2, h3, .heading-display {
   display: flex;
   align-items: center;
   justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
 }
 
 .modal-close-btn:hover {
@@ -1481,6 +1488,8 @@ h1, h2, h3, .heading-display {
   display: flex;
   align-items: center;
   justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
 }
 
 .ui-modal-close:hover {
@@ -1558,6 +1567,11 @@ h1, h2, h3, .heading-display {
   color: var(--text-muted);
   cursor: pointer;
   padding: 0 4px;
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .ui-toast__close:hover {

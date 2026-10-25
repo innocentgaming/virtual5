@@ -31,6 +31,7 @@ export interface CardHeaderProps extends Omit<React.HTMLAttributes<HTMLDivElemen
   subtitle?: React.ReactNode;
   icon?: React.ReactNode;
   action?: React.ReactNode;
+  headingLevel?: 'h2' | 'h3' | 'h4';
 }
 
 export const CardHeader: React.FC<CardHeaderProps> = ({
@@ -38,18 +39,20 @@ export const CardHeader: React.FC<CardHeaderProps> = ({
   subtitle,
   icon,
   action,
+  headingLevel = 'h3',
   className = '',
   children,
   ...props
 }) => {
+  const HeadingTag = headingLevel;
   return (
     <div className={`ui-card__header card-header ${className}`.trim()} {...props}>
       <div className="ui-card__header-content">
         {title && (
-          <h3 className="ui-card__title card-title">
+          <HeadingTag className="ui-card__title card-title">
             {icon && <span className="card-title-icon" aria-hidden="true">{icon}</span>}
             <span>{title}</span>
-          </h3>
+          </HeadingTag>
         )}
         {subtitle && <p className="ui-card__subtitle card-subtitle">{subtitle}</p>}
         {children}

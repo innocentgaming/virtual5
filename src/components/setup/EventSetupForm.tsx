@@ -318,6 +318,7 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
   return (
     <Card className="setup-wizard-card" style={{ maxWidth: '960px', margin: '0 auto' }}>
       <CardHeader
+        headingLevel="h2"
         title={isEditing ? 'Edit Event Details' : 'Create & Personalize New Event'}
         subtitle="Step-by-step Indian event planning wizard with cultural guardrails"
         action={
