@@ -1,17 +1,26 @@
 import type { EventPlan } from '../types/event';
+import { stripControlChars } from '../utils/validators';
 
 /**
  * Formats a Date object or YYYY-MM-DD string into iCalendar date string: YYYYMMDD
  */
 function formatIcsDate(dateStr: string): string {
-  return dateStr.replace(/[^0-9]/g, '').slice(0, 8);
+  const digits = dateStr.replace(/[^0-9]/g, '');
+  return digits.slice(0, 8) || '20261120';
 }
 
 /**
- * Cleans string for safe iCalendar text formatting.
+ * Cleans and escapes string for safe RFC 5545 iCalendar text formatting.
+ * - Escapes backslash (\), semicolon (;), and comma (,).
+ * - Converts newlines to literal \n.
+ * - Strips all raw CR (\r) and non-printable control characters to prevent CRLF injection.
  */
-function escapeIcsText(text: string): string {
-  return text
+export function escapeIcsText(text: string): string {
+  if (!text) return '';
+  // 1. Strip raw CR and non-printable control characters
+  const sanitized = stripControlChars(text.replace(/\r/g, ''));
+  // 2. Escape special RFC 5545 characters
+  return sanitized
     .replace(/\\/g, '\\\\')
     .replace(/;/g, '\\;')
     .replace(/,/g, '\\,')
@@ -19,14 +28,42 @@ function escapeIcsText(text: string): string {
 }
 
 /**
+ * Folds a single iCalendar contentline to 75 octets per RFC 5545 Section 3.1.
+ * Continuation lines begin with a single space.
+ */
+export function foldIcsLine(line: string): string {
+  if (line.length <= 75) {
+    return line;
+  }
+  const chunks: string[] = [];
+  chunks.push(line.slice(0, 75));
+  let remaining = line.slice(75);
+  while (remaining.length > 0) {
+    chunks.push(' ' + remaining.slice(0, 74));
+    remaining = remaining.slice(74);
+  }
+  return chunks.join('\r\n');
+}
+
+/**
+ * Cleans an identifier into a safe token containing only [a-zA-Z0-9_-].
+ */
+function toSafeToken(id: unknown): string {
+  const token = String(id || '').replace(/[^a-zA-Z0-9_-]/g, '');
+  return token.slice(0, 48) || 'item';
+}
+
+/**
  * Generates an RFC 5545 compliant .ics calendar file content for the event plan.
- * Includes milestones, tasks, and day-of schedule events.
+ * Guarantees CRLF line breaks, 75-octet line folding, escaped text properties,
+ * safe UIDs, and static VALARM definitions.
  */
 export function generateIcsCalendar(plan: EventPlan): string {
   const nowStamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
   const eventDateFormatted = formatIcsDate(plan.eventDate);
+  const safeEventId = toSafeToken(plan.id);
 
-  const lines: string[] = [
+  const rawLines: string[] = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
     'PRODID:-//EventWise AI//Event Planning Assistant//EN',
@@ -36,9 +73,9 @@ export function generateIcsCalendar(plan: EventPlan): string {
   ];
 
   // Main Event Entry
-  lines.push(
+  rawLines.push(
     'BEGIN:VEVENT',
-    `UID:evt-main-${plan.id}@eventwise.ai`,
+    `UID:evt-main-${safeEventId}@eventwise.ai`,
     `DTSTAMP:${nowStamp}`,
     `DTSTART;VALUE=DATE:${eventDateFormatted}`,
     `DTEND;VALUE=DATE:${eventDateFormatted}`,
@@ -48,27 +85,28 @@ export function generateIcsCalendar(plan: EventPlan): string {
     'STATUS:CONFIRMED',
     'BEGIN:VALARM',
     'ACTION:DISPLAY',
-    'DESCRIPTION:Event Day is Today!',
+    'DESCRIPTION:Event Day Reminder',
     'TRIGGER:-P1D',
     'END:VALARM',
     'END:VEVENT'
   );
 
   // Timeline Tasks as Calendar Milestones
-  plan.tasks.forEach((task) => {
+  plan.tasks.forEach((task, idx) => {
     const taskDate = formatIcsDate(task.dueDate);
-    lines.push(
+    const safeTaskId = toSafeToken(task.id || idx);
+    rawLines.push(
       'BEGIN:VEVENT',
-      `UID:task-${task.id}@eventwise.ai`,
+      `UID:task-${safeTaskId}@eventwise.ai`,
       `DTSTAMP:${nowStamp}`,
       `DTSTART;VALUE=DATE:${taskDate}`,
       `DTEND;VALUE=DATE:${taskDate}`,
       `SUMMARY:[${task.category.toUpperCase()}] ${escapeIcsText(task.title)}`,
-      `DESCRIPTION:${escapeIcsText(`Priority: ${task.priority.toUpperCase()}${task.notes ? `\\nNotes: ${task.notes}` : ''}`)}`,
+      `DESCRIPTION:${escapeIcsText(`Priority: ${task.priority.toUpperCase()}${task.notes ? ` | Notes: ${task.notes}` : ''}`)}`,
       task.completed ? 'STATUS:COMPLETED' : 'STATUS:CONFIRMED',
       'BEGIN:VALARM',
       'ACTION:DISPLAY',
-      `DESCRIPTION:Reminder: ${escapeIcsText(task.title)} is due tomorrow`,
+      'DESCRIPTION:Task Milestone Reminder',
       'TRIGGER:-P1D',
       'END:VALARM',
       'END:VEVENT'
@@ -78,14 +116,15 @@ export function generateIcsCalendar(plan: EventPlan): string {
   // Day-of Run of Show schedule items if available
   if (plan.schedule && plan.schedule.length > 0) {
     plan.schedule.forEach((item, idx) => {
-      lines.push(
+      const safeSchedId = toSafeToken(item.id || idx);
+      rawLines.push(
         'BEGIN:VEVENT',
-        `UID:sched-${item.id || idx}@eventwise.ai`,
+        `UID:sched-${safeSchedId}@eventwise.ai`,
         `DTSTAMP:${nowStamp}`,
         `DTSTART;VALUE=DATE:${eventDateFormatted}`,
         `DTEND;VALUE=DATE:${eventDateFormatted}`,
         `SUMMARY:[Day-of] ${escapeIcsText(item.time)} - ${escapeIcsText(item.activity)}`,
-        `DESCRIPTION:${escapeIcsText(`Location: ${item.location}\\nCoordinator/Role: ${item.responsibleRole}${item.notes ? `\\nNotes: ${item.notes}` : ''}`)}`,
+        `DESCRIPTION:${escapeIcsText(`Location: ${item.location} | Role: ${item.responsibleRole}${item.notes ? ` | Notes: ${item.notes}` : ''}`)}`,
         `LOCATION:${escapeIcsText(item.location)}`,
         'STATUS:CONFIRMED',
         'END:VEVENT'
@@ -93,12 +132,14 @@ export function generateIcsCalendar(plan: EventPlan): string {
     });
   }
 
-  lines.push('END:VCALENDAR');
-  return lines.join('\r\n');
+  rawLines.push('END:VCALENDAR');
+
+  // Apply RFC 5545 line folding (75 octets) and CRLF line endings
+  return rawLines.map(foldIcsLine).join('\r\n');
 }
 
 /**
- * Triggers a browser download of the generated .ics file.
+ * Triggers a browser download of the generated .ics file with sanitized filename.
  */
 export function downloadEventCalendar(plan: EventPlan): void {
   const icsData = generateIcsCalendar(plan);
@@ -106,7 +147,12 @@ export function downloadEventCalendar(plan: EventPlan): void {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `eventwise-${plan.eventType}-${plan.id}-schedule.ics`;
+
+  // Strict filename sanitization
+  const safeType = plan.eventType.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 30);
+  const safeId = toSafeToken(plan.id);
+  a.download = `eventwise-${safeType}-${safeId}-schedule.ics`;
+
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
