@@ -60,18 +60,24 @@ function lucidePlugin() {
   };
 }
 
+const isAnalyze = process.env.ANALYZE === 'true';
+
 // https://vite.dev/config/
 export default defineConfig({
   base: './',
   plugins: [
     lucidePlugin(),
     react(),
-    visualizer({
-      filename: 'dist/stats.html',
-      gzipSize: true,
-      brotliSize: true,
-      open: false,
-    }),
+    ...(isAnalyze
+      ? [
+          visualizer({
+            filename: 'dist/stats.html',
+            gzipSize: true,
+            brotliSize: true,
+            open: false,
+          }),
+        ]
+      : []),
   ],
   build: {
     cssCodeSplit: true,
@@ -90,7 +96,6 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./src/setupTests.ts'],
-    fileParallelism: false,
     testTimeout: 25000,
   },
 });
