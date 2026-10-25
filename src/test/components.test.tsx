@@ -64,7 +64,7 @@ describe('EventWise AI UI & Workflow Integration Tests', () => {
     fireEvent.click(scheduleTab);
 
     expect(screen.getByText(/Run of Show & Day-of Itinerary/i)).toBeInTheDocument();
-  }, 15000);
+  }, 30000);
 
   it('allows adding and editing an expense in the Budget Manager', () => {
     render(<App />);

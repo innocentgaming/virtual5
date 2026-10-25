@@ -645,6 +645,45 @@ export function evaluateDecisionRules(
       message: 'Indian municipal guidelines generally enforce a 10:00 PM cutoff for outdoor amplified sound, dhol processions, and brass bands. Transition the dance floor indoors for late-night Sangeet or post-Pheras festivities. (Estimates only; check local police/municipal corporation rules as enforcement varies by city).',
       tradeOffs: curfewTradeOffs,
     });
+
+    // Permit Deadline Check (< 25 Days)
+    const hasPermitTask = plan.tasks.some(
+      (t) =>
+        t.title.toLowerCase().includes('noc') ||
+        t.title.toLowerCase().includes('sound permit') ||
+        t.title.toLowerCase().includes('loudspeaker')
+    );
+    const targetDate = new Date(plan.eventDate);
+    const diffTime = targetDate.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    if (diffDays > 0 && diffDays <= 25 && !hasPermitTask) {
+      insights.push({
+        id: 'rule-sound-permit-deadline',
+        type: 'action_required',
+        category: 'timeline',
+        title: 'Police Sound NOC & Loudspeaker Permit Deadline (< 25 Days)',
+        message:
+          'Municipal corporations and local police stations require 7–14 business days to process loudspeaker/sound NOCs for outdoor music or late-night receptions. (Estimates only; check local police/municipal corporation rules as enforcement varies by city).',
+        actionLabel: 'File Permit Task',
+        actionType: 'NAVIGATE_TIMELINE',
+        tradeOffs: [
+          {
+            id: 'to-permit-fast-track',
+            label: 'Fast-Track Municipal Sound NOC Filing',
+            description: 'Schedule urgent task to file loudspeaker permission with local police division',
+            impactRupees: 0,
+            impactFormatted: 'Legal clearance',
+            actionType: 'add_task',
+            payload: {
+              title: 'Apply for Municipal Loudspeaker & Police Sound NOC (Check Local Rules)',
+              category: 'logistics',
+              priority: 'urgent',
+              notes: 'Required for outdoor sound and large gatherings. Police/corporation permits take 7-14 days.',
+            },
+          },
+        ],
+      });
+    }
   }
 
   // -------------------------------------------------------------------------
