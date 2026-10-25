@@ -790,6 +790,7 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
                   <button
                     key={diet}
                     type="button"
+                    aria-pressed={isSelected}
                     onClick={() => toggleDietary(diet)}
                     style={{
                       padding: 'var(--space-2) var(--space-4)',
@@ -830,6 +831,7 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
                   <button
                     key={need}
                     type="button"
+                    aria-pressed={isSelected}
                     onClick={() => toggleAccessibility(need)}
                     style={{
                       padding: 'var(--space-2) var(--space-3)',

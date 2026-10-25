@@ -666,6 +666,7 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
               variant={selectedCategoryFilter === 'all' ? 'primary' : 'secondary'}
               size="sm"
               onClick={() => setSelectedCategoryFilter('all')}
+              aria-pressed={selectedCategoryFilter === 'all'}
             >
               All ({plan.budgetItems.length})
             </Button>
@@ -675,6 +676,7 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
                 variant={selectedCategoryFilter === cat ? 'primary' : 'secondary'}
                 size="sm"
                 onClick={() => setSelectedCategoryFilter(selectedCategoryFilter === cat ? 'all' : cat)}
+                aria-pressed={selectedCategoryFilter === cat}
               >
                 {CATEGORY_LABELS[cat].split('&')[0].trim()}
               </Button>
@@ -686,6 +688,11 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
         <div aria-live="polite" role="status" className="sr-only">
           Showing {filteredAndSortedItems.length} of {plan.budgetItems.length} expenses
         </div>
+        {editingId && (
+          <div aria-live="polite" role="status" className="sr-only">
+            Editing expense item {editName}. Press Enter to save changes, Escape to cancel.
+          </div>
+        )}
 
         {/* Expenses: Desktop Table & Mobile Card Layout */}
         {filteredAndSortedItems.length === 0 ? (
@@ -813,6 +820,9 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
                             aria-label="Edit item name"
                             required
                           />
+                          <div style={{ fontSize: '0.7rem', color: 'var(--color-warning-text)', fontWeight: 600, marginTop: '4px' }}>
+                            Editing (Enter to save, Esc to cancel)
+                          </div>
                         </td>
                         <td style={{ padding: 'var(--space-3) var(--space-2)' }}>
                           <select
