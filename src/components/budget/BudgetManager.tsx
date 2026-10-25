@@ -105,7 +105,7 @@ const BudgetItemRow = React.memo<BudgetItemRowProps>(({
           {CATEGORY_LABELS[item.category] || item.category}
         </span>
       </td>
-      <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'right', fontWeight: 700 }} className="tabular-nums">
+      <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'right', fontWeight: 700, color: 'var(--text)' }} className="tabular-nums">
         {formatCurrency(item.estimatedCost)}
         {item.isPerGuest && (
           <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>per-guest scale</div>

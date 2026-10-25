@@ -110,10 +110,21 @@ export function App() {
   });
   const [notification, setNotification] = useState<string | null>(null);
 
-  // Sync color mode to localStorage
+  // Sync color mode and event theme to document root (html and body) and localStorage
   useEffect(() => {
-    localStorage.setItem('eventwise_color_mode', colorMode);
-  }, [colorMode]);
+    try {
+      localStorage.setItem('eventwise_color_mode', colorMode);
+    } catch {
+      // ignore
+    }
+    document.documentElement.setAttribute('data-color-mode', colorMode);
+    document.documentElement.setAttribute('data-theme', activeEvent.eventType);
+    document.documentElement.style.colorScheme = colorMode;
+    if (document.body) {
+      document.body.setAttribute('data-color-mode', colorMode);
+      document.body.setAttribute('data-theme', activeEvent.eventType);
+    }
+  }, [colorMode, activeEvent.eventType]);
 
   const toggleColorMode = () => {
     setColorMode((prev) => (prev === 'light' ? 'dark' : 'light'));
@@ -234,7 +245,14 @@ export function App() {
       <div
         data-theme={activeEvent.eventType}
         data-color-mode={colorMode}
-        style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          backgroundColor: 'var(--bg-main)',
+          color: 'var(--text-main)',
+          transition: 'background-color var(--transition-fast), color var(--transition-fast)',
+        }}
       >
       {/* Accessibility Skip-To-Main Link */}
       <a href="#main" className="skip-link">

@@ -193,6 +193,7 @@
    Dark Mode System (High-Contrast, WCAG AA Compliant)
    ============================================================================== */
 [data-color-mode="dark"] {
+  color-scheme: dark;
   --surface: #0e0d0c;
   --surface-raised: #181614;
   --surface-subtle: #23201d;
@@ -352,7 +353,8 @@ h1, h2, h3, .heading-display {
 }
 
 [data-color-mode="dark"] .header-bar {
-  background: rgba(19, 25, 39, 0.88);
+  background: rgba(24, 22, 20, 0.92);
+  border-bottom-color: var(--border);
 }
 
 .brand-wrapper {
@@ -423,6 +425,12 @@ h1, h2, h3, .heading-display {
   border-color: var(--border-light);
 }
 
+[data-color-mode="dark"] .nav-tab-btn:hover {
+  background: var(--surface-subtle);
+  color: var(--text);
+  border-color: var(--border);
+}
+
 .nav-tab-btn.active {
   background: var(--accent-primary);
   color: white;
@@ -459,7 +467,8 @@ h1, h2, h3, .heading-display {
   }
 
   [data-color-mode="dark"] .mobile-bottom-nav {
-    background: rgba(19, 25, 39, 0.94);
+    background: rgba(24, 22, 20, 0.95);
+    border-top-color: var(--border);
   }
 
   .mobile-nav-btn {
@@ -857,6 +866,25 @@ h1, h2, h3, .heading-display {
   background-color: var(--bg-card-subtle);
   border-color: var(--border-medium);
   color: var(--text-main);
+}
+
+[data-color-mode="dark"] input,
+[data-color-mode="dark"] select,
+[data-color-mode="dark"] textarea {
+  color-scheme: dark;
+}
+
+[data-color-mode="dark"] option {
+  background-color: var(--surface-raised);
+  color: var(--text);
+}
+
+table {
+  color: var(--text-main);
+}
+
+th, td {
+  color: inherit;
 }
 
 .form-hint {
@@ -1786,6 +1814,25 @@ h1, h2, h3, .heading-display {
   top: 1rem;
   outline: 3px solid var(--accent-primary);
   outline-offset: 2px;
+}
+
+/* Screen-reader only utility */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+[data-color-mode="dark"] .tooltip-bubble {
+  background: var(--surface-raised);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
 }
 
 
