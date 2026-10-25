@@ -4,11 +4,11 @@
 [![React](https://img.shields.io/badge/React-19.0.0-61DAFB?style=flat-square&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8.0-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![Vite](https://img.shields.io/badge/Vite-8.3.5-646CFF?style=flat-square&logo=vite)](https://vitejs.dev/)
-[![Tests](https://img.shields.io/badge/Tests-55%2F55%20Passing%20(100%25)-brightgreen?style=flat-square&logo=vitest)](https://vitest.dev/)
+[![Tests](https://img.shields.io/badge/Tests-88%2F88%20Passing%20(100%25)-brightgreen?style=flat-square&logo=vitest)](https://vitest.dev/)
 [![Linter](https://img.shields.io/badge/Oxlint-0%20Warnings%20%2F%200%20Errors-success?style=flat-square)](https://oxc.rs/)
 [![Accessibility](https://img.shields.io/badge/WCAG-AA%20Compliant-blueviolet?style=flat-square)](https://www.w3.org/WAI/standards-guidelines/wcag/)
 [![Currency](https://img.shields.io/badge/Currency-INR%20(%E2%82%B9)%20en--IN-orange?style=flat-square)](#)
-[![Repo Size](https://img.shields.io/badge/Repo%20Size-~398%20KiB%20(%3C10MB)-brightgreen?style=flat-square)](#)
+[![Repo Size](https://img.shields.io/badge/Repo%20Size-~482%20KiB%20(%3C10MB)-brightgreen?style=flat-square)](#)
 
 An intelligent, full-stack, personalized event planning assistant engineered specifically for the Indian event planning ecosystem. EventWise AI organizes **Royal Destination Weddings**, **Bollywood Milestone Birthdays**, and **Grand Community Festivals / Melas** with context-aware recommendations, dynamic Indian Rupee (`₹`) budget management with Lakhs & Crores formatting (`en-IN`), Vedic timeline Run of Show itineraries, Jain & Pure Vegetarian dietary protocols, specialized vendor checklists (Pandit Ji, Mehendi Artists, Dhol Squads, Royal Thali Catering), and a 100% deterministic offline-capable decision engine.
 
@@ -205,19 +205,52 @@ graph TD
 
 ## 7. UI/UX Design System, Theming & Accessibility
 
-* **Indian Thematic Palettes**:
+EventWise AI features a modern, warm, premium Indian-festive design system blending **Airbnb visual clarity** with **Notion calm focus**:
+
+### 1. Design Tokens & Semantic Foundations
+* **Neutral & Surface Scale**: Structured in `:root` and `[data-color-mode="dark"]` (`--surface`, `--surface-raised`, `--surface-subtle`, `--surface-hover`, `--border`, `--border-strong`, `--text`, `--text-muted`, `--text-subtle`).
+* **Semantic Status Scale**: High-contrast, WCAG AA compliant semantic colors:
+  - Success: `#059669` / `#34d399` (dark) with subtle background tints.
+  - Warning: `#d97706` / `#fbbf24` (dark) for budget thresholds (80%) and curfew warnings.
+  - Danger: `#dc2626` / `#f87171` (dark) for over-budget states (100%+) and severe escalations.
+  - Info: `#0284c7` / `#38bdf8` (dark) for guidelines and tips.
+* **Curated Indian Event Themes**:
   - `wedding`: Royal Rajputana Gold (`#D4AF37`) and Deep Crimson (`#9E2A2B`).
   - `birthday`: Vibrant Mumbai Sunset Orange (`#E76F51`) and Warm Coral (`#F4A261`).
   - `community`: Festive Marigold Yellow (`#E9C46A`) and Emerald Green (`#2A9D8F`).
-* **Dark Mode & High Contrast**: Built-in toggle supporting `data-color-mode="dark"` and `data-color-mode="light"` with WCAG AA compliance across all components.
-* **Accessible Landmarks**: Full keyboard navigation, `aria-label` tags on all inputs and icon buttons, and semantic landmarks (`<header role="banner">`, `<nav aria-label="Main Navigation">`, `<main role="main">`, `<footer role="contentinfo">`).
+* **Typography & Spacing**:
+  - 4px baseline spacing scale (`--space-1` to `--space-16`).
+  - Typography: Google Fonts display heading pairing (`Playfair Display`, `Cinzel`) with modern sans UI stack (`Plus Jakarta Sans`, `Inter`, system-ui).
+  - Explicit border radius tokens (`--radius-sm`, `--radius-md`, `--radius-lg`, `--radius-xl`, `--radius-pill`).
+  - Transition duration tokens: 150ms (`--transition-fast`), 250ms (`--transition-normal`).
+* **Accessibility & Motion Tokens**:
+  - Focus Ring Token: `--focus-ring: 0 0 0 2px var(--surface-raised), 0 0 0 4px var(--accent-primary)`.
+  - Global `:focus-visible` styling (`outline: 2px solid var(--accent-primary); outline-offset: 2px;`).
+  - `@media (prefers-reduced-motion: reduce)`: Disables all transitions and keyframe animations for vestibular safety.
+  - `useCountUp` animation hook: Automatically skips numeral animation under reduced motion or automated test runners.
+
+### 2. Typed UI Primitives (`src/components/ui/`)
+1. **Button**: Primary, secondary, ghost, danger, outline variants; `sm`, `md`, `lg` sizing; full loading spinner and disabled state support; 44px touch target compliance.
+2. **Card**: Modular `CardHeader`, `CardBody`, `CardFooter`; interactive hover/focus states; customizable `headingLevel` (`h2`, `h3`, `h4`) for strict heading hierarchy.
+3. **Badge**: Neutral, success, warning, danger, info variants, event theme variants, and dedicated dietary badges for **🥗 Jain** and **🥬 Pure Veg**.
+4. **Modal**: Accessible modal dialog with focus trap, Escape key handling, backdrop click dismiss, `aria-modal="true"`, background scroll lock, and trigger focus restoration.
+5. **Toast & useToast**: Global notification manager with `aria-live="polite"` polite status announcements, auto-dismiss timers (3.5s), and manual close triggers.
+6. **Skeleton**: Content-aware shimmer placeholder for zero layout shifts during async computation.
+7. **EmptyState**: Reusable clear states with celebratory icons, descriptive action buttons, and warm guidance.
+
+### 3. Responsive Layout & Viewport Standards
+* **Breakpoints**: Tested across 360px (mobile), 768px (tablet), and 1280px+ (desktop).
+* **Navigation**: Sticky top header bar with active nav indicator on desktop; fixed bottom tab bar on mobile screens (`< 640px`).
+* **Grid & Flow**: 12-column responsive dashboard grid collapsing to single-column on mobile with the "Needs Attention" panel positioned directly beneath the Hero card.
+* **Data Presentation**: Semantic `<table>` structures on desktop with horizontal scroll containment (`overflow-x: auto`) and touch inertia on mobile devices.
+* **Print Stylesheet (`@media print`)**: Clean black-and-white print layout hiding navigation bars, headers, and buttons; auto-formatting the Run of Show itinerary with event metadata at top and page break protection.
 
 ---
 
 ## 8. Security & Zero-Leakage Architecture
 
-* **Zero Credential Persistence**: API keys are never written to `localStorage`, session cookies, or external logs.
-* **Strict Git Ignored `.env`**: `.env` and `.env.local` files are strictly enforced in `.gitignore`.
+* **Zero Credential Persistence**: API keys are never stored in `localStorage`, cookies, or source code.
+* **Strict Git Ignored `.env`**: `.env` and `.env.local` files are enforced in `.gitignore`.
 * **Safe External Actions**: Calendar exports (`.ics`) and JSON backup downloads are generated as ephemeral in-memory `Blob` objects without server transmission.
 
 ---
@@ -229,23 +262,30 @@ graph TD
 npm test
 ```
 
-### Actual Test Suite Results (11 Files, 54 Tests, 100% Passing):
+### Actual Test Suite Results (18 Files, 88 Tests, 100% Passing):
 ```text
- ✓ src/test/formatters.test.ts (6 tests)
- ✓ src/test/guests.test.ts (5 tests)
- ✓ src/test/aiPlanner.test.ts (3 tests)
- ✓ src/test/budget.test.ts (5 tests)
- ✓ src/test/schedule.test.ts (3 tests)
- ✓ src/test/decisionEngine.test.ts (7 tests)
- ✓ src/test/fallbackPlanner.test.ts (3 tests)
- ✓ src/test/copilot.test.ts (5 tests)
- ✓ src/test/storage.test.ts (6 tests)
- ✓ src/test/timeline.test.ts (3 tests)
  ✓ src/test/components.test.tsx (8 tests)
+ ✓ src/test/qaAccessibility.test.tsx (5 tests)
+ ✓ src/test/setupWizard.test.tsx (3 tests)
+ ✓ src/test/budgetRedesign.test.tsx (3 tests)
+ ✓ src/test/guestsRedesign.test.tsx (3 tests)
+ ✓ src/test/copilotRedesign.test.tsx (4 tests)
+ ✓ src/test/timelineRedesign.test.tsx (3 tests)
+ ✓ src/test/primitives.test.tsx (12 tests)
+ ✓ src/test/aiPlanner.test.ts (3 tests)
+ ✓ src/test/fallbackPlanner.test.ts (3 tests)
+ ✓ src/test/decisionEngine.test.ts (8 tests)
+ ✓ src/test/formatters.test.ts (6 tests)
+ ✓ src/test/budget.test.ts (5 tests)
+ ✓ src/test/copilot.test.ts (5 tests)
+ ✓ src/test/guests.test.ts (5 tests)
+ ✓ src/test/timeline.test.ts (3 tests)
+ ✓ src/test/schedule.test.ts (3 tests)
+ ✓ src/test/storage.test.ts (6 tests)
 
- Test Files  11 passed (11)
-      Tests  54 passed (54)
-   Duration  13.91s
+ Test Files  18 passed (18)
+      Tests  88 passed (88)
+   Duration  82.88s
 ```
 
 ### Linter Audit:
@@ -253,19 +293,31 @@ npm test
 npm run lint
 > oxlint
 Found 0 warnings and 0 errors.
-Finished in 68ms on 38 files with 115 rules using 12 threads.
+Finished in 118ms on 64 files with 115 rules using 12 threads.
 ```
 
 ### Production Build Metrics:
 ```bash
 npm run build
 > tsc -b && vite build
-✓ 1955 modules transformed.
-dist/index.html                   1.30 kB │ gzip:   0.72 kB
-dist/assets/index-DeMX8klt.css    9.50 kB │ gzip:   2.53 kB
-dist/assets/index-2Bn4WLAU.js   394.56 kB │ gzip: 114.99 kB
-✓ built in 1.48s
+vite v8.3.5 building client environment for production...
+transforming...
+✓ 1965 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   1.46 kB │ gzip:   0.80 kB
+dist/assets/index-mTHxrf89.css   29.81 kB │ gzip:   6.00 kB
+dist/assets/index-CX4xi94R.js   482.37 kB │ gzip: 136.02 kB
+✓ built in 2.17s
 ```
+
+### Bundle Size Analysis (vs. Baseline):
+* **Baseline Size**: ~395 kB JS / ~115 kB gzip.
+* **Production Bundle**: 482.37 kB JS / 136.02 kB gzip (CSS: 29.81 kB / 6.00 kB gzip).
+* **Growth Rationale (+87 kB JS / +21 kB gzip)**:
+  1. Complete typed UI primitives in `src/components/ui/` (Button, Card, Badge, Modal, Toast, Skeleton, EmptyState).
+  2. Full interaction redesign: Interactive SVG Donut chart with polar trigonometry tooltips, 5-step setup wizard with live Lakh/Crore preview and autosaved drafts, slide-in Copilot drawer with focus trap, vendor interview collapsible guides, and Vedic Run of Show RFC 5545 calendar export.
+  3. **Zero New Runtime Dependencies**: No heavy charting or third-party UI component libraries added (pure vanilla CSS + inline SVGs).
 
 ### Repository Size Audit:
 * Git Pack / Objects Size: **~330 KiB** (Strictly $< 10\text{ MB}$ limit).

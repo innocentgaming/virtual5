@@ -254,6 +254,7 @@ export const TimelineManager: React.FC<TimelineManagerProps> = ({
           ===================================================================== */}
       <Card>
         <CardHeader
+          headingLevel="h2"
           title="Date-Aware Preparation Timeline"
           icon={<CalendarDays size={20} color="var(--accent-primary)" />}
           subtitle={`Phased milestones relative to celebration date (${plan.eventDate} in ${plan.city}).`}
@@ -327,6 +328,11 @@ export const TimelineManager: React.FC<TimelineManagerProps> = ({
           >
             Done ({audit.completedCount})
           </Button>
+        </div>
+
+        {/* Live region for screen readers */}
+        <div aria-live="polite" role="status" className="sr-only">
+          Showing {filteredTasks.length} of {plan.tasks.length} tasks for {filter} filter
         </div>
       </Card>
 

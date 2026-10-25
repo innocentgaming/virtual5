@@ -189,6 +189,7 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
           ===================================================================== */}
       <Card>
         <CardHeader
+          headingLevel="h2"
           title="Vendor Checklist & Interview Guide"
           icon={<Users2 size={20} color="var(--accent-primary)" />}
           subtitle="Track contractor outreach, compare quotes, and review specialized interview cues."
@@ -270,9 +271,9 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
                 >
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
-                      <h4 style={{ fontSize: 'var(--text-base)', fontWeight: 700, color: 'var(--text)', margin: 0 }}>
+                      <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 700, color: 'var(--text)', margin: 0 }}>
                         {vendor.role}
-                      </h4>
+                      </h3>
                       <Badge
                         variant={
                           vendor.status === 'booked'

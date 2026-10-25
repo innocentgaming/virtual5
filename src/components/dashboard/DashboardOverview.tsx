@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import type { EventPlan, BudgetSummary, DecisionInsight } from '../../types/event';
 import type { NavigationTab } from '../../hooks/useEventPlan';
+import { useCountUp } from '../../hooks/useCountUp';
 import { formatCurrency, formatIndianShort, formatPercent } from '../../utils/formatters';
 import { Card, CardHeader, Button, Badge, EmptyState, Skeleton, Toast } from '../ui';
 
@@ -79,6 +80,12 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   const perGuestCost = useMemo(() => {
     return budgetSummary.perGuestCost || Math.round(budgetSummary.totalBudget / Math.max(plan.guestCount, 1));
   }, [budgetSummary.perGuestCost, budgetSummary.totalBudget, plan.guestCount]);
+
+  // Animated Count-Up figures (skips under reduced motion or tests)
+  const animatedDiffDays = useCountUp(diffDays < 0 ? 0 : diffDays);
+  const animatedCompleted = useCountUp(timelineAudit.completedCount);
+  const animatedBookedVendors = useCountUp(bookedVendors);
+  const animatedConfirmedGuests = useCountUp(confirmedGuests);
 
   // Budget utilization metrics for ring
   const utilizationPercent = useMemo(() => {
@@ -291,7 +298,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                   fontFamily: 'var(--font-sans)',
                 }}
               >
-                {diffDays < 0 ? '0' : diffDays}
+                {animatedDiffDays}
               </span>
               <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: '4px' }}>
                 {diffDays === 0 ? 'Event Day 🎉' : diffDays === 1 ? 'Day to go' : 'Days to go'}
@@ -420,7 +427,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
             <span>Tasks Done</span>
           </div>
           <div className="stat-value tabular-nums">
-            {timelineAudit.completedCount} / {timelineAudit.totalCount}
+            {animatedCompleted} / {timelineAudit.totalCount}
           </div>
           <div className="stat-subtext">
             <span>Task Completion: </span>
@@ -443,7 +450,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
             <span>Vendors Booked</span>
           </div>
           <div className="stat-value tabular-nums">
-            {bookedVendors} / {totalVendors}
+            {animatedBookedVendors} / {totalVendors}
           </div>
           <div className="stat-subtext">
             <span>Estimated Spend: </span>
@@ -466,7 +473,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
             <span>RSVPs Confirmed</span>
           </div>
           <div className="stat-value tabular-nums">
-            {confirmedGuests} / {plan.guestCount}
+            {animatedConfirmedGuests} / {plan.guestCount}
           </div>
           <div className="stat-subtext">
             <span>Attendance Rate: </span>

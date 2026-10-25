@@ -298,9 +298,9 @@ export const RunOfShowManager: React.FC<RunOfShowManagerProps> = ({
           1. PRINT-ONLY HEADER (Hidden on screen, visible in @media print)
           ===================================================================== */}
       <div className="print-header" style={{ display: 'none' }}>
-        <h1 style={{ fontSize: '18pt', margin: '0 0 4pt 0', fontWeight: 'bold' }}>
+        <h2 style={{ fontSize: '18pt', margin: '0 0 4pt 0', fontWeight: 'bold' }}>
           {plan.title || 'EventWise AI — Run of Show'}
-        </h1>
+        </h2>
         <p style={{ fontSize: '11pt', margin: 0 }}>
           <strong>Date:</strong> {plan.eventDate} | <strong>City:</strong> {plan.city} | <strong>Venue:</strong> {plan.venuePreference.replace(/_/g, ' ')} | <strong>Headcount:</strong> {plan.guestCount} guests
         </p>
@@ -349,6 +349,7 @@ export const RunOfShowManager: React.FC<RunOfShowManagerProps> = ({
           ===================================================================== */}
       <Card>
         <CardHeader
+          headingLevel="h2"
           title="Run of Show & Day-of Itinerary"
           icon={<Clock size={20} color="var(--accent-primary)" />}
           subtitle="Minute-by-minute execution schedule for vendors, coordinators, and hosts."
@@ -503,9 +504,9 @@ export const RunOfShowManager: React.FC<RunOfShowManagerProps> = ({
                           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                               {renderRitualIcon(ritual.type)}
-                              <h4 style={{ fontSize: 'var(--text-base)', fontWeight: 700, color: 'var(--text)', margin: 0 }}>
+                              <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 700, color: 'var(--text)', margin: 0 }}>
                                 {item.activity}
-                              </h4>
+                              </h3>
                             </div>
 
                             <Badge variant={ritual.badgeVariant}>

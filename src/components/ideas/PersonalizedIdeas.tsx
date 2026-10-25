@@ -130,6 +130,7 @@ export const PersonalizedIdeas: React.FC<PersonalizedIdeasProps> = ({
           ===================================================================== */}
       <Card>
         <CardHeader
+          headingLevel="h2"
           title="Personalized Event Concepts & Alternatives"
           icon={<Lightbulb size={20} color="var(--accent-primary)" />}
           subtitle={`Tailored specifically for ${plan.eventType} celebrations with ${plan.guestCount} guests in ${plan.city}.${
@@ -281,9 +282,9 @@ export const PersonalizedIdeas: React.FC<PersonalizedIdeasProps> = ({
                     </div>
                   </div>
 
-                  <h4 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, color: 'var(--text)', marginTop: 'var(--space-2)' }}>
+                  <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, color: 'var(--text)', marginTop: 'var(--space-2)' }}>
                     {idea.title}
-                  </h4>
+                  </h3>
 
                   <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', marginTop: 'var(--space-2)', lineHeight: 1.6 }}>
                     {idea.description}
