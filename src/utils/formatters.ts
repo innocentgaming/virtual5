@@ -3,11 +3,15 @@
  * Uses Indian Rupee (₹) and Indian Numbering System (Lakhs & Crores) by default.
  */
 
+const inrNumberFormatter = new Intl.NumberFormat('en-IN', {
+  maximumFractionDigits: 0,
+});
+
 export function formatCurrency(amount: number, currency: string = '₹'): string {
   if (isNaN(amount) || !isFinite(amount)) return `${currency}0`;
   const isNegative = amount < 0;
   const absVal = Math.abs(Math.round(amount));
-  const absFormatted = absVal.toLocaleString('en-IN');
+  const absFormatted = inrNumberFormatter.format(absVal);
   return isNegative ? `-${currency}${absFormatted}` : `${currency}${absFormatted}`;
 }
 
@@ -29,12 +33,12 @@ export function formatIndianShort(amount: number, currency: string = '₹'): str
     const lk = Math.round((absVal / 100000) * 10) / 10;
     return `${prefix}${lk} Lakhs`;
   }
-  return `${prefix}${absVal.toLocaleString('en-IN')}`;
+  return `${prefix}${inrNumberFormatter.format(absVal)}`;
 }
 
 export function formatNumber(val: number): string {
   if (isNaN(val) || !isFinite(val)) return '0';
-  return Math.round(val).toLocaleString('en-IN');
+  return inrNumberFormatter.format(Math.round(val));
 }
 
 export function formatPercent(val: number): string {
