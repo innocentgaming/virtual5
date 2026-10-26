@@ -12,12 +12,15 @@ import {
   X,
   ArrowUpDown,
   Sparkles,
+  Download,
+  FileSpreadsheet,
 } from 'lucide-react';
 import type { BudgetItem, BudgetCategory, BudgetSummary, EventPlan } from '../../types/event';
 import { formatCurrency, formatIndianShort } from '../../utils/formatters';
 import { InteractiveBudgetChart } from './InteractiveBudgetChart';
 import { Card, CardHeader, Button, Badge, EmptyState, Modal, useToast } from '../ui';
 import { useVirtualList } from '../../hooks/useVirtualList';
+import { generateBudgetCsv, downloadCsvFile } from '../../services/shareExportService';
 
 interface BudgetManagerProps {
   plan: EventPlan;
@@ -329,6 +332,37 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
     }
   };
 
+  // Export CSV Handler
+  const handleExportCsv = () => {
+    const csvData = generateBudgetCsv(plan, budgetSummary);
+    const safeTitle = (plan.title || 'event-budget').toLowerCase().replace(/[^a-z0-9_-]/g, '_');
+    const filename = `eventwise_budget_${safeTitle}_${plan.eventDate || 'plan'}.csv`;
+    downloadCsvFile(filename, csvData);
+    toast.showToast('✓ Budget CSV spreadsheet downloaded successfully', 'success');
+  };
+
+  // Payment Settlement metrics
+  const paymentMetrics = useMemo(() => {
+    let totalPaid = 0;
+    let totalPending = 0;
+    let paidCount = 0;
+
+    for (const item of plan.budgetItems) {
+      const cost = item.actualCost !== undefined ? item.actualCost : item.estimatedCost;
+      if (item.isPaid) {
+        totalPaid += cost;
+        paidCount += 1;
+      } else {
+        totalPending += cost;
+      }
+    }
+
+    const totalTracked = totalPaid + totalPending;
+    const paidPct = totalTracked > 0 ? Math.round((totalPaid / totalTracked) * 100) : 0;
+
+    return { totalPaid, totalPending, paidCount, paidPct };
+  }, [plan.budgetItems]);
+
   // Filter and sort items
   const filteredAndSortedItems = useMemo(() => {
     const list = plan.budgetItems.filter((item) => {
@@ -523,6 +557,69 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
       </div>
 
       {/* =====================================================================
+          1B. VENDOR PAYMENT SETTLEMENTS & CASH FLOW PROGRESS
+          ===================================================================== */}
+      <Card variant="subtle" style={{ padding: 'var(--space-3) var(--space-4)', background: 'var(--surface-raised)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-3)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+            <div
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: 'var(--radius-md)',
+                background: 'var(--color-success-bg)',
+                color: 'var(--color-success)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+              }}
+            >
+              <FileSpreadsheet size={18} />
+            </div>
+            <div>
+              <div style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+                Vendor Payment Milestones & Settlement
+              </div>
+              <div style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--text)' }}>
+                Paid Advances: <span className="tabular-nums" style={{ color: 'var(--color-success)' }}>{formatIndianShort(paymentMetrics.totalPaid)}</span> ({paymentMetrics.paidCount} items) • Balance Due: <span className="tabular-nums" style={{ color: paymentMetrics.totalPending > 0 ? 'var(--color-warning)' : 'var(--text-muted)' }}>{formatIndianShort(paymentMetrics.totalPending)}</span>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', minWidth: '180px' }}>
+            <div style={{ flex: 1, minWidth: '100px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '2px' }}>
+                <span>Settled</span>
+                <span className="tabular-nums">{paymentMetrics.paidPct}%</span>
+              </div>
+              <div style={{ width: '100%', height: '6px', background: 'var(--border)', borderRadius: 'var(--radius-pill)', overflow: 'hidden' }}>
+                <div
+                  style={{
+                    width: `${paymentMetrics.paidPct}%`,
+                    height: '100%',
+                    background: paymentMetrics.paidPct === 100 ? 'var(--color-success)' : 'var(--accent-primary)',
+                    borderRadius: 'var(--radius-pill)',
+                    transition: 'width var(--transition-normal)',
+                  }}
+                />
+              </div>
+            </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportCsv}
+              leadingIcon={<Download size={14} />}
+              style={{ fontSize: '0.75rem', height: '30px' }}
+            >
+              Export CSV
+            </Button>
+          </div>
+        </div>
+      </Card>
+
+      {/* =====================================================================
           2. TRADE-OFF CALLOUT (Reusing Decision Engine Vendor Spike Rule)
           ===================================================================== */}
       {costSpikeItems.length > 0 && (
@@ -634,15 +731,26 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
           title="Expense Line Items"
           subtitle="Inline edit amounts (Enter to save, Esc to cancel). Variance chips indicate cost escalations."
           action={
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => setShowAddModal(true)}
-              leadingIcon={<Plus size={16} />}
-              id="btn-add-expense-modal"
-            >
-              Add Custom Expense
-            </Button>
+            <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExportCsv}
+                leadingIcon={<Download size={14} />}
+                title="Download CSV spreadsheet"
+              >
+                Export CSV
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setShowAddModal(true)}
+                leadingIcon={<Plus size={16} />}
+                id="btn-add-expense-modal"
+              >
+                Add Custom Expense
+              </Button>
+            </div>
           }
         />
 

@@ -17,6 +17,7 @@ import {
   ChevronUp,
   RotateCcw,
   SlidersHorizontal,
+  MessageCircle,
 } from 'lucide-react';
 import type { EventPlan, BudgetSummary, DecisionInsight, TradeOffOption } from '../../types/event';
 import type { NavigationTab, ScenarioInput } from '../../hooks/useEventPlan';
@@ -695,6 +696,14 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
               leadingIcon={<Users size={16} />}
             >
               Add Guest
+            </Button>
+            <Button
+              variant="outline"
+              size="md"
+              onClick={() => onNavigateTab('guests')}
+              leadingIcon={<MessageCircle size={16} color="#25d366" />}
+            >
+              WhatsApp Invites
             </Button>
             {onExportCalendar && (
               <Button

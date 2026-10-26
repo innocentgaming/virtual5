@@ -12,10 +12,15 @@ import {
   UserX,
   Clock,
   Sparkles,
+  MessageCircle,
+  LayoutGrid,
+  List,
 } from 'lucide-react';
 import type { GuestItem, RsvpStatus, DietaryRequirement, EventPlan } from '../../types/event';
 import { Card, CardHeader, Button, Badge, Modal, EmptyState, useToast } from '../ui';
 import { useVirtualList } from '../../hooks/useVirtualList';
+import { WhatsAppInviteModal } from './WhatsAppInviteModal';
+import { TableSeatingPlanner } from './TableSeatingPlanner';
 
 interface GuestManagerProps {
   plan: EventPlan;
@@ -247,6 +252,10 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
   // Add/Edit Modal state
   const [showModal, setShowModal] = useState(false);
   const [editingGuestId, setEditingGuestId] = useState<string | null>(null);
+
+  // WhatsApp Invite and View Mode state
+  const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
+  const [viewMode, setViewMode] = useState<'directory' | 'seating'>('directory');
 
   // Form Fields
   const [formName, setFormName] = useState('');
@@ -665,20 +674,56 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
           icon={<Users size={20} color="var(--accent-primary)" />}
           subtitle="Track invitations, dietary protocols, plus-ones, and seating arrangements."
           action={
-            <Button
-              ref={addGuestButtonRef}
-              variant="primary"
-              size="sm"
-              onClick={handleOpenAdd}
-              leadingIcon={<Plus size={16} />}
-              id="btn-add-guest"
-            >
-              Add Guest
-            </Button>
+            <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowWhatsAppModal(true)}
+                leadingIcon={<MessageCircle size={15} color="#25d366" />}
+              >
+                WhatsApp Invites
+              </Button>
+              <Button
+                ref={addGuestButtonRef}
+                variant="primary"
+                size="sm"
+                onClick={handleOpenAdd}
+                leadingIcon={<Plus size={16} />}
+                id="btn-add-guest"
+              >
+                Add Guest
+              </Button>
+            </div>
           }
         />
 
-        {/* Toolbar: Search, Filters, Sort */}
+        {/* View Switcher: Directory vs Table Seating */}
+        <div style={{ display: 'flex', gap: 'var(--space-2)', marginBottom: 'var(--space-4)', borderBottom: '1px solid var(--border)', paddingBottom: 'var(--space-3)' }}>
+          <button
+            type="button"
+            className={`chip ${viewMode === 'directory' ? 'chip-active' : ''}`}
+            onClick={() => setViewMode('directory')}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', cursor: 'pointer', padding: '6px 14px' }}
+          >
+            <List size={14} />
+            <span>Guest Directory ({guests.length})</span>
+          </button>
+          <button
+            type="button"
+            className={`chip ${viewMode === 'seating' ? 'chip-active' : ''}`}
+            onClick={() => setViewMode('seating')}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', cursor: 'pointer', padding: '6px 14px' }}
+          >
+            <LayoutGrid size={14} />
+            <span>Table Seating Planner</span>
+          </button>
+        </div>
+
+        {viewMode === 'seating' ? (
+          <TableSeatingPlanner guests={guests} onUpdateGuest={onUpdateGuest} />
+        ) : (
+          <>
+            {/* Toolbar: Search, Filters, Sort */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', marginBottom: 'var(--space-4)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
             {/* Search Box */}
@@ -913,7 +958,9 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
             </table>
           </div>
         )}
-      </Card>
+      </>
+    )}
+  </Card>
 
       {/* =====================================================================
           4. ADD / EDIT GUEST MODAL (Stepper, Segmented Control, Chips)
@@ -1149,6 +1196,13 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
           </div>
         </div>
       </Modal>
+
+      {/* WhatsApp Invite Broadcast Modal */}
+      <WhatsAppInviteModal
+        isOpen={showWhatsAppModal}
+        onClose={() => setShowWhatsAppModal(false)}
+        plan={plan}
+      />
     </div>
   );
 };
