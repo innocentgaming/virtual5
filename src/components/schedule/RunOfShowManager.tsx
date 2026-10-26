@@ -16,10 +16,35 @@ import {
   Heart,
   Utensils,
   HeartHandshake,
+  ShieldCheck,
+  FastForward,
+  RotateCcw,
+  Copy,
+  Check,
+  FileText,
 } from 'lucide-react';
 import type { ScheduleItem, EventPlan } from '../../types/event';
 import { downloadEventCalendar } from '../../services/calendarService';
 import { Card, CardHeader, Button, Badge, Modal, EmptyState, useToast } from '../ui';
+
+function formatMinutesToTime(totalMins: number): string {
+  let normalized = totalMins % 1440;
+  if (normalized < 0) normalized += 1440;
+  let hours = Math.floor(normalized / 60);
+  const minutes = normalized % 60;
+  const meridiem = hours >= 12 ? 'PM' : 'AM';
+  if (hours > 12) hours -= 12;
+  if (hours === 0) hours = 12;
+  const padH = hours.toString().padStart(2, '0');
+  const padM = minutes.toString().padStart(2, '0');
+  return `${padH}:${padM} ${meridiem}`;
+}
+
+function shiftTimeByMinutes(timeStr: string, delta: number): string {
+  if (delta === 0) return timeStr;
+  const currentMins = parseTimeToMinutes(timeStr);
+  return formatMinutesToTime(currentMins + delta);
+}
 
 interface RunOfShowManagerProps {
   plan: EventPlan;
@@ -218,13 +243,42 @@ export const RunOfShowManager: React.FC<RunOfShowManagerProps> = ({
 
   const addMilestoneBtnRef = useRef<HTMLButtonElement>(null);
 
-  // Sorted items with minutes metadata
+  // Pro features state: Timing ripple & Crew role filter & NOC guide
+  const [selectedRole, setSelectedRole] = useState<string>('all');
+  const [timeShiftDelta, setTimeShiftDelta] = useState<number>(0);
+  const [showNocModal, setShowNocModal] = useState<boolean>(false);
+  const [copiedNoc, setCopiedNoc] = useState<boolean>(false);
+
+  // Sorted items with minutes metadata and active timing shift
   const sortedItems = useMemo(() => {
-    return [...schedule].map((item) => ({
-      ...item,
-      timeMins: parseTimeToMinutes(item.time),
-    })).sort((a, b) => a.timeMins - b.timeMins);
-  }, [schedule]);
+    return [...schedule]
+      .map((item) => {
+        const shiftedTime = timeShiftDelta !== 0 ? shiftTimeByMinutes(item.time, timeShiftDelta) : item.time;
+        return {
+          ...item,
+          time: shiftedTime,
+          timeMins: parseTimeToMinutes(shiftedTime),
+        };
+      })
+      .sort((a, b) => a.timeMins - b.timeMins);
+  }, [schedule, timeShiftDelta]);
+
+  // Filtered items by selected on-site role
+  const displayedItems = useMemo(() => {
+    if (selectedRole === 'all') return sortedItems;
+    const lower = selectedRole.toLowerCase();
+    return sortedItems.filter((item) => item.responsibleRole?.toLowerCase().includes(lower));
+  }, [sortedItems, selectedRole]);
+
+  // Handle committing shifted timings permanently to plan
+  const handleApplyShiftToPlan = () => {
+    if (timeShiftDelta === 0) return;
+    sortedItems.forEach((item) => {
+      onUpdateScheduleItem(item.id, { time: item.time });
+    });
+    toast.showToast(`✓ Applied ${timeShiftDelta > 0 ? `+${timeShiftDelta}` : timeShiftDelta} min timing shift to all milestones`, 'success');
+    setTimeShiftDelta(0);
+  };
 
   const uniqueRoles = useMemo(() => {
     const s = new Set(schedule.map((item) => item.responsibleRole).filter(Boolean));
@@ -289,6 +343,47 @@ export const RunOfShowManager: React.FC<RunOfShowManagerProps> = ({
     window.print();
   };
 
+  const nocLetterText = useMemo(() => {
+    return `To,
+The Station House Officer (SHO),
+Local Police Station,
+${plan.city} Police Commissionerate.
+
+Subject: Request for Permission / NOC for Wedding Baraat Procession and Regulated Sound System
+
+Respected Sir/Madam,
+
+I am writing on behalf of the host family to respectfully request permission / No-Objection Certificate (NOC) for conducting a wedding celebration at ${plan.venuePreference.replace(/_/g, ' ')}, ${plan.city} on ${plan.eventDate}.
+
+Event Details:
+- Occasion: ${plan.title || 'Wedding Celebration'}
+- Date of Event: ${plan.eventDate}
+- Venue: ${plan.venuePreference.replace(/_/g, ' ')}
+- Expected Attendance: ~${plan.guestCount} guests
+- Baraat Procession Timing: 05:00 PM to 07:30 PM (approx)
+
+Undertaking:
+1. We strictly undertake to comply with the Noise Pollution (Regulation and Control) Rules, 2000.
+2. Outdoor sound system / Dhol / Brass Band shall operate strictly within prescribed decibel limits (< 75 dB).
+3. All outdoor music and procession activities shall cease before the 10:00 PM municipal sound curfew, transitioning all subsequent ceremonies indoors.
+4. We will ensure traffic is not obstructed and will follow all instructions from duty officers.
+
+Kindly grant the requisite permission/NOC at your earliest convenience.
+
+Yours sincerely,
+Host Family Representative
+Event: ${plan.title || 'Wedding Celebration'}
+Contact / Mobile: _____________________
+Enclosed: Venue Confirmation Copy, Applicant ID Proof`;
+  }, [plan]);
+
+  const handleCopyNocLetter = () => {
+    navigator.clipboard.writeText(nocLetterText);
+    setCopiedNoc(true);
+    toast.showToast('NOC Application Letter copied to clipboard! 📋', 'success');
+    setTimeout(() => setCopiedNoc(false), 2500);
+  };
+
   if (isLoading) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
@@ -300,7 +395,7 @@ export const RunOfShowManager: React.FC<RunOfShowManagerProps> = ({
 
   // Curfew cutoff at 10:00 PM = 1320 minutes
   const CURFEW_MINUTES = 22 * 60; // 1320
-  const curfewIndex = sortedItems.findIndex((item) => item.timeMins >= CURFEW_MINUTES);
+  const curfewIndex = displayedItems.findIndex((item) => item.timeMins >= CURFEW_MINUTES);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
@@ -344,9 +439,18 @@ export const RunOfShowManager: React.FC<RunOfShowManagerProps> = ({
           ===================================================================== */}
       <div className="alert-box alert-warning no-print" role="status">
         <Volume2 size={24} style={{ flexShrink: 0, marginTop: '2px' }} />
-        <div>
-          <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>
-            Baraat & Sound Curfew Protocol (10:00 PM Municipal Regulation — Guidance)
+        <div style={{ flex: 1 }}>
+          <div style={{ fontWeight: 700, fontSize: '0.95rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
+            <span>Baraat & Sound Curfew Protocol (10:00 PM Municipal Regulation — Guidance)</span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowNocModal(true)}
+              leadingIcon={<ShieldCheck size={14} />}
+              id="btn-police-noc"
+            >
+              Police Loudspeaker NOC Guide & Letter
+            </Button>
           </div>
           <p style={{ fontSize: '0.85rem', marginTop: '2px', lineHeight: 1.5 }}>
             Under central Noise Pollution Rules, outdoor amplified music, Dhol processions, and Baraats are guided to transition indoors by 10:00 PM. EventWise AI pre-calibrates indoor banquet switches to avoid disruptions.
@@ -402,16 +506,203 @@ export const RunOfShowManager: React.FC<RunOfShowManagerProps> = ({
           }
         />
 
+        {/* Pro Upgrades: Timing Recalibration Bar (Muhurat Ripple) */}
+        <div
+          className="no-print"
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 'var(--space-2)',
+            padding: 'var(--space-3) var(--space-4)',
+            background: timeShiftDelta !== 0 ? 'rgba(217, 119, 6, 0.08)' : 'var(--surface-subtle)',
+            borderRadius: 'var(--radius-lg)',
+            border: timeShiftDelta !== 0 ? '1px solid var(--color-warning-border)' : '1px solid var(--border)',
+            marginTop: 'var(--space-3)',
+            marginBottom: 'var(--space-2)',
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+              <FastForward size={16} color={timeShiftDelta !== 0 ? 'var(--color-warning)' : 'var(--accent-primary)'} />
+              <span style={{ fontWeight: 700, fontSize: 'var(--text-sm)' }}>
+                Muhurat & Baraat Timing Shift Ripple:
+              </span>
+              {timeShiftDelta !== 0 ? (
+                <Badge variant="warning" size="sm">
+                  {timeShiftDelta > 0 ? `+${timeShiftDelta}` : timeShiftDelta} min shifted
+                </Badge>
+              ) : (
+                <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+                  (Real-time on-track)
+                </span>
+              )}
+            </div>
+
+            {timeShiftDelta !== 0 && (
+              <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setTimeShiftDelta(0)}
+                  leadingIcon={<RotateCcw size={13} />}
+                  id="btn-reset-timing-shift"
+                >
+                  Reset Preview
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={handleApplyShiftToPlan}
+                  leadingIcon={<Check size={13} />}
+                  id="btn-apply-timing-shift"
+                >
+                  Save Shift to Plan
+                </Button>
+              </div>
+            )}
+          </div>
+
+          <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>Quick Delay / Advance:</span>
+            <button
+              type="button"
+              onClick={() => setTimeShiftDelta((d) => d - 15)}
+              style={{
+                padding: '3px 10px',
+                fontSize: 'var(--text-xs)',
+                borderRadius: 'var(--radius-full)',
+                border: '1px solid var(--border)',
+                background: 'var(--surface)',
+                cursor: 'pointer',
+              }}
+            >
+              -15 min
+            </button>
+            <button
+              type="button"
+              onClick={() => setTimeShiftDelta((d) => d + 15)}
+              style={{
+                padding: '3px 10px',
+                fontSize: 'var(--text-xs)',
+                borderRadius: 'var(--radius-full)',
+                border: '1px solid var(--border)',
+                background: 'var(--surface)',
+                cursor: 'pointer',
+              }}
+            >
+              +15 min
+            </button>
+            <button
+              type="button"
+              onClick={() => setTimeShiftDelta((d) => d + 30)}
+              style={{
+                padding: '3px 10px',
+                fontSize: 'var(--text-xs)',
+                borderRadius: 'var(--radius-full)',
+                border: '1px solid var(--border)',
+                background: 'var(--surface)',
+                cursor: 'pointer',
+                fontWeight: 600,
+              }}
+            >
+              +30 min (Baraat Rush)
+            </button>
+            <button
+              type="button"
+              onClick={() => setTimeShiftDelta((d) => d + 45)}
+              style={{
+                padding: '3px 10px',
+                fontSize: 'var(--text-xs)',
+                borderRadius: 'var(--radius-full)',
+                border: '1px solid var(--border)',
+                background: 'var(--surface)',
+                cursor: 'pointer',
+              }}
+            >
+              +45 min
+            </button>
+          </div>
+        </div>
+
+        {/* Pro Upgrades: On-Site Role Filter Chips */}
+        {uniqueRoles.length > 0 && (
+          <div
+            className="no-print"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 'var(--space-2)',
+              flexWrap: 'wrap',
+              padding: 'var(--space-2) 0 var(--space-3) 0',
+              borderBottom: '1px solid var(--border)',
+              marginBottom: 'var(--space-3)',
+            }}
+          >
+            <span style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--text-muted)' }}>
+              Call-Sheet Filter:
+            </span>
+            <button
+              type="button"
+              onClick={() => setSelectedRole('all')}
+              style={{
+                padding: '4px 12px',
+                fontSize: 'var(--text-xs)',
+                borderRadius: 'var(--radius-full)',
+                border: selectedRole === 'all' ? '1px solid var(--accent-primary)' : '1px solid var(--border)',
+                background: selectedRole === 'all' ? 'var(--accent-primary)' : 'var(--surface-subtle)',
+                color: selectedRole === 'all' ? '#FFFFFF' : 'var(--text)',
+                fontWeight: selectedRole === 'all' ? 700 : 500,
+                cursor: 'pointer',
+              }}
+            >
+              All Crews ({schedule.length})
+            </button>
+            {uniqueRoles.map((role) => {
+              const isSelected = selectedRole.toLowerCase() === role.toLowerCase();
+              const count = schedule.filter((i) => i.responsibleRole?.toLowerCase() === role.toLowerCase()).length;
+              return (
+                <button
+                  key={role}
+                  type="button"
+                  onClick={() => setSelectedRole(isSelected ? 'all' : role)}
+                  style={{
+                    padding: '4px 12px',
+                    fontSize: 'var(--text-xs)',
+                    borderRadius: 'var(--radius-full)',
+                    border: isSelected ? '1px solid var(--accent-primary)' : '1px solid var(--border)',
+                    background: isSelected ? 'var(--accent-primary)' : 'var(--surface-subtle)',
+                    color: isSelected ? '#FFFFFF' : 'var(--text)',
+                    fontWeight: isSelected ? 700 : 500,
+                    cursor: 'pointer',
+                  }}
+                >
+                  {role} ({count})
+                </button>
+              );
+            })}
+          </div>
+        )}
+
         {/* Schedule List with Semantic <ol> */}
-        {sortedItems.length === 0 ? (
+        {displayedItems.length === 0 ? (
           <EmptyState
             icon={<Clock size={38} color="var(--text-muted)" />}
-            title="No Day-of Milestones Created"
-            description="Outline your timeline from morning muhurats to evening reception by clicking '+ Add Milestone'."
+            title={selectedRole === 'all' ? 'No Day-of Milestones Created' : `No Milestones for "${selectedRole}"`}
+            description={
+              selectedRole === 'all'
+                ? "Outline your timeline from morning muhurats to evening reception by clicking '+ Add Milestone'."
+                : `No timeline milestones are currently assigned to ${selectedRole}. Select "All Crews" or assign milestones to this role.`
+            }
             action={
-              <Button variant="primary" size="sm" onClick={handleOpenAdd} leadingIcon={<Plus size={14} />}>
-                Add Milestone
-              </Button>
+              selectedRole !== 'all' ? (
+                <Button variant="secondary" size="sm" onClick={() => setSelectedRole('all')}>
+                  Show All Crews
+                </Button>
+              ) : (
+                <Button variant="primary" size="sm" onClick={handleOpenAdd} leadingIcon={<Plus size={14} />}>
+                  Add Milestone
+                </Button>
+              )
             }
           />
         ) : (
@@ -425,9 +716,9 @@ export const RunOfShowManager: React.FC<RunOfShowManagerProps> = ({
               gap: 'var(--space-4)',
             }}
           >
-            {sortedItems.map((item, idx) => {
+            {displayedItems.map((item, idx) => {
               const ritual = getRitualMeta(item.activity, item.notes);
-              const nextItem = sortedItems[idx + 1];
+              const nextItem = displayedItems[idx + 1];
               const duration = formatDuration(item.timeMins, nextItem?.timeMins);
               const isPastCurfew = item.timeMins >= CURFEW_MINUTES;
 
@@ -617,7 +908,7 @@ export const RunOfShowManager: React.FC<RunOfShowManagerProps> = ({
             })}
 
             {/* If all items ended before 10 PM, render the curfew notice at the bottom */}
-            {curfewIndex === -1 && sortedItems.length > 0 && (
+            {curfewIndex === -1 && displayedItems.length > 0 && (
               <div
                 className="curfew-divider"
                 role="note"
@@ -756,6 +1047,78 @@ export const RunOfShowManager: React.FC<RunOfShowManagerProps> = ({
             </Button>
           </div>
         </form>
+      </Modal>
+
+      {/* =====================================================================
+          6. BARAAT POLICE LOUDSPEAKER NOC GUIDE & LETTER MODAL
+          ===================================================================== */}
+      <Modal
+        isOpen={showNocModal}
+        onClose={() => setShowNocModal(false)}
+        title={`Baraat & Loudspeaker Police NOC Guide — ${plan.city}`}
+        subtitle="Standard municipal protocol & police permission application template."
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+          <div className="alert-box alert-info" role="status">
+            <ShieldCheck size={20} style={{ flexShrink: 0 }} />
+            <div style={{ fontSize: 'var(--text-xs)', lineHeight: 1.5 }}>
+              In accordance with the <strong>Noise Pollution (Regulation and Control) Rules, 2000</strong>, obtaining a police No-Objection Certificate (NOC) is standard practice for outdoor Baraat processions, Brass Bands, and outdoor sound setups in <strong>{plan.city}</strong>.
+            </div>
+          </div>
+
+          <div>
+            <h4 style={{ margin: '0 0 var(--space-2) 0', fontSize: 'var(--text-sm)', fontWeight: 700 }}>
+              Mandatory Checklist for Submission (Local Police Station):
+            </h4>
+            <ul style={{ margin: 0, paddingLeft: 'var(--space-4)', fontSize: 'var(--text-xs)', display: 'flex', flexDirection: 'column', gap: 'var(--space-1)', color: 'var(--text-secondary)' }}>
+              <li><strong>1. Venue Booking Confirmation:</strong> Written clearance from {plan.venuePreference.replace(/_/g, ' ')}.</li>
+              <li><strong>2. Sound Vendor Decibel Undertaking:</strong> Written pledge from DJ/Sound vendor to keep decibels &lt; 75 dB(A) outdoor and terminate by 10:00 PM.</li>
+              <li><strong>3. Route Map:</strong> Baraat assembly point and procession route (if traversing public roadways).</li>
+              <li><strong>4. Government ID:</strong> Aadhaar / PAN card copy of the applicant (Bride/Groom family representative).</li>
+            </ul>
+          </div>
+
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
+              <h4 style={{ margin: 0, fontSize: 'var(--text-sm)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
+                <FileText size={15} color="var(--accent-primary)" />
+                Formal Application Letter Draft:
+              </h4>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCopyNocLetter}
+                leadingIcon={copiedNoc ? <Check size={14} color="var(--color-success)" /> : <Copy size={14} />}
+                id="btn-copy-noc-letter"
+              >
+                {copiedNoc ? 'Copied Letter!' : 'Copy Letter Draft'}
+              </Button>
+            </div>
+            <pre
+              style={{
+                background: 'var(--surface-subtle)',
+                border: '1px solid var(--border)',
+                borderRadius: 'var(--radius-md)',
+                padding: 'var(--space-3)',
+                fontSize: '11px',
+                fontFamily: 'monospace',
+                whiteSpace: 'pre-wrap',
+                maxHeight: '220px',
+                overflowY: 'auto',
+                color: 'var(--text)',
+                lineHeight: 1.5,
+              }}
+            >
+              {nocLetterText}
+            </pre>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
+            <Button variant="primary" size="md" onClick={() => setShowNocModal(false)}>
+              Close Guide
+            </Button>
+          </div>
+        </div>
       </Modal>
     </div>
   );

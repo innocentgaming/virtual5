@@ -4,6 +4,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { WhatsAppInviteModal } from '../components/guests/WhatsAppInviteModal';
 import { TableSeatingPlanner } from '../components/guests/TableSeatingPlanner';
 import { BudgetManager } from '../components/budget/BudgetManager';
+import { RunOfShowManager } from '../components/schedule/RunOfShowManager';
 import { SAMPLE_WEDDING } from '../data/sampleEvents';
 import type { BudgetSummary, GuestItem } from '../types/event';
 
@@ -152,6 +153,71 @@ describe('Pro Features Upgrade Suite', () => {
       expect(screen.getByText(/Vendor Payment Milestones & Settlement/i)).toBeInTheDocument();
       const exportButtons = screen.getAllByRole('button', { name: /Export CSV/i });
       expect(exportButtons.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('RunOfShowManager Pro Upgrades', () => {
+    it('supports Muhurat timing ripple preview and saving shift to plan', () => {
+      const onUpdateScheduleItem = vi.fn();
+      render(
+        <RunOfShowManager
+          plan={SAMPLE_WEDDING}
+          onAddScheduleItem={vi.fn()}
+          onUpdateScheduleItem={onUpdateScheduleItem}
+          onDeleteScheduleItem={vi.fn()}
+        />
+      );
+
+      // Verify timing ripple controller is present
+      expect(screen.getByText(/Muhurat & Baraat Timing Shift Ripple:/i)).toBeInTheDocument();
+
+      // Click +30 min Baraat Rush chip
+      const plus30Btn = screen.getByRole('button', { name: /\+30 min \(Baraat Rush\)/i });
+      fireEvent.click(plus30Btn);
+
+      // Check preview badge
+      expect(screen.getByText(/\+30 min shifted/i)).toBeInTheDocument();
+
+      // Click Save Shift to Plan
+      const saveBtn = screen.getByRole('button', { name: /Save Shift to Plan/i });
+      fireEvent.click(saveBtn);
+
+      expect(onUpdateScheduleItem).toHaveBeenCalled();
+    });
+
+    it('filters schedule by crew call-sheet role chips', () => {
+      render(
+        <RunOfShowManager
+          plan={SAMPLE_WEDDING}
+          onAddScheduleItem={vi.fn()}
+          onUpdateScheduleItem={vi.fn()}
+          onDeleteScheduleItem={vi.fn()}
+        />
+      );
+
+      // Verify role filter chips are present
+      expect(screen.getByText(/Call-Sheet Filter:/i)).toBeInTheDocument();
+      const allCrewsBtn = screen.getByRole('button', { name: /All Crews/i });
+      expect(allCrewsBtn).toBeInTheDocument();
+    });
+
+    it('opens Police Loudspeaker NOC modal and provides copyable application letter', () => {
+      render(
+        <RunOfShowManager
+          plan={SAMPLE_WEDDING}
+          onAddScheduleItem={vi.fn()}
+          onUpdateScheduleItem={vi.fn()}
+          onDeleteScheduleItem={vi.fn()}
+        />
+      );
+
+      const nocGuideBtn = screen.getByRole('button', { name: /Police Loudspeaker NOC Guide & Letter/i });
+      fireEvent.click(nocGuideBtn);
+
+      // Check modal content
+      expect(screen.getAllByText(/Noise Pollution \(Regulation and Control\) Rules, 2000/i).length).toBeGreaterThanOrEqual(1);
+      expect(screen.getByText(/Sound Vendor Decibel Undertaking:/i)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Copy Letter Draft/i })).toBeInTheDocument();
     });
   });
 });
