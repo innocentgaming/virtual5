@@ -250,9 +250,9 @@ export function Workspace({ mode }: { mode: WorkspaceMode }) {
   const handleImportPlan = useCallback((jsonString: string) => {
     const res = importPlan(jsonString);
     if (res.success) {
-      showToast('Event plan successfully restored from JSON backup!', 'success');
+      showToast('Event plan successfully restored from JSON backup!');
     } else {
-      showToast(`Restore failed: ${res.error || 'Corrupted file'}`, 'error');
+      showToast(`Restore failed: ${res.error || 'Corrupted file'}`);
     }
   }, [importPlan, showToast]);
 
