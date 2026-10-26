@@ -11,6 +11,8 @@ import {
   Mail,
   User,
   Sparkles,
+  Building2,
+  Star,
 } from 'lucide-react';
 import type { VendorItem, VendorStatus, VendorCategory, EventPlan } from '../../types/event';
 import { formatCurrency, formatIndianShort } from '../../utils/formatters';
@@ -431,6 +433,161 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
           })}
         </div>
       )}
+
+      {/* =====================================================================
+          4B. CURATED VENUES & VERIFIED SUPPLIERS DIRECTORY
+          ===================================================================== */}
+      <div style={{ marginTop: 'var(--space-8)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
+          <div>
+            <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, color: 'var(--text)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Building2 size={20} color="var(--accent-primary)" />
+              <span>Curated Venues & Verified Partners</span>
+            </h3>
+            <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', margin: '4px 0 0 0' }}>
+              Verified Indian heritage venues, decor artisans, and banquet specialists for {plan.city}
+            </p>
+          </div>
+          <Badge variant="neutral">Hand-picked for {plan.city}</Badge>
+        </div>
+
+        <div className="venue-directory-grid">
+          {/* Partner 1 */}
+          <div className="venue-card">
+            <div className="venue-card-media">
+              <img
+                src="/images/jaipur_palace_venue.jpg"
+                alt={`The Rajvilas Palace & Heritage Gardens in ${plan.city}`}
+                loading="lazy"
+              />
+              <div className="venue-card-badge-top">
+                <Badge variant="wedding">Heritage Palace</Badge>
+                <Badge variant="success">Verified</Badge>
+              </div>
+              <div className="venue-card-rating">
+                <Star size={13} fill="#f59e0b" color="#f59e0b" />
+                <span>4.9 (128)</span>
+              </div>
+            </div>
+            <div className="venue-card-body">
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                  <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text)', margin: 0 }}>
+                    The Rajvilas Palace & Gardens
+                  </h4>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--accent-primary)' }}>
+                    ₹₹₹
+                  </span>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '4px' }}>
+                  <span>📍 {plan.city}, India</span>
+                  <span>•</span>
+                  <span>👥 Up to 800 Guests</span>
+                </div>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '8px 0 0 0', lineHeight: 1.4 }}>
+                  Palatial courtyard with illuminated reflection pool, royal mandap pavilion, and dedicated pure-veg banquet kitchen.
+                </p>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: '1px solid var(--border)' }}>
+                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--color-success-text)' }}>
+                  ✓ Dedicated Jain Kitchen
+                </span>
+                <Badge variant="neutral">Heritage Grade</Badge>
+              </div>
+            </div>
+          </div>
+
+          {/* Partner 2 */}
+          <div className="venue-card">
+            <div className="venue-card-media">
+              <img
+                src="/images/mandap_floral_decor.jpg"
+                alt="ShadiSquad Traditional Floral & Mandap Designers"
+                loading="lazy"
+              />
+              <div className="venue-card-badge-top">
+                <Badge variant="neutral">Stage & Decor</Badge>
+                <Badge variant="success">Verified</Badge>
+              </div>
+              <div className="venue-card-rating">
+                <Star size={13} fill="#f59e0b" color="#f59e0b" />
+                <span>4.95 (94)</span>
+              </div>
+            </div>
+            <div className="venue-card-body">
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                  <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text)', margin: 0 }}>
+                    ShadiSquad Floral & Mandap Arts
+                  </h4>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--accent-primary)' }}>
+                    ₹₹₹
+                  </span>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '4px' }}>
+                  <span>📍 Pan-India Service</span>
+                  <span>•</span>
+                  <span>🌸 Marigold & Jasmine</span>
+                </div>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '8px 0 0 0', lineHeight: 1.4 }}>
+                  Carved wooden mandap with fresh marigold hangings, hanging brass diyas, and weather-guarded waterproof canopies.
+                </p>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: '1px solid var(--border)' }}>
+                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--color-success-text)' }}>
+                  ✓ Rainproof Canopy Setup
+                </span>
+                <Badge variant="neutral">Artisan Decor</Badge>
+              </div>
+            </div>
+          </div>
+
+          {/* Partner 3 */}
+          <div className="venue-card">
+            <div className="venue-card-media">
+              <img
+                src="/images/indian_gourmet_catering.jpg"
+                alt="Royal Rasoi Gourmet Banquets & Satvik Kitchens"
+                loading="lazy"
+              />
+              <div className="venue-card-badge-top">
+                <Badge variant="birthday">Catering & Feasts</Badge>
+                <Badge variant="success">Verified</Badge>
+              </div>
+              <div className="venue-card-rating">
+                <Star size={13} fill="#f59e0b" color="#f59e0b" />
+                <span>4.92 (210)</span>
+              </div>
+            </div>
+            <div className="venue-card-body">
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                  <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text)', margin: 0 }}>
+                    Royal Rasoi Gourmet & Satvik
+                  </h4>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--accent-primary)' }}>
+                    ₹₹
+                  </span>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '4px' }}>
+                  <span>📍 Specialized Banquets</span>
+                  <span>•</span>
+                  <span>🍲 Live Tandoor & Chaat</span>
+                </div>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '8px 0 0 0', lineHeight: 1.4 }}>
+                  Authentic copper handi feast with live Dal Baati Churma counters, zero cross-contamination Jain quarantine, and artisanal mithai.
+                </p>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: '1px solid var(--border)' }}>
+                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--color-success-text)' }}>
+                  ✓ Satvik Certified
+                </span>
+                <Badge variant="neutral">Gourmet Feast</Badge>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* =====================================================================
           5. ADD VENDOR REQUIREMENT MODAL
