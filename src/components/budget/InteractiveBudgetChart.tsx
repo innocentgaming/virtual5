@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import type { BudgetCategory, BudgetSummary } from '../../types/event';
 import { formatCurrency, formatIndianShort, formatPercent } from '../../utils/formatters';
 import { EmptyState } from '../ui';
-import { IndianRupee } from 'lucide-react';
+import { IndianRupee, Table as TableIcon, PieChart as PieChartIcon } from 'lucide-react';
 
 interface InteractiveBudgetChartProps {
   budgetSummary: BudgetSummary;
@@ -20,6 +20,7 @@ const InteractiveBudgetChartComponent: React.FC<InteractiveBudgetChartProps> = (
   onSelectCategory,
 }) => {
   const [hoveredCategory, setHoveredCategory] = useState<BudgetCategory | null>(null);
+  const [showDataTable, setShowDataTable] = useState(false);
 
   const categories = Object.keys(budgetSummary.categoryTotals) as BudgetCategory[];
   const validCategories = categories.filter((c) => (budgetSummary.categoryTotals[c] || 0) > 0);
@@ -49,7 +50,111 @@ const InteractiveBudgetChartComponent: React.FC<InteractiveBudgetChartProps> = (
   const activePct = total > 0 && activeCategory ? (activeAmount / total) * 100 : 0;
 
   return (
-    <div id="tour-budget-donut" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', flexWrap: 'wrap', gap: '2rem', padding: '0.75rem 0' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
+      {/* Accessibility Chart / Data Table Toggle Bar */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+        <button
+          type="button"
+          id="btn-toggle-budget-table"
+          onClick={() => setShowDataTable((prev) => !prev)}
+          className="btn btn--outline btn--sm"
+          style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', padding: '0.35rem 0.75rem' }}
+          aria-expanded={showDataTable}
+          aria-controls="budget-distribution-view"
+        >
+          {showDataTable ? (
+            <>
+              <PieChartIcon size={14} aria-hidden="true" />
+              <span>View as Donut Chart</span>
+            </>
+          ) : (
+            <>
+              <TableIcon size={14} aria-hidden="true" />
+              <span>View as Accessible Data Table</span>
+            </>
+          )}
+        </button>
+      </div>
+
+      <div id="budget-distribution-view">
+        {showDataTable ? (
+          <div className="table-responsive card" style={{ padding: '1rem', border: '1px solid var(--border)' }}>
+            <table className="table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }} aria-label="Budget Category Distribution Data Table">
+              <caption className="sr-only">Budget Category Allocation Breakdown in Indian Rupees</caption>
+              <thead>
+                <tr style={{ borderBottom: '2px solid var(--border)', textAlign: 'left' }}>
+                  <th scope="col" style={{ padding: '0.5rem' }}>Category</th>
+                  <th scope="col" style={{ padding: '0.5rem', textAlign: 'right' }}>Amount (₹)</th>
+                  <th scope="col" style={{ padding: '0.5rem', textAlign: 'right' }}>Share (%)</th>
+                  <th scope="col" style={{ padding: '0.5rem', textAlign: 'center' }}>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {validCategories.map((cat) => {
+                  const amount = budgetSummary.categoryTotals[cat] || 0;
+                  const pct = total > 0 ? (amount / total) * 100 : 0;
+                  const isSelected = selectedCategory === cat;
+                  return (
+                    <tr
+                      key={cat}
+                      style={{
+                        borderBottom: '1px solid var(--border-subtle)',
+                        backgroundColor: isSelected ? 'var(--surface-subtle)' : undefined,
+                      }}
+                    >
+                      <th scope="row" style={{ padding: '0.6rem 0.5rem', fontWeight: 600 }}>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <span
+                            aria-hidden="true"
+                            style={{
+                              width: '10px',
+                              height: '10px',
+                              borderRadius: '50%',
+                              backgroundColor: categoryColors[cat] || 'var(--text-muted)',
+                              display: 'inline-block',
+                            }}
+                          />
+                          {categoryLabels[cat]}
+                        </span>
+                      </th>
+                      <td style={{ padding: '0.6rem 0.5rem', textAlign: 'right', fontWeight: 700 }} className="tabular-nums">
+                        {formatCurrency(amount)}
+                      </td>
+                      <td style={{ padding: '0.6rem 0.5rem', textAlign: 'right' }} className="tabular-nums">
+                        {Math.round(pct)}%
+                      </td>
+                      <td style={{ padding: '0.6rem 0.5rem', textAlign: 'center' }}>
+                        {onSelectCategory && (
+                          <button
+                            type="button"
+                            onClick={() => onSelectCategory(isSelected ? 'all' : cat)}
+                            className="btn btn--ghost btn--xs"
+                            style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem' }}
+                          >
+                            {isSelected ? 'Reset Filter' : 'Filter Items'}
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+              <tfoot>
+                <tr style={{ borderTop: '2px solid var(--border)', fontWeight: 800 }}>
+                  <th scope="row" style={{ padding: '0.75rem 0.5rem' }}>Total Allocated</th>
+                  <td style={{ padding: '0.75rem 0.5rem', textAlign: 'right' }} className="tabular-nums">
+                    {formatCurrency(total)}
+                  </td>
+                  <td style={{ padding: '0.75rem 0.5rem', textAlign: 'right' }} className="tabular-nums">
+                    100%
+                  </td>
+                  <td />
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        ) : (
+          <div id="tour-budget-donut" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', flexWrap: 'wrap', gap: '2rem', padding: '0.75rem 0' }}>
       {/* SVG Donut Chart with Smooth Transitions */}
       <div style={{ position: 'relative', width: '220px', height: '220px', flexShrink: 0 }}>
         <svg
@@ -278,6 +383,9 @@ const InteractiveBudgetChartComponent: React.FC<InteractiveBudgetChartProps> = (
         })}
       </div>
     </div>
+  )}
+</div>
+</div>
   );
 };
 
