@@ -266,3 +266,56 @@ export function exportPlanAsJson(plan: EventPlan): void {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
+
+export interface ImportPlanResult {
+  success: boolean;
+  plan?: EventPlan;
+  error?: string;
+}
+
+/**
+ * Imports and validates an event plan from a JSON string.
+ * Enforces size limits (< 2 MB), JSON parsing safety, and deep schema sanitization.
+ *
+ * @param jsonString - Raw JSON string from uploaded backup file
+ * @returns ImportPlanResult with sanitized EventPlan or error description
+ */
+export function importPlanFromJson(jsonString: string): ImportPlanResult {
+  if (!jsonString || typeof jsonString !== 'string') {
+    return { success: false, error: 'Empty or invalid file content provided.' };
+  }
+
+  // Reject oversized strings (2 MB cap to protect browser memory)
+  if (jsonString.length > MAX_STORAGE_BYTES) {
+    return { success: false, error: 'Backup file exceeds maximum allowed size (2 MB).' };
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(jsonString);
+  } catch (err) {
+    return {
+      success: false,
+      error: `Invalid JSON format: ${err instanceof Error ? err.message : 'Syntax error'}`,
+    };
+  }
+
+  const validation = validateAndSanitizeEventPlan(parsed);
+  if (!validation.valid || !validation.plan) {
+    return {
+      success: false,
+      error: `Validation failed: ${validation.errors.join(', ')}`,
+    };
+  }
+
+  // Assign a fresh ID if importing to prevent collision with existing plans
+  const cleanPlan = sanitizeEventForStorage({
+    ...validation.plan,
+    id: `imported-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+  });
+
+  return {
+    success: true,
+    plan: cleanPlan,
+  };
+}

@@ -149,7 +149,7 @@ export function SignupPage(): React.ReactElement {
         <label className="s-check">
           <input type="checkbox" checked={accepted} onChange={(e) => setAccepted(e.target.checked)} required />
           <span>
-            I agree to the <Link to="/terms" className="s-link" target="_blank">Terms</Link> and <Link to="/privacy" className="s-link" target="_blank">Privacy Policy</Link>.
+            I agree to the <Link to="/terms" className="s-link" target="_blank" rel="noopener noreferrer">Terms</Link> and <Link to="/privacy" className="s-link" target="_blank" rel="noopener noreferrer">Privacy Policy</Link>.
           </span>
         </label>
         <button type="submit" className="s-btn s-btn--ink s-btn--block" disabled={busy}>
