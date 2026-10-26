@@ -1,3 +1,4 @@
+import type { Plugin } from 'vite';
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import { visualizer } from 'rollup-plugin-visualizer';
@@ -60,12 +61,57 @@ function lucidePlugin() {
   };
 }
 
+function apiDevPlugin(): Plugin {
+  return {
+    name: 'api-dev-server',
+    configureServer(server) {
+      server.middlewares.use(async (req, res, next) => {
+        if (!req.url || !req.url.startsWith('/api/')) return next();
+        try {
+          const url = new URL(req.url, 'http://localhost');
+          const pathname = url.pathname;
+
+          const queryObj: Record<string, string> = {};
+          for (const [key, val] of url.searchParams.entries()) {
+            queryObj[key] = val;
+          }
+          (req as unknown as { query: Record<string, string> }).query = queryObj;
+
+          if (pathname.startsWith('/api/auth/')) {
+            const action = pathname.slice('/api/auth/'.length).split('/')[0];
+            queryObj.action = action;
+            const mod = await server.ssrLoadModule('/api/auth/[action].ts');
+            return await mod.default(req, res);
+          }
+          if (pathname === '/api/events') {
+            const mod = await server.ssrLoadModule('/api/events.ts');
+            return await mod.default(req, res);
+          }
+          if (pathname === '/api/gemini') {
+            const mod = await server.ssrLoadModule('/api/gemini.ts');
+            return await mod.default(req, res);
+          }
+          next();
+        } catch (err) {
+          console.error('API dev server error:', err);
+          if (!res.headersSent) {
+            res.statusCode = 500;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ error: 'Internal server error in dev API' }));
+          }
+        }
+      });
+    },
+  };
+}
+
 const isAnalyze = process.env.ANALYZE === 'true';
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: './',
+  base: '/',
   plugins: [
+    apiDevPlugin(),
     lucidePlugin(),
     react(),
     ...(isAnalyze

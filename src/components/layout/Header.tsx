@@ -4,18 +4,21 @@ import {
   Plus,
   Download,
   Sliders,
-  ShieldCheck,
   Sun,
   Moon,
   Calendar,
   Bot,
-  User as UserIcon,
+  Cloud,
+  CloudOff,
+  Loader2,
+  UserPlus,
 } from 'lucide-react';
 import type { EventPlan } from '../../types/event';
-import type { NavigationTab } from '../../hooks/useEventPlan';
 import { Badge, Button } from '../ui';
 import { formatIndianShort } from '../../utils/formatters';
-import { useAuth } from '../../hooks/useAuth';
+import type { AuthUser } from '../../types/auth';
+import type { SyncStatus } from '../../hooks/useEventPlan';
+import { Link } from '../../routerComponents';
 
 interface HeaderProps {
   events: EventPlan[];
@@ -28,7 +31,11 @@ interface HeaderProps {
   onExportCalendar: () => void;
   onOpenAISettings: () => void;
   onOpenCopilot: () => void;
-  onNavigateTab?: (tab: NavigationTab) => void;
+  mode: 'account' | 'demo';
+  user: AuthUser | null;
+  syncStatus: SyncStatus;
+  onRetrySync: () => void;
+  onOpenAccount: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -42,10 +49,12 @@ export const Header: React.FC<HeaderProps> = ({
   onExportCalendar,
   onOpenAISettings,
   onOpenCopilot,
-  onNavigateTab,
+  mode,
+  user,
+  syncStatus,
+  onRetrySync,
+  onOpenAccount,
 }) => {
-  const { user, openAuthModal, openProfileModal } = useAuth();
-
   const getBadgeVariant = (type: string): 'wedding' | 'birthday' | 'community' => {
     switch (type) {
       case 'wedding':
@@ -58,164 +67,150 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="header-bar" role="banner">
-      <div
-        className="brand-wrapper"
-        onClick={() => onNavigateTab?.('landing')}
-        style={{ cursor: onNavigateTab ? 'pointer' : 'default' }}
-        title="Click to view Platform Showcase & Landing Page"
-      >
-        <div className="brand-logo-icon" aria-hidden="true">
-          <Sparkles size={22} />
-        </div>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-            <h1 className="brand-title">EventWise AI</h1>
-            <span
-              style={{
-                fontSize: '0.68rem',
-                fontWeight: 800,
-                letterSpacing: '0.06em',
-                padding: '2px 7px',
-                borderRadius: '4px',
-                background: 'var(--accent-primary)',
-                color: '#fff',
-                lineHeight: 1.2,
-              }}
-            >
-              PRO
-            </span>
-            <Badge variant={getBadgeVariant(activeEvent.eventType)}>
-              {activeEvent.eventType.toUpperCase()}
-            </Badge>
-            <span
-              style={{
-                fontSize: '0.72rem',
-                fontWeight: 700,
-                padding: '2px 8px',
-                borderRadius: '9999px',
-                background: 'linear-gradient(135deg, rgba(249, 115, 22, 0.12), rgba(34, 197, 94, 0.12))',
-                border: '1px solid rgba(249, 115, 22, 0.35)',
-                color: 'var(--text-main)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '4px',
-              }}
-              title="Engineered specifically for Indian Celebrations & Community Events"
-            >
-              🇮🇳 Made for India First
-            </span>
+    <header className="header" role="banner">
+      {/* Brand & Title */}
+      <div className="header-left">
+        <Link
+          to="/"
+          className="brand-wrapper"
+          style={{
+            cursor: 'pointer',
+            background: 'none',
+            border: 'none',
+            padding: 0,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.65rem',
+            textAlign: 'left',
+            font: 'inherit',
+            color: 'inherit',
+            textDecoration: 'none',
+          }}
+          title="Return to Public Landing Page & Features"
+          aria-label="EventWise AI Home"
+        >
+          <div className="brand-logo" aria-hidden="true">
+            <Sparkles size={20} />
           </div>
-          <p className="brand-subtitle">
-            Personalized Event Planning & Decision Engine · Made for India First (₹ en-IN)
-          </p>
-        </div>
-      </div>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <h1 className="brand-title" style={{ margin: 0, fontSize: 'inherit', fontWeight: 'inherit', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <span>EventWise AI</span>
+                <span
+                  style={{
+                    fontSize: '0.68rem',
+                    fontWeight: 800,
+                    letterSpacing: '0.04em',
+                    textTransform: 'uppercase',
+                    padding: '1px 5px',
+                    borderRadius: '3px',
+                    background: 'rgba(217, 119, 6, 0.15)',
+                    color: '#d97706',
+                    border: '1px solid rgba(217, 119, 6, 0.3)',
+                  }}
+                >
+                  India
+                </span>
+              </h1>
+            </div>
+            <div className="brand-subtitle">
+              Personalized Event Planning & Decision Engine
+            </div>
+          </div>
+        </Link>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-        {/* Active Event Snapshot Pill */}
-        <div className="header-meta-pill" title="Active Event Snapshot">
-          <span>📍 {activeEvent.city}</span>
-          <span>•</span>
-          <span>👥 {activeEvent.guestCount} Guests</span>
-          <span>•</span>
-          <span className="tabular-nums">{formatIndianShort(activeEvent.totalBudget)}</span>
-        </div>
-
-        {/* Event Selector Dropdown */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-          <label
-            htmlFor="event-select"
-            className="sr-only"
-            style={{
-              position: 'absolute',
-              width: 1,
-              height: 1,
-              padding: 0,
-              margin: -1,
-              overflow: 'hidden',
-              clip: 'rect(0,0,0,0)',
-              border: 0,
-            }}
-          >
+        {/* Active Event Selector */}
+        <div className="event-selector-wrapper">
+          <label htmlFor="active-event-select" className="sr-only">
             Select Active Event
           </label>
           <select
-            id="event-select"
-            className="form-control"
-            style={{ minWidth: '200px', fontWeight: 600 }}
+            id="active-event-select"
+            className="event-selector"
             value={activeEvent.id}
             onChange={(e) => onSelectEvent(e.target.value)}
-            aria-label="Select active event plan"
+            aria-label="Select Active Event Plan"
           >
-            {events.map((evt) => (
-              <option key={evt.id} value={evt.id}>
-                {evt.title} ({evt.city})
+            {events.map((event) => (
+              <option key={event.id} value={event.id}>
+                {event.title} ({event.city})
               </option>
             ))}
           </select>
+          <Badge variant={getBadgeVariant(activeEvent.eventType)} size="sm">
+            {activeEvent.eventType === 'wedding'
+              ? '👑 Royal Wedding'
+              : activeEvent.eventType === 'birthday'
+              ? '🎉 Milestone Birthday'
+              : '🪔 Community Utsav'}
+          </Badge>
         </div>
+      </div>
 
-        {/* Platform Showcase Link */}
-        {onNavigateTab && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onNavigateTab('landing')}
-            leftIcon={<Sparkles size={14} color="var(--accent-primary)" />}
-            title="Explore Public Landing Page, Features & Client Stories"
-            aria-label="Explore Platform Showcase"
-            id="btn-header-showcase"
-          >
-            Showcase
-          </Button>
-        )}
+      {/* Center Event Metadata Pill */}
+      <div className="header-center">
+        <div
+          className="header-meta-pill"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            background: 'var(--surface-subtle)',
+            padding: '0.35rem 0.85rem',
+            borderRadius: 'var(--radius-pill)',
+            border: '1px solid var(--border)',
+            fontSize: 'var(--text-xs)',
+          }}
+        >
+          <span style={{ fontWeight: 600, color: 'var(--text-muted)' }}>
+            📍 {activeEvent.city}
+          </span>
+          <span style={{ color: 'var(--border)' }}>•</span>
+          <span style={{ fontWeight: 600, color: 'var(--text-muted)' }}>
+            👥 {activeEvent.guestCount} Guests
+          </span>
+          <span style={{ color: 'var(--border)' }}>•</span>
+          <span style={{ fontWeight: 700, color: 'var(--accent-primary)' }}>
+            💰 {formatIndianShort(activeEvent.totalBudget)}
+          </span>
+        </div>
+      </div>
 
-        {/* AI Copilot Quick Button */}
+      {/* Actions & Tools */}
+      <div className="header-actions">
+        {/* AI Copilot Drawer Trigger */}
         <Button
           variant="secondary"
           size="sm"
           onClick={onOpenCopilot}
           leftIcon={<Bot size={15} color="var(--accent-primary)" />}
-          style={{
-            borderColor: 'var(--accent-primary)',
-            color: 'var(--accent-primary)',
-            fontWeight: 700,
-          }}
-          title="Open EventWise AI Copilot Drawer"
-          aria-label="Open EventWise AI Copilot Drawer"
-          id="btn-open-copilot"
+          title="Open AI Event Copilot (Interactive Assistant)"
+          aria-label="Open AI Copilot"
+          id="btn-header-copilot"
         >
-          Ask Copilot
+          AI Copilot
         </Button>
 
-        {/* Engine Status Indicator */}
+        {/* AI Settings / Model Configuration Trigger */}
         <Button
           variant="secondary"
           size="sm"
           onClick={onOpenAISettings}
-          leftIcon={
-            activeEvent.plannerSource === 'ai' ? (
-              <Sparkles size={14} color="#6366f1" />
-            ) : (
-              <ShieldCheck size={14} color="#059669" />
-            )
-          }
-          rightIcon={<Sliders size={12} style={{ color: 'var(--text-muted)' }} />}
-          title="Click to configure AI or view Decision Engine status"
-          aria-label="AI and Decision Engine Settings"
+          leftIcon={<Sliders size={14} />}
+          title="Configure Gemini GenAI Key & Settings"
+          aria-label="AI Planner Settings"
         >
-          {activeEvent.plannerSource === 'ai' ? 'AI Mode Active' : 'Rule-Based Engine'}
+          AI Settings
         </Button>
 
-        {/* Export Calendar .ics Button */}
+        {/* Sync to Calendar (.ics) Trigger */}
         <Button
           variant="secondary"
           size="sm"
           onClick={onExportCalendar}
           leftIcon={<Calendar size={14} />}
-          title="Download RFC 5545 iCalendar (.ics) with timelines and schedule alerts"
-          aria-label="Download Event Calendar (.ics)"
+          title="Export timeline milestones as iCalendar (.ics)"
+          aria-label="Export Calendar Reminders"
         >
           Sync .ics
         </Button>
@@ -244,14 +239,17 @@ export const Header: React.FC<HeaderProps> = ({
           {colorMode === 'dark' ? <Sun size={15} color="#f59e0b" /> : <Moon size={15} />}
         </Button>
 
-        {/* User Authentication Pill / Sign In Option */}
-        {user ? (
+        {/* Cloud sync status */}
+        {mode === 'account' && <SyncBadge status={syncStatus} onRetry={onRetrySync} />}
+
+        {/* Account menu / demo call-to-action */}
+        {mode === 'account' && user ? (
           <button
             type="button"
-            onClick={openProfileModal}
+            onClick={onOpenAccount}
             className="header-user-pill"
-            title={`Active User: ${user.name} (${user.roleLabel}) — Click to view profile & collaboration`}
-            aria-label={`User Profile: ${user.name}`}
+            title={`${user.name} (${user.roleLabel}) — account settings`}
+            aria-label={`Account: ${user.name}`}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -284,23 +282,16 @@ export const Header: React.FC<HeaderProps> = ({
               <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text)' }}>
                 {user.name.split(' ')[0]}
               </span>
-              <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>
-                {user.role === 'planner' ? 'Pro Planner' : 'Host'}
-              </span>
+              <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>{user.roleLabel}</span>
             </div>
           </button>
         ) : (
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => openAuthModal('login')}
-            leftIcon={<UserIcon size={14} color="var(--accent-primary)" />}
-            title="Sign In or Register for EventWise AI"
-            aria-label="Sign In"
-            id="btn-header-signin"
-          >
-            Sign In
-          </Button>
+          <Link to="/signup?next=/app" className="ui-button ui-button--secondary ui-button--sm" style={{ textDecoration: 'none' }}>
+            <span className="ui-button__icon" aria-hidden="true">
+              <UserPlus size={14} color="var(--accent-primary)" />
+            </span>
+            <span className="ui-button__text">Create free account</span>
+          </Link>
         )}
 
         {/* Create New Event Button */}
@@ -308,12 +299,52 @@ export const Header: React.FC<HeaderProps> = ({
           variant="primary"
           size="sm"
           onClick={onNewEvent}
-          leftIcon={<Plus size={16} />}
-          id="btn-create-new-event"
+          leftIcon={<Plus size={15} />}
+          id="btn-header-new-event"
         >
           New Event
         </Button>
       </div>
     </header>
+  );
+};
+
+const SYNC_LABEL: Record<SyncStatus, string> = {
+  off: '',
+  loading: 'Loading your plans…',
+  saving: 'Saving…',
+  saved: 'Saved to your account',
+  offline: 'Offline – changes are kept on this device',
+  error: 'Could not save to your account',
+  conflict: 'Changed on another device',
+};
+
+const SyncBadge: React.FC<{ status: SyncStatus; onRetry: () => void }> = ({ status, onRetry }) => {
+  if (status === 'off') return null;
+  const busy = status === 'loading' || status === 'saving';
+  const bad = status === 'offline' || status === 'error' || status === 'conflict';
+  const Icon = busy ? Loader2 : bad ? CloudOff : Cloud;
+  return (
+    <span
+      role="status"
+      aria-live="polite"
+      title={SYNC_LABEL[status]}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 6,
+        fontSize: '0.72rem',
+        fontWeight: 600,
+        color: bad ? 'var(--color-warning-text)' : 'var(--text-muted)',
+      }}
+    >
+      <Icon size={14} className={busy ? 'ui-spinner-icon' : undefined} aria-hidden="true" />
+      <span className="sync-badge__label">{SYNC_LABEL[status]}</span>
+      {(status === 'offline' || status === 'error') && (
+        <button type="button" onClick={onRetry} style={{ background: 'none', border: 0, color: 'var(--accent-primary)', fontWeight: 700, cursor: 'pointer', padding: 0, fontSize: 'inherit' }}>
+          Retry
+        </button>
+      )}
+    </span>
   );
 };

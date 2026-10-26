@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom/vitest';
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
-import App from '../App';
+import { screen, fireEvent } from '@testing-library/react';
+import { renderWorkspace } from './renderWorkspace';
 import { loadSavedEvents, loadActiveEventId } from '../services/storageService';
 
 describe('QA Pass: Accessibility, Heading Hierarchy & Responsive Standards', () => {
@@ -10,7 +10,7 @@ describe('QA Pass: Accessibility, Heading Hierarchy & Responsive Standards', () 
   });
 
   it('maintains exactly one h1 per view across all primary routes', () => {
-    render(<App />);
+    renderWorkspace('demo');
 
     // Dashboard View
     let h1Elements = document.querySelectorAll('h1');
@@ -55,7 +55,7 @@ describe('QA Pass: Accessibility, Heading Hierarchy & Responsive Standards', () 
   });
 
   it('has semantic h2 headings representing major section views without skipping levels', () => {
-    render(<App />);
+    renderWorkspace('demo');
 
     // In Dashboard overview, event title is h2
     const h2Elements = document.querySelectorAll('h2');
@@ -76,7 +76,7 @@ describe('QA Pass: Accessibility, Heading Hierarchy & Responsive Standards', () 
   });
 
   it('exposes polite aria-live status regions for filter updates', () => {
-    render(<App />);
+    renderWorkspace('demo');
 
     // Guests view live region
     const guestsTab = screen.getByRole('button', { name: /Guest List & RSVPs/i });
@@ -104,7 +104,7 @@ describe('QA Pass: Accessibility, Heading Hierarchy & Responsive Standards', () 
   });
 
   it('supports modal focus and dismissal lifecycle', () => {
-    render(<App />);
+    renderWorkspace('demo');
 
     // Open Copilot drawer
     const copilotBtn = screen.getByRole('button', { name: /Ask Copilot/i });

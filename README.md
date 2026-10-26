@@ -14,6 +14,22 @@ An intelligent, full-stack, personalized event planning assistant engineered spe
 
 ---
 
+## 🔐 Accounts, Login & Site Structure (v2)
+
+| Route | What it is |
+| :--- | :--- |
+| `/` | Public landing page |
+| `/signup`, `/login`, `/forgot-password`, `/reset-password` | Real account flows |
+| `/app` | The planner (requires sign-in; plans sync to the account) |
+| `/demo` | The planner with sample data, no account, device-only storage |
+| `/privacy`, `/terms` | Legal pages |
+
+**Auth design:** serverless functions in `api/` (`api/auth/[action].ts`, `api/events.ts`). Passwords are hashed with scrypt; sessions are HMAC-signed, `HttpOnly`, `SameSite=Lax`, `Secure` cookies that can be revoked per user; login, signup and reset are rate limited; state-changing requests are origin-checked. Data lives in Upstash Redis (in-memory store in local dev).
+
+**Deploy on Vercel:** set `AUTH_SECRET`, connect an Upstash Redis store (Storage → Marketplace), and optionally `RESEND_API_KEY` + `EMAIL_FROM` for reset emails. See `.env.example`. Run locally with `npm run dev` (no setup needed; `/api` is served by Vite in dev).
+
+---
+
 ### 🏆 Official Hack2skill Challenge 5 Evaluation Compliance Matrix
 *Directly mapped to the official [Explainer Session](https://www.youtube.com/live/fdi63eSyyYM?si=Gqs4IfjAMMSFhNOB):*
 

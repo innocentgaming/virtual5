@@ -2013,5 +2013,60 @@ th, td {
   }
 }
 
+/* ---- Workspace banners ------------------------------------------------- */
+.demo-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem 1rem;
+  padding: 0.55rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: var(--accent-subtle);
+  color: var(--accent-text);
+  border-bottom: 1px solid var(--border);
+}
+.demo-banner__inner {
+  max-width: 1320px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.demo-banner__link {
+  color: inherit;
+  font-weight: 800;
+  text-underline-offset: 3px;
+}
+.demo-banner--warn {
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+  border-bottom-color: var(--color-warning-border);
+}
+.demo-banner__cta {
+  color: inherit;
+  font-weight: 800;
+  text-underline-offset: 3px;
+}
+.demo-banner__btn {
+  background: var(--surface-raised);
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  padding: 0.25rem 0.8rem;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  color: var(--text);
+}
+@media (max-width: 900px) {
+  .sync-badge__label {
+    display: none;
+  }
+}
+
 
 

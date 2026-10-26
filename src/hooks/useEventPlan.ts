@@ -20,7 +20,10 @@ import {
   getStorageError,
   subscribeStorageError,
   clearStorageError,
+  isValidEventPlan,
+  sanitizeEventForStorage,
 } from '../services/storageService';
+import { eventsApi, type RemoteEventsDoc } from '../services/authApi';
 import {
   calculateBudgetSummary,
   evaluateDecisionRules,
@@ -52,10 +55,19 @@ export type NavigationTab =
   | 'ideas'
   | 'guests'
   | 'schedule'
-  | 'ai'
-  | 'landing';
+  | 'ai';
 
-export function useEventPlan() {
+export type SyncStatus = 'off' | 'loading' | 'saving' | 'saved' | 'offline' | 'error' | 'conflict';
+
+export interface UseEventPlanOptions {
+  /** When true, plans are loaded from / saved to the signed-in user's cloud account. */
+  cloudSync?: boolean;
+  /** Called when the server says the session is no longer valid. */
+  onSessionExpired?: () => void;
+}
+
+export function useEventPlan(options: UseEventPlanOptions = {}) {
+  const { cloudSync = false, onSessionExpired } = options;
   const [events, setEvents] = useState<EventPlan[]>(() => loadSavedEvents());
   const [activeEventId, setActiveEventId] = useState<string>(() => {
     const savedId = loadActiveEventId();
@@ -120,6 +132,119 @@ export function useEventPlan() {
       saveActiveEventId(activeEventId);
     }
   }, [activeEventId]);
+
+  // ---------------------------------------------------------------------------
+  // Cloud sync (signed-in accounts only). localStorage stays as an offline cache.
+  // ---------------------------------------------------------------------------
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>(cloudSync ? 'loading' : 'off');
+  const remoteVersionRef = useRef<number | null>(null);
+  const hydratedRef = useRef(false);
+  const activeIdRef = useRef(activeEventId);
+  const conflictDocRef = useRef<RemoteEventsDoc | null>(null);
+  const expiredRef = useRef(onSessionExpired);
+  useEffect(() => {
+    activeIdRef.current = activeEventId;
+    expiredRef.current = onSessionExpired;
+  }, [activeEventId, onSessionExpired]);
+
+  const applyRemote = useCallback((doc: RemoteEventsDoc) => {
+    const valid = doc.events.filter((e): e is EventPlan => isValidEventPlan(e));
+    if (valid.length === 0) return false;
+    setEvents(valid);
+    setActiveEventId(doc.activeId && valid.some((e) => e.id === doc.activeId) ? doc.activeId : valid[0].id);
+    return true;
+  }, []);
+
+  const pushToCloud = useCallback(
+    async (force = false) => {
+      const payload = eventsRef.current.filter((e) => isValidEventPlan(e)).map(sanitizeEventForStorage);
+      if (payload.length === 0) return;
+      setSyncStatus('saving');
+      const res = await eventsApi.save({
+        events: payload,
+        activeId: activeIdRef.current,
+        baseUpdatedAt: remoteVersionRef.current,
+        force,
+      });
+      if (res.ok) {
+        remoteVersionRef.current = res.updatedAt;
+        setSyncStatus('saved');
+      } else if (res.status === 401) {
+        expiredRef.current?.();
+      } else if (res.status === 409) {
+        const doc = res as unknown as RemoteEventsDoc;
+        conflictDocRef.current = { events: doc.events ?? [], activeId: doc.activeId ?? null, updatedAt: doc.updatedAt ?? 0 };
+        setSyncStatus('conflict');
+      } else {
+        setSyncStatus(res.code === 'network' ? 'offline' : 'error');
+      }
+    },
+    []
+  );
+
+  // Initial load: pull the account's plans; if the account is empty, upload what is on this device.
+  useEffect(() => {
+    if (!cloudSync) return;
+    let cancelled = false;
+    void (async () => {
+      const res = await eventsApi.load();
+      if (cancelled) return;
+      if (!res.ok) {
+        if (res.status === 401) expiredRef.current?.();
+        setSyncStatus(res.code === 'network' ? 'offline' : 'error');
+        return;
+      }
+      remoteVersionRef.current = res.updatedAt;
+      if (res.events.length > 0 && applyRemote(res)) {
+        hydratedRef.current = true;
+        setSyncStatus('saved');
+      } else {
+        hydratedRef.current = true;
+        await pushToCloud();
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [cloudSync, applyRemote, pushToCloud]);
+
+  // Debounced upload on every change after the initial load.
+  useEffect(() => {
+    if (!cloudSync || !hydratedRef.current || events.length === 0) return;
+    const timer = setTimeout(() => {
+      void pushToCloud();
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [cloudSync, events, activeEventId, pushToCloud]);
+
+  // Best-effort flush when the tab is hidden.
+  useEffect(() => {
+    if (!cloudSync) return;
+    const onHide = () => {
+      if (document.visibilityState === 'hidden' && hydratedRef.current) void pushToCloud();
+    };
+    document.addEventListener('visibilitychange', onHide);
+    return () => document.removeEventListener('visibilitychange', onHide);
+  }, [cloudSync, pushToCloud]);
+
+  const resolveSyncConflict = useCallback(
+    async (keep: 'cloud' | 'device') => {
+      const remote = conflictDocRef.current;
+      conflictDocRef.current = null;
+      if (keep === 'cloud' && remote) {
+        remoteVersionRef.current = remote.updatedAt;
+        if (applyRemote(remote)) setSyncStatus('saved');
+      } else {
+        if (remote) remoteVersionRef.current = remote.updatedAt;
+        await pushToCloud(true);
+      }
+    },
+    [applyRemote, pushToCloud]
+  );
+
+  const retrySync = useCallback(() => {
+    if (cloudSync && hydratedRef.current) void pushToCloud();
+  }, [cloudSync, pushToCloud]);
 
   // Find active plan
   const activeEvent = useMemo(() => {
@@ -937,5 +1062,8 @@ export function useEventPlan() {
     repaceTimeline,
     storageError,
     clearStorageError,
+    syncStatus,
+    resolveSyncConflict,
+    retrySync,
   };
 }

@@ -160,7 +160,10 @@ export default async function handler(req: ExtendedRequest, res: ServerResponse)
       }),
     });
 
-    const geminiJson = await geminiRes.json();
+    const geminiJson = (await geminiRes.json()) as {
+      error?: { message?: string };
+      candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+    };
 
     if (!geminiRes.ok) {
       res.statusCode = geminiRes.status;

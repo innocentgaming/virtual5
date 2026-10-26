@@ -11,7 +11,6 @@ import {
   Clock,
   Menu,
   X,
-  Sparkles,
 } from 'lucide-react';
 import type { NavigationTab } from '../../hooks/useEventPlan';
 
@@ -42,11 +41,6 @@ export const Navigation: React.FC<NavigationProps> = ({
       id: 'dashboard',
       label: 'Dashboard',
       icon: <LayoutDashboard size={18} />,
-    },
-    {
-      id: 'landing',
-      label: 'Home & Features',
-      icon: <Sparkles size={18} />,
     },
     {
       id: 'setup',

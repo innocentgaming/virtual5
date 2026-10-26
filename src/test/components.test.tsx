@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom/vitest';
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
-import App from '../App';
+import { screen, fireEvent } from '@testing-library/react';
+import { renderWorkspace } from './renderWorkspace';
 
 describe('EventWise AI UI & Workflow Integration Tests', () => {
   beforeEach(() => {
@@ -9,7 +9,7 @@ describe('EventWise AI UI & Workflow Integration Tests', () => {
   });
 
   it('renders application header, title, and initial dashboard', () => {
-    render(<App />);
+    renderWorkspace('demo');
 
     // Brand and header
     expect(screen.getByText('EventWise AI')).toBeInTheDocument();
@@ -26,7 +26,7 @@ describe('EventWise AI UI & Workflow Integration Tests', () => {
   });
 
   it('switches between navigation tabs smoothly', () => {
-    render(<App />);
+    renderWorkspace('demo');
 
     // Click Budget Manager tab
     const budgetTab = screen.getByRole('button', { name: /Budget Manager/i });
@@ -67,7 +67,7 @@ describe('EventWise AI UI & Workflow Integration Tests', () => {
   }, 30000);
 
   it('allows adding and editing an expense in the Budget Manager', () => {
-    render(<App />);
+    renderWorkspace('demo');
 
     // Navigate to budget tab
     fireEvent.click(screen.getByRole('button', { name: /Budget Manager/i }));
@@ -93,7 +93,7 @@ describe('EventWise AI UI & Workflow Integration Tests', () => {
   });
 
   it('allows toggling task completion in the Timeline', () => {
-    render(<App />);
+    renderWorkspace('demo');
 
     // Navigate to timeline
     fireEvent.click(screen.getByRole('button', { name: /Timeline & Tasks/i }));
@@ -110,7 +110,7 @@ describe('EventWise AI UI & Workflow Integration Tests', () => {
   });
 
   it('switches to New Event creation mode and validates inputs', () => {
-    render(<App />);
+    renderWorkspace('demo');
 
     const newEventBtn = screen.getByRole('button', { name: /New Event/i });
     fireEvent.click(newEventBtn);
@@ -129,7 +129,7 @@ describe('EventWise AI UI & Workflow Integration Tests', () => {
   });
 
   it('allows updating vendor status in the Vendor Checklist', () => {
-    render(<App />);
+    renderWorkspace('demo');
 
     // Navigate to vendor checklist
     fireEvent.click(screen.getByRole('button', { name: /Vendor Checklist/i }));
@@ -146,7 +146,7 @@ describe('EventWise AI UI & Workflow Integration Tests', () => {
   });
 
   it('allows switching active events via the header event selector', () => {
-    render(<App />);
+    renderWorkspace('demo');
 
     const select = screen.getByLabelText(/Select active event plan/i);
     expect(select).toBeInTheDocument();
@@ -158,7 +158,7 @@ describe('EventWise AI UI & Workflow Integration Tests', () => {
   });
 
   it('meets accessibility basics with semantic landmarks and ARIA labels', () => {
-    render(<App />);
+    renderWorkspace('demo');
 
     // Header landmark
     expect(screen.getByRole('banner')).toBeInTheDocument();
