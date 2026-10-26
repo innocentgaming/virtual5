@@ -7,6 +7,7 @@ import {
   Sparkles,
   ChevronDown,
   ArrowRight,
+  Calendar,
 } from 'lucide-react';
 import type { EventPlan, BudgetSummary, TradeOffOption } from '../../types/event';
 import type { ScenarioInput } from '../../hooks/useEventPlan';
@@ -64,6 +65,16 @@ export const ChaosBar: React.FC<ChaosBarProps> = ({
     onApplyScenario({
       guestDelta: 30,
       scenarioName: 'Late RSVP Surge (+30 Guests)',
+    });
+    setIsMenuOpen(false);
+  };
+
+  const handleDateCompression = () => {
+    setActiveScenarioName('Date Moved Earlier (-14 Days)');
+    onTriggerPulse?.();
+    onApplyScenario({
+      dateShiftDays: -14,
+      scenarioName: 'Date Moved Earlier (-14 Days)',
     });
     setIsMenuOpen(false);
   };
@@ -252,7 +263,32 @@ export const ChaosBar: React.FC<ChaosBarProps> = ({
 
                 <button
                   type="button"
+                  id="btn-simulate-rsvps"
                   onClick={handleRsvpSurge}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    width: '100%',
+                    padding: '0.6rem 0.85rem',
+                    background: 'none',
+                    border: 'none',
+                    borderBottom: '1px solid var(--border, #e2e8f0)',
+                    textAlign: 'left',
+                    fontSize: '0.8rem',
+                    fontWeight: 600,
+                    color: 'var(--text, #1e293b)',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <UserPlus size={15} color="#16a34a" />
+                  <span>30 extra RSVPs</span>
+                </button>
+
+                <button
+                  type="button"
+                  id="btn-simulate-date-compression"
+                  onClick={handleDateCompression}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -268,8 +304,8 @@ export const ChaosBar: React.FC<ChaosBarProps> = ({
                     cursor: 'pointer',
                   }}
                 >
-                  <UserPlus size={15} color="#16a34a" />
-                  <span>30 extra RSVPs</span>
+                  <Calendar size={15} color="#d97706" />
+                  <span>Date moved 14 days earlier</span>
                 </button>
               </div>
             )}

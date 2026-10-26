@@ -18,7 +18,7 @@ import {
   MessageCircle,
   HelpCircle,
 } from 'lucide-react';
-import type { EventPlan, BudgetSummary, DecisionInsight, TradeOffOption } from '../../types/event';
+import type { EventPlan, BudgetSummary, DecisionInsight, TradeOffOption, PlanChangeDiff } from '../../types/event';
 import type { NavigationTab, ScenarioInput } from '../../hooks/useEventPlan';
 import { useCountUp } from '../../hooks/useCountUp';
 import { formatCurrency, formatIndianShort, formatPercent } from '../../utils/formatters';
@@ -49,6 +49,8 @@ interface DashboardOverviewProps {
   onApplyTradeOff?: (tradeOff: TradeOffOption, title?: string) => void;
   onApplyScenario?: (scenario: ScenarioInput) => void;
   onUndoLastChange?: () => void;
+  lastChangeDiff?: PlanChangeDiff | null;
+  onClearDiff?: () => void;
   isGenerating?: boolean;
 }
 
@@ -63,6 +65,8 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   onApplyTradeOff,
   onApplyScenario,
   onUndoLastChange,
+  lastChangeDiff,
+  onClearDiff,
   isGenerating = false,
 }) => {
   const [showAllAlerts, setShowAllAlerts] = useState(false);
@@ -411,6 +415,112 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
           </div>
         </Card>
       </div>
+
+      {/* =========================================================================
+          WHAT CHANGED? REAL-TIME PARAMETER & DECISION DIFF BANNER
+          ========================================================================= */}
+      {lastChangeDiff && (
+        <div
+          role="status"
+          aria-live="polite"
+          id="what-changed-diff-banner"
+          className="what-changed-banner"
+          style={{
+            gridColumn: 'span 12',
+            background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(168, 85, 247, 0.06) 100%)',
+            border: '1.5px solid var(--accent-primary, #6366f1)',
+            borderRadius: 'var(--radius-lg, 12px)',
+            padding: '0.75rem 1rem',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.45rem',
+            boxShadow: '0 2px 8px rgba(99, 102, 241, 0.08)',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <span
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '24px',
+                  height: '24px',
+                  borderRadius: '6px',
+                  background: 'var(--accent-primary, #6366f1)',
+                  color: '#ffffff',
+                }}
+              >
+                <Sparkles size={14} />
+              </span>
+              <strong style={{ fontSize: '0.85rem', color: 'var(--text)' }}>
+                What changed?
+              </strong>
+              <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                ({lastChangeDiff.timestamp}) — {lastChangeDiff.summary}
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              {onUndoLastChange && plan.changeLog && plan.changeLog.length > 0 && (
+                <button
+                  type="button"
+                  onClick={onUndoLastChange}
+                  style={{
+                    padding: '3px 10px',
+                    fontSize: '0.75rem',
+                    fontWeight: 700,
+                    borderRadius: '6px',
+                    border: '1px solid var(--border)',
+                    background: 'var(--surface-raised)',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Undo edit
+                </button>
+              )}
+              {onClearDiff && (
+                <button
+                  type="button"
+                  onClick={onClearDiff}
+                  aria-label="Dismiss what changed diff"
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--text-muted)',
+                    cursor: 'pointer',
+                    padding: '2px 6px',
+                    fontSize: '0.9rem',
+                    fontWeight: 700,
+                  }}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          </div>
+
+          {lastChangeDiff.details.length > 1 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', marginTop: '0.15rem' }}>
+              {lastChangeDiff.details.map((detail, idx) => (
+                <span
+                  key={idx}
+                  style={{
+                    fontSize: '0.72rem',
+                    fontWeight: 600,
+                    padding: '2px 8px',
+                    borderRadius: '4px',
+                    background: 'rgba(99, 102, 241, 0.12)',
+                    color: 'var(--accent-primary, #6366f1)',
+                  }}
+                >
+                  {detail}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* =========================================================================
           2. DYNAMIC CHAOS & SCENARIO HUB BAR (1-Click Simulations & Instant Trade-offs)

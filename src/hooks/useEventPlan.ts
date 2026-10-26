@@ -10,6 +10,7 @@ import type {
   TradeOffOption,
   VenuePreference,
   PlanChangeLogEntry,
+  PlanChangeDiff,
 } from '../types/event';
 import {
   loadSavedEvents,
@@ -66,6 +67,75 @@ export interface UseEventPlanOptions {
   onSessionExpired?: () => void;
 }
 
+export function computePlanChangeDiff(prev: EventPlan, updated: EventPlan): PlanChangeDiff | null {
+  const details: string[] = [];
+  const prevSummary = calculateBudgetSummary(prev.totalBudget, prev.budgetItems, prev.contingencyRate, prev.guestCount);
+  const updatedSummary = calculateBudgetSummary(updated.totalBudget, updated.budgetItems, updated.contingencyRate, updated.guestCount);
+
+  let utilizationChange: PlanChangeDiff['utilizationChange'] | undefined;
+  if (Math.abs(prevSummary.utilizationPercentage - updatedSummary.utilizationPercentage) >= 0.1) {
+    utilizationChange = {
+      from: prevSummary.utilizationPercentage,
+      to: updatedSummary.utilizationPercentage,
+    };
+    details.push(`Utilization ${prevSummary.utilizationPercentage}% → ${updatedSummary.utilizationPercentage}%`);
+  }
+
+  let budgetChange: PlanChangeDiff['budgetChange'] | undefined;
+  if (prev.totalBudget !== updated.totalBudget) {
+    budgetChange = {
+      from: prev.totalBudget,
+      to: updated.totalBudget,
+      diff: updated.totalBudget - prev.totalBudget,
+    };
+    details.push(`Budget ${formatCurrency(prev.totalBudget)} → ${formatCurrency(updated.totalBudget)}`);
+  }
+
+  let guestChange: PlanChangeDiff['guestChange'] | undefined;
+  if (prev.guestCount !== updated.guestCount) {
+    guestChange = {
+      from: prev.guestCount,
+      to: updated.guestCount,
+      diff: updated.guestCount - prev.guestCount,
+    };
+    details.push(`Guests ${prev.guestCount} → ${updated.guestCount} (${updated.guestCount > prev.guestCount ? '+' : ''}${updated.guestCount - prev.guestCount})`);
+  }
+
+  if (prev.eventDate !== updated.eventDate) {
+    details.push(`Date shifted ${prev.eventDate} → ${updated.eventDate}`);
+  }
+
+  if (prev.venuePreference !== updated.venuePreference) {
+    details.push(`Venue ${prev.venuePreference} → ${updated.venuePreference}`);
+  }
+
+  if (!prevSummary.isOverBudget && updatedSummary.isOverBudget) {
+    const overage = updatedSummary.totalEstimated - updatedSummary.totalBudget;
+    details.push(`New alert: over budget by ${formatCurrency(overage)}`);
+  }
+
+  const prevInsightIds = new Set((prev.decisionInsights || []).map((i) => i.id));
+  const newInsights = (updated.decisionInsights || []).filter(
+    (i) => !prevInsightIds.has(i.id) && (i.type === 'warning' || i.type === 'action_required')
+  );
+  if (newInsights.length > 0) {
+    details.push(`${newInsights.length} new alert${newInsights.length > 1 ? 's' : ''}: ${newInsights.map((i) => i.title).join(', ')}`);
+  }
+
+  if (details.length === 0) return null;
+
+  return {
+    timestamp: new Date().toLocaleTimeString(),
+    summary: details[0] || 'Plan parameters modified',
+    details,
+    utilizationChange,
+    budgetChange,
+    guestChange,
+    newAlertsCount: newInsights.length,
+    newAlertTitles: newInsights.map((i) => i.title),
+  };
+}
+
 export function useEventPlan(options: UseEventPlanOptions = {}) {
   const { cloudSync = false, onSessionExpired } = options;
   const [events, setEvents] = useState<EventPlan[]>(() => loadSavedEvents());
@@ -78,6 +148,8 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationError, setGenerationError] = useState<string | null>(null);
   const [storageError, setStorageError] = useState<string | null>(() => getStorageError());
+  const [lastChangeDiff, setLastChangeDiff] = useState<PlanChangeDiff | null>(null);
+  const clearLastChangeDiff = useCallback(() => setLastChangeDiff(null), []);
 
   // Subscribe to storage quota errors
   useEffect(() => {
@@ -289,11 +361,16 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
           if (evt.id === activeEvent.id) {
             const updated = updater(evt);
             const { insights, missingPrompts } = evaluateDecisionRules(updated);
-            return {
+            const fullyUpdated: EventPlan = {
               ...updated,
               decisionInsights: insights,
               missingInfoPrompts: missingPrompts,
             };
+            const diff = computePlanChangeDiff(evt, fullyUpdated);
+            if (diff) {
+              setLastChangeDiff(diff);
+            }
+            return fullyUpdated;
           }
           return evt;
         })
@@ -1065,5 +1142,7 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
     syncStatus,
     resolveSyncConflict,
     retrySync,
+    lastChangeDiff,
+    clearLastChangeDiff,
   };
 }

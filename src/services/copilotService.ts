@@ -415,7 +415,8 @@ export async function generateCopilotAnswerAsync(
     window.localStorage.getItem('eventwise_ai_offline_mode') === 'true';
 
   if (isOfflineMode || !canCallGemini(customApiKey)) {
-    return generateCopilotAnswer(question, plan);
+    const offlineText = generateCopilotAnswer(question, plan);
+    return `*(Operating in Offline Rule Engine Mode — responses calculated deterministically from your active event plan)*\n\n${offlineText}`;
   }
 
   const apiKey = getActiveApiKey(customApiKey);
@@ -432,13 +433,14 @@ User Question: ${safeQuestion}
 
 STRICT GROUNDING & TRUST DIRECTIVES:
 1. Reference REAL figures from the PLAN SNAPSHOT above (e.g., total budget in ₹, days remaining, guest counts, dietary counts).
-2. DO NOT invent or hallucinate specific vendor business names, phone numbers, email addresses, or unverified claims.
-3. Label all cost recommendations as planning estimates (e.g., "estimated ~₹X, verify with vendors").
-4. For municipal regulations (e.g. 10 PM sound curfews, police loudspeaker permissions, fire safety), state them as guidance and explicitly note: "Check local municipal and police rules as regulations vary by city and jurisdiction."
-5. If the user asks to save money or make an event change, you may suggest ONE concrete action at the end using this exact tag:
+2. Format all financial figures strictly using Indian currency conventions: use ₹ Lakhs and Crores for larger sums (e.g. ₹35.0 Lakhs, ₹1.2 Crores), or ₹ with Indian comma notation (e.g. ₹1,50,000).
+3. DO NOT invent or hallucinate specific vendor business names, phone numbers, email addresses, or unverified claims. Refer only to verified categories or roles present in the snapshot.
+4. Label all cost recommendations as planning estimates (e.g., "estimated ~₹X, verify with vendors").
+5. For municipal regulations (e.g. 10 PM sound curfews, police loudspeaker permissions, fire safety), state them as guidance and explicitly note: "Check local municipal and police rules as regulations vary by city and jurisdiction."
+6. If the user asks to save money or make an event change, you may suggest ONE concrete action at the end using this exact tag:
 [ACTION: {"label":"Descriptive title","actionType":"reduce_budget_item","impactFormatted":"-₹X","description":"Reason","deltaAmount":50000,"targetCategory":"catering"}]
 Valid actionType values: 'reduce_budget_item', 'increase_budget', 'adjust_guest_count', 'shift_date', 'update_venue', 'update_vendor_status'.
-6. Keep your response concise (under 180 words), structured with markdown bullet points. If you do not know something or it is not in the snapshot, state plainly that it is outside your active event data.`;
+7. Keep your response concise (under 180 words), structured with markdown bullet points. If you do not know something or it is not in the snapshot, state plainly that it is outside your active event data.`;
 
   try {
     const result = await requestGeminiContent({
@@ -461,5 +463,5 @@ Valid actionType values: 'reduce_budget_item', 'increase_budget', 'adjust_guest_
     console.warn('GenAI Copilot request failed, using grounded answer:', redactSecrets(errMsg, apiKey));
   }
 
-  return generateCopilotAnswer(question, plan);
+  return `*(Offline Rule Engine Fallback — API unavailable)*\n\n${generateCopilotAnswer(question, plan)}`;
 }

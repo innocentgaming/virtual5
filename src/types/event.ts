@@ -261,3 +261,27 @@ export interface BudgetSummary {
   isActualOverBudget: boolean;
 }
 
+export interface PlanChangeDiff {
+  timestamp: string;
+  summary: string;
+  details: string[];
+  utilizationChange?: {
+    from: number;
+    to: number;
+  };
+  budgetChange?: {
+    from: number;
+    to: number;
+    diff: number;
+  };
+  guestChange?: {
+    from: number;
+    to: number;
+    diff: number;
+  };
+  newAlertsCount?: number;
+  newAlertTitles?: string[];
+}
+
+
+

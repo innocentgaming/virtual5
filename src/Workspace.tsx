@@ -123,6 +123,8 @@ export function Workspace({ mode }: { mode: WorkspaceMode }) {
     syncStatus,
     resolveSyncConflict,
     retrySync,
+    lastChangeDiff,
+    clearLastChangeDiff,
   } = useEventPlan({ cloudSync: mode === 'account', onSessionExpired: refresh });
 
   const [isCreatingNew, setIsCreatingNew] = useState(false);
@@ -515,6 +517,8 @@ export function Workspace({ mode }: { mode: WorkspaceMode }) {
                   onApplyTradeOff={applyTradeOff}
                   onApplyScenario={applyScenarioChange}
                   onUndoLastChange={undoLastChange}
+                  lastChangeDiff={lastChangeDiff}
+                  onClearDiff={clearLastChangeDiff}
                   isGenerating={isGenerating}
                 />
               )}
