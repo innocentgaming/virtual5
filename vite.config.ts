@@ -103,7 +103,6 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/setupTests.ts'],
     testTimeout: 75000,
-    pool: 'threads',
-    maxConcurrency: 5,
+    fileParallelism: false,
   },
 });
