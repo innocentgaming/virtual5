@@ -9,10 +9,12 @@ import {
   Moon,
   Calendar,
   Bot,
+  User as UserIcon,
 } from 'lucide-react';
 import type { EventPlan } from '../../types/event';
 import { Badge, Button } from '../ui';
 import { formatIndianShort } from '../../utils/formatters';
+import { useAuth } from '../../hooks/useAuth';
 
 interface HeaderProps {
   events: EventPlan[];
@@ -39,6 +41,8 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAISettings,
   onOpenCopilot,
 }) => {
+  const { user, openAuthModal, openProfileModal } = useAuth();
+
   const getBadgeVariant = (type: string): 'wedding' | 'birthday' | 'community' => {
     switch (type) {
       case 'wedding':
@@ -216,6 +220,65 @@ export const Header: React.FC<HeaderProps> = ({
         >
           {colorMode === 'dark' ? <Sun size={15} color="#f59e0b" /> : <Moon size={15} />}
         </Button>
+
+        {/* User Authentication Pill / Sign In Option */}
+        {user ? (
+          <button
+            type="button"
+            onClick={openProfileModal}
+            className="header-user-pill"
+            title={`Active User: ${user.name} (${user.roleLabel}) — Click to view profile & collaboration`}
+            aria-label={`User Profile: ${user.name}`}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              background: 'var(--surface-raised)',
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-pill)',
+              padding: '3px 12px 3px 4px',
+              cursor: 'pointer',
+              transition: 'all var(--transition-fast)',
+            }}
+          >
+            <div
+              style={{
+                width: 26,
+                height: 26,
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, var(--accent-primary), #E76F51)',
+                color: '#fff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: 800,
+                fontSize: '0.68rem',
+              }}
+            >
+              {user.initials}
+            </div>
+            <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
+              <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text)' }}>
+                {user.name.split(' ')[0]}
+              </span>
+              <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>
+                {user.role === 'planner' ? 'Pro Planner' : 'Host'}
+              </span>
+            </div>
+          </button>
+        ) : (
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => openAuthModal('login')}
+            leftIcon={<UserIcon size={14} color="var(--accent-primary)" />}
+            title="Sign In or Register for EventWise AI"
+            aria-label="Sign In"
+            id="btn-header-signin"
+          >
+            Sign In
+          </Button>
+        )}
 
         {/* Create New Event Button */}
         <Button

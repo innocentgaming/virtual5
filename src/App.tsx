@@ -36,6 +36,14 @@ const RunOfShowManager = lazyWithPreload(() =>
 const AICopilotDrawer = lazyWithPreload(() =>
   import('./components/copilot/AICopilotDrawer').then((m) => ({ default: m.AICopilotDrawer }))
 );
+const AuthModal = lazyWithPreload(() =>
+  import('./components/auth/AuthModal').then((m) => ({ default: m.AuthModal }))
+);
+const UserProfileModal = lazyWithPreload(() =>
+  import('./components/auth/UserProfileModal').then((m) => ({ default: m.UserProfileModal }))
+);
+import { AuthProvider } from './context/AuthContext';
+import { useAuth } from './hooks/useAuth';
 
 function TabSkeleton() {
   return (
@@ -64,7 +72,7 @@ function TabSkeleton() {
   );
 }
 
-export function App() {
+function MainAppContent() {
   const {
     events,
     activeEvent,
@@ -109,6 +117,13 @@ export function App() {
     return saved === 'dark' ? 'dark' : 'light';
   });
   const [notification, setNotification] = useState<string | null>(null);
+  const {
+    isAuthModalOpen,
+    authModalMode,
+    closeAuthModal,
+    isProfileModalOpen,
+    closeProfileModal,
+  } = useAuth();
 
   // Sync color mode and event theme to document root (html and body) and localStorage
   useEffect(() => {
@@ -215,6 +230,8 @@ export function App() {
         VendorChecklist,
         PersonalizedIdeas,
         AICopilotDrawer,
+        AuthModal,
+        UserProfileModal,
       ];
       let idx = 0;
       const scheduleNext = () => {
@@ -576,8 +593,40 @@ export function App() {
           </div>
         </div>
       </footer>
+
+      {/* Authentication & Profile Modals */}
+      {isAuthModalOpen && (
+        <Suspense fallback={null}>
+          <AuthModal
+            isOpen={isAuthModalOpen}
+            onClose={closeAuthModal}
+            initialMode={authModalMode}
+            onSuccess={(msg) => showToast(msg)}
+          />
+        </Suspense>
+      )}
+
+      {isProfileModalOpen && (
+        <Suspense fallback={null}>
+          <UserProfileModal
+            isOpen={isProfileModalOpen}
+            onClose={closeProfileModal}
+            activeEvent={activeEvent}
+            onSignOutFeedback={(msg) => showToast(msg)}
+            onSwitchPersonaFeedback={(msg) => showToast(msg)}
+          />
+        </Suspense>
+      )}
     </div>
     </ToastProvider>
+  );
+}
+
+export function App() {
+  return (
+    <AuthProvider>
+      <MainAppContent />
+    </AuthProvider>
   );
 }
 

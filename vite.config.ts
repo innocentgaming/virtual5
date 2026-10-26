@@ -91,6 +91,9 @@ export default defineConfig({
           if (id.includes('node_modules/lucide-react/')) {
             return 'vendor-lucide';
           }
+          if (id.includes('src/services/fallbackPlanner') || id.includes('src/services/decisionEngine')) {
+            return 'event-engine';
+          }
         },
       },
     },
@@ -100,6 +103,7 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/setupTests.ts'],
     testTimeout: 75000,
+    pool: 'threads',
     maxConcurrency: 5,
   },
 });
