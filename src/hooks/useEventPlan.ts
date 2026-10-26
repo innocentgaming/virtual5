@@ -52,7 +52,8 @@ export type NavigationTab =
   | 'ideas'
   | 'guests'
   | 'schedule'
-  | 'ai';
+  | 'ai'
+  | 'landing';
 
 export function useEventPlan() {
   const [events, setEvents] = useState<EventPlan[]>(() => loadSavedEvents());

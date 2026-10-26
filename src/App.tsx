@@ -42,6 +42,9 @@ const AuthModal = lazyWithPreload(() =>
 const UserProfileModal = lazyWithPreload(() =>
   import('./components/auth/UserProfileModal').then((m) => ({ default: m.UserProfileModal }))
 );
+const LandingPage = lazyWithPreload(() =>
+  import('./components/landing/LandingPage').then((m) => ({ default: m.LandingPage }))
+);
 import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './hooks/useAuth';
 
@@ -176,6 +179,7 @@ function MainAppContent() {
   // Dynamic document title update per active section
   useEffect(() => {
     const tabTitles: Record<NavigationTab, string> = {
+      landing: 'Home & Features Showcase',
       dashboard: 'Dashboard Overview',
       setup: 'Event Setup',
       budget: 'Budget Planner & Expenses',
@@ -216,6 +220,9 @@ function MainAppContent() {
       case 'setup':
         EventSetupForm.preload();
         break;
+      case 'landing':
+        LandingPage.preload();
+        break;
     }
   }, []);
 
@@ -223,6 +230,7 @@ function MainAppContent() {
   useEffect(() => {
     const prefetchIdle = () => {
       const items = [
+        LandingPage,
         BudgetManager,
         TimelineManager,
         GuestManager,
@@ -302,6 +310,7 @@ function MainAppContent() {
         onExport={exportCurrentPlan}
         onExportCalendar={handleExportCalendar}
         onOpenAISettings={() => setActiveTab('ai')}
+        onNavigateTab={setActiveTab}
         onOpenCopilot={() => {
           AICopilotDrawer.preload();
           setIsCopilotOpen(true);
@@ -428,6 +437,16 @@ function MainAppContent() {
                   isGenerating={isGenerating}
                 />
               )}
+
+              {activeTab === 'landing' && (
+                <LandingPage
+                  activeEvent={activeEvent}
+                  events={events}
+                  onSelectEvent={selectEvent}
+                  onNavigateTab={setActiveTab}
+                  onOpenCopilot={() => setIsCopilotOpen(true)}
+                />
+              )}
             </>
           )}
         </Suspense>
@@ -503,6 +522,14 @@ function MainAppContent() {
 
             {/* Quick Links */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', fontSize: '0.75rem', fontWeight: 600 }}>
+              <a
+                href="#main"
+                onClick={(e) => { e.preventDefault(); setActiveTab('landing'); }}
+                style={{ color: 'var(--accent-primary)', textDecoration: 'none', fontWeight: 700 }}
+              >
+                🌟 Home & Showcase
+              </a>
+              <span>•</span>
               <a
                 href="#main"
                 onClick={(e) => { e.preventDefault(); setActiveTab('budget'); }}

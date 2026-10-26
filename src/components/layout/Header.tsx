@@ -12,6 +12,7 @@ import {
   User as UserIcon,
 } from 'lucide-react';
 import type { EventPlan } from '../../types/event';
+import type { NavigationTab } from '../../hooks/useEventPlan';
 import { Badge, Button } from '../ui';
 import { formatIndianShort } from '../../utils/formatters';
 import { useAuth } from '../../hooks/useAuth';
@@ -27,6 +28,7 @@ interface HeaderProps {
   onExportCalendar: () => void;
   onOpenAISettings: () => void;
   onOpenCopilot: () => void;
+  onNavigateTab?: (tab: NavigationTab) => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -40,6 +42,7 @@ export const Header: React.FC<HeaderProps> = ({
   onExportCalendar,
   onOpenAISettings,
   onOpenCopilot,
+  onNavigateTab,
 }) => {
   const { user, openAuthModal, openProfileModal } = useAuth();
 
@@ -56,7 +59,12 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="header-bar" role="banner">
-      <div className="brand-wrapper">
+      <div
+        className="brand-wrapper"
+        onClick={() => onNavigateTab?.('landing')}
+        style={{ cursor: onNavigateTab ? 'pointer' : 'default' }}
+        title="Click to view Platform Showcase & Landing Page"
+      >
         <div className="brand-logo-icon" aria-hidden="true">
           <Sparkles size={22} />
         </div>
@@ -147,6 +155,21 @@ export const Header: React.FC<HeaderProps> = ({
             ))}
           </select>
         </div>
+
+        {/* Platform Showcase Link */}
+        {onNavigateTab && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onNavigateTab('landing')}
+            leftIcon={<Sparkles size={14} color="var(--accent-primary)" />}
+            title="Explore Public Landing Page, Features & Client Stories"
+            aria-label="Explore Platform Showcase"
+            id="btn-header-showcase"
+          >
+            Showcase
+          </Button>
+        )}
 
         {/* AI Copilot Quick Button */}
         <Button

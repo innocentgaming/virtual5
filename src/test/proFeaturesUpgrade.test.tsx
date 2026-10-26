@@ -7,7 +7,8 @@ import { BudgetManager } from '../components/budget/BudgetManager';
 import { RunOfShowManager } from '../components/schedule/RunOfShowManager';
 import { TimelineManager } from '../components/timeline/TimelineManager';
 import { VendorChecklist } from '../components/vendors/VendorChecklist';
-import { SAMPLE_WEDDING } from '../data/sampleEvents';
+import { LandingPage } from '../components/landing/LandingPage';
+import { SAMPLE_WEDDING, INITIAL_EVENTS } from '../data/sampleEvents';
 import type { BudgetSummary, GuestItem } from '../types/event';
 
 describe('Pro Features Upgrade Suite', () => {
@@ -270,6 +271,42 @@ describe('Pro Features Upgrade Suite', () => {
 
       expect(screen.getByText(/\+₹5,000/i)).toBeInTheDocument();
       expect(screen.getAllByText(/₹1,05,000/i).length).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  describe('LandingPage Public Showcase & Product Experience', () => {
+    it('renders hero title, feature pillars, customer reviews, and FAQ accordion', () => {
+      const onNavigateTab = vi.fn();
+      const onSelectEvent = vi.fn();
+
+      render(
+        <LandingPage
+          activeEvent={SAMPLE_WEDDING}
+          events={INITIAL_EVENTS}
+          onSelectEvent={onSelectEvent}
+          onNavigateTab={onNavigateTab}
+        />
+      );
+
+      // Hero content
+      expect(screen.getByRole('heading', { name: /Every Indian Celebration Deserves Flawless Execution/i })).toBeInTheDocument();
+      expect(screen.getByText(/India’s #1 Cultural & Vedic Celebration Planning Suite/i)).toBeInTheDocument();
+
+      // Launch planner CTA (Hero & Footer)
+      const launchBtns = screen.getAllByRole('button', { name: /Launch EventWise Planner/i });
+      expect(launchBtns.length).toBeGreaterThanOrEqual(2);
+      fireEvent.click(launchBtns[0]);
+      expect(onNavigateTab).toHaveBeenCalledWith('dashboard');
+
+      // Interactive template pills
+      const birthdayTemplateBtn = screen.getByRole('button', { name: /Mumbai/i });
+      fireEvent.click(birthdayTemplateBtn);
+      expect(onSelectEvent).toHaveBeenCalledWith('evt-sample-birthday');
+
+      // Testimonials and FAQ
+      expect(screen.getByText(/Trusted By Hosts Across India/i)).toBeInTheDocument();
+      expect(screen.getByText(/Priya & Rohan Sharma/i)).toBeInTheDocument();
+      expect(screen.getByText(/Frequently Asked Questions/i)).toBeInTheDocument();
     });
   });
 });
