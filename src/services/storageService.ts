@@ -300,6 +300,13 @@ export function importPlanFromJson(jsonString: string): ImportPlanResult {
     };
   }
 
+  if (!isValidEventPlan(parsed)) {
+    return {
+      success: false,
+      error: 'Validation failed: File does not conform to EventPlan schema.',
+    };
+  }
+
   const validation = validateAndSanitizeEventPlan(parsed);
   if (!validation.valid || !validation.plan) {
     return {
