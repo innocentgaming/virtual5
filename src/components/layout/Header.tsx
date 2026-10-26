@@ -3,6 +3,7 @@ import {
   Sparkles,
   Plus,
   Download,
+  Upload,
   Sliders,
   Sun,
   Moon,
@@ -28,6 +29,7 @@ interface HeaderProps {
   onSelectEvent: (id: string) => void;
   onNewEvent: () => void;
   onExport: () => void;
+  onImportPlan?: (jsonStr: string) => void;
   onExportCalendar: () => void;
   onOpenAISettings: () => void;
   onOpenCopilot: () => void;
@@ -46,6 +48,7 @@ export const Header: React.FC<HeaderProps> = ({
   onSelectEvent,
   onNewEvent,
   onExport,
+  onImportPlan,
   onExportCalendar,
   onOpenAISettings,
   onOpenCopilot,
@@ -226,6 +229,37 @@ export const Header: React.FC<HeaderProps> = ({
         >
           Export Plan
         </Button>
+
+        {/* Restore JSON Backup Button */}
+        {onImportPlan && (
+          <label
+            className="ui-button ui-button--secondary ui-button--sm"
+            style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', margin: 0, padding: '0.35rem 0.65rem' }}
+            title="Restore event plan from JSON backup file"
+          >
+            <Upload size={14} aria-hidden="true" />
+            <span className="ui-button__text">Restore JSON</span>
+            <input
+              type="file"
+              accept=".json,application/json"
+              aria-label="Upload JSON event backup"
+              style={{ display: 'none' }}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (evt) => {
+                  const text = evt.target?.result as string;
+                  if (text && onImportPlan) {
+                    onImportPlan(text);
+                  }
+                };
+                reader.readAsText(file);
+                e.target.value = '';
+              }}
+            />
+          </label>
+        )}
 
         {/* Dark / Light Mode Toggle */}
         <Button

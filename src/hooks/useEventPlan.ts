@@ -18,6 +18,7 @@ import {
   loadActiveEventId,
   saveActiveEventId,
   exportPlanAsJson,
+  importPlanFromJson,
   getStorageError,
   subscribeStorageError,
   clearStorageError,
@@ -1099,6 +1100,19 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
     exportPlanAsJson(activeEvent);
   }, [activeEvent]);
 
+  // Import JSON backup
+  const importPlan = useCallback((jsonString: string): { success: boolean; error?: string } => {
+    const result = importPlanFromJson(jsonString);
+    if (!result.success || !result.plan) {
+      return { success: false, error: result.error || 'Failed to parse plan file.' };
+    }
+    const importedPlan = result.plan;
+    setEvents((prev) => [importedPlan, ...prev]);
+    setActiveEventId(importedPlan.id);
+    setActiveTab('dashboard');
+    return { success: true };
+  }, []);
+
   return {
     events,
     activeEvent,
@@ -1133,6 +1147,7 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
     deleteCurrentEvent,
     resetToDefaults,
     exportCurrentPlan,
+    importPlan,
     applyTradeOff,
     undoLastChange,
     applyScenarioChange,

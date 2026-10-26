@@ -115,6 +115,7 @@ export function Workspace({ mode }: { mode: WorkspaceMode }) {
     regenerateRecommendations,
     resetToDefaults,
     exportCurrentPlan,
+    importPlan,
     applyTradeOff,
     undoLastChange,
     applyScenarioChange,
@@ -218,10 +219,10 @@ export function Workspace({ mode }: { mode: WorkspaceMode }) {
     setColorMode((prev) => (prev === 'light' ? 'dark' : 'light'));
   };
 
-  const showToast = (msg: string) => {
+  const showToast = useCallback((msg: string) => {
     setNotification(msg);
     setTimeout(() => setNotification(null), 4000);
-  };
+  }, []);
 
   const handleCreateNewSubmit = async (data: Parameters<typeof createNewEvent>[0], useAI: boolean) => {
     await createNewEvent(data, useAI);
@@ -245,6 +246,15 @@ export function Workspace({ mode }: { mode: WorkspaceMode }) {
     downloadEventCalendar(activeEvent);
     showToast('iCalendar (.ics) file exported with timeline reminders!');
   };
+
+  const handleImportPlan = useCallback((jsonString: string) => {
+    const res = importPlan(jsonString);
+    if (res.success) {
+      showToast('Event plan successfully restored from JSON backup!', 'success');
+    } else {
+      showToast(`Restore failed: ${res.error || 'Corrupted file'}`, 'error');
+    }
+  }, [importPlan, showToast]);
 
   // Dynamic document title update per active section
   useEffect(() => {
@@ -457,6 +467,7 @@ export function Workspace({ mode }: { mode: WorkspaceMode }) {
         onSelectEvent={selectEvent}
         onNewEvent={() => setIsCreatingNew(true)}
         onExport={exportCurrentPlan}
+        onImportPlan={handleImportPlan}
         onExportCalendar={handleExportCalendar}
         onOpenAISettings={() => setActiveTab('ai')}
         onOpenCopilot={() => {
