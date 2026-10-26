@@ -400,9 +400,23 @@ export function generateCopilotAnswer(question: string, plan: EventPlan): string
   );
 }
 
+interface CopilotCacheEntry {
+  answer: string;
+  timestamp: number;
+}
+const copilotMemoryCache = new Map<string, CopilotCacheEntry>();
+const COPILOT_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes cache TTL
+
+/**
+ * Clears the in-memory cache of copilot responses.
+ */
+export function clearCopilotCache(): void {
+  copilotMemoryCache.clear();
+}
+
 /**
  * Asynchronously generates an AI Copilot response using Gemini with strict grounding in the plan snapshot,
- * or gracefully returns the deterministic response.
+ * with deterministic offline fallback and input hash response caching.
  */
 export async function generateCopilotAnswerAsync(
   question: string,
@@ -419,8 +433,14 @@ export async function generateCopilotAnswerAsync(
     return `*(Operating in Offline Rule Engine Mode — responses calculated deterministically from your active event plan)*\n\n${offlineText}`;
   }
 
-  const apiKey = getActiveApiKey(customApiKey);
   const safeQuestion = sanitizeString(question, 300, 'Event planning query');
+  const cacheKey = `${safeQuestion.toLowerCase().trim()}_${plan.id}_${plan.totalBudget}_${plan.guestCount}_${(plan.budgetItems || []).length}_${plan.eventDate}`;
+  const cached = copilotMemoryCache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < COPILOT_CACHE_TTL_MS) {
+    return cached.answer;
+  }
+
+  const apiKey = getActiveApiKey(customApiKey);
   const planSnapshot = buildPlanSnapshot(plan);
 
   const prompt = `You are EventWise AI, an expert event planning copilot grounded in Indian event management.
@@ -452,6 +472,7 @@ Valid actionType values: 'reduce_budget_item', 'increase_budget', 'adjust_guest_
     });
 
     if (result.success && result.text) {
+      copilotMemoryCache.set(cacheKey, { answer: result.text, timestamp: Date.now() });
       return result.text;
     }
 
@@ -463,5 +484,7 @@ Valid actionType values: 'reduce_budget_item', 'increase_budget', 'adjust_guest_
     console.warn('GenAI Copilot request failed, using grounded answer:', redactSecrets(errMsg, apiKey));
   }
 
-  return `*(Offline Rule Engine Fallback — API unavailable)*\n\n${generateCopilotAnswer(question, plan)}`;
+  const fallbackAnswer = `*(Offline Rule Engine Fallback — API unavailable)*\n\n${generateCopilotAnswer(question, plan)}`;
+  copilotMemoryCache.set(cacheKey, { answer: fallbackAnswer, timestamp: Date.now() });
+  return fallbackAnswer;
 }
