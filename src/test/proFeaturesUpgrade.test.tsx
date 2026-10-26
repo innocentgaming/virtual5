@@ -5,6 +5,8 @@ import { WhatsAppInviteModal } from '../components/guests/WhatsAppInviteModal';
 import { TableSeatingPlanner } from '../components/guests/TableSeatingPlanner';
 import { BudgetManager } from '../components/budget/BudgetManager';
 import { RunOfShowManager } from '../components/schedule/RunOfShowManager';
+import { TimelineManager } from '../components/timeline/TimelineManager';
+import { VendorChecklist } from '../components/vendors/VendorChecklist';
 import { SAMPLE_WEDDING } from '../data/sampleEvents';
 import type { BudgetSummary, GuestItem } from '../types/event';
 
@@ -218,6 +220,56 @@ describe('Pro Features Upgrade Suite', () => {
       expect(screen.getAllByText(/Noise Pollution \(Regulation and Control\) Rules, 2000/i).length).toBeGreaterThanOrEqual(1);
       expect(screen.getByText(/Sound Vendor Decibel Undertaking:/i)).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /Copy Letter Draft/i })).toBeInTheDocument();
+    });
+  });
+
+  describe('TimelineManager Vedic Samagri Kit', () => {
+    it('opens Vedic Ritual & Puja Samagri Kit modal and toggles procurement checklist items', () => {
+      render(
+        <TimelineManager
+          plan={SAMPLE_WEDDING}
+          onToggleTask={vi.fn()}
+          onAddTask={vi.fn()}
+          onDeleteTask={vi.fn()}
+        />
+      );
+
+      const samagriBtn = screen.getByRole('button', { name: /Puja Samagri Kit/i });
+      fireEvent.click(samagriBtn);
+
+      expect(screen.getByText(/Vedic Ritual & Puja Samagri Kit/i)).toBeInTheDocument();
+      expect(screen.getByText(/1. Mandap & Kalash Sthapana/i)).toBeInTheDocument();
+      expect(screen.getByText(/Pure Desi Ghee \(Cow Ghee\)/i)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Copy for WhatsApp/i })).toBeInTheDocument();
+    });
+  });
+
+  describe('VendorChecklist GST & TDS Estimator', () => {
+    it('opens GST & TDS Estimator modal and computes tax breakdowns accurately', () => {
+      render(
+        <VendorChecklist
+          plan={SAMPLE_WEDDING}
+          onUpdateVendor={vi.fn()}
+          onAddVendor={vi.fn()}
+        />
+      );
+
+      const gstBtn = screen.getByRole('button', { name: /GST & TDS Estimator/i });
+      fireEvent.click(gstBtn);
+
+      expect(screen.getByText(/Indian Event Vendor GST & TDS Estimator/i)).toBeInTheDocument();
+      expect(screen.getByText(/Contractor Base Service Value:/i)).toBeInTheDocument();
+
+      // Default is ₹1,00,000 base with 18% GST = ₹18,000 GST, Total ₹1,18,000
+      expect(screen.getByText(/\+₹18,000/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/₹1,18,000/i).length).toBeGreaterThanOrEqual(1);
+
+      // Change slab to 5% composite catering
+      const slabSelect = screen.getByLabelText(/Applicable GST Slab/i);
+      fireEvent.change(slabSelect, { target: { value: '5' } });
+
+      expect(screen.getByText(/\+₹5,000/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/₹1,05,000/i).length).toBeGreaterThanOrEqual(1);
     });
   });
 });

@@ -10,6 +10,7 @@ import {
   Lock,
   Check,
   Sparkles,
+  Copy,
 } from 'lucide-react';
 import type { TaskItem, TaskCategory, TaskPriority, EventPlan } from '../../types/event';
 import { Card, CardHeader, Button, Badge, Modal, EmptyState, useToast } from '../ui';
@@ -57,6 +58,39 @@ const PHASES = [
     description: 'Mandap havan setup, sound curfew compliance, and rehearsal coordination.',
   },
 ] as const;
+
+interface SamagriItem {
+  id: string;
+  name: string;
+  quantity: string;
+  category: 'mandap' | 'havan' | 'kanyadaan' | 'swagat';
+}
+
+const DEFAULT_SAMAGRI_ITEMS: SamagriItem[] = [
+  // Mandap & Kalash Sthapana
+  { id: 'sm-1', name: 'Copper or Brass Kalash', quantity: '1 pc', category: 'mandap' },
+  { id: 'sm-2', name: 'Fresh Green Coconut with husk (Nariyal)', quantity: '2 pcs', category: 'mandap' },
+  { id: 'sm-3', name: 'Fresh Mango Leaves (Aam ke Patte)', quantity: '11 pcs', category: 'mandap' },
+  { id: 'sm-4', name: 'Mauli / Rakshasutra Red Sacred Thread', quantity: '2 rolls', category: 'mandap' },
+  { id: 'sm-5', name: 'Betel Nuts (Supari) & Betel Leaves (Paan)', quantity: '21 pcs each', category: 'mandap' },
+
+  // Havan & Pheras
+  { id: 'sm-6', name: 'Pure Desi Ghee (Cow Ghee)', quantity: '2 kg', category: 'havan' },
+  { id: 'sm-7', name: 'Dry Havan Samagri Herbs & Navgraha Wood', quantity: '1 kg packet', category: 'havan' },
+  { id: 'sm-8', name: 'Camphor Tablets (Bhimseni Kapoor)', quantity: '100g', category: 'havan' },
+  { id: 'sm-9', name: 'Black Sesame Seeds (Kala Til) & Barley (Jau)', quantity: '250g each', category: 'havan' },
+  { id: 'sm-10', name: 'Janeu (Sacred Cotton Thread)', quantity: '5 pcs', category: 'havan' },
+
+  // Kanyadaan & Sindoor Daan
+  { id: 'sm-11', name: 'Pure Sindoor / Kumkum & Haldi Ganth (Turmeric roots)', quantity: '50g + 5 pcs', category: 'kanyadaan' },
+  { id: 'sm-12', name: 'Sacred Gangajal Bottle', quantity: '1 bottle', category: 'kanyadaan' },
+  { id: 'sm-13', name: 'Silver Shagun Coin (Chandi ka Sikka)', quantity: '1 pc', category: 'kanyadaan' },
+  { id: 'sm-14', name: 'Akshat (Unbroken White Rice grains with turmeric)', quantity: '500g', category: 'kanyadaan' },
+
+  // Swagat & Varmala
+  { id: 'sm-15', name: 'Fresh Rose & Jasmine Varmalas (in ice box storage)', quantity: '2 garlands', category: 'swagat' },
+  { id: 'sm-16', name: 'Fresh Rose Petal Baskets (Pushp Varsha for Pheras)', quantity: '5 baskets', category: 'swagat' },
+];
 
 interface TaskNodeItemProps {
   task: TaskItem;
@@ -286,6 +320,52 @@ export const TimelineManager: React.FC<TimelineManagerProps> = ({
 
   const addTaskButtonRef = useRef<HTMLButtonElement>(null);
 
+  // Vedic Samagri Kit states
+  const [showSamagriModal, setShowSamagriModal] = useState(false);
+  const [checkedSamagri, setCheckedSamagri] = useState<Record<string, boolean>>({});
+  const [copiedSamagri, setCopiedSamagri] = useState(false);
+
+  const toggleSamagri = (id: string) => {
+    setCheckedSamagri((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
+  const samagriPreparedCount = useMemo(() => {
+    return DEFAULT_SAMAGRI_ITEMS.filter((item) => checkedSamagri[item.id]).length;
+  }, [checkedSamagri]);
+
+  const samagriListText = useMemo(() => {
+    let out = `🪔 Vedic Wedding Ritual & Puja Samagri Checklist\nEvent: ${plan.title || 'Wedding'}\nDate: ${plan.eventDate} | Venue: ${plan.venuePreference.replace(/_/g, ' ')}\n\n`;
+
+    const categories: Record<string, string> = {
+      mandap: '1. MANDAP & KALASH STHAPANA',
+      havan: '2. HAVAN KUND & SAPTAPADI PHERAS',
+      kanyadaan: '3. KANYADAAN & SINDOOR DAAN',
+      swagat: '4. VARMALA & SWAGAT PUSHP VARSHA',
+    };
+
+    Object.entries(categories).forEach(([catKey, catTitle]) => {
+      out += `${catTitle}:\n`;
+      DEFAULT_SAMAGRI_ITEMS.filter((i) => i.category === catKey).forEach((item) => {
+        const isReady = checkedSamagri[item.id] ? '✓ [Ready]' : '○ [Pending]';
+        out += `  ${isReady} ${item.name} (${item.quantity})\n`;
+      });
+      out += '\n';
+    });
+
+    out += `*Generated via EventWise AI Puja Assistant*`;
+    return out;
+  }, [plan, checkedSamagri]);
+
+  const handleCopySamagri = () => {
+    navigator.clipboard.writeText(samagriListText);
+    setCopiedSamagri(true);
+    toast.showToast('Samagri checklist copied for WhatsApp / Pandit Ji! 📋', 'success');
+    setTimeout(() => setCopiedSamagri(false), 2500);
+  };
+
   // Date horizon calculations
   const { today, daysUntilEvent, isPastEvent, isShortNotice } = useMemo(() => {
     const t = new Date();
@@ -471,16 +551,27 @@ export const TimelineManager: React.FC<TimelineManagerProps> = ({
           icon={<CalendarDays size={20} color="var(--accent-primary)" />}
           subtitle={`Phased milestones relative to celebration date (${plan.eventDate} in ${plan.city}).`}
           action={
-            <Button
-              ref={addTaskButtonRef}
-              variant="primary"
-              size="sm"
-              onClick={() => setShowAddModal(true)}
-              leadingIcon={<Plus size={16} />}
-              id="btn-add-timeline-task"
-            >
-              Add Task
-            </Button>
+            <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowSamagriModal(true)}
+                leadingIcon={<Sparkles size={14} />}
+                id="btn-vedic-samagri"
+              >
+                Puja Samagri Kit
+              </Button>
+              <Button
+                ref={addTaskButtonRef}
+                variant="primary"
+                size="sm"
+                onClick={() => setShowAddModal(true)}
+                leadingIcon={<Plus size={16} />}
+                id="btn-add-timeline-task"
+              >
+                Add Task
+              </Button>
+            </div>
           }
         />
 
@@ -748,6 +839,130 @@ export const TimelineManager: React.FC<TimelineManagerProps> = ({
             </div>
           </div>
         </form>
+      </Modal>
+
+      {/* =====================================================================
+          VEDIC RITUAL & PUJA SAMAGRI CHECKLIST MODAL
+          ===================================================================== */}
+      <Modal
+        isOpen={showSamagriModal}
+        onClose={() => setShowSamagriModal(false)}
+        title="Vedic Ritual & Puja Samagri Kit"
+        subtitle="Complete checklist for Mandap, Havan Kund, Kanyadaan & Varmala ceremonies."
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+          {/* Header Summary & WhatsApp Copy */}
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: 'var(--space-3) var(--space-4)',
+              background: 'var(--surface-subtle)',
+              borderRadius: 'var(--radius-md)',
+              border: '1px solid var(--border)',
+              flexWrap: 'wrap',
+              gap: 'var(--space-2)',
+            }}
+          >
+            <div>
+              <div style={{ fontSize: 'var(--text-sm)', fontWeight: 700 }}>
+                Procurement Readiness: {samagriPreparedCount} of {DEFAULT_SAMAGRI_ITEMS.length} items procured
+              </div>
+              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginTop: '2px' }}>
+                Handover checklist to Pandit Ji or puja bhandaar store.
+              </div>
+            </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCopySamagri}
+              leadingIcon={copiedSamagri ? <Check size={14} color="var(--color-success)" /> : <Copy size={14} />}
+              id="btn-copy-samagri"
+            >
+              {copiedSamagri ? 'Copied to Clipboard!' : 'Copy for WhatsApp'}
+            </Button>
+          </div>
+
+          {/* Progress Bar */}
+          <div style={{ width: '100%', height: '6px', background: 'var(--border)', borderRadius: 'var(--radius-pill)', overflow: 'hidden' }}>
+            <div
+              style={{
+                width: `${(samagriPreparedCount / DEFAULT_SAMAGRI_ITEMS.length) * 100}%`,
+                height: '100%',
+                background: 'var(--accent-primary)',
+                transition: 'width 0.2s ease',
+              }}
+            />
+          </div>
+
+          {/* Categorized Checklists */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', maxHeight: '380px', overflowY: 'auto', paddingRight: 'var(--space-1)' }}>
+            {[
+              { key: 'mandap', title: '1. Mandap & Kalash Sthapana', badge: 'Sacred Altar' },
+              { key: 'havan', title: '2. Havan Kund & Saptapadi Pheras', badge: 'Sacred Fire' },
+              { key: 'kanyadaan', title: '3. Kanyadaan & Sindoor Daan', badge: 'Main Rituals' },
+              { key: 'swagat', title: '4. Varmala & Swagat Pushp Varsha', badge: 'Procession' },
+            ].map((section) => {
+              const items = DEFAULT_SAMAGRI_ITEMS.filter((i) => i.category === section.key);
+              return (
+                <div key={section.key} style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: 'var(--space-3)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
+                    <h4 style={{ margin: 0, fontSize: 'var(--text-sm)', fontWeight: 700 }}>
+                      {section.title}
+                    </h4>
+                    <Badge variant="neutral" size="sm">{section.badge}</Badge>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                    {items.map((item) => {
+                      const isChecked = !!checkedSamagri[item.id];
+                      return (
+                        <label
+                          key={item.id}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            padding: '6px 10px',
+                            borderRadius: 'var(--radius-sm)',
+                            background: isChecked ? 'rgba(34, 197, 94, 0.08)' : 'var(--surface)',
+                            border: isChecked ? '1px solid rgba(34, 197, 94, 0.3)' : '1px solid var(--border)',
+                            cursor: 'pointer',
+                            fontSize: 'var(--text-xs)',
+                            transition: 'all 0.15s ease',
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={() => toggleSamagri(item.id)}
+                              style={{ width: '15px', height: '15px', cursor: 'pointer' }}
+                            />
+                            <span style={{ textDecoration: isChecked ? 'line-through' : 'none', color: isChecked ? 'var(--text-muted)' : 'var(--text)', fontWeight: isChecked ? 500 : 600 }}>
+                              {item.name}
+                            </span>
+                          </div>
+                          <Badge variant={isChecked ? 'success' : 'neutral'} size="sm">
+                            {item.quantity}
+                          </Badge>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', marginTop: 'var(--space-1)' }}>
+            <Button variant="primary" size="md" onClick={() => setShowSamagriModal(false)}>
+              Close Checklist
+            </Button>
+          </div>
+        </div>
       </Modal>
     </div>
   );

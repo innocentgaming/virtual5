@@ -13,6 +13,7 @@ import {
   Sparkles,
   Building2,
   Star,
+  Calculator,
 } from 'lucide-react';
 import type { VendorItem, VendorStatus, VendorCategory, EventPlan } from '../../types/event';
 import { formatCurrency, formatIndianShort } from '../../utils/formatters';
@@ -105,6 +106,27 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
   const [newQuestions, setNewQuestions] = useState('');
 
   const addVendorBtnRef = useRef<HTMLButtonElement>(null);
+
+  // Indian Event GST & Section 194C TDS Estimator
+  const [showGstModal, setShowGstModal] = useState(false);
+  const [gstBaseQuote, setGstBaseQuote] = useState<number>(100000);
+  const [gstRate, setGstRate] = useState<number>(18);
+  const [tdsRate, setTdsRate] = useState<number>(0);
+
+  const gstBreakdown = useMemo(() => {
+    const base = Math.max(0, isNaN(gstBaseQuote) ? 0 : gstBaseQuote);
+    const gstAmount = Math.round((base * gstRate) / 100);
+    const invoiceTotal = base + gstAmount;
+    const tdsAmount = Math.round((base * tdsRate) / 100);
+    const netPayable = invoiceTotal - tdsAmount;
+    return {
+      base,
+      gstAmount,
+      invoiceTotal,
+      tdsAmount,
+      netPayable,
+    };
+  }, [gstBaseQuote, gstRate, tdsRate]);
 
   const vendors = useMemo(() => plan.vendors || [], [plan.vendors]);
 
@@ -205,16 +227,27 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
           icon={<Users2 size={20} color="var(--accent-primary)" />}
           subtitle="Track contractor outreach, compare quotes, and review specialized interview cues."
           action={
-            <Button
-              ref={addVendorBtnRef}
-              variant="primary"
-              size="sm"
-              onClick={() => setShowAddModal(true)}
-              leadingIcon={<Plus size={15} />}
-              id="btn-add-vendor-modal"
-            >
-              Add Vendor Category
-            </Button>
+            <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowGstModal(true)}
+                leadingIcon={<Calculator size={15} />}
+                id="btn-open-gst-calc"
+              >
+                GST & TDS Estimator
+              </Button>
+              <Button
+                ref={addVendorBtnRef}
+                variant="primary"
+                size="sm"
+                onClick={() => setShowAddModal(true)}
+                leadingIcon={<Plus size={15} />}
+                id="btn-add-vendor-modal"
+              >
+                Add Vendor Category
+              </Button>
+            </div>
           }
         />
 
@@ -683,6 +716,127 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
             </Button>
           </div>
         </form>
+      </Modal>
+
+      {/* =====================================================================
+          6. INDIAN EVENT GST & SECTION 194C TDS ESTIMATOR MODAL
+          ===================================================================== */}
+      <Modal
+        isOpen={showGstModal}
+        onClose={() => setShowGstModal(false)}
+        title="Indian Event Vendor GST & TDS Estimator"
+        subtitle="Calculate net payable, GST rates (5% vs 18%), and Section 194C TDS withholding."
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+          <div className="alert-box alert-info" role="status">
+            <ShieldCheck size={20} style={{ flexShrink: 0 }} />
+            <div style={{ fontSize: 'var(--text-xs)', lineHeight: 1.5 }}>
+              Standard statutory taxation for events: Standalone catering attracts <strong>5% GST</strong> (without ITC). Photography, decor, venue, and sound equipment attract <strong>18% GST</strong>. Section 194C TDS applies when paying contractors via commercial accounts.
+            </div>
+          </div>
+
+          <div className="grid-cols-2">
+            <div className="form-group">
+              <label htmlFor="gst-base" className="form-label">
+                <span>Agreed Base Contractor Quote (₹) *</span>
+              </label>
+              <input
+                id="gst-base"
+                type="number"
+                min="0"
+                step="1000"
+                className="form-control"
+                value={gstBaseQuote}
+                onChange={(e) => setGstBaseQuote(Math.max(0, parseInt(e.target.value, 10) || 0))}
+                placeholder="100000"
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="gst-slab" className="form-label">
+                <span>Applicable GST Slab</span>
+              </label>
+              <select
+                id="gst-slab"
+                className="form-control"
+                value={gstRate}
+                onChange={(e) => setGstRate(parseInt(e.target.value, 10))}
+              >
+                <option value={18}>18% — Photography, Decor, DJ & Sound, Star Hotels</option>
+                <option value={5}>5% — Standalone Caterer / Halwai (Composite Scheme)</option>
+                <option value={0}>0% — Religious Ceremonies / Pandit Ji (Exempt)</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="tds-slab" className="form-label">
+              <span>Section 194C TDS Withholding (if contracting via Business Entity)</span>
+            </label>
+            <select
+              id="tds-slab"
+              className="form-control"
+              value={tdsRate}
+              onChange={(e) => setTdsRate(parseInt(e.target.value, 10))}
+            >
+              <option value={0}>0% — Private Individual / Personal Family Booking (No TDS required)</option>
+              <option value={1}>1% — Individual Contractor / Sole Proprietorship (Section 194C)</option>
+              <option value={2}>2% — Corporate Company / Partnership Firm / LLP (Section 194C)</option>
+            </select>
+          </div>
+
+          {/* Real-time Calculation Cards */}
+          <div style={{ background: 'var(--surface-subtle)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-4)', border: '1px solid var(--border)' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-sm)' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Contractor Base Service Value:</span>
+                <span className="tabular-nums" style={{ fontWeight: 600 }}>{formatCurrency(gstBreakdown.base)}</span>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-sm)' }}>
+                <span style={{ color: 'var(--text-muted)' }}>
+                  GST Added ({gstRate}% — {gstRate > 0 ? `${gstRate / 2}% CGST + ${gstRate / 2}% SGST` : 'Exempt'}):
+                </span>
+                <span className="tabular-nums" style={{ fontWeight: 600, color: 'var(--color-warning-text)' }}>
+                  +{formatCurrency(gstBreakdown.gstAmount)}
+                </span>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-sm)', borderTop: '1px solid var(--border)', paddingTop: 'var(--space-2)', fontWeight: 700 }}>
+                <span>Gross Tax Invoice Total:</span>
+                <span className="tabular-nums">{formatCurrency(gstBreakdown.invoiceTotal)}</span>
+              </div>
+
+              {gstBreakdown.tdsAmount > 0 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-sm)', color: 'var(--color-danger)' }}>
+                  <span>Less TDS Deducted ({tdsRate}% under Sec 194C):</span>
+                  <span className="tabular-nums">-{formatCurrency(gstBreakdown.tdsAmount)}</span>
+                </div>
+              )}
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', borderTop: '2px solid var(--border)', paddingTop: 'var(--space-2)', marginTop: 'var(--space-1)' }}>
+                <div>
+                  <span style={{ fontSize: 'var(--text-base)', fontWeight: 800, color: 'var(--text)' }}>
+                    Net Bank Transfer / Cheque Payable:
+                  </span>
+                  <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                    Amount credited to vendor's verified bank account
+                  </div>
+                </div>
+                <span className="tabular-nums" style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--accent-primary)' }}>
+                  {formatCurrency(gstBreakdown.netPayable)}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
+            <Button variant="primary" size="md" onClick={() => setShowGstModal(false)}>
+              Done
+            </Button>
+          </div>
+        </div>
       </Modal>
     </div>
   );
