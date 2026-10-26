@@ -4,7 +4,7 @@
 [![React](https://img.shields.io/badge/React-19.0.0-61DAFB?style=flat-square&logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8.0-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![Vite](https://img.shields.io/badge/Vite-8.3.5-646CFF?style=flat-square&logo=vite)](https://vitejs.dev/)
-[![Tests](https://img.shields.io/badge/Tests-127%2F127%20Passing%20(100%25)-brightgreen?style=flat-square&logo=vitest)](https://vitest.dev/)
+[![Tests](https://img.shields.io/badge/Tests-171%2F171%20Passing%20(100%25)-brightgreen?style=flat-square&logo=vitest)](https://vitest.dev/)
 [![Linter](https://img.shields.io/badge/Oxlint-0%20Warnings%20%2F%200%20Errors-success?style=flat-square)](https://oxc.rs/)
 [![Accessibility](https://img.shields.io/badge/WCAG-AA%20Compliant-blueviolet?style=flat-square)](https://www.w3.org/WAI/standards-guidelines/wcag/)
 [![Currency](https://img.shields.io/badge/Currency-INR%20(%E2%82%B9)%20en--IN-orange?style=flat-square)](#)
@@ -39,7 +39,7 @@ An intelligent, full-stack, personalized event planning assistant engineered spe
 | **Dynamic Constraints & Chaos Trade-offs** ([17:24](https://www.youtube.com/watch?v=fdi63eSyyYM&t=1044)) | Handle unexpected changes (e.g. caterer raises price 20%) with concrete trade-off recommendations; avoid fabricated vendor info. | • `rule-vendor-cost-spike` detects actual quote escalations and offers 2–3 quantified trade-offs in ₹ with 1-click `Apply` and `Undo`.<br>• Zero hallucination: Actionable samagri checklists and interview guides. | [`decisionEngine.ts`](file:///d:/challege5/src/services/decisionEngine.ts), [`ScenarioChangePanel.tsx`](file:///d:/challege5/src/components/scenarios/ScenarioChangePanel.tsx), [`scenarioChangeLoop.test.ts`](file:///d:/challege5/src/test/scenarioChangeLoop.test.ts) |
 | **Target Persona Selection** ([26:04](https://www.youtube.com/watch?v=fdi63eSyyYM&t=1564)) | Focus on clear user personas rather than cramming unrelated features. | 1. **Destination Wedding**: Aarav & Ananya (Jaipur, ₹35 Lakhs, 350 guests, Vedic Muhurats, Baraat curfew).<br>2. **Milestone Birthday**: Rohan (Mumbai, ₹3.5 Lakhs, 80 guests, Bollywood rooftop).<br>3. **Community Festival**: Diwali & Dandiya Mela (Bengaluru, ₹6.5 Lakhs, 600 guests, eco-friendly prasad). | [`sampleEvents.ts`](file:///d:/challege5/src/data/sampleEvents.ts), [`fallbackPlanner.ts`](file:///d:/challege5/src/services/fallbackPlanner.ts), [`fallbackPlanner.test.ts`](file:///d:/challege5/src/test/fallbackPlanner.test.ts) |
 | **Code Quality & Security** ([08:15](https://www.youtube.com/watch?v=fdi63eSyyYM&t=495), [08:27](https://www.youtube.com/watch?v=fdi63eSyyYM&t=507)) | Automated evaluator heavily penalizes hardcoded secrets, poor structure, and bloated repos. | • **0 secrets in Git / code** (API keys loaded in-memory or via serverless proxy).<br>• **0 linter errors** (`oxlint`).<br>• **Repository Size**: **~410 KiB** (well below 10 MB ceiling).<br>• Single-branch governance (`main`). | [`securityHardening.test.tsx`](file:///d:/challege5/src/test/securityHardening.test.tsx), `npm run lint` (0 errors) |
-| **Automated Testing** ([08:15](https://www.youtube.com/watch?v=fdi63eSyyYM&t=495)) | Automated tests for budget math, edge cases, negative numbers, overdue tasks, and fallback resilience. | • **127 / 127 tests passing (100%)** across 23 test files (`vitest`).<br>• Covers budget math, negative/NaN inputs, vendor spikes, timeline pacing, storage migration, RFC 5545 iCal escaping, and security hardening. | [`npm test`](file:///d:/challege5/package.json) (127 passing tests) |
+| **Automated Testing** ([08:15](https://www.youtube.com/watch?v=fdi63eSyyYM&t=495)) | Automated tests for budget math, edge cases, negative numbers, overdue tasks, and fallback resilience. | • **171 / 171 tests passing (100%)** across 28 test files (`vitest`).<br>• Covers budget math, negative/NaN inputs, vendor spikes, date compression, timeline pacing, storage migration, RFC 5545 iCal escaping, and security hardening. | [`npm test`](file:///d:/challege5/package.json) (171 passing tests) |
 | **Video Mandate** ([03:30](https://www.youtube.com/watch?v=fdi63eSyyYM&t=210), [45:06](https://www.youtube.com/watch?v=fdi63eSyyYM&t=2706)) | Screen recording of the working web app so evaluators can verify features even if API credits expire. | • Complete 90–120 second screen navigation guide provided in [`docs/DEMO.md`](file:///d:/challege5/docs/DEMO.md).<br>• Fully reproducible offline with network disconnected. | [`docs/DEMO.md`](file:///d:/challege5/docs/DEMO.md) |
 | **Web Deployment Only** ([04:42](https://www.youtube.com/watch?v=fdi63eSyyYM&t=282), [07:33](https://www.youtube.com/watch?v=fdi63eSyyYM&t=453)) | Delivered as a responsive web app (no Android/iOS APKs). | Built on React 19 + TypeScript + Vite. 100% responsive for desktop, tablet, and mobile. | [`App.tsx`](file:///d:/challege5/src/App.tsx), [`vite.config.ts`](file:///d:/challege5/vite.config.ts) |
 
@@ -136,10 +136,13 @@ flowchart TD
 src/
 ├── types/
 │   └── event.ts             # Domain models (EventPlan, BudgetItem, TaskItem, VendorItem, GuestItem, ScheduleItem, ScenarioChange, DecisionInsight)
+├── constants/
+│   └── rulesConfig.ts       # Centralized business thresholds (250 guests, 14 days, 10 PM curfew, Jain cost ratios)
 ├── services/
+│   ├── rulesRegistry.ts     # Pure modular registry of 12 named decision rules (id, severity, evaluate, trade-offs)
 │   ├── decisionEngine.ts    # Business rule engine, budget math, timeline auditor, Jain dietary & Baraat curfew rules
 │   ├── fallbackPlanner.ts   # Deterministic Indian planning engine with tiered recommendations & default schedules/guests
-│   ├── aiPlanner.ts         # Multi-model Gemini API integration (flash-latest -> 3.8-flash -> 2.5-flash-lite) with schema validation
+│   ├── aiPlanner.ts         # Multi-model Gemini API integration (gemini-1.5-flash -> gemini-2.5-flash-lite) with schema validation
 │   ├── geminiClient.ts      # Hardened HTTP client with header authentication, credential redaction & timeout controls
 │   ├── calendarService.ts   # RFC 5545 iCalendar (.ics) generation and download service with VALARM triggers
 │   ├── copilotService.ts    # Grounded AI Copilot assistant with contextual recommendations & deterministic fallback engine
