@@ -2068,5 +2068,240 @@ th, td {
   }
 }
 
+/* =========================================================================
+   DEMO SHOWCASE BAR & PERSONA SWITCHER
+   ========================================================================= */
+.demo-showcase-bar {
+  background: var(--surface-raised);
+  border-bottom: 1px solid var(--border);
+  padding: 0.5rem 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+.demo-showcase-bar__content {
+  max-width: 1380px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.demo-showcase-bar__left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.demo-badge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-subtle);
+  color: var(--accent-primary);
+  border: 1px solid var(--accent-primary);
+}
+.demo-showcase-bar__right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.demo-tour-launch-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: linear-gradient(135deg, var(--accent-primary) 0%, #b45309 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 0.4rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(180, 83, 9, 0.25);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+.demo-tour-launch-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(180, 83, 9, 0.35);
+}
+.demo-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 0.35rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.demo-action-btn:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  background: var(--surface-subtle);
+}
+.demo-save-link {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--accent-primary);
+  padding: 0.35rem 0.6rem;
+  text-decoration: none;
+}
+.demo-save-link:hover {
+  text-decoration: underline;
+}
+
+/* =========================================================================
+   PULSE & TOUR KEYFRAME ANIMATIONS
+   ========================================================================= */
+@keyframes pulseHighlight {
+  0% {
+    box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.4);
+    border-color: var(--accent-primary);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(217, 119, 6, 0);
+    border-color: var(--accent-primary);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(217, 119, 6, 0);
+  }
+}
+.dashboard-pulse-highlight {
+  animation: pulseHighlight 1.2s ease-out;
+}
+
+@keyframes tourSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.tour-card {
+  animation: tourSlideUp 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* =========================================================================
+   RESPONSIVE MOBILE BOTTOM TAB BAR (<= 768px)
+   ========================================================================= */
+.mobile-bottom-nav {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    background: var(--surface-raised);
+    border-top: 1px solid var(--border);
+    z-index: 50;
+    justify-content: space-around;
+    align-items: center;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.08);
+  }
+  .mobile-bottom-nav__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 4px;
+    gap: 2px;
+    cursor: pointer;
+    flex: 1;
+    transition: color var(--transition-fast);
+  }
+  .mobile-bottom-nav__item.active {
+    color: var(--accent-primary);
+    font-weight: 700;
+  }
+  .mobile-bottom-nav__item--copilot {
+    color: var(--accent-primary);
+  }
+  body {
+    padding-bottom: 60px;
+  }
+}
+
+/* =========================================================================
+   EXECUTIVE PDF PRINT STYLESHEET (@media print)
+   ========================================================================= */
+@media print {
+  @page {
+    margin: 1.5cm;
+    size: A4 portrait;
+  }
+  body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    padding-bottom: 0 !important;
+  }
+  .demo-showcase-bar,
+  .header,
+  .header-container,
+  .mobile-bottom-nav,
+  .tour-overlay,
+  .demo-banner,
+  .skip-link,
+  #tour-chaos-bar,
+  .copilot-drawer-container,
+  footer,
+  button,
+  input[type="checkbox"] {
+    display: none !important;
+  }
+  .app-container {
+    margin-top: 0 !important;
+    padding: 0 !important;
+  }
+  .dashboard-grid-12 {
+    display: block !important;
+  }
+  .dashboard-hero-col,
+  .dashboard-metric-col,
+  .dashboard-main-col,
+  .dashboard-side-col {
+    width: 100% !important;
+    margin-bottom: 1rem !important;
+    page-break-inside: avoid;
+  }
+  .ui-card, .card {
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+    page-break-inside: avoid;
+  }
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+  th, td {
+    border: 1px solid #cbd5e1 !important;
+    padding: 6px 8px !important;
+  }
+}
+
 
 

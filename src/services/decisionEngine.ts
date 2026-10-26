@@ -296,6 +296,10 @@ export function evaluateDecisionRules(
       actionLabel: 'Review Cost Reductions',
       actionType: 'NAVIGATE_BUDGET',
       tradeOffs,
+      ruleId: 'RULE_1_BUDGET_OVERRUN',
+      ruleName: 'Budget Overrun & Expense Ceiling',
+      whyExplanation: 'Total projected expenses exceeded your allocated event budget. Overages require rebalancing across non-essential categories or guest headcount.',
+      thresholdMet: `Projected expenses (${formatCurrency(summary.totalEstimated)}) exceed budget (${formatCurrency(summary.totalBudget)}) by ${formatCurrency(overage)} (${summary.utilizationPercentage}% utilized).`,
     });
   } else if (summary.remainingBalance > summary.totalBudget * 0.25 && summary.totalBudget > 0) {
     insights.push({
@@ -304,6 +308,10 @@ export function evaluateDecisionRules(
       category: 'budget',
       title: 'Healthy Budget Buffer Available',
       message: `You have ${formatCurrency(summary.remainingBalance)} (unallocated funds). You can upgrade photography packages, enhance guest transport, or keep this as an extra cushion.`,
+      ruleId: 'RULE_1B_BUDGET_SURPLUS',
+      ruleName: 'Budget Buffer & Unallocated Surplus',
+      whyExplanation: 'Unallocated funds provide financial protection against last-minute vendor price increases and emergency spot contracting.',
+      thresholdMet: `Remaining surplus (${formatCurrency(summary.remainingBalance)}) is > 25% of total budget (${formatCurrency(summary.totalBudget)}).`,
     });
   }
 
@@ -366,6 +374,10 @@ export function evaluateDecisionRules(
       actionLabel: 'Resolve Budget Trade-off',
       actionType: 'NAVIGATE_BUDGET',
       tradeOffs: spikeTradeOffs,
+      ruleId: 'RULE_2_VENDOR_SPIKE',
+      ruleName: 'Vendor Quote Escalation & Price Spike',
+      whyExplanation: 'Contracted vendor actuals exceeded initial budgetary estimates, threatening overall cost discipline unless counterbalanced.',
+      thresholdMet: `Vendor quotes (${itemNames}) escalated by ${formatCurrency(totalSpike)} over original allocation.`,
     });
   }
 
@@ -396,7 +408,7 @@ export function evaluateDecisionRules(
         },
       ];
 
-      insights.push({
+        insights.push({
         id: `rule-vendor-cancelled-${v.id}`,
         type: 'action_required',
         category: 'vendors',
@@ -405,6 +417,10 @@ export function evaluateDecisionRules(
         actionLabel: 'Handle Replacement',
         actionType: 'NAVIGATE_VENDORS',
         tradeOffs: cancelTradeOffs,
+        ruleId: 'RULE_3_VENDOR_CANCELLED',
+        ruleName: 'Emergency Vendor Drop-out & Reallocation',
+        whyExplanation: 'A contracted vendor became unavailable, creating an immediate service vacuum and risk of spot-rate surge.',
+        thresholdMet: `Vendor status for ${v.role} marked as 'cancelled'.`,
       });
     }
   }
@@ -424,6 +440,10 @@ export function evaluateDecisionRules(
         category: 'timeline',
         title: 'Event Date Has Passed',
         message: `The selected event date (${plan.eventDate}) is in the past. Update the date to generate an active upcoming preparation timeline.`,
+        ruleId: 'RULE_4_DATE_PAST',
+        ruleName: 'Past Date Anomaly',
+        whyExplanation: 'Milestones cannot be scheduled chronologically for events whose target calendar date has already elapsed.',
+        thresholdMet: `Target date (${plan.eventDate}) is ${Math.abs(diffDays)} days in the past.`,
       });
     } else if (diffDays <= 14) {
       const urgentTradeOffs: TradeOffOption[] = [
@@ -461,6 +481,10 @@ export function evaluateDecisionRules(
         actionLabel: 'View Urgent Tasks',
         actionType: 'NAVIGATE_TIMELINE_URGENT',
         tradeOffs: urgentTradeOffs,
+        ruleId: 'RULE_4_DATE_TRIAGE',
+        ruleName: 'Short-Notice Fast Track Triage (< 14 Days)',
+        whyExplanation: 'Standard fabrication and vendor booking lead times are exhausted under short notice. Only the critical path must be prioritized.',
+        thresholdMet: `Only ${diffDays} days remaining to event (${plan.eventDate}), entering the < 14 days emergency window.`,
       });
     } else if (diffDays <= 30) {
       insights.push({
@@ -469,6 +493,10 @@ export function evaluateDecisionRules(
         category: 'timeline',
         title: 'Event Approaching (< 1 Month)',
         message: `Only ${diffDays} days remaining. Focus on seating charts, final vendor confirmations, and collecting outstanding RSVPs.`,
+        ruleId: 'RULE_4B_DATE_APPROACHING',
+        ruleName: 'Approaching Event Milestone (< 30 Days)',
+        whyExplanation: 'The 30-day window triggers final RSVP collections, priest puja samagri checks, and vendor balance schedules.',
+        thresholdMet: `${diffDays} days remaining (< 30 days window).`,
       });
     }
   }
@@ -514,6 +542,10 @@ export function evaluateDecisionRules(
       message:
         'Your selected venue is outdoors. We recommend reserving an indoor hall backup, renting a canopy/marquee tent with rain sidewalls, and securing portable patio heaters or misting fans depending on the season. (Note: Plan in advance; vendor tents sell out quickly during peak seasons).',
       tradeOffs: weatherTradeOffs,
+      ruleId: 'RULE_5_OUTDOOR_WEATHER',
+      ruleName: 'Outdoor Venue Weather Vulnerability & Monsoon Pandal',
+      whyExplanation: 'Open-air Indian celebrations are highly susceptible to sudden unseasonal showers, humidity, or extreme heat that can halt ceremonies.',
+      thresholdMet: `Venue preference set to outdoor environment ("${plan.venuePreference}").`,
     });
   }
 
@@ -561,6 +593,10 @@ export function evaluateDecisionRules(
       title: 'High Guest Count Logistics (> 250 Guests)',
       message: `With ${plan.guestCount} guests, ensure the venue has adequate parking capacity, multiple bar/buffet stations to prevent bottlenecks, and adequate restroom facilities or luxury restroom trailers. (Note: Municipal rules vary by city; verify local noise and gathering guidelines).`,
       tradeOffs: permitTradeOffs,
+      ruleId: 'RULE_6_CAPACITY_LOGISTICS',
+      ruleName: 'High Capacity Gathering Logistics (> 250 Attendees)',
+      whyExplanation: 'Large crowds require formal municipal noise clearances, dedicated parking marshals, and auxiliary diesel generator power.',
+      thresholdMet: `Target headcount of ${plan.guestCount} exceeds the 250-guest infrastructure threshold.`,
     });
   } else if (plan.guestCount > 0 && plan.totalBudget > 0) {
     const perGuestBudget = plan.totalBudget / plan.guestCount;
@@ -599,6 +635,10 @@ export function evaluateDecisionRules(
         title: `Tight Per-Guest Budget (${formatCurrency(Math.round(perGuestBudget))}/person)`,
         message: `Your overall budget averages under ${formatCurrency(tightThreshold)} per guest. Buffet catering, community halls, and streamlined menu selections will be essential to stay on target.`,
         tradeOffs: tightTradeOffs,
+        ruleId: 'RULE_6B_TIGHT_BUDGET',
+        ruleName: 'Per-Guest Spend Floor (< ₹500/guest)',
+        whyExplanation: 'Catering and basic logistics in Tier 1 & Tier 2 Indian cities require a minimum operational floor to ensure safety and quality.',
+        thresholdMet: `Per-guest budget (${formatCurrency(Math.round(perGuestBudget))}) is below the ₹${tightThreshold} floor.`,
       });
     }
   }
@@ -644,6 +684,10 @@ export function evaluateDecisionRules(
       title: 'Baraat & Outdoor Sound Curfew (10:00 PM — Guidance)',
       message: 'Indian municipal guidelines generally enforce a 10:00 PM cutoff for outdoor amplified sound, dhol processions, and brass bands. Transition the dance floor indoors for late-night Sangeet or post-Pheras festivities. (Estimates only; check local police/municipal corporation rules as enforcement varies by city).',
       tradeOffs: curfewTradeOffs,
+      ruleId: 'RULE_7_SOUND_CURFEW',
+      ruleName: 'Baraat & Outdoor 10:00 PM Sound Curfew Protocol',
+      whyExplanation: 'Indian Supreme Court and state municipal noise guidelines mandate shutting down outdoor loudspeakers and brass bands at 10:00 PM sharp.',
+      thresholdMet: `Event type is "${plan.eventType}" with outdoor entertainment and dhol brass band processions.`,
     });
 
     // Permit Deadline Check (< 25 Days)
@@ -682,6 +726,10 @@ export function evaluateDecisionRules(
             },
           },
         ],
+        ruleId: 'RULE_7B_PERMIT_DEADLINE',
+        ruleName: 'Police Sound NOC & Municipal Filing Lead Time',
+        whyExplanation: 'Police sound permits typically take 7 to 14 business days to process. Missing the 25-day deadline risks last-minute shutdown.',
+        thresholdMet: `${diffDays} days to event (< 25 days lead time) without an active sound permit task.`,
       });
     }
   }
@@ -726,6 +774,10 @@ export function evaluateDecisionRules(
       actionLabel: 'Resolve Dependency',
       actionType: 'NAVIGATE_TIMELINE',
       tradeOffs: depTradeOffs,
+      ruleId: 'RULE_8_DEPENDENCY_BOTTLENECK',
+      ruleName: 'Critical Task Dependency Chain Blocker',
+      whyExplanation: 'Downstream milestones cannot safely proceed until their prerequisite tasks are marked completed.',
+      thresholdMet: `${blockedTasks.length} dependent tasks currently blocked by overdue prerequisites.`,
     });
   }
 
@@ -741,6 +793,10 @@ export function evaluateDecisionRules(
       message: `Configured accessibility needs (${plan.accessibilityNeeds.join(
         ', '
       )}): Ensure step-free entrance, wheelchair-accessible restrooms, designated companion seating, and clear dietary signage at all food stations.`,
+      ruleId: 'RULE_9_ACCESSIBILITY',
+      ruleName: 'Accessibility & Barrier-Free Hospitality',
+      whyExplanation: 'Elderly grandparents and guests with mobility needs require step-free mandap access and dedicated transit shuttles.',
+      thresholdMet: `Active accommodations: ${plan.accessibilityNeeds.join(', ')}.`,
     });
   }
 
@@ -802,6 +858,10 @@ export function evaluateDecisionRules(
         actionLabel: 'Review Guest List',
         actionType: 'NAVIGATE_GUESTS',
         tradeOffs: rsvpTradeOffs,
+        ruleId: 'RULE_10_RSVP_CAPACITY',
+        ruleName: 'Confirmed RSVPs Exceeding Venue Target',
+        whyExplanation: 'Confirmed RSVPs (with plus-ones) exceed the planned guest count, threatening food shortages and seating overflow.',
+        thresholdMet: `${confirmedCount} confirmed attendees > ${plan.guestCount} planned target (+${extraGuests} delta).`,
       });
     }
 
@@ -829,6 +889,10 @@ export function evaluateDecisionRules(
         title: 'Special Dietary Requirements Noted',
         message: `${dietaryCount} confirmed guests have specific dietary needs. Confirm personalized meal plate tags with your caterer 14 days prior to the event.`,
         tradeOffs: dietaryTradeOffs,
+        ruleId: 'RULE_11_DIETARY_ALERT',
+        ruleName: 'Personalized Dietary Tags & Kitchen Audit',
+        whyExplanation: 'Dietary preferences must be shared with the banquet captain well in advance to prevent allergen mix-ups.',
+        thresholdMet: `${dietaryCount} guests have indicated custom dietary requirements.`,
       });
     }
 
@@ -871,12 +935,18 @@ export function evaluateDecisionRules(
         title: 'Dedicated Pure Veg / Jain Kitchen Counter Required',
         message: `${jainOrPureVegCount} guests require Jain (no onion/garlic/root veg) or Sattvic Pure Vegetarian preparation. Ensure your caterer sets up an isolated preparation counter, distinct serving ladles, and clear signage.`,
         tradeOffs: jainTradeOffs,
+        ruleId: 'RULE_11B_JAIN_SEPARATION',
+        ruleName: 'Dedicated Pure Veg & Jain Kitchen Isolation',
+        whyExplanation: 'Jain dietary practice forbids root vegetables, onions, and garlic. Traditional families expect zero cross-contact with other buffet lines.',
+        thresholdMet: `${jainOrPureVegCount} confirmed attendees require strict Jain or Sattvic pure vegetarian meal service.`,
       });
     }
   }
 
   return { insights, missingPrompts };
 }
+
+export const TOTAL_DECISION_RULES_COUNT = 12;
 
 export function auditTimelineTasks(
   tasks: TaskItem[],

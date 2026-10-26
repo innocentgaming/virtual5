@@ -398,7 +398,7 @@ Enclosed: Venue Confirmation Copy, Applicant ID Proof`;
   const curfewIndex = displayedItems.findIndex((item) => item.timeMins >= CURFEW_MINUTES);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+    <div id="tour-run-of-show" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
       {/* =====================================================================
           1. PRINT-ONLY HEADER (Hidden on screen, visible in @media print)
           ===================================================================== */}

@@ -4,7 +4,19 @@ import { Header } from './components/layout/Header';
 import { Navigation } from './components/layout/Navigation';
 import { DashboardOverview } from './components/dashboard/DashboardOverview';
 import { Toast, ToastProvider } from './components/ui';
-import { RotateCcw, Sparkles } from 'lucide-react';
+import {
+  RotateCcw,
+  Sparkles,
+  Compass,
+  Share2,
+  Printer,
+  LayoutDashboard,
+  CalendarClock,
+  Users as UsersIcon,
+  IndianRupee,
+} from 'lucide-react';
+import { PersonaSwitcher } from './components/demo/PersonaSwitcher';
+import { DemoTour } from './components/demo/DemoTour';
 import { lazyWithPreload } from './utils/lazyWithPreload';
 import './index.css';
 
@@ -121,6 +133,68 @@ export function Workspace({ mode }: { mode: WorkspaceMode }) {
   });
   const [notification, setNotification] = useState<string | null>(null);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
+  const [isTourActive, setIsTourActive] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const tourParam = new URLSearchParams(window.location.search).get('tour');
+    return tourParam === '1' || tourParam === 'true' || tourParam === 'start';
+  });
+
+  // URL Query Parameters parsing for demo mode (?tour=1, ?event=..., ?tab=..., ?scenario=...)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+
+    const eventParam = params.get('event');
+    if (eventParam) {
+      const target = events.find(
+        (e) =>
+          e.eventType.toLowerCase() === eventParam.toLowerCase() ||
+          e.id.toLowerCase().includes(eventParam.toLowerCase())
+      );
+      if (target && target.id !== activeEvent.id) {
+        selectEvent(target.id);
+      }
+    }
+
+    const tabParam = params.get('tab') as NavigationTab | null;
+    if (
+      tabParam &&
+      ['dashboard', 'budget', 'timeline', 'schedule', 'guests', 'vendors', 'ideas', 'ai', 'setup'].includes(
+        tabParam
+      )
+    ) {
+      setActiveTab(tabParam);
+    }
+
+    const scenarioParam = params.get('scenario');
+    if (scenarioParam) {
+      if (scenarioParam === 'caterer_spike') {
+        applyScenarioChange({
+          vendorPriceSpikePercent: 20,
+          scenarioName: 'Caterer Quote Spike (+20%)',
+        });
+      } else if (scenarioParam === 'rain') {
+        applyScenarioChange({
+          newVenuePreference: 'farmhouse_lawn',
+          scenarioName: 'Rain Forecast on Outdoor Day',
+        });
+      } else if (scenarioParam === 'rsvp') {
+        applyScenarioChange({
+          guestDelta: 30,
+          scenarioName: 'Surge: +30 Extra RSVPs',
+        });
+      }
+    }
+  }, [events, activeEvent.id, selectEvent, setActiveTab, applyScenarioChange]);
+
+  const handleCopyShareLink = () => {
+    if (typeof window === 'undefined') return;
+    const url = new URL(window.location.href);
+    url.searchParams.set('event', activeEvent.eventType);
+    url.searchParams.set('tab', activeTab);
+    navigator.clipboard.writeText(url.toString());
+    showToast('✓ Shareable demo link copied to clipboard!');
+  };
 
   // Sync color mode and event theme to document root (html and body) and localStorage
   useEffect(() => {
@@ -288,14 +362,64 @@ export function Workspace({ mode }: { mode: WorkspaceMode }) {
       )}
 
       {mode === 'demo' && (
-        <aside className="demo-banner" role="status" aria-label="Demo mode notice">
-          <div className="demo-banner__inner">
-            <span>
-              You are exploring a demo with sample events. Plans stay in this browser.
-            </span>
-            <Link to="/signup" className="demo-banner__link">
-              Create an account to save
-            </Link>
+        <aside className="demo-showcase-bar" role="status" aria-label="Demo mode navigation and persona switcher">
+          <div className="demo-showcase-bar__content">
+            <div className="demo-showcase-bar__left">
+              <span className="demo-badge">DEMO EVALUATOR</span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                You are exploring a demo with sample events. Plans stay in this browser.
+              </span>
+              <PersonaSwitcher
+                activeEventId={activeEvent.id}
+                onSelectPersona={(evt) => {
+                  const existing = events.find((e) => e.id === evt.id);
+                  if (existing) {
+                    selectEvent(evt.id);
+                  } else {
+                    selectEvent(evt.id);
+                  }
+                  showToast(`Switched celebration: ${evt.title}`);
+                }}
+              />
+            </div>
+
+            <div className="demo-showcase-bar__right">
+              <button
+                type="button"
+                className="demo-tour-launch-btn"
+                onClick={() => setIsTourActive(true)}
+                aria-label="Start 90-second guided product tour"
+              >
+                <Compass size={15} />
+                <span>Start 90s Tour</span>
+              </button>
+
+              <button
+                type="button"
+                className="demo-action-btn"
+                onClick={handleCopyShareLink}
+                title="Copy shareable link with current persona and tab"
+                aria-label="Copy shareable demo link"
+              >
+                <Share2 size={14} />
+                <span>Share</span>
+              </button>
+
+              <button
+                type="button"
+                className="demo-action-btn"
+                onClick={() => window.print()}
+                title="Print executive event summary report"
+                aria-label="Print event summary PDF"
+              >
+                <Printer size={14} />
+                <span>PDF Summary</span>
+              </button>
+
+              <Link to="/signup?next=/app" className="demo-save-link">
+                Create an account to save
+              </Link>
+            </div>
           </div>
         </aside>
       )}
@@ -339,17 +463,7 @@ export function Workspace({ mode }: { mode: WorkspaceMode }) {
         }}
       />
 
-      {mode === 'demo' && (
-        <div className="demo-banner" role="note">
-          <Sparkles size={15} aria-hidden="true" />
-          <span>
-            You are exploring a demo. Changes stay on this device only.
-          </span>
-          <Link to="/signup?next=/app" className="demo-banner__cta">
-            Create a free account to save your plans
-          </Link>
-        </div>
-      )}
+
       {syncStatus === 'conflict' && (
         <div className="demo-banner demo-banner--warn" role="alert">
           <span>Your plans were changed on another device.</span>
@@ -494,8 +608,85 @@ export function Workspace({ mode }: { mode: WorkspaceMode }) {
           isOpen={isCopilotOpen}
           onClose={() => setIsCopilotOpen(false)}
           onApplyTradeOff={applyTradeOff}
+          activeTab={activeTab}
+          onPinTask={(t) => {
+            addTask({
+              title: t.title,
+              category: t.category || 'final',
+              dueDate: activeEvent.eventDate,
+              priority: 'high',
+              completed: false,
+              notes: t.notes,
+            });
+            showToast(`✓ Pinned task: "${t.title}"`);
+          }}
         />
       </Suspense>
+
+      {/* 90-Second Guided Demo Tour */}
+      {mode === 'demo' && (
+        <DemoTour
+          isOpen={isTourActive}
+          onClose={() => setIsTourActive(false)}
+          onNavigateTab={setActiveTab}
+          onOpenCopilot={() => {
+            AICopilotDrawer.preload();
+            setIsCopilotOpen(true);
+          }}
+        />
+      )}
+
+      {/* Responsive Mobile Bottom Tab Bar (<= 768px) */}
+      <nav className="mobile-bottom-nav" aria-label="Mobile Bottom Navigation">
+        <button
+          type="button"
+          className={`mobile-bottom-nav__item ${activeTab === 'dashboard' ? 'active' : ''}`}
+          onClick={() => setActiveTab('dashboard')}
+          aria-label="Mobile Bottom Overview"
+        >
+          <LayoutDashboard size={20} />
+          <span>Overview</span>
+        </button>
+        <button
+          type="button"
+          className={`mobile-bottom-nav__item ${activeTab === 'budget' ? 'active' : ''}`}
+          onClick={() => setActiveTab('budget')}
+          aria-label="Mobile Bottom Budget"
+        >
+          <IndianRupee size={20} />
+          <span>Budget</span>
+        </button>
+        <button
+          type="button"
+          className={`mobile-bottom-nav__item ${activeTab === 'schedule' ? 'active' : ''}`}
+          onClick={() => setActiveTab('schedule')}
+          aria-label="Mobile Bottom Schedule"
+        >
+          <CalendarClock size={20} />
+          <span>Schedule</span>
+        </button>
+        <button
+          type="button"
+          className={`mobile-bottom-nav__item ${activeTab === 'guests' ? 'active' : ''}`}
+          onClick={() => setActiveTab('guests')}
+          aria-label="Mobile Bottom Guests"
+        >
+          <UsersIcon size={20} />
+          <span>Guests</span>
+        </button>
+        <button
+          type="button"
+          className="mobile-bottom-nav__item mobile-bottom-nav__item--copilot"
+          onClick={() => {
+            AICopilotDrawer.preload();
+            setIsCopilotOpen(true);
+          }}
+          aria-label="Mobile Bottom Copilot"
+        >
+          <Sparkles size={20} />
+          <span>Copilot</span>
+        </button>
+      </nav>
 
       {/* Accessible Footer */}
       <footer

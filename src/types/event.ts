@@ -149,6 +149,10 @@ export interface DecisionInsight {
   actionLabel?: string;
   actionType?: string;
   tradeOffs?: TradeOffOption[];
+  ruleId?: string;
+  ruleName?: string;
+  whyExplanation?: string;
+  thresholdMet?: string;
 }
 
 export type RsvpStatus = 'attending' | 'declined' | 'pending';

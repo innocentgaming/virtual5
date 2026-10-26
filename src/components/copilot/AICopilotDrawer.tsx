@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   Sparkles,
   X,
@@ -10,8 +10,11 @@ import {
   RotateCcw,
   Trash2,
   Check,
+  BookmarkPlus,
+  BookmarkCheck,
 } from 'lucide-react';
-import type { EventPlan, TradeOffOption } from '../../types/event';
+import type { EventPlan, TradeOffOption, TaskCategory } from '../../types/event';
+import type { NavigationTab } from '../../hooks/useEventPlan';
 import {
   generateCopilotAnswer,
   generateCopilotAnswerAsync,
@@ -24,6 +27,8 @@ interface AICopilotDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   onApplyTradeOff?: (tradeOff: TradeOffOption, note?: string) => void;
+  activeTab?: NavigationTab;
+  onPinTask?: (task: { title: string; category?: TaskCategory; notes?: string }) => void;
 }
 
 interface ChatMessage {
@@ -35,12 +40,64 @@ interface ChatMessage {
   proposedActions?: TradeOffOption[];
 }
 
-const CONTEXT_SUGGESTIONS = [
-  '10 PM curfew rules & sound permits',
-  'Mehendi artist interview questions',
-  'How to cut ₹50K from catering budget?',
-  'Jain & Pure Veg separate kitchen tips',
-];
+function getContextSuggestions(tab?: NavigationTab, eventType?: string): string[] {
+  if (tab === 'budget') {
+    return [
+      'How to cut ₹50K from catering budget?',
+      'Suggest 3 budget tradeoffs for flowers & decor',
+      'How to negotiate with Indian banquet venues?',
+      'Check contingency reserve allocation',
+    ];
+  }
+  if (tab === 'schedule') {
+    return [
+      '10 PM curfew rules & sound permits',
+      'Ideal buffer between Baraat and Pheras',
+      'Day-of coordinator call sheet checklist',
+      'What to do if Baraat arrives 45 mins late?',
+    ];
+  }
+  if (tab === 'guests') {
+    return [
+      'Jain & Pure Veg separate kitchen tips',
+      'How to handle unexpected +1 guests?',
+      'Seating etiquette for extended families',
+      'RSVP WhatsApp reminder templates',
+    ];
+  }
+  if (tab === 'vendors') {
+    return [
+      'Mehendi artist interview questions',
+      'Pandit ji puja samagri checklist',
+      'Essential contract clauses for dhol & brass bands',
+      'Photography shot-list for Vedic rituals',
+    ];
+  }
+
+  // Default / dashboard by celebration type
+  if (eventType === 'wedding') {
+    return [
+      '10 PM curfew rules & sound permits',
+      'Mehendi artist interview questions',
+      'How to cut ₹50K from catering budget?',
+      'Jain & Pure Veg separate kitchen tips',
+    ];
+  }
+  if (eventType === 'birthday') {
+    return [
+      'Bollywood rooftop DJ playlist & noise limits',
+      'Mumbai street chaat live counter ideas',
+      'How to keep 30th birthday under ₹3.5 Lakhs',
+      'Custom cutout photobooth vendor questions',
+    ];
+  }
+  return [
+    'Eco-friendly zero-plastic mela logistics',
+    'Garba & Dandiya crowd management guidelines',
+    'Municipal permissions for community celebrations',
+    'Mahaprasad volume estimation for 600 attendees',
+  ];
+}
 
 function renderMarkdownLight(content: string): React.ReactNode {
   const lines = content.split('\n');
@@ -94,6 +151,8 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
   isOpen,
   onClose,
   onApplyTradeOff,
+  activeTab,
+  onPinTask,
 }) => {
   const toast = useToast();
   const drawerRef = useRef<HTMLDivElement>(null);
@@ -115,9 +174,15 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
   const [showSuggestions, setShowSuggestions] = useState(true);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [pinnedIds, setPinnedIds] = useState<Set<string>>(new Set());
   const [lastUserPrompt, setLastUserPrompt] = useState<string>('');
   const [isAiOnline, setIsAiOnline] = useState<boolean>(true);
   const [appliedActionIds, setAppliedActionIds] = useState<Set<string>>(new Set());
+
+  const contextSuggestions = useMemo(
+    () => getContextSuggestions(activeTab, plan.eventType),
+    [activeTab, plan.eventType]
+  );
 
   // Focus restoration & initial focus with scroll lock
   useEffect(() => {
@@ -187,6 +252,58 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
     }
   }, [messages, isThinking, isOpen]);
 
+  const streamAssistantText = (msgId: string, fullText: string, actions?: TradeOffOption[], isFallback?: boolean) => {
+    const prefersReduced = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const isTest =
+      (globalThis as unknown as { process?: { env?: { NODE_ENV?: string } } }).process?.env?.NODE_ENV === 'test' ||
+      typeof (window as unknown as { __vitest__?: unknown }).__vitest__ !== 'undefined';
+
+    if (prefersReduced || isTest || fullText.length < 50) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: msgId,
+          sender: 'assistant',
+          text: fullText,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          isFallback,
+          proposedActions: actions,
+        },
+      ]);
+      return;
+    }
+
+    let cursor = 0;
+    const stepSize = Math.max(4, Math.floor(fullText.length / 28));
+    const initMsg: ChatMessage = {
+      id: msgId,
+      sender: 'assistant',
+      text: '',
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      isFallback,
+      proposedActions: undefined,
+    };
+
+    setMessages((prev) => [...prev, initMsg]);
+
+    const timer = setInterval(() => {
+      cursor += stepSize;
+      if (cursor >= fullText.length) {
+        clearInterval(timer);
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === msgId ? { ...m, text: fullText, proposedActions: actions } : m
+          )
+        );
+      } else {
+        const slice = fullText.slice(0, cursor);
+        setMessages((prev) =>
+          prev.map((m) => (m.id === msgId ? { ...m, text: slice } : m))
+        );
+      }
+    }, 18);
+  };
+
   const handleSendPrompt = async (promptText: string) => {
     if (!promptText.trim() || isThinking) return;
 
@@ -213,28 +330,12 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
       const answerText = await generateCopilotAnswerAsync(trimmedPrompt, plan);
       const { cleanText, actions } = extractCopilotActions(answerText, plan);
       setIsAiOnline(true);
-      const assistantMsg: ChatMessage = {
-        id: 'ast-' + Date.now(),
-        sender: 'assistant',
-        text: cleanText,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        isFallback: false,
-        proposedActions: actions,
-      };
-      setMessages((prev) => [...prev, assistantMsg]);
+      streamAssistantText('ast-' + Date.now(), cleanText, actions, false);
     } catch {
       setIsAiOnline(false);
       const fallbackText = generateCopilotAnswer(trimmedPrompt, plan);
       const { cleanText, actions } = extractCopilotActions(fallbackText, plan);
-      const assistantMsg: ChatMessage = {
-        id: 'ast-' + Date.now(),
-        sender: 'assistant',
-        text: cleanText,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        isFallback: true,
-        proposedActions: actions,
-      };
-      setMessages((prev) => [...prev, assistantMsg]);
+      streamAssistantText('ast-' + Date.now(), cleanText, actions, true);
     } finally {
       setIsThinking(false);
     }
@@ -328,6 +429,7 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
 
       <div
         ref={drawerRef}
+        id="tour-copilot-drawer"
         className="copilot-drawer-container"
         style={{
           width: '100%',
@@ -576,15 +678,13 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
                   </div>
                 )}
 
-                {/* Copy button & Fallback banner on assistant messages */}
+                {/* Copy button, Pin to Plan, and Engine badge on assistant messages */}
                 {m.sender === 'assistant' && (
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-2)', marginTop: 'var(--space-2)', paddingTop: 'var(--space-2)', borderTop: '1px solid var(--border)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                      {m.isFallback && (
-                        <span style={{ fontSize: '11px', color: 'var(--color-warning-text)' }}>
-                          Offline rule engine used
-                        </span>
-                      )}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-2)', marginTop: 'var(--space-2)', paddingTop: 'var(--space-2)', borderTop: '1px solid var(--border)', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Badge variant={m.isFallback ? 'warning' : 'success'} size="sm">
+                        {m.isFallback ? 'Offline Rule Engine' : 'Gemini 2.5 AI'}
+                      </Badge>
                       {m.isFallback && lastUserPrompt && (
                         <button
                           type="button"
@@ -603,22 +703,47 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
                           }}
                           aria-label="Retry prompt with AI"
                         >
-                          <RotateCcw size={11} /> Retry
+                          <RotateCcw size={11} /> Retry AI
                         </button>
                       )}
                     </div>
 
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleCopy(m.id, m.text)}
-                      style={{ padding: '2px 6px', fontSize: '11px' }}
-                      title="Copy response"
-                      aria-label="Copy assistant response"
-                      leadingIcon={copiedId === m.id ? <Check size={12} color="var(--color-success)" /> : <Copy size={12} />}
-                    >
-                      {copiedId === m.id ? 'Copied' : 'Copy'}
-                    </Button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      {onPinTask && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            const firstLine = m.text.split('\n')[0].replace(/\*\*/g, '').replace(/[#\n-]/g, ' ').trim();
+                            const summary = firstLine.slice(0, 60);
+                            onPinTask({
+                              title: `Action: ${summary}${firstLine.length > 60 ? '...' : ''}`,
+                              category: 'final',
+                              notes: m.text,
+                            });
+                            setPinnedIds((prev) => new Set(prev).add(m.id));
+                            toast.showToast('Pinned to plan tasks!', 'success');
+                          }}
+                          style={{ padding: '2px 6px', fontSize: '11px' }}
+                          title="Pin recommendation to event plan tasks"
+                          aria-label="Pin recommendation as task"
+                          leadingIcon={pinnedIds.has(m.id) ? <BookmarkCheck size={12} color="var(--color-success)" /> : <BookmarkPlus size={12} />}
+                        >
+                          {pinnedIds.has(m.id) ? 'Pinned' : 'Pin to plan'}
+                        </Button>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleCopy(m.id, m.text)}
+                        style={{ padding: '2px 6px', fontSize: '11px' }}
+                        title="Copy response"
+                        aria-label="Copy assistant response"
+                        leadingIcon={copiedId === m.id ? <Check size={12} color="var(--color-success)" /> : <Copy size={12} />}
+                      >
+                        {copiedId === m.id ? 'Copied' : 'Copy'}
+                      </Button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -685,7 +810,7 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
 
           {showSuggestions && (
             <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-              {CONTEXT_SUGGESTIONS.map((chip, idx) => (
+              {contextSuggestions.map((chip, idx) => (
                 <button
                   key={idx}
                   type="button"

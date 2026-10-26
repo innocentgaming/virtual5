@@ -49,7 +49,7 @@ const InteractiveBudgetChartComponent: React.FC<InteractiveBudgetChartProps> = (
   const activePct = total > 0 && activeCategory ? (activeAmount / total) * 100 : 0;
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', flexWrap: 'wrap', gap: '2rem', padding: '0.75rem 0' }}>
+    <div id="tour-budget-donut" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', flexWrap: 'wrap', gap: '2rem', padding: '0.75rem 0' }}>
       {/* SVG Donut Chart with Smooth Transitions */}
       <div style={{ position: 'relative', width: '220px', height: '220px', flexShrink: 0 }}>
         <svg

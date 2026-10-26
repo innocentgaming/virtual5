@@ -15,9 +15,8 @@ import {
   Heart,
   ChevronDown,
   ChevronUp,
-  RotateCcw,
-  SlidersHorizontal,
   MessageCircle,
+  HelpCircle,
 } from 'lucide-react';
 import type { EventPlan, BudgetSummary, DecisionInsight, TradeOffOption } from '../../types/event';
 import type { NavigationTab, ScenarioInput } from '../../hooks/useEventPlan';
@@ -25,6 +24,8 @@ import { useCountUp } from '../../hooks/useCountUp';
 import { formatCurrency, formatIndianShort, formatPercent } from '../../utils/formatters';
 import { Card, CardHeader, Button, Badge, EmptyState, Skeleton, Toast, Modal } from '../ui';
 import { lazyWithPreload } from '../../utils/lazyWithPreload';
+import { TOTAL_DECISION_RULES_COUNT } from '../../services/decisionEngine';
+import { ChaosBar } from '../demo/ChaosBar';
 
 const ScenarioChangePanel = lazyWithPreload(() =>
   import('../scenarios/ScenarioChangePanel').then((m) => ({ default: m.ScenarioChangePanel }))
@@ -67,6 +68,17 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   const [showAllAlerts, setShowAllAlerts] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isScenarioModalOpen, setIsScenarioModalOpen] = useState(false);
+  const [expandedWhy, setExpandedWhy] = useState<Record<string, boolean>>({});
+  const [isPulsing, setIsPulsing] = useState(false);
+
+  const triggerPulse = () => {
+    setIsPulsing(true);
+    setTimeout(() => setIsPulsing(false), 1200);
+  };
+
+  const toggleWhy = (id: string) => {
+    setExpandedWhy((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
 
   // Countdown in days
   const diffDays = useMemo(() => {
@@ -231,7 +243,8 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
           ========================================================================= */}
       <div className="dashboard-hero-col">
         <Card
-          className="hero-banner-card"
+          id="tour-hero-kpis"
+          className={`hero-banner-card ${isPulsing ? 'dashboard-pulse-highlight' : ''}`}
           style={{
             background: 'linear-gradient(135deg, var(--surface-raised) 0%, var(--surface-subtle) 100%)',
             border: '1px solid var(--border)',
@@ -400,95 +413,35 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
       </div>
 
       {/* =========================================================================
-          2. DYNAMIC CHANGE & SCENARIO HUB BAR (Compact & Clean)
+          2. DYNAMIC CHAOS & SCENARIO HUB BAR (1-Click Simulations & Instant Trade-offs)
           ========================================================================= */}
       <div style={{ gridColumn: 'span 12' }}>
-        <Card variant="subtle" style={{ border: '1px solid var(--accent-primary)', background: 'var(--surface-raised)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-3)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-              <div
-                style={{
-                  width: '36px',
-                  height: '36px',
-                  borderRadius: 'var(--radius-pill)',
-                  background: 'var(--accent-primary)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#fff',
-                  flexShrink: 0,
-                }}
-              >
-                <SlidersHorizontal size={18} />
-              </div>
-              <div>
-                <div style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--text)' }}>
-                  Dynamic Change & Scenario Engine
-                </div>
-                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
-                  Stress-test catering price spikes, guest surges, and date shifts with 1-click trade-offs
-                </div>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap', alignItems: 'center' }}>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  if (onApplyScenario) {
-                    onApplyScenario({
-                      vendorPriceSpikePercent: 20,
-                      scenarioName: 'Caterer Price Hike (+20%)',
-                    });
-                    setToastMessage('✓ Caterer quote spike (+20%) simulated; see trade-offs below');
-                  }
-                }}
-              >
-                +20% Caterer Spike
-              </Button>
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  if (onApplyScenario) {
-                    onApplyScenario({
-                      guestDelta: 50,
-                      scenarioName: 'RSVP Headcount Surge (+50)',
-                    });
-                    setToastMessage('✓ Guest surge (+50) simulated; capacity rules active');
-                  }
-                }}
-              >
-                +50 Guests Surge
-              </Button>
-
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => setIsScenarioModalOpen(true)}
-                leadingIcon={<SlidersHorizontal size={14} />}
-              >
-                Simulate Scenario / What Changed?
-              </Button>
-
-              {plan.changeLog && plan.changeLog.length > 0 && onUndoLastChange && (
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => {
-                    onUndoLastChange();
-                    setToastMessage('✓ Rolled back last change from history');
-                  }}
-                  leadingIcon={<RotateCcw size={14} />}
-                >
-                  Undo ({plan.changeLog.length})
-                </Button>
-              )}
-            </div>
-          </div>
-        </Card>
+        <ChaosBar
+          plan={plan}
+          onApplyScenario={(s) => {
+            if (onApplyScenario) {
+              onApplyScenario(s);
+              triggerPulse();
+              setToastMessage(`✓ Applied scenario: ${s.scenarioName || 'Parameters updated'}`);
+            }
+          }}
+          onApplyTradeOff={(to, title) => {
+            if (onApplyTradeOff) {
+              onApplyTradeOff(to, title);
+              triggerPulse();
+              setToastMessage(`✓ Applied trade-off: ${to.label}`);
+            }
+          }}
+          onUndoLastChange={() => {
+            if (onUndoLastChange) {
+              onUndoLastChange();
+              triggerPulse();
+              setToastMessage('✓ Rolled back last change');
+            }
+          }}
+          onOpenFullModal={() => setIsScenarioModalOpen(true)}
+          onFlashMetrics={triggerPulse}
+        />
       </div>
 
       {/* =========================================================================
@@ -733,28 +686,33 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
           5. SIDE COLUMN (4 cols): Needs Attention Panel
           ========================================================================= */}
       <div className="dashboard-side-col">
-        <Card style={{ borderLeft: '4px solid var(--color-warning)' }}>
+        <Card id="tour-decision-engine" style={{ borderLeft: '4px solid var(--color-warning)' }}>
           <CardHeader
             title="Needs Attention"
-            subtitle={`${sortedInsights.length} active decision-engine alerts`}
+            subtitle={`${sortedInsights.length} active alerts • Rules fired: ${sortedInsights.length} / ${TOTAL_DECISION_RULES_COUNT}`}
             action={
-              sortedInsights.length > 3 ? (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowAllAlerts((prev) => !prev)}
-                >
-                  {showAllAlerts ? (
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                      Less <ChevronUp size={14} />
-                    </span>
-                  ) : (
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                      View all ({sortedInsights.length}) <ChevronDown size={14} />
-                    </span>
-                  )}
-                </Button>
-              ) : null
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Badge variant="neutral" size="sm" title={`${sortedInsights.length} out of ${TOTAL_DECISION_RULES_COUNT} deterministic rules triggered`}>
+                  {sortedInsights.length}/{TOTAL_DECISION_RULES_COUNT} Fired
+                </Badge>
+                {sortedInsights.length > 3 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowAllAlerts((prev) => !prev)}
+                  >
+                    {showAllAlerts ? (
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        Less <ChevronUp size={14} />
+                      </span>
+                    ) : (
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        All ({sortedInsights.length}) <ChevronDown size={14} />
+                      </span>
+                    )}
+                  </Button>
+                )}
+              </div>
             }
           />
 
@@ -794,6 +752,61 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                       </div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '2px 0 6px 0', lineHeight: 1.4 }}>
                         {insight.message}
+                      </div>
+
+                      {/* Explainability Accordion: Why am I seeing this? */}
+                      <div style={{ marginTop: 'var(--space-1)', marginBottom: 'var(--space-2)' }}>
+                        <button
+                          type="button"
+                          onClick={() => toggleWhy(insight.id)}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            background: 'none',
+                            border: 'none',
+                            color: 'var(--accent-primary)',
+                            fontSize: '0.68rem',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            padding: '2px 0',
+                          }}
+                          aria-expanded={Boolean(expandedWhy[insight.id])}
+                          aria-label={`Explain reason for ${insight.title}`}
+                        >
+                          <HelpCircle size={12} />
+                          <span>Why am I seeing this?</span>
+                          {expandedWhy[insight.id] ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
+                        </button>
+
+                        {expandedWhy[insight.id] && (
+                          <div
+                            style={{
+                              marginTop: '4px',
+                              padding: '6px 8px',
+                              borderRadius: 'var(--radius-sm)',
+                              background: 'var(--surface)',
+                              border: '1px dashed var(--border)',
+                              fontSize: '0.68rem',
+                              lineHeight: '1.4',
+                              animation: 'fadeIn 0.15s ease',
+                            }}
+                          >
+                            <div style={{ fontWeight: 700, color: 'var(--accent-primary)', marginBottom: '2px' }}>
+                              Rule: {insight.ruleName || insight.ruleId || 'Deterministic Engine Rule'}
+                            </div>
+                            {insight.whyExplanation && (
+                              <div style={{ color: 'var(--text)', marginBottom: '3px' }}>
+                                {insight.whyExplanation}
+                              </div>
+                            )}
+                            {insight.thresholdMet && (
+                              <div style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono, monospace)', fontSize: '0.64rem' }}>
+                                Trigger: {insight.thresholdMet}
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
 
                       {/* 1-Click Actionable Trade-Offs */}
