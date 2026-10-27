@@ -243,11 +243,12 @@ export const RunOfShowManager: React.FC<RunOfShowManagerProps> = ({
 
   const addMilestoneBtnRef = useRef<HTMLButtonElement>(null);
 
-  // Pro features state: Timing ripple & Crew role filter & NOC guide
+  // Pro features state: Timing ripple & Crew role filter & NOC guide & Call Sheet
   const [selectedRole, setSelectedRole] = useState<string>('all');
   const [timeShiftDelta, setTimeShiftDelta] = useState<number>(0);
   const [showNocModal, setShowNocModal] = useState<boolean>(false);
   const [copiedNoc, setCopiedNoc] = useState<boolean>(false);
+  const [showCallSheetModal, setShowCallSheetModal] = useState<boolean>(false);
 
   // Sorted items with minutes metadata and active timing shift
   const sortedItems = useMemo(() => {
@@ -339,6 +340,10 @@ export const RunOfShowManager: React.FC<RunOfShowManagerProps> = ({
   };
 
   const handlePrintSheet = () => {
+    setShowCallSheetModal(true);
+  };
+
+  const handleExecuteBrowserPrint = () => {
     toast.showToast('Opening print dialog for Run of Show binder...', 'info');
     window.print();
   };
@@ -1116,6 +1121,98 @@ Enclosed: Venue Confirmation Copy, Applicant ID Proof`;
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
             <Button variant="primary" size="md" onClick={() => setShowNocModal(false)}>
               Close Guide
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* =====================================================================
+          7. DAY-OF PRINTABLE RUN OF SHOW CALL SHEET MODAL
+          ===================================================================== */}
+      <Modal
+        isOpen={showCallSheetModal}
+        onClose={() => setShowCallSheetModal(false)}
+        title="Day-of Execution Call Sheet & Coordinator Binder"
+        subtitle="Standard high-contrast print layout for pandits, coordinators, and banquet supervisors."
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+          <div
+            style={{
+              padding: 'var(--space-4)',
+              background: 'var(--surface-subtle)',
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-md)',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 'var(--space-2)', marginBottom: 'var(--space-3)' }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: 'var(--text)' }}>
+                  {plan.title}
+                </h3>
+                <p style={{ margin: '4px 0 0', fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+                  {plan.eventDate} • {plan.city} • {plan.venuePreference.replace(/_/g, ' ')} • {plan.guestCount} Guests
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={handleExecuteBrowserPrint}
+                  leadingIcon={<Printer size={15} />}
+                  id="btn-confirm-print-callsheet"
+                >
+                  Print / Save as PDF
+                </Button>
+              </div>
+            </div>
+
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--text-xs)' }}>
+                <thead>
+                  <tr style={{ background: 'var(--surface)', borderBottom: '2px solid var(--border)', textAlign: 'left' }}>
+                    <th style={{ padding: '8px 10px', width: '100px' }}>Time</th>
+                    <th style={{ padding: '8px 10px' }}>Ritual / Milestone</th>
+                    <th style={{ padding: '8px 10px' }}>Location</th>
+                    <th style={{ padding: '8px 10px' }}>Lead Role</th>
+                    <th style={{ padding: '8px 10px' }}>Operational Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {displayedItems.map((item, idx) => (
+                    <tr
+                      key={item.id}
+                      style={{
+                        borderBottom: '1px solid var(--border)',
+                        background: item.timeMins >= CURFEW_MINUTES ? 'rgba(239, 68, 68, 0.05)' : (idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)'),
+                      }}
+                    >
+                      <td style={{ padding: '8px 10px', fontWeight: 700, color: 'var(--accent-primary)', whiteSpace: 'nowrap' }}>
+                        {item.time}
+                      </td>
+                      <td style={{ padding: '8px 10px', fontWeight: 600 }}>
+                        {item.activity}
+                        {item.timeMins >= CURFEW_MINUTES && (
+                          <span style={{ marginLeft: '6px', fontSize: '10px', color: 'var(--color-danger)', fontWeight: 700 }}>
+                            (INDOOR CURFEW)
+                          </span>
+                        )}
+                      </td>
+                      <td style={{ padding: '8px 10px', color: 'var(--text-muted)' }}>{item.location}</td>
+                      <td style={{ padding: '8px 10px', fontWeight: 600 }}>{item.responsibleRole || 'Coordinator'}</td>
+                      <td style={{ padding: '8px 10px', color: 'var(--text-secondary)' }}>{item.notes || '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+              Tip: Use Ctrl+P or the print button to generate a clean multi-page binder sheet.
+            </span>
+            <Button variant="secondary" size="md" onClick={() => setShowCallSheetModal(false)}>
+              Close
             </Button>
           </div>
         </div>

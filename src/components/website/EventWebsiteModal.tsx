@@ -17,7 +17,9 @@ import {
   Palette,
   Eye,
   Send,
+  QrCode,
 } from 'lucide-react';
+import { generateQRSvg, generateQRDataUrl } from '../../utils/qrCode';
 
 interface EventWebsiteModalProps {
   isOpen: boolean;
@@ -182,13 +184,29 @@ export const EventWebsiteModal: React.FC<EventWebsiteModalProps> = ({
     }, 4000);
   };
 
+  const shareUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}/app?event=${plan?.eventType || 'wedding'}&website=1`
+    : 'https://eventwise.ai/app?website=1';
+
   const handleCopyShareLink = () => {
     if (typeof window === 'undefined') return;
-    const url = new URL(window.location.href);
-    url.searchParams.set('event', plan.eventType);
-    url.searchParams.set('website', '1');
-    navigator.clipboard.writeText(url.toString());
+    navigator.clipboard.writeText(shareUrl);
     onToast?.('✓ Shareable celebration website link copied to clipboard!');
+  };
+
+  const handleDownloadQrSvg = () => {
+    if (!plan) return;
+    const svgMarkup = generateQRSvg(shareUrl, { size: 400, fgColor: currentTheme.accent, bgColor: '#ffffff' });
+    const blob = new Blob([svgMarkup], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${plan.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-invitation-qr.svg`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    onToast?.('✓ Invitation card QR code downloaded for print!');
   };
 
   const handleDownloadStandaloneHtml = () => {
@@ -959,6 +977,58 @@ export const EventWebsiteModal: React.FC<EventWebsiteModalProps> = ({
             >
               Download Standalone .html Website
             </Button>
+          </div>
+
+          <div
+            className="card"
+            style={{
+              padding: '1.5rem',
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-md)',
+              background: 'var(--surface-raised)',
+            }}
+          >
+            <h3 style={{ fontSize: 'var(--text-md)', fontWeight: 700, margin: '0 0 0.5rem', color: 'var(--text)' }}>
+              3. Invitation Card QR Code (For Physical Cards)
+            </h3>
+            <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', margin: '0 0 1rem' }}>
+              Print this QR code on physical Indian wedding cards, Lagan Patrika, or invitation envelopes. Guests can scan with any smartphone camera to open this website and RSVP immediately.
+            </p>
+
+            <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+              <div
+                style={{
+                  background: '#ffffff',
+                  padding: '0.6rem',
+                  borderRadius: '10px',
+                  display: 'inline-flex',
+                  border: '1px solid var(--border)',
+                }}
+              >
+                <img
+                  src={generateQRDataUrl(shareUrl, { size: 130, fgColor: currentTheme.accent, bgColor: '#ffffff' })}
+                  alt="Celebration Website QR Code"
+                  width={130}
+                  height={130}
+                  style={{ display: 'block' }}
+                />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', flex: 1, minWidth: '220px' }}>
+                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+                  <strong>Destination Link:</strong>
+                  <div style={{ wordBreak: 'break-all', marginTop: '2px', opacity: 0.85 }}>{shareUrl}</div>
+                </div>
+                <div>
+                  <Button
+                    variant="primary"
+                    onClick={handleDownloadQrSvg}
+                    leftIcon={<QrCode size={15} />}
+                  >
+                    Download QR Code (SVG Vector)
+                  </Button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

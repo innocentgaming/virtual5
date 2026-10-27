@@ -14,9 +14,10 @@ import {
   Sparkles,
   Download,
   FileSpreadsheet,
+  Globe,
 } from 'lucide-react';
 import type { BudgetItem, BudgetCategory, BudgetSummary, EventPlan } from '../../types/event';
-import { formatCurrency, formatIndianShort } from '../../utils/formatters';
+import { formatCurrency, formatIndianShort, formatWithCurrency, CURRENCY_CONFIGS, type CurrencyCode } from '../../utils/formatters';
 import { InteractiveBudgetChart } from './InteractiveBudgetChart';
 import { Card, CardHeader, Button, Badge, EmptyState, Modal, useToast } from '../ui';
 import { useVirtualList } from '../../hooks/useVirtualList';
@@ -214,6 +215,7 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<'all' | BudgetCategory>('all');
   const [sortField, setSortField] = useState<SortField>('estimatedCost');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [selectedCurrency, setSelectedCurrency] = useState<CurrencyCode>('INR');
 
   const deferredSearchQuery = useDeferredValue(searchQuery);
   const deferredCategoryFilter = useDeferredValue(selectedCategoryFilter);
@@ -425,6 +427,61 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
       {/* =====================================================================
+          0. NRI & INTERNATIONAL DESTINATION WEDDING CURRENCY SELECTOR
+          ===================================================================== */}
+      <div
+        className="card no-print"
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 'var(--space-3)',
+          padding: 'var(--space-3) var(--space-4)',
+          background: 'var(--surface-raised)',
+          border: '1px solid var(--border)',
+          borderRadius: 'var(--radius-lg)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+          <Globe size={16} color="var(--accent-primary)" />
+          <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text)' }}>
+            Currency View (NRI & Destination Events):
+          </span>
+          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+            {selectedCurrency === 'INR' ? 'Native Indian Rupee (₹ Lakhs & Crores)' : `Estimates converted to ${selectedCurrency}`}
+          </span>
+        </div>
+
+        <div style={{ display: 'flex', gap: 'var(--space-1)', alignItems: 'center' }}>
+          {(Object.keys(CURRENCY_CONFIGS) as CurrencyCode[]).map((code) => {
+            const conf = CURRENCY_CONFIGS[code];
+            const isSelected = selectedCurrency === code;
+            return (
+              <button
+                key={code}
+                type="button"
+                onClick={() => setSelectedCurrency(code)}
+                style={{
+                  padding: '3px 10px',
+                  borderRadius: 'var(--radius-full)',
+                  fontSize: 'var(--text-xs)',
+                  fontWeight: isSelected ? 700 : 500,
+                  cursor: 'pointer',
+                  border: isSelected ? '1px solid var(--accent-primary)' : '1px solid var(--border)',
+                  background: isSelected ? 'var(--accent-primary)' : 'var(--surface)',
+                  color: isSelected ? '#ffffff' : 'var(--text)',
+                  transition: 'all var(--transition-fast)',
+                }}
+              >
+                {conf.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* =====================================================================
           1. SUMMARY KPI STRIP: Total, Estimated, Actual, Remaining, Per-Guest
           ===================================================================== */}
       <div
@@ -445,10 +502,10 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
             Total Event Budget
           </span>
           <div className="stat-value tabular-nums" style={{ fontSize: 'var(--text-2xl)', fontWeight: 800, color: 'var(--text)', margin: '4px 0' }}>
-            {formatIndianShort(budgetSummary.totalBudget)}
+            {selectedCurrency === 'INR' ? formatIndianShort(budgetSummary.totalBudget) : formatWithCurrency(budgetSummary.totalBudget, selectedCurrency)}
           </div>
           <span className="stat-subtext" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
-            Full Target: {formatCurrency(budgetSummary.totalBudget)}
+            Base Target: {formatCurrency(budgetSummary.totalBudget)}
           </span>
         </div>
 
@@ -470,7 +527,7 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
               margin: '4px 0',
             }}
           >
-            {formatIndianShort(budgetSummary.totalEstimated)}
+            {selectedCurrency === 'INR' ? formatIndianShort(budgetSummary.totalEstimated) : formatWithCurrency(budgetSummary.totalEstimated, selectedCurrency)}
           </div>
           <span className="stat-subtext" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
             {budgetSummary.utilizationPercentage}% of budget committed
@@ -495,7 +552,7 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
               margin: '4px 0',
             }}
           >
-            {formatIndianShort(budgetSummary.totalActual)}
+            {selectedCurrency === 'INR' ? formatIndianShort(budgetSummary.totalActual) : formatWithCurrency(budgetSummary.totalActual, selectedCurrency)}
           </div>
           <span className="stat-subtext" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
             Signed contracts & paid receipts
@@ -529,9 +586,11 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
               margin: '4px 0',
             }}
           >
-            {budgetSummary.remainingBalance < 0
-              ? `${formatIndianShort(Math.abs(budgetSummary.remainingBalance))} over`
-              : formatIndianShort(budgetSummary.remainingBalance)}
+            {selectedCurrency === 'INR'
+              ? (budgetSummary.remainingBalance < 0
+                  ? `${formatIndianShort(Math.abs(budgetSummary.remainingBalance))} over`
+                  : formatIndianShort(budgetSummary.remainingBalance))
+              : formatWithCurrency(budgetSummary.remainingBalance, selectedCurrency)}
           </div>
           <span className="stat-subtext" style={{ fontSize: 'var(--text-xs)', color: budgetSummary.remainingBalance < 0 ? 'var(--color-danger)' : 'var(--text-muted)' }}>
             {budgetSummary.remainingBalance < 0 ? 'Exceeds budget cap' : 'Unallocated funds'}
@@ -548,7 +607,7 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
             Per-Guest Cost
           </span>
           <div className="stat-value tabular-nums" style={{ fontSize: 'var(--text-2xl)', fontWeight: 800, color: 'var(--accent-primary)', margin: '4px 0' }}>
-            {formatIndianShort(budgetSummary.perGuestCost)}
+            {selectedCurrency === 'INR' ? formatIndianShort(budgetSummary.perGuestCost) : formatWithCurrency(budgetSummary.perGuestCost, selectedCurrency)}
           </div>
           <span className="stat-subtext" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
             {formatCurrency(budgetSummary.perGuestCost)} / guest ({plan.guestCount} guests)

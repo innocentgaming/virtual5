@@ -46,3 +46,36 @@ export function formatPercent(val: number): string {
   return `${Math.round(val * 10) / 10}%`;
 }
 
+export type CurrencyCode = 'INR' | 'USD' | 'AED' | 'GBP';
+
+export interface CurrencyConfig {
+  code: CurrencyCode;
+  symbol: string;
+  label: string;
+  ratePerInr: number;
+}
+
+export const CURRENCY_CONFIGS: Record<CurrencyCode, CurrencyConfig> = {
+  INR: { code: 'INR', symbol: '₹', label: 'INR (₹)', ratePerInr: 1 },
+  USD: { code: 'USD', symbol: '$', label: 'USD ($)', ratePerInr: 1 / 86 },
+  AED: { code: 'AED', symbol: 'AED ', label: 'AED (Dirham)', ratePerInr: 1 / 23.4 },
+  GBP: { code: 'GBP', symbol: '£', label: 'GBP (£)', ratePerInr: 1 / 112 },
+};
+
+export function convertFromInr(inrAmount: number, targetCurrency: CurrencyCode = 'INR'): number {
+  const config = CURRENCY_CONFIGS[targetCurrency] || CURRENCY_CONFIGS.INR;
+  return inrAmount * config.ratePerInr;
+}
+
+export function formatWithCurrency(inrAmount: number, targetCurrency: CurrencyCode = 'INR'): string {
+  if (targetCurrency === 'INR') {
+    return formatCurrency(inrAmount, '₹');
+  }
+  const config = CURRENCY_CONFIGS[targetCurrency] || CURRENCY_CONFIGS.INR;
+  const converted = inrAmount * config.ratePerInr;
+  const intlFormatter = new Intl.NumberFormat('en-US', {
+    maximumFractionDigits: 0,
+  });
+  return `${config.symbol}${intlFormatter.format(Math.round(converted))}`;
+}
+
