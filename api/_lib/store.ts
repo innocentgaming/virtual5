@@ -55,7 +55,7 @@ const k = {
 // Upstash Redis (REST)
 // ---------------------------------------------------------------------------
 
-class RedisStore implements Store {
+export class RedisStore implements Store {
   readonly kind = 'redis' as const;
   private readonly url: string;
   private readonly token: string;
@@ -110,9 +110,10 @@ class RedisStore implements Store {
     await this.cmd('SET', k.events(userId), JSON.stringify(doc));
   }
   async incr(key: string, windowSeconds: number) {
-    const count = await this.cmd<number>('INCR', k.rl(key));
-    if (count === 1) await this.cmd('EXPIRE', k.rl(key), windowSeconds);
-    return count;
+    // Create the counter with its TTL first (NX), then increment. Doing INCR then EXPIRE would leave a
+    // counter without any expiry if the function dies in between, locking that key out permanently.
+    await this.cmd('SET', k.rl(key), 0, 'EX', windowSeconds, 'NX');
+    return this.cmd<number>('INCR', k.rl(key));
   }
 }
 

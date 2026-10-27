@@ -40,12 +40,38 @@ export function useLocation() {
   return loc;
 }
 
-export function usePageTitle(title: string): void {
+export interface PageMetaOptions {
+  noindex?: boolean;
+}
+
+export function usePageTitle(title: string, options: PageMetaOptions = {}): void {
   useEffect(() => {
     const prev = document.title;
     document.title = title;
+
+    let meta = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
+    let created = false;
+
+    if (options.noindex) {
+      if (!meta) {
+        meta = document.createElement('meta');
+        meta.name = 'robots';
+        document.head.appendChild(meta);
+        created = true;
+      }
+      meta.content = 'noindex, nofollow';
+    }
+
     return () => {
       document.title = prev;
+      if (options.noindex && meta) {
+        if (created) {
+          meta.remove();
+        } else {
+          meta.removeAttribute('content');
+        }
+      }
     };
-  }, [title]);
+  }, [title, options.noindex]);
 }
+

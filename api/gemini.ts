@@ -2,199 +2,181 @@
  * Serverless Proxy Endpoint for Google Gemini API
  * Compatible with Vercel Serverless Functions and Netlify Functions.
  *
- * Security Benefits:
- * 1. Holds GEMINI_API_KEY server-side so keys are never leaked to client browsers.
- * 2. Origin validation: rejects unauthorized cross-origin requests.
- * 3. Request size capping: rejects payloads > 100 KB to mitigate DoS.
- * 4. In-memory IP rate limiting (e.g., 20 requests per minute per IP).
- * 5. Masks and redacts internal error traces from client responses.
+ * Security properties:
+ * 1. The GEMINI_API_KEY stays server-side and is never returned to clients.
+ * 2. Same-origin only: browsers must send a matching Origin (or ALLOWED_ORIGIN allow-list entry);
+ *    requests with no browser provenance at all are refused, so the endpoint is not a free public relay.
+ * 3. Shared rate limiting through the account store (works across serverless instances), with an
+ *    in-memory fallback when no store is configured.
+ * 4. Strict input validation: size caps, model allow-list, clamped temperature, MIME allow-list.
+ * 5. Upstream error details are logged server-side and never echoed to the caller.
  */
 
-import type { IncomingMessage, ServerResponse } from 'http';
-import { getStore } from './_lib/store.js';
-import { getClientIp, rateLimit } from './_lib/http.js';
+import type { IncomingMessage, ServerResponse } from 'node:http';
+import { HttpError, getClientIp, rateLimit, readJson, sendJson, type ApiRequest } from './_lib/http.js';
+import { StorageNotConfiguredError, getStore } from './_lib/store.js';
 
-interface ExtendedRequest extends IncomingMessage {
-  body?: unknown;
-  query?: Record<string, string>;
-}
-
-const RATE_LIMIT_WINDOW_SECONDS = 60; // 1 minute
+const RATE_LIMIT_WINDOW_SECONDS = 60;
 const MAX_REQUESTS_PER_WINDOW = 20;
-const MAX_REQUEST_PAYLOAD_BYTES = 100 * 1024; // 100 KB
+const MAX_REQUEST_PAYLOAD_BYTES = 100 * 1024;
+const MAX_PROMPT_CHARS = 20_000;
+const MAX_SYSTEM_CHARS = 8_000;
+const DEFAULT_MODEL = 'gemini-flash-latest';
+const BUILT_IN_MODELS = ['gemini-flash-latest', 'gemini-3.8-flash', 'gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-1.5-flash'];
+const ALLOWED_MIME_TYPES = ['application/json', 'text/plain'];
 
-function isOriginAuthorized(req: ExtendedRequest): boolean {
-  const originHeader = req.headers['origin'] || req.headers['referer'];
-  const allowedOrigin = process.env.ALLOWED_ORIGIN;
-  const isProd = process.env.VERCEL_ENV === 'production' || process.env.NODE_ENV === 'production';
+// Fallback limiter, only used when no shared store is available (e.g. a bare Netlify deploy).
+const fallbackLimits = new Map<string, { count: number; resetTime: number }>();
 
-  // In production, require Origin or Referer to prevent automated/cross-origin abuse
-  if (!originHeader) {
-    return !isProd;
+function fallbackRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const record = fallbackLimits.get(ip);
+  if (!record || now > record.resetTime) {
+    fallbackLimits.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_SECONDS * 1000 });
+    return true;
   }
+  record.count += 1;
+  return record.count <= MAX_REQUESTS_PER_WINDOW;
+}
 
-  try {
-    const parsedOrigin = new URL(String(originHeader));
-    const originHost = parsedOrigin.host.toLowerCase();
+export function allowedModels(): string[] {
+  const extra = (process.env.GEMINI_ALLOWED_MODELS ?? '')
+    .split(',')
+    .map((m) => m.trim())
+    .filter(Boolean);
+  return [...new Set([...BUILT_IN_MODELS, ...extra])];
+}
 
-    // 1. Check against request's own host (same origin)
-    const reqHost = String(req.headers['x-forwarded-host'] ?? req.headers.host ?? '').toLowerCase();
-    if (reqHost && (originHost === reqHost || originHost === reqHost.split(':')[0])) {
-      return true;
+/** Exact host comparison (never a substring match, which `evil.com/?x=yoursite.com` would defeat). */
+export function isOriginAllowed(req: IncomingMessage): boolean {
+  const origin = req.headers.origin;
+  const allowList = (process.env.ALLOWED_ORIGIN ?? '')
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean);
+
+  if (origin) {
+    let originHost: string;
+    try {
+      originHost = new URL(String(origin)).host;
+    } catch {
+      return false;
     }
-
-    // 2. Check against explicit ALLOWED_ORIGIN if set
-    if (allowedOrigin) {
-      const parsedAllowed = new URL(allowedOrigin.startsWith('http') ? allowedOrigin : `https://${allowedOrigin}`);
-      if (originHost === parsedAllowed.host.toLowerCase()) {
-        return true;
+    const hostOf = (value: string): string => {
+      try {
+        return new URL(value.includes('://') ? value : `https://${value}`).host;
+      } catch {
+        return value;
       }
-    }
+    };
+    if (allowList.length > 0 && allowList.some((entry) => hostOf(entry) === originHost)) return true;
+    const ownHost = String(req.headers['x-forwarded-host'] ?? req.headers.host ?? '');
+    return originHost === ownHost;
+  }
+  // No Origin header: accept only requests the browser itself marks as same-origin / user-initiated.
+  const site = req.headers['sec-fetch-site'];
+  return site === 'same-origin' || site === 'none';
+}
 
-    // 3. In non-production, allow local origins
-    if (!isProd && (parsedOrigin.hostname === 'localhost' || parsedOrigin.hostname === '127.0.0.1')) {
-      return true;
-    }
-
-    return false;
-  } catch {
-    return false;
+async function checkRateLimit(ip: string): Promise<boolean> {
+  try {
+    await rateLimit(getStore(), `gemini:${ip}`, MAX_REQUESTS_PER_WINDOW, RATE_LIMIT_WINDOW_SECONDS);
+    return true;
+  } catch (err) {
+    if (err instanceof HttpError && err.status === 429) return false;
+    if (err instanceof StorageNotConfiguredError) return fallbackRateLimit(ip);
+    console.error('[gemini] Rate-limit store error, using fallback limiter', err);
+    return fallbackRateLimit(ip);
   }
 }
 
-export default async function handler(req: ExtendedRequest, res: ServerResponse): Promise<void> {
-  // 1. Enforce POST only
-  if (req.method !== 'POST') {
-    res.statusCode = 405;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ error: 'Method Not Allowed. Only POST is supported.' }));
-    return;
-  }
-
-  // 2. Strict Origin / Referer validation (prevent unauthorized third-party embedding and query-param spoofing)
-  if (!isOriginAuthorized(req)) {
-    res.statusCode = 403;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ error: 'Forbidden. Cross-origin request not allowed.' }));
-    return;
-  }
-
-  // 3. Shared rate limiting via store (Upstash Redis in production, in-memory store in dev)
-  const clientIp = getClientIp(req);
+export default async function handler(req: ApiRequest, res: ServerResponse): Promise<void> {
   try {
-    const store = getStore();
-    await rateLimit(store, `gemini:${clientIp}`, MAX_REQUESTS_PER_WINDOW, RATE_LIMIT_WINDOW_SECONDS);
-  } catch {
-    res.statusCode = 429;
-    res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Retry-After', String(RATE_LIMIT_WINDOW_SECONDS));
-    res.end(JSON.stringify({ error: 'Rate limit exceeded. Please wait 1 minute before retrying.' }));
-    return;
-  }
-
-  // 4. Check payload size guard
-  const contentLength = req.headers['content-length'];
-  if (contentLength && parseInt(contentLength, 10) > MAX_REQUEST_PAYLOAD_BYTES) {
-    res.statusCode = 413;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ error: 'Payload Too Large. Max allowed size is 100 KB.' }));
-    return;
-  }
-
-  // 5. Read body if not parsed
-  let bodyData: {
-    prompt?: string;
-    systemInstruction?: string;
-    temperature?: number;
-    responseMimeType?: string;
-    model?: string;
-  } = {};
-
-  try {
-    if (typeof req.body === 'object' && req.body !== null) {
-      bodyData = req.body as typeof bodyData;
-    } else {
-      const chunks: Buffer[] = [];
-      let totalBytes = 0;
-      for await (const chunk of req) {
-        totalBytes += (chunk as Buffer).length;
-        if (totalBytes > MAX_REQUEST_PAYLOAD_BYTES) {
-          res.statusCode = 413;
-          res.setHeader('Content-Type', 'application/json');
-          res.end(JSON.stringify({ error: 'Payload Too Large.' }));
-          return;
-        }
-        chunks.push(chunk as Buffer);
-      }
-      const rawBody = Buffer.concat(chunks).toString('utf-8');
-      if (rawBody.trim()) {
-        bodyData = JSON.parse(rawBody);
-      }
+    if (req.method !== 'POST') {
+      res.setHeader('Allow', 'POST');
+      throw new HttpError(405, 'Method Not Allowed. Only POST is supported.', 'method_not_allowed');
     }
-  } catch {
-    res.statusCode = 400;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ error: 'Malformed JSON payload.' }));
-    return;
-  }
+    if (!isOriginAllowed(req)) {
+      throw new HttpError(403, 'Forbidden. Cross-origin request not allowed.', 'forbidden_origin');
+    }
+    if (!(await checkRateLimit(getClientIp(req)))) {
+      res.setHeader('Retry-After', String(RATE_LIMIT_WINDOW_SECONDS));
+      throw new HttpError(429, 'Rate limit exceeded. Please wait 1 minute before retrying.', 'rate_limited');
+    }
 
-  const { prompt, systemInstruction, temperature = 0.3, responseMimeType, model = 'gemini-2.5-flash' } = bodyData;
+    const declared = Number.parseInt(String(req.headers['content-length'] ?? ''), 10);
+    if (Number.isFinite(declared) && declared > MAX_REQUEST_PAYLOAD_BYTES) {
+      throw new HttpError(413, 'Payload Too Large. Max allowed size is 100 KB.', 'payload_too_large');
+    }
 
-  if (!prompt || typeof prompt !== 'string' || prompt.length > 20000) {
-    res.statusCode = 400;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ error: 'Invalid or oversized prompt parameter.' }));
-    return;
-  }
+    const body = await readJson(req, MAX_REQUEST_PAYLOAD_BYTES);
+    // Platforms that pre-parse the body bypass the stream cap, so measure it here too.
+    if (JSON.stringify(body).length > MAX_REQUEST_PAYLOAD_BYTES) {
+      throw new HttpError(413, 'Payload Too Large. Max allowed size is 100 KB.', 'payload_too_large');
+    }
 
-  // 6. Resolve server-side key
-  const serverApiKey = process.env.GEMINI_API_KEY || (req.headers['x-goog-api-key'] as string | undefined);
-  if (!serverApiKey) {
-    res.statusCode = 500;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ error: 'Server misconfiguration: GEMINI_API_KEY is not configured.' }));
-    return;
-  }
+    const { prompt, systemInstruction, temperature, responseMimeType, model } = body;
 
-  // 7. Call Google Gemini via secure header
-  try {
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
-    const geminiRes = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-goog-api-key': serverApiKey,
-      },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        ...(systemInstruction ? { systemInstruction: { parts: [{ text: systemInstruction }] } } : {}),
-        generationConfig: {
-          temperature,
-          ...(responseMimeType ? { responseMimeType } : {}),
-        },
-      }),
-    });
+    if (typeof prompt !== 'string' || !prompt.trim() || prompt.length > MAX_PROMPT_CHARS) {
+      throw new HttpError(400, 'Invalid or oversized prompt parameter.', 'invalid_prompt');
+    }
+    if (systemInstruction !== undefined && (typeof systemInstruction !== 'string' || systemInstruction.length > MAX_SYSTEM_CHARS)) {
+      throw new HttpError(400, 'Invalid or oversized systemInstruction parameter.', 'invalid_system_instruction');
+    }
+    if (temperature !== undefined && (typeof temperature !== 'number' || !Number.isFinite(temperature) || temperature < 0 || temperature > 2)) {
+      throw new HttpError(400, 'temperature must be a number between 0 and 2.', 'invalid_temperature');
+    }
+    if (responseMimeType !== undefined && (typeof responseMimeType !== 'string' || !ALLOWED_MIME_TYPES.includes(responseMimeType))) {
+      throw new HttpError(400, 'Unsupported responseMimeType.', 'invalid_mime_type');
+    }
+    const chosenModel = model === undefined ? DEFAULT_MODEL : model;
+    if (typeof chosenModel !== 'string' || !allowedModels().includes(chosenModel)) {
+      throw new HttpError(400, 'Unsupported model.', 'invalid_model');
+    }
 
-    const geminiJson = (await geminiRes.json()) as {
+    const serverApiKey = process.env.GEMINI_API_KEY || (req.headers['x-goog-api-key'] as string | undefined);
+    if (!serverApiKey) {
+      console.error('[gemini] GEMINI_API_KEY is not configured.');
+      throw new HttpError(500, 'The AI service is not configured on this server.', 'not_configured');
+    }
+
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(chosenModel)}:generateContent`;
+    let geminiRes: Response;
+    try {
+      geminiRes = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': serverApiKey },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          ...(systemInstruction ? { systemInstruction: { parts: [{ text: systemInstruction }] } } : {}),
+          generationConfig: {
+            temperature: temperature ?? 0.3,
+            ...(responseMimeType ? { responseMimeType } : {}),
+          },
+        }),
+      });
+    } catch (err) {
+      console.error('[gemini] Upstream request failed', err);
+      throw new HttpError(502, 'Failed to contact the AI service.', 'upstream_unreachable');
+    }
+
+    const geminiJson = (await geminiRes.json().catch(() => ({}))) as {
       error?: { message?: string };
       candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
     };
 
     if (!geminiRes.ok) {
-      res.statusCode = geminiRes.status;
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ error: 'Upstream Gemini API error', details: geminiJson.error?.message || 'Unknown error' }));
-      return;
+      console.error('[gemini] Upstream error', geminiRes.status, geminiJson.error?.message);
+      throw new HttpError(geminiRes.status === 429 ? 429 : 502, 'The AI service returned an error. Please try again.', 'upstream_error');
     }
 
-    const outputText = geminiJson.candidates?.[0]?.content?.parts?.[0]?.text;
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ text: outputText || '' }));
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Internal Server Error';
-    res.statusCode = 502;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ error: 'Failed to contact Gemini upstream.', message }));
+    sendJson(res, 200, { text: geminiJson.candidates?.[0]?.content?.parts?.[0]?.text ?? '' });
+  } catch (err) {
+    if (err instanceof HttpError) {
+      sendJson(res, err.status, { error: err.message, code: err.code });
+    } else {
+      console.error('[gemini] Unhandled error', err);
+      sendJson(res, 500, { error: 'Something went wrong. Please try again.', code: 'server_error' });
+    }
   }
 }

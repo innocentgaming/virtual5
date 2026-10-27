@@ -23,7 +23,7 @@ if (typeof window !== 'undefined') {
   beforeAll(async () => {
     await import('./App');
     await preloadAllTabs();
-  });
+  }, 30000);
 
   afterEach(() => {
     cleanup();

@@ -105,7 +105,7 @@ export const Header: React.FC<HeaderProps> = ({
                     padding: '1px 5px',
                     borderRadius: '3px',
                     background: 'rgba(217, 119, 6, 0.15)',
-                    color: '#d97706',
+                    color: '#b45309',
                     border: '1px solid rgba(217, 119, 6, 0.3)',
                   }}
                 >

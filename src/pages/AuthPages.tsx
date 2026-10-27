@@ -41,7 +41,7 @@ const ErrorBox: React.FC<{ message: string | null }> = ({ message }) =>
 // ---------------------------------------------------------------------------
 
 export function LoginPage(): React.ReactElement {
-  usePageTitle('Sign in | EventWise AI');
+  usePageTitle('Sign in | EventWise AI', { noindex: true });
   const { login } = useAuth();
   const { search } = useLocation();
   const next = safeNextPath(search.get('next'));
@@ -96,7 +96,7 @@ export function LoginPage(): React.ReactElement {
 // ---------------------------------------------------------------------------
 
 export function SignupPage(): React.ReactElement {
-  usePageTitle('Create your account | EventWise AI');
+  usePageTitle('Create your account | EventWise AI', { noindex: true });
   const { signup } = useAuth();
   const { search } = useLocation();
   const next = safeNextPath(search.get('next'));
@@ -166,7 +166,7 @@ export function SignupPage(): React.ReactElement {
 // ---------------------------------------------------------------------------
 
 export function ForgotPasswordPage(): React.ReactElement {
-  usePageTitle('Reset your password | EventWise AI');
+  usePageTitle('Reset your password | EventWise AI', { noindex: true });
   const { forgotPassword } = useAuth();
   const [email, setEmail] = useState('');
   const [busy, setBusy] = useState(false);
@@ -221,7 +221,7 @@ export function ForgotPasswordPage(): React.ReactElement {
 // ---------------------------------------------------------------------------
 
 export function ResetPasswordPage(): React.ReactElement {
-  usePageTitle('Choose a new password | EventWise AI');
+  usePageTitle('Choose a new password | EventWise AI', { noindex: true });
   const { resetPassword } = useAuth();
   const { search } = useLocation();
   const token = search.get('token') ?? '';

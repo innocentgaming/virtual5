@@ -76,7 +76,7 @@ export function TermsPage(): React.ReactElement {
 }
 
 export function NotFoundPage(): React.ReactElement {
-  usePageTitle('Page Not Found | EventWise AI');
+  usePageTitle('Page Not Found | EventWise AI', { noindex: true });
   return (
     <SiteLayout>
       <div className="s-wrap" style={{ padding: '6rem 1rem', textAlign: 'center' }}>

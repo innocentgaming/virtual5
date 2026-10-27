@@ -46,11 +46,11 @@ const CATEGORY_LABELS: Record<BudgetCategory, string> = {
 
 const CATEGORY_COLORS: Record<BudgetCategory, string> = {
   venue: '#4f46e5',
-  catering: '#06b6d4',
+  catering: '#0891b2',
   decor: '#ec4899',
   photography: '#8b5cf6',
-  entertainment: '#f59e0b',
-  logistics: '#10b981',
+  entertainment: '#b45309',
+  logistics: '#15803d',
   invitations: '#64748b',
   contingency: '#94a3b8',
   other: '#a855f7',

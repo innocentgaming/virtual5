@@ -141,7 +141,6 @@ const TaskNodeItem = React.memo<TaskNodeItemProps>(({
           ? '5px solid var(--color-warning)'
           : '5px solid var(--accent-primary)',
         boxShadow: 'var(--shadow-sm)',
-        opacity: task.completed ? 0.75 : 1,
         transition: 'all var(--transition-fast)',
       }}
     >

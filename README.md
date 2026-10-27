@@ -6,7 +6,7 @@
 [![React](https://img.shields.io/badge/React-19.0.0-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8.0-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Vite](https://img.shields.io/badge/Vite-8.3.5-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
-[![Tests](https://img.shields.io/badge/Tests-204%2F204%20Passing%20(100%25)-brightgreen?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
+[![Tests](https://img.shields.io/badge/Tests-247%2F247%20Passing%20(100%25)-brightgreen?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
 [![Linter](https://img.shields.io/badge/Oxlint-0%20Warnings%20%2F%200%20Errors-success?style=for-the-badge&logo=oxc&logoColor=white)](https://oxc.rs/)
 [![Accessibility](https://img.shields.io/badge/WCAG-2.1%20AA%20Compliant-blueviolet?style=for-the-badge&logo=w3c&logoColor=white)](https://www.w3.org/WAI/standards-guidelines/wcag/)
 [![Bundle Size](https://img.shields.io/badge/Main%20JS-24.7%20kB%20(Gzip%208.8%20kB)-brightgreen?style=for-the-badge)](#)
@@ -56,7 +56,7 @@
 | **3. Code Quality & Modularity** | Clean architecture, centralized business constants, pure evaluation functions, zero dead code or linters. | • Centralized thresholds in [`rulesConfig.ts`](file:///d:/challege5/src/constants/rulesConfig.ts).<br>• 12 pure rules in [`rulesRegistry.ts`](file:///d:/challege5/src/services/rulesRegistry.ts) with full JSDoc.<br>• **0 oxlint warnings / 0 errors** on 115 files. | [`rulesRegistry.ts`](file:///d:/challege5/src/services/rulesRegistry.ts)<br>[`rulesConfig.ts`](file:///d:/challege5/src/constants/rulesConfig.ts)<br>`npm run lint` (0 errors) |
 | **4. Security Architecture** | Zero secrets in repo/git history, hardened API communication, safe storage, and XSS immunity. | • **0 secrets in Git / code**.<br>• Serverless Gemini proxy (`api/gemini.ts`) with origin allowlisting and rate limits.<br>• Safe JSON import/export with schema validation (`importPlanFromJson`).<br>• `rel="noopener noreferrer"` across all external links. | [`gemini.ts`](file:///d:/challege5/api/gemini.ts)<br>[`storageService.ts`](file:///d:/challege5/src/services/storageService.ts)<br>[`securityHardening.test.tsx`](file:///d:/challege5/src/test/securityHardening.test.tsx) |
 | **5. Efficiency & Performance** | Fast page loads, sub-second interactions, strict bundle limits, and caching. | • **Main JS Chunk: 24.54 kB** (Limit: 150 kB) / **8.78 kB gzip**.<br>• **Main CSS: 38.88 kB** (Limit: 50 kB) / **7.46 kB gzip**.<br>• Copilot in-memory LRU cache (`copilotMemoryCache`) with SHA-256 hash.<br>• Code-split lazy routes with preloading. | [`copilotService.ts`](file:///d:/challege5/src/services/copilotService.ts)<br>[`check-size-budget.mjs`](file:///d:/challege5/scripts/check-size-budget.mjs)<br>`npm run build` |
-| **6. Testing & CI Verification** | Automated tests covering business math, edge cases, negative numbers, overdue tasks, and fallback resilience. | • **204 / 204 tests passing (100%)** across 30 test files (`vitest`).<br>• Automated GitHub Actions CI workflow ([`.github/workflows/ci.yml`](file:///.github/workflows/ci.yml)).<br>• 25 boundary tests for all 12 decision rules. | [`ci.yml`](file:///.github/workflows/ci.yml)<br>[`decisionRulesRegistry.test.ts`](file:///d:/challege5/src/test/decisionRulesRegistry.test.ts)<br>`npm test` |
+| **6. Testing & CI Verification** | Automated tests covering business math, edge cases, negative numbers, overdue tasks, and fallback resilience. | • **249 / 249 tests passing (100%)** across 35 test files (`vitest`).<br>• Automated GitHub Actions CI workflow ([`.github/workflows/ci.yml`](file:///.github/workflows/ci.yml)).<br>• 25 boundary tests for all 12 decision rules. | [`ci.yml`](file:///.github/workflows/ci.yml)<br>[`decisionRulesRegistry.test.ts`](file:///d:/challege5/src/test/decisionRulesRegistry.test.ts)<br>`npm test` |
 | **7. Accessibility (WCAG 2.1 AA)** | Screen reader support, keyboard navigability, high contrast, skip-to-content, and ARIA landmarks. | • Root `<html lang="en-IN">` with `<a href="#main" class="skip-to-content">`.<br>• Interactive Donut chart provides an accessible **"View as Data Table"** toggle (`#btn-toggle-budget-table`).<br>• Automated Axe scans verify zero accessibility violations. | [`InteractiveBudgetChart.tsx`](file:///d:/challege5/src/components/budget/InteractiveBudgetChart.tsx)<br>[`a11yBaselineScan.test.tsx`](file:///d:/challege5/src/test/a11yBaselineScan.test.tsx)<br>[`index.html`](file:///d:/challege5/index.html) |
 
 ---
@@ -193,7 +193,9 @@ EventWise AI operates with a guaranteed **Multi-Tier Fallback Hierarchy**:
 
 ## 📊 Automated Verification & Verification Proofs
 
-### 1. Vitest Test Suite (196 Passing Tests across 29 Files)
+### 1. Vitest Test Suite (249 Passing Tests across 35 Files)
+
+New in this release: `apiHardening.test.ts` (Gemini proxy origin, model, validation and rate limits; client-IP and CSRF checks; atomic Redis rate-limit counter), `authApiErrors.test.ts` (friendly sign-in errors), `seoMeta.test.tsx` and `pageMeta.test.tsx` (share tags, robots, sitemap, noindex on account pages), `contrastTokens.test.ts` (WCAG AA colour tokens) and `liveDemoWindow.test.tsx` (interactive landing demo).
 ```text
  ✓ src/test/scenarioChangeLoop.test.ts (11 tests)
  ✓ src/test/copilotGrounding.test.ts (7 tests)

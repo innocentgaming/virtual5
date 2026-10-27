@@ -24,20 +24,47 @@ async function req<T>(path: string, options: RequestInit = {}): Promise<ApiResul
     });
     const text = await res.text();
     let data: Record<string, unknown> = {};
+    let isJson = false;
     try {
-      data = text ? JSON.parse(text) : {};
+      if (text.trim()) {
+        data = JSON.parse(text);
+        isJson = typeof data === 'object' && data !== null;
+      } else {
+        isJson = true;
+      }
     } catch {
-      /* non-json body */
+      isJson = false;
     }
+
     if (!res.ok) {
+      let error = typeof data.error === 'string' && data.error.trim() ? data.error : '';
+      if (!error) {
+        if (res.status === 429) {
+          error = 'Too many requests. Please wait a moment and try again.';
+        } else if (res.status >= 500) {
+          error = 'Server error. Please try again later.';
+        } else {
+          error = `Request failed (${res.status})`;
+        }
+      }
       return {
         ok: false,
-        error: typeof data.error === 'string' ? data.error : `Request failed (${res.status})`,
+        error,
         code: typeof data.code === 'string' ? data.code : undefined,
         status: res.status,
         ...data,
       };
     }
+
+    if (!isJson) {
+      return {
+        ok: false,
+        error: 'Unexpected response from server. Please try again.',
+        code: 'invalid_response',
+        status: res.status,
+      };
+    }
+
     return { ok: true, ...(data as unknown as T) };
   } catch {
     return { ok: false, error: 'Network connection issue. Please check your internet.', code: 'network' };

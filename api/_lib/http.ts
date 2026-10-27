@@ -99,7 +99,15 @@ export function clearSessionCookie(): string {
   return attrs.join('; ');
 }
 
+/**
+ * Best-effort client IP for rate limiting. Platform-set headers win over the client-controllable
+ * X-Forwarded-For chain, which anyone can prepend values to when the app is not behind a trusted proxy.
+ */
 export function getClientIp(req: IncomingMessage): string {
+  for (const name of ['x-vercel-forwarded-for', 'x-real-ip'] as const) {
+    const value = req.headers[name];
+    if (typeof value === 'string' && value.trim()) return value.split(',')[0].trim();
+  }
   const fwd = req.headers['x-forwarded-for'];
   if (typeof fwd === 'string' && fwd) return fwd.split(',')[0].trim();
   return req.socket?.remoteAddress || 'unknown';
@@ -107,11 +115,17 @@ export function getClientIp(req: IncomingMessage): string {
 
 /**
  * CSRF defence for state-changing requests (in addition to SameSite=Lax + JSON-only bodies):
- * when the browser sends an Origin header it must match the host serving the API.
+ * - when the browser sends an Origin header it must match the host serving the API;
+ * - when Origin is missing, a browser-declared cross-site fetch (Sec-Fetch-Site) is still refused.
  */
 export function assertSameOrigin(req: IncomingMessage): void {
   const origin = req.headers.origin;
-  if (!origin) return;
+  if (!origin) {
+    if (req.headers['sec-fetch-site'] === 'cross-site') {
+      throw new HttpError(403, 'Cross-origin request blocked.', 'forbidden_origin');
+    }
+    return;
+  }
   const host = String(req.headers['x-forwarded-host'] ?? req.headers.host ?? '');
   try {
     if (new URL(String(origin)).host !== host) throw new Error('mismatch');

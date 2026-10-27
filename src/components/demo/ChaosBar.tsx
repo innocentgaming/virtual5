@@ -148,7 +148,7 @@ export const ChaosBar: React.FC<ChaosBarProps> = ({
               width: '26px',
               height: '26px',
               borderRadius: '6px',
-              background: 'var(--color-warning, #f59e0b)',
+              background: 'var(--color-warning, #b45309)',
               color: '#ffffff',
             }}
           >
@@ -165,7 +165,7 @@ export const ChaosBar: React.FC<ChaosBarProps> = ({
                   fontWeight: 800,
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em',
-                  background: 'rgba(245, 158, 11, 0.15)',
+                  background: 'rgba(180, 83, 9, 0.15)',
                   color: '#b45309',
                   padding: '2px 6px',
                   borderRadius: '4px',
@@ -328,7 +328,7 @@ export const ChaosBar: React.FC<ChaosBarProps> = ({
                     cursor: 'pointer',
                   }}
                 >
-                  <Calendar size={15} color="#d97706" />
+                  <Calendar size={15} color="#b45309" />
                   <span>Date moved 14 days earlier</span>
                 </button>
 

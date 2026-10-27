@@ -9,7 +9,7 @@
   --site-teal: #0f766e;
   --site-teal-dark: #115e59;
   --site-teal-light: #ccfbf1;
-  --site-marigold: #d97706;
+  --site-marigold: #b45309;
   --site-marigold-subtle: #fef3c7;
   --site-rani: #be185d;
   --site-rani-subtle: #fce7f3;
@@ -830,6 +830,15 @@
 
 /* Responsive adjustments */
 @media (max-width: 900px) {
+  .s-wrap {
+    padding: 0 1rem;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  .s-legal__body {
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
   .s-hero__grid {
     grid-template-columns: 1fr;
     gap: 2.5rem;

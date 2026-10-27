@@ -56,14 +56,14 @@ const DIETARY_TOOLTIPS: Record<DietaryRequirement, string> = {
 
 const DIETARY_BADGE_COLORS: Record<DietaryRequirement, string> = {
   none: 'var(--text-muted)',
-  vegetarian: '#10b981',
-  jain: '#ea580c',
-  pure_veg: '#16a34a',
-  vegan: '#059669',
-  gluten_free: '#f59e0b',
-  halal: '#8b5cf6',
-  kosher: '#3b82f6',
-  nut_allergy: '#ef4444',
+  vegetarian: '#047857',
+  jain: '#c2410c',
+  pure_veg: '#15803d',
+  vegan: '#047857',
+  gluten_free: '#b45309',
+  halal: '#6d28d9',
+  kosher: '#1d4ed8',
+  nut_allergy: '#b91c1c',
 };
 
 type FilterChip =
