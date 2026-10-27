@@ -33,10 +33,9 @@ export interface GeminiClientResult {
 }
 
 const DEFAULT_MODELS = [
-  'gemini-flash-latest',
-  'gemini-3.8-flash',
+  'gemini-2.5-flash',
   'gemini-2.5-flash-lite',
-  'gemini-1.5-flash',
+  'gemini-2.0-flash',
 ];
 
 const DEFAULT_TIMEOUT_MS = 10000;

@@ -1,4 +1,4 @@
-import type { BudgetSummary, DecisionInsight, EventPlan } from '../types/event';
+import type { BudgetSummary, DecisionInsight, EventPlan, GuestItem } from '../types/event';
 import { calculateBudgetSummary, evaluateDecisionRules } from './decisionEngine';
 
 /**
@@ -7,7 +7,14 @@ import { calculateBudgetSummary, evaluateDecisionRules } from './decisionEngine'
  * venue change) but never touches storage, so it is safe to run on shared sample plans.
  */
 
-export type DemoScenarioId = 'caterer' | 'guests' | 'rain' | 'date';
+export type DemoScenarioId =
+  | 'caterer'
+  | 'guests'
+  | 'rain'
+  | 'date'
+  | 'venue_cancels'
+  | 'budget_cut'
+  | 'jain_rsvp';
 
 export interface DemoScenario {
   id: DemoScenarioId;
@@ -35,6 +42,21 @@ export const DEMO_SCENARIOS: DemoScenario[] = [
     id: 'date',
     label: 'Date pulled forward to 10 days away',
     caption: 'The timeline is re-paced and short-notice triage rules switch on.',
+  },
+  {
+    id: 'venue_cancels',
+    label: 'Venue cancels contract',
+    caption: 'Replacement banquet hall booked at a 15% rush premium, reallocating venue reserves.',
+  },
+  {
+    id: 'budget_cut',
+    label: 'Budget cut 15%',
+    caption: 'Total allocated budget drops by 15%, triggering immediate deficit and trade-off alerts.',
+  },
+  {
+    id: 'jain_rsvp',
+    label: 'Jain guests RSVP',
+    caption: 'Dedicated Jain & Satvik counter added, triggering the kitchen-counter segregation rule.',
   },
 ];
 
@@ -87,7 +109,71 @@ export function applyDemoScenario(plan: EventPlan, id: DemoScenarioId, now: Date
     case 'date': {
       return { ...plan, eventDate: toIsoDate(new Date(now.getTime() + 10 * DAY_MS)) };
     }
+    case 'venue_cancels': {
+      return {
+        ...plan,
+        venuePreference: 'banquet_hall',
+        budgetItems: plan.budgetItems.map((item) => {
+          if (item.category !== 'venue') return item;
+          const premium = Math.round(item.estimatedCost * 0.15);
+          return { ...item, actualCost: (item.actualCost ?? item.estimatedCost) + premium };
+        }),
+      };
+    }
+    case 'budget_cut': {
+      return {
+        ...plan,
+        totalBudget: Math.round(plan.totalBudget * 0.85),
+      };
+    }
+    case 'jain_rsvp': {
+      const existing = plan.guests ?? [];
+      const jainGuests: GuestItem[] = [
+        {
+          id: 'demo-jain-1',
+          name: 'Shri Babulal Shah & Family',
+          rsvpStatus: 'attending',
+          dietary: 'jain',
+          plusOne: true,
+          plusOneName: 'Sarojben Shah',
+          tableNumber: 'Jain Dining Section',
+        },
+        {
+          id: 'demo-jain-2',
+          name: 'Pravin Gandhi',
+          rsvpStatus: 'attending',
+          dietary: 'jain',
+          plusOne: false,
+          tableNumber: 'Jain Dining Section',
+        },
+      ];
+      return {
+        ...plan,
+        guests: [...existing, ...jainGuests],
+      };
+    }
   }
+}
+
+/**
+ * Applies a suggested trade-off fix (e.g. trimming discretionary decor/entertainment by 20%)
+ * to show the plan recovering back into headroom.
+ */
+export function applyTradeOffFix(plan: EventPlan): EventPlan {
+  return {
+    ...plan,
+    budgetItems: plan.budgetItems.map((item) => {
+      if (item.category === 'decor' || item.category === 'entertainment' || item.category === 'invitations') {
+        const trimmed = Math.round(item.estimatedCost * 0.8);
+        return {
+          ...item,
+          estimatedCost: trimmed,
+          actualCost: item.actualCost !== undefined ? Math.round(item.actualCost * 0.8) : undefined,
+        };
+      }
+      return item;
+    }),
+  };
 }
 
 export interface DemoSnapshot {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from '../routerComponents';
-import { Logo } from '../components/common/Logo';
+import { Logo } from '../components/ui';
 import '../site.css';
 
 export const Brand: React.FC = () => (

@@ -11,41 +11,55 @@
  */
 
 import type { IncomingMessage, ServerResponse } from 'http';
+import { getStore } from './_lib/store.js';
+import { getClientIp, rateLimit } from './_lib/http.js';
 
 interface ExtendedRequest extends IncomingMessage {
   body?: unknown;
   query?: Record<string, string>;
 }
 
-// In-memory rate limiting map: IP -> { count: number, resetTime: number }
-const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
-const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
+const RATE_LIMIT_WINDOW_SECONDS = 60; // 1 minute
 const MAX_REQUESTS_PER_WINDOW = 20;
 const MAX_REQUEST_PAYLOAD_BYTES = 100 * 1024; // 100 KB
 
-function getClientIp(req: IncomingMessage): string {
-  const forwarded = req.headers['x-forwarded-for'];
-  if (typeof forwarded === 'string') {
-    return forwarded.split(',')[0].trim();
-  }
-  return req.socket.remoteAddress || 'unknown-client';
-}
+function isOriginAuthorized(req: ExtendedRequest): boolean {
+  const originHeader = req.headers['origin'] || req.headers['referer'];
+  const allowedOrigin = process.env.ALLOWED_ORIGIN;
+  const isProd = process.env.VERCEL_ENV === 'production' || process.env.NODE_ENV === 'production';
 
-function checkRateLimit(ip: string): boolean {
-  const now = Date.now();
-  const record = rateLimitMap.get(ip);
-
-  if (!record || now > record.resetTime) {
-    rateLimitMap.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
-    return true;
+  // In production, require Origin or Referer to prevent automated/cross-origin abuse
+  if (!originHeader) {
+    return !isProd;
   }
 
-  if (record.count >= MAX_REQUESTS_PER_WINDOW) {
+  try {
+    const parsedOrigin = new URL(String(originHeader));
+    const originHost = parsedOrigin.host.toLowerCase();
+
+    // 1. Check against request's own host (same origin)
+    const reqHost = String(req.headers['x-forwarded-host'] ?? req.headers.host ?? '').toLowerCase();
+    if (reqHost && (originHost === reqHost || originHost === reqHost.split(':')[0])) {
+      return true;
+    }
+
+    // 2. Check against explicit ALLOWED_ORIGIN if set
+    if (allowedOrigin) {
+      const parsedAllowed = new URL(allowedOrigin.startsWith('http') ? allowedOrigin : `https://${allowedOrigin}`);
+      if (originHost === parsedAllowed.host.toLowerCase()) {
+        return true;
+      }
+    }
+
+    // 3. In non-production, allow local origins
+    if (!isProd && (parsedOrigin.hostname === 'localhost' || parsedOrigin.hostname === '127.0.0.1')) {
+      return true;
+    }
+
+    return false;
+  } catch {
     return false;
   }
-
-  record.count += 1;
-  return true;
 }
 
 export default async function handler(req: ExtendedRequest, res: ServerResponse): Promise<void> {
@@ -57,22 +71,23 @@ export default async function handler(req: ExtendedRequest, res: ServerResponse)
     return;
   }
 
-  // 2. Validate Origin / Referer (prevent unauthorized third-party embedding)
-  const origin = req.headers['origin'] || req.headers['referer'];
-  const allowedOrigin = process.env.ALLOWED_ORIGIN;
-  if (allowedOrigin && origin && !origin.includes(allowedOrigin)) {
+  // 2. Strict Origin / Referer validation (prevent unauthorized third-party embedding and query-param spoofing)
+  if (!isOriginAuthorized(req)) {
     res.statusCode = 403;
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify({ error: 'Forbidden. Cross-origin request not allowed.' }));
     return;
   }
 
-  // 3. Rate limiting per IP
+  // 3. Shared rate limiting via store (Upstash Redis in production, in-memory store in dev)
   const clientIp = getClientIp(req);
-  if (!checkRateLimit(clientIp)) {
+  try {
+    const store = getStore();
+    await rateLimit(store, `gemini:${clientIp}`, MAX_REQUESTS_PER_WINDOW, RATE_LIMIT_WINDOW_SECONDS);
+  } catch {
     res.statusCode = 429;
     res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Retry-After', '60');
+    res.setHeader('Retry-After', String(RATE_LIMIT_WINDOW_SECONDS));
     res.end(JSON.stringify({ error: 'Rate limit exceeded. Please wait 1 minute before retrying.' }));
     return;
   }
@@ -123,7 +138,7 @@ export default async function handler(req: ExtendedRequest, res: ServerResponse)
     return;
   }
 
-  const { prompt, systemInstruction, temperature = 0.3, responseMimeType, model = 'gemini-flash-latest' } = bodyData;
+  const { prompt, systemInstruction, temperature = 0.3, responseMimeType, model = 'gemini-2.5-flash' } = bodyData;
 
   if (!prompt || typeof prompt !== 'string' || prompt.length > 20000) {
     res.statusCode = 400;

@@ -97,6 +97,33 @@
 
 .dw button:focus-visible, .dw a:focus-visible { outline: 3px solid #f59e0b; outline-offset: 2px; }
 
+/* Playback & Share Toolbar */
+.dw__actions { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+.dw__btn-icon { border: 1px solid var(--dw-border); background: #fff; color: var(--dw-ink); border-radius: 8px; padding: 0.35rem 0.65rem; font: inherit; font-size: 0.78rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.3rem; transition: background 0.15s, border-color 0.15s; }
+.dw__btn-icon:hover { background: #f8fafc; border-color: var(--dw-teal); }
+.dw__select-sm { border: 1px solid var(--dw-border); background: #fff; border-radius: 8px; padding: 0.35rem 0.5rem; font: inherit; font-size: 0.75rem; font-weight: 600; color: var(--dw-ink); cursor: pointer; }
+
+/* Before / After Comparison Strip */
+.dw__compare { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; background: #f8fafc; border: 1px dashed var(--dw-border); border-radius: 10px; padding: 0.6rem 0.85rem; margin-top: 0.5rem; font-size: 0.8rem; }
+.dw__compare-item { display: inline-flex; align-items: center; gap: 0.4rem; }
+.dw__compare-item span { color: var(--dw-muted); font-size: 0.72rem; text-transform: uppercase; font-weight: 600; }
+.dw__compare-item strong { font-weight: 700; color: var(--dw-ink); }
+
+/* Interactive Numbers Tweak Strip */
+.dw__customizer { grid-column: 1 / -1; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; padding: 0.6rem 0.85rem; background: #f1f5f9; border-radius: 10px; margin-top: 0.5rem; }
+.dw__custom-field { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.78rem; font-weight: 600; }
+.dw__custom-stepper { display: inline-flex; align-items: center; background: #fff; border: 1px solid var(--dw-border); border-radius: 6px; overflow: hidden; }
+.dw__custom-stepper button { border: 0; background: transparent; padding: 0.2rem 0.55rem; font-weight: 700; cursor: pointer; color: var(--dw-ink); }
+.dw__custom-stepper button:hover { background: #f1f5f9; }
+.dw__custom-stepper span { padding: 0.2rem 0.5rem; min-width: 3.2rem; text-align: center; font-variant-numeric: tabular-nums; }
+
+/* Suggested Fix Trade-Off Banner */
+.dw__fix-banner { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.6rem; padding: 0.65rem 0.9rem; background: #fef3c7; border: 1px solid #fde68a; border-radius: 10px; color: #92400e; margin-top: 0.4rem; }
+.dw__fix-btn { border: 0; background: #b45309; color: #fff; font: inherit; font-size: 0.76rem; font-weight: 700; padding: 0.35rem 0.75rem; border-radius: 6px; cursor: pointer; transition: opacity 0.15s; }
+.dw__fix-btn:hover { opacity: 0.9; }
+.dw__fix-btn.is-active { background: #15803d; }
+
+
 @media (max-width: 720px) {
   .dw__body { grid-template-columns: 1fr; }
   .dw__nav { flex-direction: row; overflow-x: auto; border-right: 0; border-bottom: 1px solid var(--dw-border); }

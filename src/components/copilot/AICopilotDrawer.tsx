@@ -253,7 +253,7 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
   }, [messages, isThinking, isOpen]);
 
   const streamAssistantText = (msgId: string, fullText: string, actions?: TradeOffOption[], isFallback?: boolean) => {
-    const prefersReduced = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const prefersReduced = typeof window !== 'undefined' && Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);
     const isTest =
       (globalThis as unknown as { process?: { env?: { NODE_ENV?: string } } }).process?.env?.NODE_ENV === 'test' ||
       typeof (window as unknown as { __vitest__?: unknown }).__vitest__ !== 'undefined';

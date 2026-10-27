@@ -36,6 +36,24 @@ describe('demoSimulator', () => {
     expect(next.eventDate).toBe('2026-11-06');
     expect(SAMPLE_WEDDING.eventDate).toBe(original);
   });
+  it('venue cancels scenario switches venue and applies rush premium', () => {
+    const next = applyDemoScenario(SAMPLE_WEDDING, 'venue_cancels', now);
+    expect(next.venuePreference).toBe('banquet_hall');
+    const venueItem = next.budgetItems.find((i) => i.category === 'venue');
+    expect(venueItem?.actualCost).toBeGreaterThan(venueItem?.estimatedCost ?? 0);
+  });
+
+  it('budget cut scenario reduces total available budget by 15%', () => {
+    const next = applyDemoScenario(SAMPLE_WEDDING, 'budget_cut', now);
+    expect(next.totalBudget).toBe(Math.round(SAMPLE_WEDDING.totalBudget * 0.85));
+  });
+
+  it('jain rsvp scenario adds confirmed Jain attendees', () => {
+    const next = applyDemoScenario(SAMPLE_WEDDING, 'jain_rsvp', now);
+    expect(next.guests?.some((g) => g.dietary === 'jain')).toBe(true);
+    const snap = snapshotPlan(next, now);
+    expect(snap.insights.some((i) => i.id === 'rule-jain-dietary-counter')).toBe(true);
+  });
 });
 
 describe('LiveDemoWindow', () => {
@@ -59,10 +77,29 @@ describe('LiveDemoWindow', () => {
 
   it('navigates between views', () => {
     render(<LiveDemoWindow />);
-    fireEvent.click(screen.getByRole('button', { name: /^Budget/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^Budget$/i }));
     expect(screen.getByRole('img', { name: /Budget split by category/i })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: /^Run of show/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^Run of show$/i }));
     expect(screen.getAllByRole('listitem').length).toBeGreaterThan(0);
+  });
+
+  it('adjusts guests using interactive visitor stepper', () => {
+    render(<LiveDemoWindow />);
+    expect(screen.getByText(/350 guests/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /Add 25 guests/i }));
+    expect(screen.getByText(/375 guests/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Reset numbers/i })).toBeInTheDocument();
+  });
+
+  it('shows suggested fix button when over budget and recovers headroom upon clicking', () => {
+    render(<LiveDemoWindow />);
+    // Slash budget by 15% to trigger over-budget state
+    const cutBtn = screen.getByRole('button', { name: /Budget cut 15%/i });
+    fireEvent.click(cutBtn);
+    const fixBtn = screen.getByRole('button', { name: /Apply Suggested Fix/i });
+    expect(fixBtn).toBeInTheDocument();
+    fireEvent.click(fixBtn);
+    expect(screen.getByText(/Trade-off Applied/i)).toBeInTheDocument();
   });
 
   it('links to the full demo with the tour switched on', () => {

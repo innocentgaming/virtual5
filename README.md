@@ -6,13 +6,13 @@
 [![React](https://img.shields.io/badge/React-19.0.0-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8.0-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Vite](https://img.shields.io/badge/Vite-8.3.5-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
-[![Tests](https://img.shields.io/badge/Tests-196%2F196%20Passing%20(100%25)-brightgreen?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
+[![Tests](https://img.shields.io/badge/Tests-204%2F204%20Passing%20(100%25)-brightgreen?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
 [![Linter](https://img.shields.io/badge/Oxlint-0%20Warnings%20%2F%200%20Errors-success?style=for-the-badge&logo=oxc&logoColor=white)](https://oxc.rs/)
 [![Accessibility](https://img.shields.io/badge/WCAG-2.1%20AA%20Compliant-blueviolet?style=for-the-badge&logo=w3c&logoColor=white)](https://www.w3.org/WAI/standards-guidelines/wcag/)
-[![Bundle Size](https://img.shields.io/badge/Main%20JS-24.5%20kB%20(Gzip%208.8%20kB)-brightgreen?style=for-the-badge)](#)
+[![Bundle Size](https://img.shields.io/badge/Main%20JS-24.7%20kB%20(Gzip%208.8%20kB)-brightgreen?style=for-the-badge)](#)
 [![Security](https://img.shields.io/badge/Audit-0%20Vulnerabilities-success?style=for-the-badge&logo=npm&logoColor=white)](#)
 
-**[🚀 Launch 90-Second Live Evaluator Demo](https://virtual5.vercel.app/demo)** • **[🌐 Production App](https://virtual5.vercel.app/app)** • **[🎬 Demo Video Script](docs/DEMO.md)** • **[📦 GitHub Repo](https://github.com/innocentgaming/virtual5)**
+**[🌐 Live Landing Page](https://virtual5.vercel.app/)** • **[🚀 90-Second Guided Demo](https://virtual5.vercel.app/demo)** • **[🔐 Accounts & Cloud Sync](https://virtual5.vercel.app/signup)** • **[📦 GitHub Repo](https://github.com/innocentgaming/virtual5)**
 
 </div>
 
@@ -23,6 +23,11 @@
 > EventWise AI is an intelligent, full-stack, personalized event planning assistant engineered specifically for the Indian event planning ecosystem. It transforms chaotic event planning into an explainable, deterministic, and context-aware roadmap for **Royal Destination Weddings**, **Bollywood Milestone Birthdays**, and **Grand Community Melas / Festivals**.
 > 
 > * **100% Offline-First Deterministic Engine**: 12 modular business rules execute instantly without third-party API dependencies or network connectivity.
+> * **Interactive Landing-Page Live Demo Window**: Full what-if playground with before/after comparison, suggested trade-off fixes, visitor steppers, and shareable states.
+> * **Accounts & Cloud Events Sync**: Scrypt-hashed credentials with zero-config memory fallback and 1-click Upstash Redis persistence.
+> * **Native Indian Rupee (`₹`) Economics**: First-class support for `en-IN` grouping (e.g., `₹35,00,000`), Lakhs (`₹35L`) and Crores (`₹2.5 Cr`) shorthand, and contingency modeling.
+> * **Real-Time Dynamic Change & Trade-off Loop**: Detects quote hikes (+20%), guest surges (+50), weather risks, or date compressions, computes concrete Rupee trade-offs, and provides 1-click execution with a 20-step undo history.
+> * **Deep Cultural Guardrails**: Built-in 10:00 PM outdoor sound curfew alerts, dedicated Jain / Pure Veg kitchen isolation protocols, and Vedic Muhurat Run of Show pacing.
 > * **Native Indian Rupee (`₹`) Economics**: First-class support for `en-IN` grouping (e.g., `₹35,00,000`), Lakhs (`₹35L`) and Crores (`₹2.5 Cr`) shorthand, and contingency modeling.
 > * **Real-Time Dynamic Change & Trade-off Loop**: Detects quote hikes (+20%), guest surges (+50), weather risks, or date compressions, computes concrete Rupee trade-offs, and provides 1-click execution with a 20-step undo history.
 > * **Deep Cultural Guardrails**: Built-in 10:00 PM outdoor sound curfew alerts, dedicated Jain / Pure Veg kitchen isolation protocols, and Vedic Muhurat Run of Show pacing.
@@ -51,7 +56,7 @@
 | **3. Code Quality & Modularity** | Clean architecture, centralized business constants, pure evaluation functions, zero dead code or linters. | • Centralized thresholds in [`rulesConfig.ts`](file:///d:/challege5/src/constants/rulesConfig.ts).<br>• 12 pure rules in [`rulesRegistry.ts`](file:///d:/challege5/src/services/rulesRegistry.ts) with full JSDoc.<br>• **0 oxlint warnings / 0 errors** on 115 files. | [`rulesRegistry.ts`](file:///d:/challege5/src/services/rulesRegistry.ts)<br>[`rulesConfig.ts`](file:///d:/challege5/src/constants/rulesConfig.ts)<br>`npm run lint` (0 errors) |
 | **4. Security Architecture** | Zero secrets in repo/git history, hardened API communication, safe storage, and XSS immunity. | • **0 secrets in Git / code**.<br>• Serverless Gemini proxy (`api/gemini.ts`) with origin allowlisting and rate limits.<br>• Safe JSON import/export with schema validation (`importPlanFromJson`).<br>• `rel="noopener noreferrer"` across all external links. | [`gemini.ts`](file:///d:/challege5/api/gemini.ts)<br>[`storageService.ts`](file:///d:/challege5/src/services/storageService.ts)<br>[`securityHardening.test.tsx`](file:///d:/challege5/src/test/securityHardening.test.tsx) |
 | **5. Efficiency & Performance** | Fast page loads, sub-second interactions, strict bundle limits, and caching. | • **Main JS Chunk: 24.54 kB** (Limit: 150 kB) / **8.78 kB gzip**.<br>• **Main CSS: 38.88 kB** (Limit: 50 kB) / **7.46 kB gzip**.<br>• Copilot in-memory LRU cache (`copilotMemoryCache`) with SHA-256 hash.<br>• Code-split lazy routes with preloading. | [`copilotService.ts`](file:///d:/challege5/src/services/copilotService.ts)<br>[`check-size-budget.mjs`](file:///d:/challege5/scripts/check-size-budget.mjs)<br>`npm run build` |
-| **6. Testing & CI Verification** | Automated tests covering business math, edge cases, negative numbers, overdue tasks, and fallback resilience. | • **196 / 196 tests passing (100%)** across 29 test files (`vitest`).<br>• Automated GitHub Actions CI workflow ([`.github/workflows/ci.yml`](file:///.github/workflows/ci.yml)).<br>• 25 boundary tests for all 12 decision rules. | [`ci.yml`](file:///.github/workflows/ci.yml)<br>[`decisionRulesRegistry.test.ts`](file:///d:/challege5/src/test/decisionRulesRegistry.test.ts)<br>`npm test` |
+| **6. Testing & CI Verification** | Automated tests covering business math, edge cases, negative numbers, overdue tasks, and fallback resilience. | • **204 / 204 tests passing (100%)** across 30 test files (`vitest`).<br>• Automated GitHub Actions CI workflow ([`.github/workflows/ci.yml`](file:///.github/workflows/ci.yml)).<br>• 25 boundary tests for all 12 decision rules. | [`ci.yml`](file:///.github/workflows/ci.yml)<br>[`decisionRulesRegistry.test.ts`](file:///d:/challege5/src/test/decisionRulesRegistry.test.ts)<br>`npm test` |
 | **7. Accessibility (WCAG 2.1 AA)** | Screen reader support, keyboard navigability, high contrast, skip-to-content, and ARIA landmarks. | • Root `<html lang="en-IN">` with `<a href="#main" class="skip-to-content">`.<br>• Interactive Donut chart provides an accessible **"View as Data Table"** toggle (`#btn-toggle-budget-table`).<br>• Automated Axe scans verify zero accessibility violations. | [`InteractiveBudgetChart.tsx`](file:///d:/challege5/src/components/budget/InteractiveBudgetChart.tsx)<br>[`a11yBaselineScan.test.tsx`](file:///d:/challege5/src/test/a11yBaselineScan.test.tsx)<br>[`index.html`](file:///d:/challege5/index.html) |
 
 ---
@@ -76,15 +81,15 @@ flowchart TD
     subgraph Decision Engine & Rules Registry
         Hook --> RulesRegistry[rulesRegistry - 12 Pure Decision Rules]
         RulesRegistry --> Config[rulesConfig - Centralized Thresholds]
-        Hook --> Scenarios[Scenario Simulator - 4 Stress Scenarios + Undo Stack]
+        Hook --> Scenarios[Scenario Simulator - 7 Stress Scenarios + Undo Stack]
         Hook --> Formatters[formatters - INR ₹, Lakhs, Crores, en-IN]
     end
 
     subgraph Multi-Tier Fallback Hierarchy
         Hook --> AI[aiPlanner - Multi-Model Fallback]
-        AI -->|Tier 1| GemFlash[Gemini Flash Latest]
-        AI -->|Tier 2| Gem38[Gemini 3.8 Flash]
-        AI -->|Tier 3| GemLite[Gemini 2.5 Flash Lite]
+        AI -->|Tier 1| Gem25[Gemini 2.5 Flash]
+        AI -->|Tier 2| GemLite[Gemini 2.5 Flash Lite]
+        AI -->|Tier 3| Gem20[Gemini 2.0 Flash]
         AI -->|Tier 4: Offline| FallbackEngine[Deterministic Indian Fallback Planner]
         Hook --> Copilot[copilotService - Grounded AI Assistant with LRU Cache]
     end

@@ -5,6 +5,7 @@ import type { BudgetCategory, EventPlan } from '../../types/event';
 import {
   DEMO_SCENARIOS,
   applyAll,
+  applyTradeOffFix,
   snapshotPlan,
   type DemoScenarioId,
 } from '../../services/demoSimulator';
@@ -13,10 +14,10 @@ import '../../demoWindow.css';
 
 type ViewId = 'overview' | 'budget' | 'schedule' | 'alerts';
 
-const PERSONAS: { plan: EventPlan; label: string; sub: string }[] = [
-  { plan: SAMPLE_WEDDING, label: 'Wedding', sub: 'Jaipur' },
-  { plan: SAMPLE_BIRTHDAY, label: 'Birthday', sub: 'Mumbai' },
-  { plan: SAMPLE_COMMUNITY, label: 'Mela', sub: 'Bengaluru' },
+const PERSONAS: { plan: EventPlan; label: string; sub: string; key: string }[] = [
+  { plan: SAMPLE_WEDDING, label: 'Wedding', sub: 'Jaipur', key: 'wedding' },
+  { plan: SAMPLE_BIRTHDAY, label: 'Birthday', sub: 'Mumbai', key: 'birthday' },
+  { plan: SAMPLE_COMMUNITY, label: 'Mela', sub: 'Bengaluru', key: 'mela' },
 ];
 
 const VIEWS: { id: ViewId; label: string }[] = [
@@ -39,10 +40,10 @@ const CATEGORY_COLORS: Partial<Record<BudgetCategory, string>> = {
 };
 
 const STORY: DemoScenarioId[] = ['caterer', 'guests', 'rain', 'date'];
-const STORY_STEP_MS = 3200;
+const BASE_STEP_MS = 3200;
 
 function prefersReducedMotion(): boolean {
-  return typeof window !== 'undefined' && Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
+  return typeof window !== 'undefined' && Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);
 }
 
 function donutSegments(totals: Record<string, number>) {
@@ -59,13 +60,42 @@ function donutSegments(totals: Record<string, number>) {
   });
 }
 
+function parseUrlState(): { personaIdx: number; scenarios: DemoScenarioId[] } {
+  if (typeof window === 'undefined') return { personaIdx: 0, scenarios: [] };
+  const params = new URLSearchParams(window.location.search);
+  const p = params.get('persona')?.toLowerCase();
+  let personaIdx = 0;
+  if (p === 'birthday') personaIdx = 1;
+  else if (p === 'mela' || p === 'community') personaIdx = 2;
+
+  const scenariosParam = params.get('scenarios');
+  const valid = DEMO_SCENARIOS.map((s) => s.id);
+  const scenarios: DemoScenarioId[] = [];
+  if (scenariosParam) {
+    scenariosParam.split(',').forEach((s) => {
+      const trimmed = s.trim() as DemoScenarioId;
+      if (valid.includes(trimmed) && !scenarios.includes(trimmed)) {
+        scenarios.push(trimmed);
+      }
+    });
+  }
+  return { personaIdx, scenarios };
+}
+
 export function LiveDemoWindow(): React.ReactElement {
-  const [personaIdx, setPersonaIdx] = useState(0);
+  const initial = useMemo(() => parseUrlState(), []);
+  const [personaIdx, setPersonaIdx] = useState(initial.personaIdx);
   const [view, setView] = useState<ViewId>('overview');
-  const [active, setActive] = useState<DemoScenarioId[]>([]);
+  const [active, setActive] = useState<DemoScenarioId[]>(initial.scenarios);
   const [hoverKey, setHoverKey] = useState<string | null>(null);
   const [playing, setPlaying] = useState(false);
+  const [speed, setSpeed] = useState<number>(1);
+  const [storyIdx, setStoryIdx] = useState(0);
+  const [tradeOffApplied, setTradeOffApplied] = useState(false);
+  const [guestAdjustment, setGuestAdjustment] = useState(0);
+  const [budgetAdjustment, setBudgetAdjustment] = useState(0);
   const [caption, setCaption] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const timers = useRef<number[]>([]);
 
   const base = PERSONAS[personaIdx].plan;
@@ -79,7 +109,29 @@ export function LiveDemoWindow(): React.ReactElement {
   useEffect(() => stopStory, [stopStory]);
 
   const baseline = useMemo(() => snapshotPlan(base), [base]);
-  const scenarioPlan = useMemo(() => applyAll(base, active), [base, active]);
+
+  const scenarioPlan = useMemo(() => {
+    let plan = applyAll(base, active);
+    if (guestAdjustment !== 0) {
+      const nextGuests = Math.max(10, plan.guestCount + guestAdjustment);
+      const ratio = nextGuests / Math.max(1, plan.guestCount);
+      plan = {
+        ...plan,
+        guestCount: nextGuests,
+        budgetItems: plan.budgetItems.map((item) =>
+          item.isPerGuest ? { ...item, estimatedCost: Math.round(item.estimatedCost * ratio) } : item,
+        ),
+      };
+    }
+    if (budgetAdjustment !== 0) {
+      plan = { ...plan, totalBudget: Math.max(50000, plan.totalBudget + budgetAdjustment) };
+    }
+    if (tradeOffApplied) {
+      plan = applyTradeOffFix(plan);
+    }
+    return plan;
+  }, [base, active, guestAdjustment, budgetAdjustment, tradeOffApplied]);
+
   const current = useMemo(() => snapshotPlan(scenarioPlan), [scenarioPlan]);
 
   const delta = current.projectedTotal - baseline.projectedTotal;
@@ -97,6 +149,9 @@ export function LiveDemoWindow(): React.ReactElement {
   const reset = () => {
     stopStory();
     setActive([]);
+    setTradeOffApplied(false);
+    setGuestAdjustment(0);
+    setBudgetAdjustment(0);
     setCaption(null);
   };
 
@@ -104,17 +159,40 @@ export function LiveDemoWindow(): React.ReactElement {
     stopStory();
     setPersonaIdx(idx);
     setActive([]);
+    setTradeOffApplied(false);
+    setGuestAdjustment(0);
+    setBudgetAdjustment(0);
     setCaption(null);
+  };
+
+  const stepStory = (stepDelta: 1 | -1) => {
+    stopStory();
+    const nextIdx = Math.max(0, Math.min(STORY.length - 1, storyIdx + stepDelta));
+    setStoryIdx(nextIdx);
+    const targetId = STORY[nextIdx];
+    setActive((prev) => (prev.includes(targetId) ? prev : [...prev, targetId]));
+    setCaption(DEMO_SCENARIOS.find((s) => s.id === targetId)?.caption ?? null);
+    if (nextIdx === 0) setView('overview');
+    else if (nextIdx === 1) setView('budget');
+    else if (nextIdx === 2) setView('schedule');
+    else if (nextIdx === 3) setView('alerts');
   };
 
   const playStory = () => {
     stopStory();
     setActive([]);
+    setTradeOffApplied(false);
+    setGuestAdjustment(0);
+    setBudgetAdjustment(0);
     setView('overview');
     setPlaying(true);
-    setCaption('Starting from the plan as first generated.');
+    setStoryIdx(0);
+    setCaption('Starting from the baseline plan as generated.');
+    const stepDuration = Math.round(BASE_STEP_MS / speed);
+
     STORY.forEach((id, i) => {
       const t = window.setTimeout(() => {
+        setStoryIdx(i);
         setActive((prev) => (prev.includes(id) ? prev : [...prev, id]));
         setCaption(DEMO_SCENARIOS.find((s) => s.id === id)?.caption ?? null);
         if (i === 0) setView('overview');
@@ -122,16 +200,33 @@ export function LiveDemoWindow(): React.ReactElement {
         if (i === 2) setView('schedule');
         if (i === 3) setView('alerts');
         if (i === STORY.length - 1) {
-          const end = window.setTimeout(() => setPlaying(false), STORY_STEP_MS);
+          const end = window.setTimeout(() => setPlaying(false), stepDuration);
           timers.current.push(end);
         }
-      }, (i + 1) * STORY_STEP_MS);
+      }, (i + 1) * stepDuration);
       timers.current.push(t);
     });
   };
 
+  const shareState = () => {
+    if (typeof window === 'undefined') return;
+    const url = new URL(window.location.href);
+    url.searchParams.set('persona', PERSONAS[personaIdx].key);
+    if (active.length > 0) {
+      url.searchParams.set('scenarios', active.join(','));
+    } else {
+      url.searchParams.delete('scenarios');
+    }
+    if (window.navigator?.clipboard) {
+      window.navigator.clipboard.writeText(url.toString());
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2200);
+    }
+  };
+
   const warnings = current.insights.filter((i) => i.type === 'warning' || i.type === 'action_required');
   const hovered = segments.find((s) => s.key === hoverKey);
+  const hasModifications = active.length > 0 || guestAdjustment !== 0 || budgetAdjustment !== 0 || tradeOffApplied;
 
   return (
     <div className="dw" role="region" aria-label="Interactive demo of an EventWise AI plan">
@@ -157,9 +252,48 @@ export function LiveDemoWindow(): React.ReactElement {
             </button>
           ))}
         </div>
-        <button type="button" className="dw__play" onClick={playing ? stopStory : playStory} aria-pressed={playing}>
-          {playing ? 'Pause the story' : 'Play the story'}
-        </button>
+
+        <div className="dw__actions">
+          <button
+            type="button"
+            className="dw__btn-icon"
+            onClick={() => stepStory(-1)}
+            title="Step backwards in story"
+            aria-label="Previous story step"
+          >
+            ‹ Step
+          </button>
+          <button type="button" className="dw__play" onClick={playing ? stopStory : playStory} aria-pressed={playing}>
+            {playing ? 'Pause story' : 'Play story'}
+          </button>
+          <button
+            type="button"
+            className="dw__btn-icon"
+            onClick={() => stepStory(1)}
+            title="Step forward in story"
+            aria-label="Next story step"
+          >
+            Step ›
+          </button>
+          <select
+            className="dw__select-sm"
+            value={speed}
+            onChange={(e) => setSpeed(Number(e.target.value))}
+            aria-label="Auto-play speed"
+          >
+            <option value={1}>1.0x</option>
+            <option value={1.5}>1.5x</option>
+            <option value={2}>2.0x</option>
+          </select>
+          <button
+            type="button"
+            className="dw__btn-icon"
+            onClick={shareState}
+            title="Copy shareable link for this exact scenario"
+          >
+            {copied ? '✓ Copied link!' : '🔗 Share state'}
+          </button>
+        </div>
       </div>
 
       <div className="dw__body">
@@ -186,7 +320,7 @@ export function LiveDemoWindow(): React.ReactElement {
                 {scenarioPlan.city.split(',')[0]} · {scenarioPlan.guestCount} guests · {scenarioPlan.eventDate}
               </p>
             </div>
-            {active.length > 0 && (
+            {hasModifications && (
               <span className={`dw__delta ${delta > 0 ? 'is-up' : ''}`} aria-live="polite">
                 {delta >= 0 ? '+' : '−'}{formatIndianShort(Math.abs(delta))} vs. original plan
               </span>
@@ -211,10 +345,111 @@ export function LiveDemoWindow(): React.ReactElement {
                 <span>{overBudget ? 'Over by' : 'Headroom'}</span>
                 <strong>{formatIndianShort(Math.abs(scenarioPlan.totalBudget - current.projectedTotal))}</strong>
               </div>
+
+              {/* Before and After Comparison */}
+              {hasModifications && (
+                <div className="dw__compare" aria-label="Before and after comparison">
+                  <div className="dw__compare-item">
+                    <span>Baseline Spend:</span>
+                    <strong>{formatIndianShort(baseline.projectedTotal)}</strong>
+                  </div>
+                  <div className="dw__compare-item">
+                    <span>Scenario Spend:</span>
+                    <strong style={{ color: overBudget ? 'var(--dw-bad)' : 'var(--dw-ink)' }}>
+                      {formatIndianShort(current.projectedTotal)}
+                    </strong>
+                  </div>
+                  <div className="dw__compare-item">
+                    <span>Net Delta:</span>
+                    <strong style={{ color: delta > 0 ? 'var(--dw-bad)' : 'var(--dw-good)' }}>
+                      {delta >= 0 ? `+${formatIndianShort(delta)}` : `-${formatIndianShort(Math.abs(delta))}`}
+                    </strong>
+                  </div>
+                  <div className="dw__compare-item">
+                    <span>Status:</span>
+                    <strong style={{ color: overBudget ? 'var(--dw-bad)' : 'var(--dw-good)' }}>
+                      {overBudget ? '⚠️ Deficit' : '✅ Balanced'}
+                    </strong>
+                  </div>
+                </div>
+              )}
+
+              {/* Suggested Fix Trade-Off Banner */}
+              {overBudget && (
+                <div className="dw__fix-banner" role="alert">
+                  <div>
+                    <strong>⚠️ Over budget: </strong>
+                    <span>Trim discretionary decor & entertainment 20% to restore contingency headroom.</span>
+                  </div>
+                  <button
+                    type="button"
+                    className={`dw__fix-btn ${tradeOffApplied ? 'is-active' : ''}`}
+                    onClick={() => setTradeOffApplied(!tradeOffApplied)}
+                  >
+                    {tradeOffApplied ? '✓ Trade-off Applied (−20% Decor)' : '⚡ Apply Suggested Fix'}
+                  </button>
+                </div>
+              )}
+
+              {/* Interactive Visitor Parameter Tweak Strip */}
+              <div className="dw__customizer" aria-label="Customize plan parameters">
+                <div className="dw__custom-field">
+                  <span>Guests:</span>
+                  <div className="dw__custom-stepper">
+                    <button
+                      type="button"
+                      onClick={() => setGuestAdjustment((g) => g - 25)}
+                      aria-label="Reduce 25 guests"
+                    >
+                      −
+                    </button>
+                    <span>{scenarioPlan.guestCount}</span>
+                    <button
+                      type="button"
+                      onClick={() => setGuestAdjustment((g) => g + 25)}
+                      aria-label="Add 25 guests"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+                <div className="dw__custom-field">
+                  <span>Budget:</span>
+                  <div className="dw__custom-stepper">
+                    <button
+                      type="button"
+                      onClick={() => setBudgetAdjustment((b) => b - 100000)}
+                      aria-label="Reduce budget 1 lakh"
+                    >
+                      −₹1L
+                    </button>
+                    <span>{formatIndianShort(scenarioPlan.totalBudget)}</span>
+                    <button
+                      type="button"
+                      onClick={() => setBudgetAdjustment((b) => b + 100000)}
+                      aria-label="Increase budget 1 lakh"
+                    >
+                      +₹1L
+                    </button>
+                  </div>
+                </div>
+                {(guestAdjustment !== 0 || budgetAdjustment !== 0) && (
+                  <button
+                    type="button"
+                    className="dw__btn-icon"
+                    onClick={() => { setGuestAdjustment(0); setBudgetAdjustment(0); }}
+                  >
+                    Reset numbers
+                  </button>
+                )}
+              </div>
+
               <div className="dw__meter" role="img" aria-label={`Budget used: ${formatPercent(utilisation)}`}>
                 <span style={{ width: `${Math.min(100, utilisation)}%` }} className={overBudget ? 'is-bad' : ''} />
               </div>
-              <p className="dw__meter-note">{formatPercent(utilisation)} of budget committed, including a {formatIndianShort(current.summary.contingencyAmount)} contingency reserve.</p>
+              <p className="dw__meter-note">
+                {formatPercent(utilisation)} of budget committed, including a {formatIndianShort(current.summary.contingencyAmount)} contingency reserve.
+              </p>
             </div>
           )}
 
@@ -280,16 +515,38 @@ export function LiveDemoWindow(): React.ReactElement {
           )}
 
           {view === 'alerts' && (
-            <ul className="dw__alerts">
-              {current.insights.slice(0, 5).map((ins) => (
-                <li key={ins.id} className={`is-${ins.type}`}>
-                  <strong>{ins.title}</strong>
-                  <span>{ins.message}</span>
-                  {ins.ruleName && <small>Rule: {ins.ruleName}</small>}
-                </li>
-              ))}
-              {current.insights.length === 0 && <li className="is-positive"><strong>No issues found</strong><span>This plan passes every rule right now.</span></li>}
-            </ul>
+            <div style={{ display: 'grid', gap: '0.75rem' }}>
+              {overBudget && (
+                <div className="dw__fix-banner" role="alert">
+                  <div>
+                    <strong>⚠️ Over budget warning: </strong>
+                    <span>Trim discretionary decor & entertainment 20% to restore contingency headroom.</span>
+                  </div>
+                  <button
+                    type="button"
+                    className={`dw__fix-btn ${tradeOffApplied ? 'is-active' : ''}`}
+                    onClick={() => setTradeOffApplied(!tradeOffApplied)}
+                  >
+                    {tradeOffApplied ? '✓ Trade-off Applied (−20% Decor)' : '⚡ Apply Suggested Fix'}
+                  </button>
+                </div>
+              )}
+              <ul className="dw__alerts">
+                {current.insights.slice(0, 6).map((ins) => (
+                  <li key={ins.id} className={`is-${ins.type}`}>
+                    <strong>{ins.title}</strong>
+                    <span>{ins.message}</span>
+                    {ins.ruleName && <small>Rule: {ins.ruleName}</small>}
+                  </li>
+                ))}
+                {current.insights.length === 0 && (
+                  <li className="is-positive">
+                    <strong>No issues found</strong>
+                    <span>This plan passes every rule right now.</span>
+                  </li>
+                )}
+              </ul>
+            </div>
           )}
         </div>
       </div>
@@ -307,7 +564,7 @@ export function LiveDemoWindow(): React.ReactElement {
               {s.label}
             </button>
           ))}
-          {active.length > 0 && (
+          {hasModifications && (
             <button type="button" className="dw__chip dw__chip--ghost" onClick={reset}>Undo all</button>
           )}
         </div>

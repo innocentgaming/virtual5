@@ -1,5 +1,4 @@
 import React from 'react';
-import { Logo } from '../common/Logo';
 import {
   Plus,
   Download,
@@ -15,7 +14,7 @@ import {
   UserPlus,
 } from 'lucide-react';
 import type { EventPlan } from '../../types/event';
-import { Badge, Button } from '../ui';
+import { Badge, Button, Logo } from '../ui';
 import { formatIndianShort } from '../../utils/formatters';
 import type { AuthUser } from '../../types/auth';
 import type { SyncStatus } from '../../hooks/useEventPlan';

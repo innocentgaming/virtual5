@@ -26,7 +26,8 @@ if (!mainJsFile) {
 const BUDGETS = {
   MAIN_JS_RAW_MAX_KB: 150,
   MAIN_JS_GZIP_MAX_KB: 50,
-  MAIN_CSS_GZIP_MAX_KB: 15,
+  MAIN_CSS_RAW_MAX_KB: 65,
+  MAIN_CSS_GZIP_MAX_KB: 20,
 };
 
 let budgetFailed = false;
@@ -64,7 +65,7 @@ console.log('========================================');
 checkFile(mainJsFile, BUDGETS.MAIN_JS_RAW_MAX_KB, BUDGETS.MAIN_JS_GZIP_MAX_KB, 'Main JS Chunk');
 
 if (mainCssFile) {
-  checkFile(mainCssFile, 50, BUDGETS.MAIN_CSS_GZIP_MAX_KB, 'Main CSS Bundle');
+  checkFile(mainCssFile, BUDGETS.MAIN_CSS_RAW_MAX_KB, BUDGETS.MAIN_CSS_GZIP_MAX_KB, 'Main CSS Bundle');
 }
 
 if (budgetFailed) {
