@@ -8,6 +8,8 @@ import {
   ChevronDown,
   ArrowRight,
   Calendar,
+  Wallet,
+  UserX,
 } from 'lucide-react';
 import type { EventPlan, BudgetSummary, TradeOffOption } from '../../types/event';
 import type { ScenarioInput } from '../../hooks/useEventPlan';
@@ -75,6 +77,28 @@ export const ChaosBar: React.FC<ChaosBarProps> = ({
     onApplyScenario({
       dateShiftDays: -14,
       scenarioName: 'Date Moved Earlier (-14 Days)',
+    });
+    setIsMenuOpen(false);
+  };
+
+  const handleBudgetCut = () => {
+    setActiveScenarioName('Family Trims Budget (-10%)');
+    onTriggerPulse?.();
+    onApplyScenario({
+      budgetDeltaPercent: -10,
+      scenarioName: 'Family Trims Budget (-10%)',
+    });
+    setIsMenuOpen(false);
+  };
+
+  const handleVendorCancel = () => {
+    const target = plan.vendors.find((v) => v.status !== 'cancelled');
+    if (!target) return;
+    setActiveScenarioName(`${target.role} Cancels`);
+    onTriggerPulse?.();
+    onApplyScenario({
+      cancelVendorId: target.id,
+      scenarioName: `${target.role} Cancels`,
     });
     setIsMenuOpen(false);
   };
@@ -306,6 +330,52 @@ export const ChaosBar: React.FC<ChaosBarProps> = ({
                 >
                   <Calendar size={15} color="#d97706" />
                   <span>Date moved 14 days earlier</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleBudgetCut}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    width: '100%',
+                    padding: '0.6rem 0.85rem',
+                    background: 'none',
+                    border: 'none',
+                    borderBottom: '1px solid var(--border, #e2e8f0)',
+                    textAlign: 'left',
+                    fontSize: '0.8rem',
+                    fontWeight: 600,
+                    color: 'var(--text, #1e293b)',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <Wallet size={15} color="#7c3aed" />
+                  <span>Family trims budget by 10%</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleVendorCancel}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    width: '100%',
+                    padding: '0.6rem 0.85rem',
+                    background: 'none',
+                    border: 'none',
+                    
+                    textAlign: 'left',
+                    fontSize: '0.8rem',
+                    fontWeight: 600,
+                    color: 'var(--text, #1e293b)',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <UserX size={15} color="#dc2626" />
+                  <span>A vendor cancels</span>
                 </button>
               </div>
             )}

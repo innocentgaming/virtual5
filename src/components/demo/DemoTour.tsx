@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useLayoutEffect } from 'react';
 import {
   ArrowRight,
   ArrowLeft,
@@ -9,17 +9,25 @@ import {
   ShieldAlert,
   Clock,
   Bot,
+  ListChecks,
+  Users,
+  Store,
+  Play,
+  Pause,
+  Undo2,
 } from 'lucide-react';
-import type { NavigationTab } from '../../hooks/useEventPlan';
+import type { NavigationTab, ScenarioInput } from '../../hooks/useEventPlan';
 
 export interface TourStep {
   id: string;
   tab: NavigationTab | 'copilot';
   targetSelector: string;
-  badge: string;
+  label: string;
   title: string;
   description: string;
   icon: React.ReactNode;
+  /** Optional hands-on action the visitor can trigger from the card */
+  action?: { label: string; doneLabel: string; scenario: ScenarioInput };
 }
 
 const TOUR_STEPS: TourStep[] = [
@@ -27,7 +35,7 @@ const TOUR_STEPS: TourStep[] = [
     id: 'kpis',
     tab: 'dashboard',
     targetSelector: '#tour-hero-kpis',
-    badge: '1 of 6 · Executive Dashboard',
+    label: 'Executive Dashboard',
     title: 'Cultural Intelligence at a Glance',
     description:
       'Budgets formatted in Indian ₹ Lakhs & Crores, live RSVP counter with Jain dietary tracking, countdown, and real-time budget utilization ring.',
@@ -37,7 +45,7 @@ const TOUR_STEPS: TourStep[] = [
     id: 'budget_donut',
     tab: 'budget',
     targetSelector: '#tour-budget-donut',
-    badge: '2 of 6 · Interactive Budget',
+    label: 'Interactive Budget',
     title: 'Interactive Donut & Category Filter',
     description:
       'Expenses categorized across venue, catering, decor and photography. Hover slices for percentage readouts and click to filter the line-item ledger below.',
@@ -47,27 +55,62 @@ const TOUR_STEPS: TourStep[] = [
     id: 'chaos',
     tab: 'dashboard',
     targetSelector: '#tour-chaos-bar',
-    badge: '3 of 6 · The Chaos Button',
+    label: 'The Chaos Button',
     title: 'Simulate Real-World Event Volatility',
     description:
-      'Indian celebrations face unexpected quote spikes and weather disruptions. Click "Simulate: Caterer raises price 20%" to trigger immediate budget recalculation and quantified trade-offs.',
+      'Indian celebrations face unexpected quote spikes and weather disruptions. Try it: the caterer raises their price 20% and the whole plan recalculates, with quantified trade-offs and one-click undo.',
     icon: <Zap size={18} color="#f59e0b" />,
+    action: {
+      label: 'Run it for me',
+      doneLabel: 'Applied. Watch the numbers move.',
+      scenario: { vendorPriceSpikePercent: 20, scenarioName: 'Caterer Quote Escalation (+20%)' },
+    },
   },
   {
     id: 'rules',
     tab: 'dashboard',
     targetSelector: '#tour-decision-engine',
-    badge: '4 of 6 · Decision Engine',
+    label: 'Decision Engine',
     title: 'Deterministic Rules & "Why Am I Seeing This?"',
     description:
       '12+ culturally grounded rules monitor your plan: isolated Jain kitchen counters, municipal sound NOC permits, and short-notice triage. Click "Why am I seeing this?" to view the exact data thresholds.',
     icon: <ShieldAlert size={18} color="#ec4899" />,
   },
   {
+    id: 'timeline',
+    tab: 'timeline',
+    targetSelector: '#tour-timeline',
+    label: 'Timeline & Tasks',
+    title: 'A Preparation Plan That Re-Paces Itself',
+    description:
+      'Tasks are ordered by dependency and tied to your event date. Move the date and every deadline shifts; blocked tasks and overdue items are flagged before they become a crisis.',
+    icon: <ListChecks size={18} color="#16a34a" />,
+  },
+  {
+    id: 'guests',
+    tab: 'guests',
+    targetSelector: '#tour-guests',
+    label: 'Guests & Diets',
+    title: 'RSVPs, Jain & Pure Veg Tracking, Seating',
+    description:
+      'Track attendance, plus-ones and dietary needs, arrange tables visually, and send invitations over WhatsApp. Jain and Sattvic guests automatically trigger a separate-counter alert.',
+    icon: <Users size={18} color="#0d9488" />,
+  },
+  {
+    id: 'vendors',
+    tab: 'vendors',
+    targetSelector: '#tour-vendors',
+    label: 'Vendors',
+    title: 'Pandit, Mehendi, Dhol & Caterer Checklists',
+    description:
+      'Each vendor category comes with the interview questions to ask, so quotes are comparable and nothing important is missed before you sign.',
+    icon: <Store size={18} color="#d97706" />,
+  },
+  {
     id: 'run_of_show',
     tab: 'schedule',
     targetSelector: '#tour-run-of-show',
-    badge: '5 of 6 · Vedic Run of Show',
+    label: 'Vedic Run of Show',
     title: 'Muhurat Pheras & 10 PM Sound Curfew',
     description:
       'Coordinate Haldi, Sangeet, Baraat, and Lagna Muhurat Pheras. Downstream activities shift automatically when rituals run late, and municipal 10 PM sound curfew boundaries are enforced.',
@@ -77,7 +120,7 @@ const TOUR_STEPS: TourStep[] = [
     id: 'copilot',
     tab: 'copilot',
     targetSelector: '#tour-copilot-drawer',
-    badge: '6 of 6 · AI Copilot',
+    label: 'AI Copilot',
     title: 'Contextual Copilot & "Pin to Plan"',
     description:
       'Ask questions with suggested prompt chips, view token-streamed advice, and tap "Pin to plan" to convert any Copilot recommendation directly into an actionable task in your timeline.',
@@ -85,13 +128,29 @@ const TOUR_STEPS: TourStep[] = [
   },
 ];
 
+const AUTOPLAY_MS = 8000;
+
+interface Rect {
+  top: number;
+  left: number;
+  width: number;
+  height: number;
+}
+
 interface DemoTourProps {
   isOpen: boolean;
   onClose: () => void;
-  onNavigateTab: (tab: NavigationTab) => void;
-  onOpenCopilot: () => void;
+  onNavigateTab?: (tab: NavigationTab) => void;
+  onOpenCopilot?: () => void;
   onCloseCopilot?: () => void;
+  /** Lets the tour run a what-if scenario on the visitor's behalf */
+  onRunScenario?: (scenario: ScenarioInput) => void;
+  onUndoScenario?: () => void;
   onTriggerChaosSample?: () => void;
+}
+
+function reducedMotion(): boolean {
+  return typeof window !== 'undefined' && Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
 }
 
 export const DemoTour: React.FC<DemoTourProps> = ({
@@ -100,12 +159,20 @@ export const DemoTour: React.FC<DemoTourProps> = ({
   onNavigateTab,
   onOpenCopilot,
   onCloseCopilot,
+  onRunScenario,
+  onUndoScenario,
 }) => {
   const [currentStepIdx, setCurrentStepIdx] = useState(0);
+  const [rect, setRect] = useState<Rect | null>(null);
+  const [autoplay, setAutoplay] = useState(false);
+  const [paused, setPaused] = useState(false);
+  const [applied, setApplied] = useState<Record<string, boolean>>({});
   const cardRef = useRef<HTMLDivElement>(null);
   const nextBtnRef = useRef<HTMLButtonElement>(null);
 
+  const total = TOUR_STEPS.length;
   const step = TOUR_STEPS[currentStepIdx] || TOUR_STEPS[0];
+  const isLast = currentStepIdx === total - 1;
 
   // Auto-switch tabs or open copilot when stepping
   useEffect(() => {
@@ -118,37 +185,79 @@ export const DemoTour: React.FC<DemoTourProps> = ({
       onNavigateTab?.(step.tab);
     }
 
-    // Scroll target into view smoothly if present
-    setTimeout(() => {
+    const t = window.setTimeout(() => {
       const el = document.querySelector(step.targetSelector);
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
+      if (el) el.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'center' });
     }, 150);
+    return () => window.clearTimeout(t);
   }, [isOpen, currentStepIdx, step.tab, step.targetSelector, onNavigateTab, onOpenCopilot, onCloseCopilot]);
 
+  // Track the highlighted element so the spotlight follows scroll, resize and re-render
+  const measure = useCallback(() => {
+    const el = document.querySelector(step.targetSelector);
+    if (!el) {
+      setRect(null);
+      return;
+    }
+    const r = el.getBoundingClientRect();
+    if (r.width === 0 && r.height === 0) {
+      setRect(null);
+      return;
+    }
+    const pad = 8;
+    setRect((prev) => {
+      const next = { top: r.top - pad, left: r.left - pad, width: r.width + pad * 2, height: r.height + pad * 2 };
+      if (prev && prev.top === next.top && prev.left === next.left && prev.width === next.width && prev.height === next.height) {
+        return prev;
+      }
+      return next;
+    });
+  }, [step.targetSelector]);
+
+  useLayoutEffect(() => {
+    if (!isOpen) return;
+    const raf = window.requestAnimationFrame(measure);
+    const interval = window.setInterval(measure, 250);
+    window.addEventListener('resize', measure);
+    window.addEventListener('scroll', measure, true);
+    return () => {
+      window.cancelAnimationFrame(raf);
+      window.clearInterval(interval);
+      window.removeEventListener('resize', measure);
+      window.removeEventListener('scroll', measure, true);
+    };
+  }, [isOpen, measure, currentStepIdx]);
+
   const handleNext = useCallback(() => {
-    if (currentStepIdx < TOUR_STEPS.length - 1) {
+    if (currentStepIdx < total - 1) {
       setCurrentStepIdx((i) => i + 1);
     } else {
       onClose();
     }
-  }, [currentStepIdx, onClose]);
+  }, [currentStepIdx, total, onClose]);
 
   const handlePrev = useCallback(() => {
-    if (currentStepIdx > 0) {
-      setCurrentStepIdx((i) => i - 1);
-    }
+    if (currentStepIdx > 0) setCurrentStepIdx((i) => i - 1);
   }, [currentStepIdx]);
+
+  // Optional auto-play (never when the visitor prefers reduced motion)
+  useEffect(() => {
+    if (!isOpen || !autoplay || paused || isLast || reducedMotion()) return;
+    const t = window.setTimeout(() => setCurrentStepIdx((i) => Math.min(i + 1, total - 1)), AUTOPLAY_MS);
+    return () => window.clearTimeout(t);
+  }, [isOpen, autoplay, paused, currentStepIdx, isLast, total]);
 
   // Focus management & keyboard navigation
   useEffect(() => {
     if (!isOpen) return;
-    nextBtnRef.current?.focus();
+
+    // Focus the next button when step changes
+    const timer = setTimeout(() => {
+      nextBtnRef.current?.focus();
+    }, 100);
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        e.preventDefault();
         onClose();
       } else if (e.key === 'ArrowRight') {
         e.preventDefault();
@@ -157,14 +266,12 @@ export const DemoTour: React.FC<DemoTourProps> = ({
         e.preventDefault();
         handlePrev();
       } else if (e.key === 'Tab' && cardRef.current) {
-        // Focus trap inside tour card
         const focusable = cardRef.current.querySelectorAll<HTMLElement>(
-          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
         );
         if (focusable.length === 0) return;
         const first = focusable[0];
         const last = focusable[focusable.length - 1];
-
         if (e.shiftKey && document.activeElement === first) {
           e.preventDefault();
           last.focus();
@@ -176,227 +283,130 @@ export const DemoTour: React.FC<DemoTourProps> = ({
     };
 
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, [isOpen, handleNext, handlePrev, onClose]);
 
   if (!isOpen) return null;
 
-  const isLast = currentStepIdx === TOUR_STEPS.length - 1;
+  const hasApplied = Boolean(applied[step.id]);
+  const cardAtTop = rect ? rect.top + rect.height / 2 > window.innerHeight * 0.55 : false;
+  const progressPct = ((currentStepIdx + 1) / total) * 100;
+
+  const runAction = () => {
+    if (!step.action || !onRunScenario) return;
+    setAutoplay(false);
+    onRunScenario(step.action.scenario);
+    setApplied((prev) => ({ ...prev, [step.id]: true }));
+  };
+
+  const undoAction = () => {
+    onUndoScenario?.();
+    setApplied((prev) => ({ ...prev, [step.id]: false }));
+  };
 
   return (
     <div
-      className="tour-overlay"
+      className="tour-layer"
       role="dialog"
       aria-modal="true"
-      aria-label={`Guided Tour: ${step.title}`}
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 9999,
-        display: 'flex',
-        alignItems: 'flex-end',
-        justifyContent: 'center',
-        padding: '1.25rem',
-        background: 'rgba(15, 23, 42, 0.45)',
-        backdropFilter: 'blur(3px)',
-        pointerEvents: 'auto',
-      }}
+      aria-label={`Guided Tour, step ${currentStepIdx + 1} of ${total}: ${step.title}`}
     >
+      {rect ? (
+        <div
+          className="tour-spotlight"
+          aria-hidden="true"
+          style={{ top: rect.top, left: rect.left, width: rect.width, height: rect.height }}
+        />
+      ) : (
+        <div className="tour-dim" aria-hidden="true" />
+      )}
+
       <div
         ref={cardRef}
-        className="tour-card"
-        style={{
-          width: '100%',
-          maxWidth: '560px',
-          background: 'var(--surface-raised, #ffffff)',
-          color: 'var(--text, #1e293b)',
-          borderRadius: 'var(--radius-lg, 12px)',
-          border: '1.5px solid var(--accent-primary, #b45309)',
-          boxShadow: '0 20px 40px -10px rgba(0, 0, 0, 0.35)',
-          padding: '1.25rem 1.5rem',
-          position: 'relative',
-          animation: 'tourSlideUp 200ms cubic-bezier(0.16, 1, 0.3, 1)',
-        }}
+        className={`tour-card tour-card--${cardAtTop ? 'top' : 'bottom'}`}
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+        onFocus={() => setPaused(true)}
+        onBlur={() => setPaused(false)}
       >
-        {/* Top Header */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: '0.75rem',
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-            }}
-          >
-            <span
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '28px',
-                height: '28px',
-                borderRadius: '8px',
-                background: 'var(--surface-subtle, #f1f5f9)',
-              }}
-            >
-              {step.icon}
-            </span>
-            <span
-              style={{
-                fontSize: '0.72rem',
-                fontWeight: 800,
-                letterSpacing: '0.06em',
-                textTransform: 'uppercase',
-                color: 'var(--accent-primary, #b45309)',
-              }}
-            >
-              {step.badge}
-            </span>
-          </div>
+        <div className="tour-card__progress" aria-hidden="true">
+          <span style={{ width: `${progressPct}%` }} />
+        </div>
 
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Skip guided tour"
-            style={{
-              background: 'none',
-              border: 'none',
-              color: 'var(--text-muted, #64748b)',
-              cursor: 'pointer',
-              padding: '4px',
-              borderRadius: '6px',
-              display: 'flex',
-            }}
-          >
+        <div className="tour-card__top">
+          <div className="tour-card__badge">
+            <span className="tour-card__icon">{step.icon}</span>
+            <span>{`${currentStepIdx + 1} of ${total} · ${step.label}`}</span>
+          </div>
+          <button type="button" className="tour-card__x" onClick={onClose} aria-label="Skip guided tour">
             <X size={18} />
           </button>
         </div>
 
-        {/* Step Content */}
-        <h3
-          style={{
-            fontSize: '1.15rem',
-            fontWeight: 800,
-            margin: '0 0 0.5rem 0',
-            fontFamily: 'var(--font-display, inherit)',
-            color: 'var(--text, #0f172a)',
-            lineHeight: 1.3,
-          }}
-        >
-          {step.title}
-        </h3>
+        <h3 className="tour-card__title">{step.title}</h3>
+        <p className="tour-card__text">{step.description}</p>
 
-        <p
-          style={{
-            fontSize: '0.875rem',
-            lineHeight: 1.5,
-            color: 'var(--text-muted, #475569)',
-            margin: '0 0 1.25rem 0',
-          }}
-        >
-          {step.description}
-        </p>
+        {step.action && onRunScenario && (
+          <div className="tour-card__action">
+            {hasApplied ? (
+              <>
+                <span className="tour-card__done" role="status">
+                  <CheckCircle2 size={15} /> {step.action.doneLabel}
+                </span>
+                {onUndoScenario && (
+                  <button type="button" className="tour-btn tour-btn--ghost" onClick={undoAction}>
+                    <Undo2 size={14} /> Undo
+                  </button>
+                )}
+              </>
+            ) : (
+              <button type="button" className="tour-btn tour-btn--accent" onClick={runAction}>
+                <Zap size={14} /> {step.action.label}
+              </button>
+            )}
+          </div>
+        )}
 
-        {/* Navigation & Progress Bar */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: '0.75rem',
-            borderTop: '1px solid var(--border, #e2e8f0)',
-            paddingTop: '0.85rem',
-          }}
-        >
-          {/* Progress Dots */}
-          <div
-            style={{ display: 'flex', gap: '6px', alignItems: 'center' }}
-            aria-hidden="true"
-          >
-            {TOUR_STEPS.map((_, i) => (
-              <span
-                key={i}
-                style={{
-                  width: i === currentStepIdx ? '18px' : '6px',
-                  height: '6px',
-                  borderRadius: '3px',
-                  background:
-                    i === currentStepIdx
-                      ? 'var(--accent-primary, #b45309)'
-                      : 'var(--border, #cbd5e1)',
-                  transition: 'all 200ms ease',
-                }}
+        <div className="tour-card__nav">
+          <div className="tour-card__dots" role="group" aria-label="Jump to step">
+            {TOUR_STEPS.map((s, i) => (
+              <button
+                key={s.id}
+                type="button"
+                className={`tour-dot ${i === currentStepIdx ? 'is-on' : ''} ${i < currentStepIdx ? 'is-done' : ''}`}
+                aria-label={`Go to step ${i + 1}: ${s.label}`}
+                aria-current={i === currentStepIdx ? 'step' : undefined}
+                onClick={() => setCurrentStepIdx(i)}
               />
             ))}
           </div>
 
-          {/* Action Buttons */}
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-            <button
-              type="button"
-              onClick={onClose}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: 'var(--text-muted, #64748b)',
-                fontSize: '0.8rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                padding: '0.35rem 0.65rem',
-              }}
-            >
-              Skip tour
-            </button>
-
-            {currentStepIdx > 0 && (
+          <div className="tour-card__buttons">
+            {!reducedMotion() && !isLast && (
               <button
                 type="button"
-                onClick={handlePrev}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.35rem',
-                  padding: '0.4rem 0.75rem',
-                  borderRadius: '6px',
-                  border: '1px solid var(--border, #cbd5e1)',
-                  background: 'var(--surface-subtle, #f8fafc)',
-                  color: 'var(--text, #1e293b)',
-                  fontSize: '0.8rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                }}
+                className="tour-btn tour-btn--text"
+                onClick={() => setAutoplay((a) => !a)}
+                aria-pressed={autoplay}
+                title="Advance automatically every few seconds"
               >
+                {autoplay ? <Pause size={13} /> : <Play size={13} />}
+                {autoplay ? 'Pause' : 'Auto-play'}
+              </button>
+            )}
+            <button type="button" className="tour-btn tour-btn--text" onClick={onClose}>
+              Skip tour
+            </button>
+            {currentStepIdx > 0 && (
+              <button type="button" className="tour-btn tour-btn--ghost" onClick={handlePrev}>
                 <ArrowLeft size={14} />
                 Back
               </button>
             )}
-
-            <button
-              ref={nextBtnRef}
-              type="button"
-              onClick={handleNext}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.35rem',
-                padding: '0.4rem 0.95rem',
-                borderRadius: '6px',
-                border: 'none',
-                background: 'var(--accent-primary, #b45309)',
-                color: '#ffffff',
-                fontSize: '0.825rem',
-                fontWeight: 700,
-                cursor: 'pointer',
-                boxShadow: '0 2px 6px rgba(180, 83, 9, 0.3)',
-              }}
-            >
+            <button ref={nextBtnRef} type="button" className="tour-btn tour-btn--primary" onClick={handleNext}>
               {isLast ? (
                 <>
                   <span>Finish Tour</span>
@@ -405,7 +415,7 @@ export const DemoTour: React.FC<DemoTourProps> = ({
               ) : (
                 <>
                   <span>Next</span>
-                  <ArrowRight size={15} />
+                  <ArrowRight size={14} />
                 </>
               )}
             </button>

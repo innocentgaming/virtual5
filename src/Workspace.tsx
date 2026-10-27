@@ -556,22 +556,26 @@ export function Workspace({ mode }: { mode: WorkspaceMode }) {
               )}
 
               {activeTab === 'timeline' && (
-                <TimelineManager
-                  plan={activeEvent}
-                  onToggleTask={toggleTask}
-                  onAddTask={addTask}
-                  onDeleteTask={deleteTask}
-                  onUpdateTask={updateTask}
-                />
+                <div id="tour-timeline">
+                  <TimelineManager
+                    plan={activeEvent}
+                    onToggleTask={toggleTask}
+                    onAddTask={addTask}
+                    onDeleteTask={deleteTask}
+                    onUpdateTask={updateTask}
+                  />
+                </div>
               )}
 
               {activeTab === 'guests' && (
-                <GuestManager
-                  plan={activeEvent}
-                  onAddGuest={addGuest}
-                  onUpdateGuest={updateGuest}
-                  onDeleteGuest={deleteGuest}
-                />
+                <div id="tour-guests">
+                  <GuestManager
+                    plan={activeEvent}
+                    onAddGuest={addGuest}
+                    onUpdateGuest={updateGuest}
+                    onDeleteGuest={deleteGuest}
+                  />
+                </div>
               )}
 
               {activeTab === 'schedule' && (
@@ -584,11 +588,13 @@ export function Workspace({ mode }: { mode: WorkspaceMode }) {
               )}
 
               {activeTab === 'vendors' && (
-                <VendorChecklist
-                  plan={activeEvent}
-                  onUpdateVendor={updateVendor}
-                  onAddVendor={addVendor}
-                />
+                <div id="tour-vendors">
+                  <VendorChecklist
+                    plan={activeEvent}
+                    onUpdateVendor={updateVendor}
+                    onAddVendor={addVendor}
+                  />
+                </div>
               )}
 
               {activeTab === 'ideas' && (
@@ -648,6 +654,9 @@ export function Workspace({ mode }: { mode: WorkspaceMode }) {
             AICopilotDrawer.preload();
             setIsCopilotOpen(true);
           }}
+          onCloseCopilot={() => setIsCopilotOpen(false)}
+          onRunScenario={applyScenarioChange}
+          onUndoScenario={undoLastChange}
         />
       )}
 

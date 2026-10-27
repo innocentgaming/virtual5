@@ -176,36 +176,47 @@ describe('Investor & Evaluator Demo Features Suite', () => {
       );
 
       // Step 1: Dashboard
-      expect(screen.getByText(/1 of 6/i)).toBeInTheDocument();
+      expect(screen.getByText(/1 of 9/i)).toBeInTheDocument();
       expect(screen.getByText('Cultural Intelligence at a Glance')).toBeInTheDocument();
 
       // Click Next -> Step 2
       const nextBtn = screen.getByRole('button', { name: /^Next$/i });
       fireEvent.click(nextBtn);
 
-      expect(screen.getByText(/2 of 6/i)).toBeInTheDocument();
+      expect(screen.getByText(/2 of 9/i)).toBeInTheDocument();
       expect(screen.getByText('Interactive Donut & Category Filter')).toBeInTheDocument();
       expect(onNavigateTab).toHaveBeenCalledWith('budget');
 
       // Click Next -> Step 3
       fireEvent.click(screen.getByRole('button', { name: /^Next$/i }));
-      expect(screen.getByText(/3 of 6/i)).toBeInTheDocument();
+      expect(screen.getByText(/3 of 9/i)).toBeInTheDocument();
       expect(screen.getByText('Simulate Real-World Event Volatility')).toBeInTheDocument();
 
       // Click Next -> Step 4
       fireEvent.click(screen.getByRole('button', { name: /^Next$/i }));
-      expect(screen.getByText(/4 of 6/i)).toBeInTheDocument();
+      expect(screen.getByText(/4 of 9/i)).toBeInTheDocument();
       expect(screen.getByText(/Deterministic Rules & "Why Am I Seeing This\?"/i)).toBeInTheDocument();
 
-      // Click Next -> Step 5
+      // Steps 5-7: timeline, guests, vendors
       fireEvent.click(screen.getByRole('button', { name: /^Next$/i }));
-      expect(screen.getByText(/5 of 6/i)).toBeInTheDocument();
+      expect(screen.getByText(/5 of 9/i)).toBeInTheDocument();
+      expect(onNavigateTab).toHaveBeenCalledWith('timeline');
+      fireEvent.click(screen.getByRole('button', { name: /^Next$/i }));
+      expect(screen.getByText(/6 of 9/i)).toBeInTheDocument();
+      expect(onNavigateTab).toHaveBeenCalledWith('guests');
+      fireEvent.click(screen.getByRole('button', { name: /^Next$/i }));
+      expect(screen.getByText(/7 of 9/i)).toBeInTheDocument();
+      expect(onNavigateTab).toHaveBeenCalledWith('vendors');
+
+      // Step 8: run of show
+      fireEvent.click(screen.getByRole('button', { name: /^Next$/i }));
+      expect(screen.getByText(/8 of 9/i)).toBeInTheDocument();
       expect(screen.getByText('Muhurat Pheras & 10 PM Sound Curfew')).toBeInTheDocument();
       expect(onNavigateTab).toHaveBeenCalledWith('schedule');
 
-      // Click Next -> Step 6 (Copilot)
+      // Click Next -> Step 9 (Copilot)
       fireEvent.click(screen.getByRole('button', { name: /^Next$/i }));
-      expect(screen.getByText(/6 of 6/i)).toBeInTheDocument();
+      expect(screen.getByText(/9 of 9/i)).toBeInTheDocument();
       expect(screen.getByText(/Contextual Copilot & "Pin to Plan"/i)).toBeInTheDocument();
       expect(onOpenCopilot).toHaveBeenCalled();
 

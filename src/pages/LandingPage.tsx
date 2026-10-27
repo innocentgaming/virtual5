@@ -2,6 +2,7 @@ import React from 'react';
 import { usePageTitle } from '../router';
 import { Link } from '../routerComponents';
 import { SiteLayout } from './SiteChrome';
+import { LiveDemoWindow } from '../components/demo/LiveDemoWindow';
 
 const FEATURES: { title: string; body: string }[] = [
   {
@@ -100,6 +101,16 @@ export default function LandingPage(): React.ReactElement {
               <div className="s-sheet__legend"><span>Paid</span><span>Contracted</span><span>Open</span></div>
             </div>
           </figure>
+        </div>
+      </section>
+
+      <section id="try-it" className="s-section">
+        <div className="s-wrap">
+          <div className="s-section__head">
+            <h2>Try it right here</h2>
+            <p>This is a real sample plan running on the same budget and rules engine as the app. Pick a celebration, then throw a problem at it.</p>
+          </div>
+          <LiveDemoWindow />
         </div>
       </section>
 
