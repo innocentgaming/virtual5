@@ -5,6 +5,7 @@ import App from '../App';
 import { safeNextPath } from '../router';
 import { preloadAllTabs } from '../utils/lazyWithPreload';
 import type { AuthUser } from '../types/auth';
+import { generateFallbackPlan } from '../services/fallbackPlanner';
 
 const mockUser: AuthUser = {
   id: 'user_123',
@@ -186,7 +187,7 @@ describe('Frontend Routing, Auth UI, and Safe Paths', () => {
     expect(alert).toHaveTextContent(/An account with this email already exists/i);
   });
 
-  it('successfully logs in and navigates to the workspace', async () => {
+  async function signInWithEventsDoc(eventsDoc: { events: unknown[]; activeId: string | null; updatedAt: number }) {
     window.history.pushState({}, '', '/login');
 
     vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
@@ -198,7 +199,7 @@ describe('Frontend Routing, Auth UI, and Safe Paths', () => {
         return new Response(JSON.stringify({ ok: true, user: mockUser }), { status: 200 });
       }
       if (url.includes('/api/events')) {
-        return new Response(JSON.stringify({ events: [], activeId: null, updatedAt: 0 }), { status: 200 });
+        return new Response(JSON.stringify(eventsDoc), { status: 200 });
       }
       return new Response('{}', { status: 200 });
     });
@@ -207,18 +208,41 @@ describe('Frontend Routing, Auth UI, and Safe Paths', () => {
 
     expect(await screen.findByRole('heading', { level: 1, name: /Sign in/i })).toBeInTheDocument();
 
-    const emailInput = screen.getByLabelText(/Email/i);
-    const passwordInput = screen.getByLabelText(/^Password$/i);
-    const submitBtn = screen.getByRole('button', { name: /Sign in/i });
-
-    fireEvent.change(emailInput, { target: { value: 'devika@example.com' } });
-    fireEvent.change(passwordInput, { target: { value: 'CorrectPassword123!' } });
-    fireEvent.click(submitBtn);
+    fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: 'devika@example.com' } });
+    fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: 'CorrectPassword123!' } });
+    fireEvent.click(screen.getByRole('button', { name: /Sign in/i }));
 
     await waitFor(() => {
       expect(window.location.pathname).toBe('/app');
     });
+  }
+
+  it('shows a brand-new account an empty "create your first plan" screen, never sample or device data', async () => {
+    // Simulate leftovers from a previous visitor / the demo on this same browser.
+    localStorage.setItem('eventwise_ai_events_v2', JSON.stringify([{ id: 'someone-else', title: 'Previous Visitor Wedding' }]));
+
+    await signInWithEventsDoc({ events: [], activeId: null, updatedAt: 0 });
+
+    expect(await screen.findByRole('heading', { level: 1, name: /Welcome, Devika!/i })).toBeInTheDocument();
+    // The planner workspace (header with the account avatar, dashboard of a sample plan) is not rendered yet.
+    expect(screen.queryByText('DP')).not.toBeInTheDocument();
+    expect(screen.queryByText(/Previous Visitor Wedding/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Mobile Bottom Overview/i })).not.toBeInTheDocument();
+  });
+
+  it('loads the signed-in account\'s own saved plans into the workspace', async () => {
+    const plan = generateFallbackPlan({
+      title: 'Devika & Rahul Pune Wedding',
+      eventType: 'wedding',
+      eventDate: '2027-03-01',
+      city: 'Pune, Maharashtra',
+      guestCount: 120,
+      totalBudget: 900000,
+    });
+
+    await signInWithEventsDoc({ events: [plan], activeId: plan.id, updatedAt: 1700000000000 });
 
     expect(await screen.findByText('DP')).toBeInTheDocument();
+    expect(screen.queryByText(/Aarav & Ananya/i)).not.toBeInTheDocument();
   });
 });

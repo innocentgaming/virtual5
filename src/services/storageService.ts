@@ -5,6 +5,8 @@ import { validateAndSanitizeEventPlan } from '../utils/validators';
 export const STORAGE_SCHEMA_VERSION = 2;
 export const STORAGE_KEY_EVENTS = 'eventwise_ai_events_v2';
 export const STORAGE_KEY_ACTIVE_ID = 'eventwise_ai_active_id_v2';
+export const STORAGE_KEY_ACCOUNT_EVENTS = 'eventwise_ai_account_events_v2';
+export const STORAGE_KEY_ACCOUNT_ACTIVE_ID = 'eventwise_ai_account_active_id_v2';
 export const STORAGE_KEY_VERSION = 'eventwise_ai_schema_version';
 
 const LEGACY_STORAGE_KEYS = [
@@ -101,13 +103,13 @@ export function sanitizeEventForStorage(event: EventPlan): EventPlan {
  * Performs automatic schema migration from v1 to v2, deep-validates all records,
  * and recovers gracefully from corrupted or oversized storage payloads.
  */
-export function loadSavedEvents(): EventPlan[] {
+export function loadSavedEvents(fallbackToSample: boolean = true, storageKey: string = STORAGE_KEY_EVENTS): EventPlan[] {
   try {
-    let raw = localStorage.getItem(STORAGE_KEY_EVENTS);
+    let raw = localStorage.getItem(storageKey);
     let isMigration = false;
 
-    // Check legacy v1 keys for migration if v2 is not yet present
-    if (!raw) {
+    // Check legacy v1 keys for migration if v2 is not yet present on default demo store
+    if (!raw && storageKey === STORAGE_KEY_EVENTS) {
       for (const legacyKey of LEGACY_STORAGE_KEYS) {
         const legacyData = localStorage.getItem(legacyKey);
         if (legacyData) {
@@ -119,12 +121,12 @@ export function loadSavedEvents(): EventPlan[] {
     }
 
     if (!raw) {
-      return INITIAL_EVENTS;
+      return fallbackToSample ? INITIAL_EVENTS : [];
     }
 
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed) || parsed.length === 0) {
-      return INITIAL_EVENTS;
+      return fallbackToSample ? INITIAL_EVENTS : [];
     }
 
     const validated: EventPlan[] = [];
@@ -136,13 +138,13 @@ export function loadSavedEvents(): EventPlan[] {
     }
 
     if (validated.length === 0) {
-      return INITIAL_EVENTS;
+      return fallbackToSample ? INITIAL_EVENTS : [];
     }
 
     // If migrating from legacy schema, persist upgraded v2 dataset and set schema version
     if (isMigration) {
       try {
-        saveEvents(validated);
+        saveEvents(validated, storageKey);
         localStorage.setItem(STORAGE_KEY_VERSION, String(STORAGE_SCHEMA_VERSION));
         for (const legacyKey of LEGACY_STORAGE_KEYS) {
           localStorage.removeItem(legacyKey);
@@ -155,14 +157,14 @@ export function loadSavedEvents(): EventPlan[] {
     return validated;
   } catch (err) {
     console.error('Failed to parse stored events from localStorage, resetting to defaults.', err);
-    return INITIAL_EVENTS;
+    return fallbackToSample ? INITIAL_EVENTS : [];
   }
 }
 
 /**
  * Safely persists events into localStorage with size capping (2 MB), redundancy skips, and quota error handling.
  */
-export function saveEvents(events: EventPlan[]): boolean {
+export function saveEvents(events: EventPlan[], storageKey: string = STORAGE_KEY_EVENTS): boolean {
   try {
     const validEvents = events
       .filter((e) => isValidEventPlan(e))
@@ -171,7 +173,7 @@ export function saveEvents(events: EventPlan[]): boolean {
     const serialized = JSON.stringify(validEvents);
 
     // Skip redundant writes if localStorage or memory already holds this exact state
-    if (lastSavedPayload === serialized && localStorage.getItem(STORAGE_KEY_EVENTS) === serialized) {
+    if (lastSavedPayload === serialized && localStorage.getItem(storageKey) === serialized) {
       return true;
     }
 
@@ -180,7 +182,7 @@ export function saveEvents(events: EventPlan[]): boolean {
       return false;
     }
 
-    localStorage.setItem(STORAGE_KEY_EVENTS, serialized);
+    localStorage.setItem(storageKey, serialized);
     localStorage.setItem(STORAGE_KEY_VERSION, String(STORAGE_SCHEMA_VERSION));
     lastSavedPayload = serialized;
     clearStorageError();
@@ -208,6 +210,8 @@ export function clearAllStorageData(): void {
     clearStorageError();
     localStorage.removeItem(STORAGE_KEY_EVENTS);
     localStorage.removeItem(STORAGE_KEY_ACTIVE_ID);
+    localStorage.removeItem(STORAGE_KEY_ACCOUNT_EVENTS);
+    localStorage.removeItem(STORAGE_KEY_ACCOUNT_ACTIVE_ID);
     localStorage.removeItem(STORAGE_KEY_VERSION);
     for (const legacyKey of LEGACY_STORAGE_KEYS) {
       localStorage.removeItem(legacyKey);
@@ -219,11 +223,25 @@ export function clearAllStorageData(): void {
 }
 
 /**
+ * Clears only the authenticated user's local cached events.
+ */
+export function clearAccountStorageData(): void {
+  try {
+    lastSavedPayload = null;
+    clearStorageError();
+    localStorage.removeItem(STORAGE_KEY_ACCOUNT_EVENTS);
+    localStorage.removeItem(STORAGE_KEY_ACCOUNT_ACTIVE_ID);
+  } catch (err) {
+    console.error('Failed to clear account storage data:', err);
+  }
+}
+
+/**
  * Gets the last active event ID safely.
  */
-export function loadActiveEventId(): string | null {
+export function loadActiveEventId(storageKey: string = STORAGE_KEY_ACTIVE_ID): string | null {
   try {
-    return localStorage.getItem(STORAGE_KEY_ACTIVE_ID) || localStorage.getItem('eventwise_ai_active_id_india_v1');
+    return localStorage.getItem(storageKey) || (storageKey === STORAGE_KEY_ACTIVE_ID ? localStorage.getItem('eventwise_ai_active_id_india_v1') : null);
   } catch {
     return null;
   }
@@ -232,13 +250,13 @@ export function loadActiveEventId(): string | null {
 /**
  * Saves the active event ID safely with redundancy skip.
  */
-export function saveActiveEventId(id: string): void {
+export function saveActiveEventId(id: string, storageKey: string = STORAGE_KEY_ACTIVE_ID): void {
   try {
     const cleanId = id.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 50);
-    if (localStorage.getItem(STORAGE_KEY_ACTIVE_ID) === cleanId) {
+    if (localStorage.getItem(storageKey) === cleanId) {
       return;
     }
-    localStorage.setItem(STORAGE_KEY_ACTIVE_ID, cleanId);
+    localStorage.setItem(storageKey, cleanId);
   } catch (err) {
     console.error('Failed to save active event id', err);
   }

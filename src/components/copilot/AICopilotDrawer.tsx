@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import type { EventPlan, TradeOffOption, TaskCategory } from '../../types/event';
 import type { NavigationTab } from '../../hooks/useEventPlan';
+import { INITIAL_EVENTS } from '../../data/sampleEvents';
 import {
   generateCopilotAnswer,
   generateCopilotAnswerAsync,
@@ -23,7 +24,7 @@ import {
 import { Button, Badge, useToast } from '../ui';
 
 interface AICopilotDrawerProps {
-  plan: EventPlan;
+  plan?: EventPlan | null;
   isOpen: boolean;
   onClose: () => void;
   onApplyTradeOff?: (tradeOff: TradeOffOption, note?: string) => void;
@@ -147,13 +148,14 @@ function renderMarkdownLight(content: string): React.ReactNode {
 }
 
 export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
-  plan,
+  plan: propPlan,
   isOpen,
   onClose,
   onApplyTradeOff,
   activeTab,
   onPinTask,
 }) => {
+  const plan = propPlan || INITIAL_EVENTS[0];
   const toast = useToast();
   const drawerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);

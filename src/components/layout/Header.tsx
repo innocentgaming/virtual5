@@ -12,6 +12,7 @@ import {
   CloudOff,
   Loader2,
   UserPlus,
+  Globe,
 } from 'lucide-react';
 import type { EventPlan } from '../../types/event';
 import { Badge, Button, Logo } from '../ui';
@@ -22,7 +23,7 @@ import { Link } from '../../routerComponents';
 
 interface HeaderProps {
   events: EventPlan[];
-  activeEvent: EventPlan;
+  activeEvent: EventPlan | null;
   colorMode: 'light' | 'dark';
   onToggleColorMode: () => void;
   onSelectEvent: (id: string) => void;
@@ -32,6 +33,7 @@ interface HeaderProps {
   onExportCalendar: () => void;
   onOpenAISettings: () => void;
   onOpenCopilot: () => void;
+  onOpenWebsite?: () => void;
   mode: 'account' | 'demo';
   user: AuthUser | null;
   syncStatus: SyncStatus;
@@ -51,6 +53,7 @@ export const Header: React.FC<HeaderProps> = ({
   onExportCalendar,
   onOpenAISettings,
   onOpenCopilot,
+  onOpenWebsite,
   mode,
   user,
   syncStatus,
@@ -120,64 +123,106 @@ export const Header: React.FC<HeaderProps> = ({
         </Link>
 
         {/* Active Event Selector */}
-        <div className="event-selector-wrapper">
-          <label htmlFor="active-event-select" className="sr-only">
-            Select Active Event
-          </label>
-          <select
-            id="active-event-select"
-            className="event-selector"
-            value={activeEvent.id}
-            onChange={(e) => onSelectEvent(e.target.value)}
-            aria-label="Select Active Event Plan"
-          >
-            {events.map((event) => (
-              <option key={event.id} value={event.id}>
-                {event.title} ({event.city})
-              </option>
-            ))}
-          </select>
-          <Badge variant={getBadgeVariant(activeEvent.eventType)} size="sm">
-            {activeEvent.eventType === 'wedding'
-              ? '👑 Royal Wedding'
-              : activeEvent.eventType === 'birthday'
-              ? '🎉 Milestone Birthday'
-              : '🪔 Community Utsav'}
-          </Badge>
-        </div>
+        {activeEvent && events.length > 0 ? (
+          <div className="event-selector-wrapper">
+            <label htmlFor="active-event-select" className="sr-only">
+              Select Active Event
+            </label>
+            <select
+              id="active-event-select"
+              className="event-selector"
+              value={activeEvent.id}
+              onChange={(e) => onSelectEvent(e.target.value)}
+              aria-label="Select Active Event Plan"
+            >
+              {events.map((event) => (
+                <option key={event.id} value={event.id}>
+                  {event.title} ({event.city})
+                </option>
+              ))}
+            </select>
+            <Badge variant={getBadgeVariant(activeEvent.eventType)} size="sm">
+              {activeEvent.eventType === 'wedding'
+                ? '👑 Royal Wedding'
+                : activeEvent.eventType === 'birthday'
+                ? '🎉 Milestone Birthday'
+                : '🪔 Community Utsav'}
+            </Badge>
+          </div>
+        ) : (
+          <div className="event-selector-wrapper" style={{ padding: '0.25rem 0.5rem' }}>
+            <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text-muted)' }}>
+              ✨ Clean Slate
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Center Event Metadata Pill */}
       <div className="header-center">
-        <div
-          className="header-meta-pill"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.75rem',
-            background: 'var(--surface-subtle)',
-            padding: '0.35rem 0.85rem',
-            borderRadius: 'var(--radius-pill)',
-            border: '1px solid var(--border)',
-            fontSize: 'var(--text-xs)',
-          }}
-        >
-          <span style={{ fontWeight: 600, color: 'var(--text-muted)' }}>
-            📍 {activeEvent.city}
-          </span>
-          <span style={{ color: 'var(--border)' }}>•</span>
-          <span style={{ fontWeight: 600, color: 'var(--text-muted)' }}>
-            👥 {activeEvent.guestCount} Guests
-          </span>
-          <span style={{ color: 'var(--border)' }}>•</span>
-          <span style={{ fontWeight: 700, color: 'var(--accent-primary)' }}>
-            💰 {formatIndianShort(activeEvent.totalBudget)}
-          </span>
-        </div>
+        {activeEvent ? (
+          <div
+            className="header-meta-pill"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.75rem',
+              background: 'var(--surface-subtle)',
+              padding: '0.35rem 0.85rem',
+              borderRadius: 'var(--radius-pill)',
+              border: '1px solid var(--border)',
+              fontSize: 'var(--text-xs)',
+            }}
+          >
+            <span style={{ fontWeight: 600, color: 'var(--text-muted)' }}>
+              📍 {activeEvent.city}
+            </span>
+            <span style={{ color: 'var(--border)' }}>•</span>
+            <span style={{ fontWeight: 600, color: 'var(--text-muted)' }}>
+              👥 {activeEvent.guestCount} Guests
+            </span>
+            <span style={{ color: 'var(--border)' }}>•</span>
+            <span style={{ fontWeight: 700, color: 'var(--accent-primary)' }}>
+              💰 {formatIndianShort(activeEvent.totalBudget)}
+            </span>
+          </div>
+        ) : (
+          <div
+            className="header-meta-pill"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              background: 'var(--surface-subtle)',
+              padding: '0.35rem 0.85rem',
+              borderRadius: 'var(--radius-pill)',
+              border: '1px solid var(--border)',
+              fontSize: 'var(--text-xs)',
+              color: 'var(--text-muted)',
+            }}
+          >
+            <span>🌟 Ready for your first celebration</span>
+          </div>
+        )}
       </div>
 
       {/* Actions & Tools */}
       <div className="header-actions">
+        {/* Event Website Builder Trigger */}
+        {onOpenWebsite && (
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={onOpenWebsite}
+            leftIcon={<Globe size={14} color="var(--accent-primary)" />}
+            title="Open Celebration Website Builder & Guest RSVP Portal"
+            aria-label="Event Website Builder"
+            id="btn-header-website"
+          >
+            Event Website
+          </Button>
+        )}
+
         {/* AI Copilot Drawer Trigger */}
         <Button
           variant="secondary"
@@ -204,28 +249,32 @@ export const Header: React.FC<HeaderProps> = ({
         </Button>
 
         {/* Sync to Calendar (.ics) Trigger */}
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={onExportCalendar}
-          leftIcon={<Calendar size={14} />}
-          title="Export timeline milestones as iCalendar (.ics)"
-          aria-label="Export Calendar Reminders"
-        >
-          Sync .ics
-        </Button>
+        {activeEvent && (
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={onExportCalendar}
+            leftIcon={<Calendar size={14} />}
+            title="Export timeline milestones as iCalendar (.ics)"
+            aria-label="Export Calendar Reminders"
+          >
+            Sync .ics
+          </Button>
+        )}
 
         {/* Export JSON Button */}
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={onExport}
-          leftIcon={<Download size={14} />}
-          title="Export complete event plan as structured JSON"
-          aria-label="Export Event Plan as JSON"
-        >
-          Export Plan
-        </Button>
+        {activeEvent && (
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={onExport}
+            leftIcon={<Download size={14} />}
+            title="Export complete event plan as structured JSON"
+            aria-label="Export Event Plan as JSON"
+          >
+            Export Plan
+          </Button>
+        )}
 
         {/* Restore JSON Backup Button */}
         {onImportPlan && (

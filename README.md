@@ -24,7 +24,7 @@
 > 
 > * **100% Offline-First Deterministic Engine**: 12 modular business rules execute instantly without third-party API dependencies or network connectivity.
 > * **Interactive Landing-Page Live Demo Window**: Full what-if playground with before/after comparison, suggested trade-off fixes, visitor steppers, and shareable states.
-> * **Accounts & Cloud Events Sync**: Scrypt-hashed credentials with zero-config memory fallback and 1-click Upstash Redis persistence.
+> * **Accounts & Cloud Events Sync**: Scrypt-hashed credentials stored in Upstash Redis (required in production so accounts persist across sign-ins; a volatile in-memory store is used only in local development). A new account starts empty and only ever sees its own plans.
 > * **Native Indian Rupee (`₹`) Economics**: First-class support for `en-IN` grouping (e.g., `₹35,00,000`), Lakhs (`₹35L`) and Crores (`₹2.5 Cr`) shorthand, and contingency modeling.
 > * **Real-Time Dynamic Change & Trade-off Loop**: Detects quote hikes (+20%), guest surges (+50), weather risks, or date compressions, computes concrete Rupee trade-offs, and provides 1-click execution with a 20-step undo history.
 > * **Deep Cultural Guardrails**: Built-in 10:00 PM outdoor sound curfew alerts, dedicated Jain / Pure Veg kitchen isolation protocols, and Vedic Muhurat Run of Show pacing.

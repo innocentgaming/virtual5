@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Modal, Button, Badge } from '../ui';
 import { useAuth } from '../../hooks/useAuth';
 import { navigate } from '../../router';
-import { LogOut, ShieldCheck, KeyRound, Trash2, UserRound } from 'lucide-react';
+import { LogOut, ShieldCheck, KeyRound, Trash2, UserRound, RotateCcw } from 'lucide-react';
 import type { EventPlan } from '../../types/event';
 import type { UserRole } from '../../types/auth';
 import { PasswordField } from './PasswordField';
@@ -10,13 +10,14 @@ import { PasswordField } from './PasswordField';
 interface AccountModalProps {
   isOpen: boolean;
   onClose: () => void;
-  activeEvent: EventPlan;
+  activeEvent: EventPlan | null;
   onFeedback?: (msg: string) => void;
+  onClearAllEvents?: () => Promise<void> | void;
 }
 
 type Tab = 'profile' | 'security';
 
-export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, onFeedback }) => {
+export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, onFeedback, onClearAllEvents }) => {
   const { user, logout, updateProfile, changePassword, deleteAccount } = useAuth();
   const [tab, setTab] = useState<Tab>('profile');
   const [name, setName] = useState(user?.name ?? '');
@@ -157,6 +158,26 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, onF
             </Button>
             <Button variant="secondary" onClick={() => void signOut(true)}>
               Sign out on all devices
+            </Button>
+          </div>
+
+          <div style={{ borderTop: '1px solid var(--border)', paddingTop: 'var(--space-4)' }}>
+            <strong style={{ fontSize: 'var(--text-sm)', color: 'var(--text)' }}>Reset Database (Start Clean)</strong>
+            <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', margin: '4px 0 var(--space-3)' }}>
+              Clear all celebration plans and sample data from your account database so you can start completely fresh.
+            </p>
+            <Button
+              variant="secondary"
+              onClick={async () => {
+                if (window.confirm('Are you sure you want to clear all celebration plans and start with a fresh clean database?')) {
+                  await onClearAllEvents?.();
+                  onFeedback?.('All celebration plans cleared. You now have a fresh clean database.');
+                  onClose();
+                }
+              }}
+              leftIcon={<RotateCcw size={14} />}
+            >
+              Reset to Clean Database
             </Button>
           </div>
 

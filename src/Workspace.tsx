@@ -51,6 +51,10 @@ const AICopilotDrawer = lazyWithPreload(() =>
 const AccountModal = lazyWithPreload(() =>
   import('./components/auth/AccountModal').then((m) => ({ default: m.AccountModal }))
 );
+const EventWebsiteModal = lazyWithPreload(() =>
+  import('./components/website/EventWebsiteModal').then((m) => ({ default: m.EventWebsiteModal }))
+);
+import { EmptyStateOnboarding } from './components/onboarding/EmptyStateOnboarding';
 import { useAuth } from './hooks/useAuth';
 import { Link } from './routerComponents';
 
@@ -84,7 +88,7 @@ function TabSkeleton() {
 export type WorkspaceMode = 'account' | 'demo';
 
 export function Workspace({ mode }: { mode: WorkspaceMode }) {
-  const { user, refresh } = useAuth();
+  const { user, refresh, logout } = useAuth();
   const {
     events,
     activeEvent,
@@ -114,6 +118,8 @@ export function Workspace({ mode }: { mode: WorkspaceMode }) {
     deleteScheduleItem,
     regenerateRecommendations,
     resetToDefaults,
+    clearAllEvents,
+    loadSampleTemplates,
     exportCurrentPlan,
     importPlan,
     applyTradeOff,
@@ -122,6 +128,9 @@ export function Workspace({ mode }: { mode: WorkspaceMode }) {
     storageError,
     clearStorageError,
     syncStatus,
+    accountLoad,
+    reloadAccount,
+    hasPlans,
     resolveSyncConflict,
     retrySync,
     lastChangeDiff,
@@ -129,6 +138,7 @@ export function Workspace({ mode }: { mode: WorkspaceMode }) {
   } = useEventPlan({ cloudSync: mode === 'account', onSessionExpired: refresh });
 
   const [isCreatingNew, setIsCreatingNew] = useState(false);
+  const [isWebsiteOpen, setIsWebsiteOpen] = useState(false);
   const [isCopilotOpen, setIsCopilotOpen] = useState(false);
   const [colorMode, setColorMode] = useState<'light' | 'dark'>(() => {
     const saved = localStorage.getItem('eventwise_color_mode');
@@ -142,19 +152,24 @@ export function Workspace({ mode }: { mode: WorkspaceMode }) {
     return tourParam === '1' || tourParam === 'true' || tourParam === 'start';
   });
 
-  // URL Query Parameters parsing for demo mode (?tour=1, ?event=..., ?tab=..., ?scenario=...)
+  // URL Query Parameters parsing for demo mode (?tour=1, ?event=..., ?tab=..., ?scenario=..., ?website=1)
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
 
+    const websiteParam = params.get('website');
+    if (websiteParam === '1' || websiteParam === 'true') {
+      setIsWebsiteOpen(true);
+    }
+
     const eventParam = params.get('event');
-    if (eventParam) {
+    if (eventParam && events.length > 0) {
       const target = events.find(
         (e) =>
           e.eventType.toLowerCase() === eventParam.toLowerCase() ||
           e.id.toLowerCase().includes(eventParam.toLowerCase())
       );
-      if (target && target.id !== activeEvent.id) {
+      if (target && target.id !== activeEvent?.id) {
         selectEvent(target.id);
       }
     }
@@ -188,12 +203,14 @@ export function Workspace({ mode }: { mode: WorkspaceMode }) {
         });
       }
     }
-  }, [events, activeEvent.id, selectEvent, setActiveTab, applyScenarioChange]);
+  }, [events, activeEvent?.id, selectEvent, setActiveTab, applyScenarioChange]);
 
   const handleCopyShareLink = () => {
     if (typeof window === 'undefined') return;
     const url = new URL(window.location.href);
-    url.searchParams.set('event', activeEvent.eventType);
+    if (activeEvent) {
+      url.searchParams.set('event', activeEvent.eventType);
+    }
     url.searchParams.set('tab', activeTab);
     navigator.clipboard.writeText(url.toString());
     showToast('✓ Shareable demo link copied to clipboard!');
@@ -206,14 +223,15 @@ export function Workspace({ mode }: { mode: WorkspaceMode }) {
     } catch {
       // ignore
     }
+    const themeName = activeEvent ? activeEvent.eventType : 'wedding';
     document.documentElement.setAttribute('data-color-mode', colorMode);
-    document.documentElement.setAttribute('data-theme', activeEvent.eventType);
+    document.documentElement.setAttribute('data-theme', themeName);
     document.documentElement.style.colorScheme = colorMode;
     if (document.body) {
       document.body.setAttribute('data-color-mode', colorMode);
-      document.body.setAttribute('data-theme', activeEvent.eventType);
+      document.body.setAttribute('data-theme', themeName);
     }
-  }, [colorMode, activeEvent.eventType]);
+  }, [colorMode, activeEvent?.eventType]);
 
   const toggleColorMode = () => {
     setColorMode((prev) => (prev === 'light' ? 'dark' : 'light'));
@@ -242,6 +260,7 @@ export function Workspace({ mode }: { mode: WorkspaceMode }) {
   };
 
   const handleExportCalendar = async () => {
+    if (!activeEvent) return;
     const { downloadEventCalendar } = await import('./services/calendarService');
     downloadEventCalendar(activeEvent);
     showToast('iCalendar (.ics) file exported with timeline reminders!');
@@ -269,9 +288,13 @@ export function Workspace({ mode }: { mode: WorkspaceMode }) {
       ideas: 'Personalized Ideas',
       ai: 'AI Assistant',
     };
+    if (mode === 'account' && (accountLoad !== 'ready' || !hasPlans)) {
+      document.title = 'Your plans | EventWise AI';
+      return;
+    }
     const viewName = isCreatingNew ? 'Create New Celebration' : tabTitles[activeTab] || 'Dashboard';
-    document.title = `${viewName} — ${activeEvent.title} | EventWise AI`;
-  }, [activeTab, activeEvent.title, isCreatingNew]);
+    document.title = `${viewName} — ${activeEvent?.title || 'EventWise AI'} | EventWise AI`;
+  }, [activeTab, activeEvent?.title, isCreatingNew, mode, accountLoad, hasPlans]);
 
   const handleTabHover = useCallback((tab: NavigationTab) => {
     switch (tab) {
@@ -339,10 +362,60 @@ export function Workspace({ mode }: { mode: WorkspaceMode }) {
     return () => clearTimeout(timer);
   }, []);
 
+  // Signed-in accounts: never render the (sample) fallback plan while the account's own plans load,
+  // when loading failed, or when this is a brand-new account with no plans yet.
+  if (mode === 'account' && accountLoad !== 'ready') {
+    return (
+      <div className="app-container" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
+        {accountLoad === 'error' ? (
+          <div className="card" role="alert" style={{ padding: '2rem', maxWidth: '460px', textAlign: 'center', display: 'grid', gap: '1rem' }}>
+            <h1 style={{ margin: 0, fontSize: '1.25rem' }}>We couldn’t load your plans</h1>
+            <p style={{ margin: 0, color: 'var(--text-muted)' }}>
+              Check your connection and try again. Your saved plans are safe in your account.
+            </p>
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button type="button" className="btn" onClick={reloadAccount}>Try again</button>
+              <button type="button" className="btn btn-ghost" onClick={() => void logout()}>Sign out</button>
+            </div>
+          </div>
+        ) : (
+          <div role="status" aria-live="polite" style={{ width: 'min(520px, 100%)' }}>
+            <TabSkeleton />
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (mode === 'account' && !hasPlans) {
+    const firstName = user?.name?.split(' ')[0];
+    return (
+      <ToastProvider>
+        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+          <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', padding: '1rem 1.5rem', borderBottom: '1px solid var(--border)' }}>
+            <strong>EventWise AI</strong>
+            <button type="button" className="btn btn-sm btn-ghost" onClick={() => void logout()}>Sign out</button>
+          </header>
+          <main id="main" tabIndex={-1} className="app-container" style={{ flex: 1, marginTop: '1.25rem', outline: 'none' }}>
+            <h1 style={{ margin: '0 0 0.25rem 0', fontSize: '1.5rem' }}>
+              {firstName ? `Welcome, ${firstName}!` : 'Welcome!'} Let’s plan your first celebration.
+            </h1>
+            <p style={{ margin: '0 0 1.25rem 0', color: 'var(--text-muted)' }}>
+              Your account starts empty. Tell us about your event and we’ll build a personalised plan that is saved to your account.
+            </p>
+            <Suspense fallback={<TabSkeleton />}>
+              <EventSetupForm isEditing={false} onSave={handleCreateNewSubmit} isGenerating={isGenerating} />
+            </Suspense>
+          </main>
+        </div>
+      </ToastProvider>
+    );
+  }
+
   return (
     <ToastProvider>
       <div
-        data-theme={activeEvent.eventType}
+        data-theme={activeEvent ? activeEvent.eventType : 'wedding'}
         data-color-mode={colorMode}
         style={{
           minHeight: '100vh',
@@ -373,7 +446,7 @@ export function Workspace({ mode }: { mode: WorkspaceMode }) {
         />
       )}
 
-      {mode === 'demo' && (
+      {mode === 'demo' && activeEvent && (
         <aside className="demo-showcase-bar" role="status" aria-label="Demo mode navigation and persona switcher">
           <div className="demo-showcase-bar__content">
             <div className="demo-showcase-bar__left">
@@ -466,6 +539,10 @@ export function Workspace({ mode }: { mode: WorkspaceMode }) {
         }}
         onSelectEvent={selectEvent}
         onNewEvent={() => setIsCreatingNew(true)}
+        onOpenWebsite={() => {
+          EventWebsiteModal.preload();
+          setIsWebsiteOpen(true);
+        }}
         onExport={exportCurrentPlan}
         onImportPlan={handleImportPlan}
         onExportCalendar={handleExportCalendar}
@@ -491,7 +568,7 @@ export function Workspace({ mode }: { mode: WorkspaceMode }) {
 
       <main id="main" tabIndex={-1} className="app-container" style={{ flex: 1, marginTop: '1.25rem', outline: 'none' }}>
         {/* Navigation Tabs */}
-        {!isCreatingNew && (
+        {!isCreatingNew && activeEvent && (
           <Navigation
             activeTab={activeTab}
             onTabChange={setActiveTab}
@@ -509,6 +586,26 @@ export function Workspace({ mode }: { mode: WorkspaceMode }) {
               onSave={handleCreateNewSubmit}
               onCancel={() => setIsCreatingNew(false)}
               isGenerating={isGenerating}
+            />
+          ) : !activeEvent ? (
+            <EmptyStateOnboarding
+              user={user}
+              onCreateNew={() => setIsCreatingNew(true)}
+              onOpenAIPlanner={() => {
+                setIsCreatingNew(true);
+              }}
+              onOpenWebsiteBuilder={() => {
+                EventWebsiteModal.preload();
+                setIsWebsiteOpen(true);
+              }}
+              onLoadSampleData={() => {
+                loadSampleTemplates();
+                showToast('Sample celebration templates loaded successfully!');
+              }}
+              onQuickStartWithCategory={async (template) => {
+                await createNewEvent(template, false);
+                showToast(`Celebration "${template.title}" created successfully!`);
+              }}
             />
           ) : (
             <>
@@ -631,6 +728,7 @@ export function Workspace({ mode }: { mode: WorkspaceMode }) {
           onApplyTradeOff={applyTradeOff}
           activeTab={activeTab}
           onPinTask={(t) => {
+            if (!activeEvent) return;
             addTask({
               title: t.title,
               category: t.category || 'final',
@@ -872,6 +970,22 @@ export function Workspace({ mode }: { mode: WorkspaceMode }) {
             onClose={() => setIsAccountOpen(false)}
             activeEvent={activeEvent}
             onFeedback={(msg: string) => showToast(msg)}
+            onClearAllEvents={async () => {
+              await clearAllEvents();
+              showToast('Celebration database reset to fresh blank state.');
+            }}
+          />
+        </Suspense>
+      )}
+
+      {isWebsiteOpen && (
+        <Suspense fallback={null}>
+          <EventWebsiteModal
+            isOpen={isWebsiteOpen}
+            onClose={() => setIsWebsiteOpen(false)}
+            plan={activeEvent}
+            onAddGuest={addGuest}
+            onToast={(msg) => showToast(msg)}
           />
         </Suspense>
       )}

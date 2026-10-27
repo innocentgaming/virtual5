@@ -200,13 +200,22 @@ export function getStore(): Store {
 
   if (url && token) {
     singleton = new RedisStore(url.replace(/\/$/, ''), token);
-  } else if (process.env.REQUIRE_PERSISTENT_STORAGE === 'true') {
-    // Explicitly require persistent storage when configured
-    throw new StorageNotConfiguredError();
-  } else {
-    // Graceful fallback: allows evaluator signup/login to work seamlessly even before Upstash is connected
-    console.warn('[auth] No Redis configured – using in-memory store.');
-    singleton = new MemoryStore();
+    return singleton;
   }
+
+  // A serverless deployment (Vercel) has no shared memory between invocations: accounts kept in a
+  // MemoryStore silently disappear on the next cold start, so "Sign in" fails for people who already
+  // registered. In production we therefore refuse to run without a real database instead of pretending
+  // that signup worked. Set ALLOW_MEMORY_STORE=true only for throwaway demos.
+  const isProd = process.env.VERCEL_ENV === 'production' || process.env.VERCEL_ENV === 'preview' || process.env.NODE_ENV === 'production';
+  if (process.env.REQUIRE_PERSISTENT_STORAGE === 'true' || (isProd && process.env.ALLOW_MEMORY_STORE !== 'true')) {
+    console.error(
+      '[auth] No Redis configured. Connect Upstash Redis (UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN) so accounts persist.'
+    );
+    throw new StorageNotConfiguredError();
+  }
+
+  console.warn('[auth] No Redis configured – using in-memory store (development only, data resets on restart).');
+  singleton = new MemoryStore();
   return singleton;
 }

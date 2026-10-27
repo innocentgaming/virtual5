@@ -28,7 +28,7 @@ function Loading() {
 
 function Routes(): React.ReactElement {
   const { pathname, search } = useLocation();
-  const { status } = useAuth();
+  const { status, user } = useAuth();
   const path = pathname.length > 1 ? pathname.replace(/\/+$/, '') : pathname;
 
   switch (path) {
@@ -39,7 +39,8 @@ function Routes(): React.ReactElement {
     case '/app':
       if (status === 'loading') return <Loading />;
       if (status === 'anonymous') return <Redirect to={`/login?next=${encodeURIComponent('/app')}`} />;
-      return <Workspace mode="account" />;
+      // key: a different signed-in user must never reuse the previous user's in-memory plans
+      return <Workspace key={user?.id ?? 'account'} mode="account" />;
     case '/login':
     case '/signup':
     case '/forgot-password': {

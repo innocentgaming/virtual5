@@ -66,6 +66,8 @@ export interface UseEventPlanOptions {
   cloudSync?: boolean;
   /** Called when the server says the session is no longer valid. */
   onSessionExpired?: () => void;
+  /** When false, fresh accounts start with an empty database. Defaults to false if cloudSync is true. */
+  fallbackToSample?: boolean;
 }
 
 export function computePlanChangeDiff(prev: EventPlan, updated: EventPlan): PlanChangeDiff | null {
@@ -139,8 +141,12 @@ export function computePlanChangeDiff(prev: EventPlan, updated: EventPlan): Plan
 
 export function useEventPlan(options: UseEventPlanOptions = {}) {
   const { cloudSync = false, onSessionExpired } = options;
-  const [events, setEvents] = useState<EventPlan[]>(() => loadSavedEvents());
+  // Signed-in accounts never start from this browser's shared localStorage or the sample events:
+  // the cloud account is the only source of truth, so a new user can't inherit someone else's
+  // (or the demo's) plans. Guests / demo keep the localStorage + sample-event behaviour.
+  const [events, setEvents] = useState<EventPlan[]>(() => (cloudSync ? [] : loadSavedEvents()));
   const [activeEventId, setActiveEventId] = useState<string>(() => {
+    if (cloudSync) return '';
     const savedId = loadActiveEventId();
     return savedId || 'default-1';
   });
@@ -162,19 +168,22 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
     eventsRef.current = events;
   }, [events]);
 
-  // Debounced synchronization of events to localStorage (400ms trailing)
+  // Debounced synchronization of events to localStorage (400ms trailing).
+  // Skipped for signed-in accounts: their plans live in the cloud, and a shared browser key would leak
+  // them to whoever opens the app next on this device.
   useEffect(() => {
-    if (events.length === 0) return;
+    if (cloudSync || events.length === 0) return;
 
     const timer = setTimeout(() => {
       saveEvents(eventsRef.current);
     }, 400);
 
     return () => clearTimeout(timer);
-  }, [events]);
+  }, [events, cloudSync]);
 
   // Immediate flush on pagehide, visibilitychange, or window unload
   useEffect(() => {
+    if (cloudSync) return;
     const flush = () => {
       if (eventsRef.current.length > 0) {
         saveEvents(eventsRef.current);
@@ -190,26 +199,28 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
     window.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('pagehide', flush);
     window.addEventListener('beforeunload', flush);
-
     return () => {
       window.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('pagehide', flush);
       window.removeEventListener('beforeunload', flush);
       flush();
     };
-  }, []);
+  }, [cloudSync]);
 
-  // Synchronize active ID
+  // Synchronize active ID (guests only; accounts store it in the cloud document)
   useEffect(() => {
-    if (activeEventId) {
+    if (!cloudSync && activeEventId) {
       saveActiveEventId(activeEventId);
     }
-  }, [activeEventId]);
+  }, [activeEventId, cloudSync]);
 
   // ---------------------------------------------------------------------------
-  // Cloud sync (signed-in accounts only). localStorage stays as an offline cache.
+  // Cloud sync (signed-in accounts only). The cloud document is the single source of truth.
   // ---------------------------------------------------------------------------
   const [syncStatus, setSyncStatus] = useState<SyncStatus>(cloudSync ? 'loading' : 'off');
+  // 'idle' for guests; for accounts: loading the plans -> ready (may be empty for a brand-new account) or error.
+  const [accountLoad, setAccountLoad] = useState<'idle' | 'loading' | 'ready' | 'error'>(cloudSync ? 'loading' : 'idle');
+  const [loadAttempt, setLoadAttempt] = useState(0);
   const remoteVersionRef = useRef<number | null>(null);
   const hydratedRef = useRef(false);
   const activeIdRef = useRef(activeEventId);
@@ -222,7 +233,11 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
 
   const applyRemote = useCallback((doc: RemoteEventsDoc) => {
     const valid = doc.events.filter((e): e is EventPlan => isValidEventPlan(e));
-    if (valid.length === 0) return false;
+    if (valid.length === 0) {
+      setEvents([]);
+      setActiveEventId('');
+      return false;
+    }
     setEvents(valid);
     setActiveEventId(doc.activeId && valid.some((e) => e.id === doc.activeId) ? doc.activeId : valid[0].id);
     return true;
@@ -231,11 +246,11 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
   const pushToCloud = useCallback(
     async (force = false) => {
       const payload = eventsRef.current.filter((e) => isValidEventPlan(e)).map(sanitizeEventForStorage);
-      if (payload.length === 0) return;
+      if (payload.length === 0 && !force) return;
       setSyncStatus('saving');
       const res = await eventsApi.save({
         events: payload,
-        activeId: activeIdRef.current,
+        activeId: activeIdRef.current || (payload[0]?.id ?? null),
         baseUpdatedAt: remoteVersionRef.current,
         force,
       });
@@ -255,7 +270,8 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
     []
   );
 
-  // Initial load: pull the account's plans; if the account is empty, upload what is on this device.
+  // Initial load: pull the account's plans. A brand-new account is simply empty: it is NOT seeded with
+  // sample events or whatever happens to be stored on this device.
   useEffect(() => {
     if (!cloudSync) return;
     let cancelled = false;
@@ -265,21 +281,30 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
       if (!res.ok) {
         if (res.status === 401) expiredRef.current?.();
         setSyncStatus(res.code === 'network' ? 'offline' : 'error');
+        setAccountLoad('error');
         return;
       }
       remoteVersionRef.current = res.updatedAt;
+      hydratedRef.current = true;
       if (res.events.length > 0 && applyRemote(res)) {
-        hydratedRef.current = true;
         setSyncStatus('saved');
       } else {
-        hydratedRef.current = true;
-        await pushToCloud();
+        setEvents([]);
+        setActiveEventId('');
+        setSyncStatus('saved');
       }
+      setAccountLoad('ready');
     })();
     return () => {
       cancelled = true;
     };
-  }, [cloudSync, applyRemote, pushToCloud]);
+  }, [cloudSync, applyRemote, loadAttempt]);
+
+  const reloadAccount = useCallback(() => {
+    setAccountLoad('loading');
+    setSyncStatus('loading');
+    setLoadAttempt((n) => n + 1);
+  }, []);
 
   // Debounced upload on every change after the initial load.
   useEffect(() => {
@@ -320,30 +345,32 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
   }, [cloudSync, pushToCloud]);
 
   // Find active plan
-  const activeEvent = useMemo(() => {
+  const activeEvent: EventPlan | null = useMemo(() => {
+    if (events.length === 0) return null;
     const found = events.find((e) => e.id === activeEventId);
-    return found || events[0] || INITIAL_EVENTS[0];
+    return found || events[0] || null;
   }, [events, activeEventId]);
 
   // Computed budget summary
   const budgetSummary = useMemo(() => {
     const summary = calculateBudgetSummary(
-      activeEvent.totalBudget,
-      activeEvent.budgetItems,
-      activeEvent.contingencyRate
+      activeEvent?.totalBudget ?? 0,
+      activeEvent?.budgetItems ?? [],
+      activeEvent?.contingencyRate ?? 0.1
     );
     summary.perGuestCost =
-      activeEvent.guestCount > 0 ? Math.round(summary.totalEstimated / activeEvent.guestCount) : 0;
+      activeEvent && activeEvent.guestCount > 0 ? Math.round(summary.totalEstimated / activeEvent.guestCount) : 0;
     return summary;
-  }, [activeEvent.totalBudget, activeEvent.budgetItems, activeEvent.contingencyRate, activeEvent.guestCount]);
+  }, [activeEvent]);
 
   // Computed timeline audit
   const timelineAudit = useMemo(() => {
-    return auditTimelineTasks(activeEvent.tasks);
-  }, [activeEvent.tasks]);
+    return auditTimelineTasks(activeEvent?.tasks ?? []);
+  }, [activeEvent?.tasks]);
 
   // Memoized decision rules selector - avoids re-evaluating unchanged rules
   const activeInsights = useMemo(() => {
+    if (!activeEvent) return { insights: [], missingPrompts: [] };
     if (activeEvent.decisionInsights && activeEvent.missingInfoPrompts) {
       return {
         insights: activeEvent.decisionInsights,
@@ -357,6 +384,7 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
   // Mutator helper that updates the active event
   const updateActiveEvent = useCallback(
     (updater: (prev: EventPlan) => EventPlan) => {
+      if (!activeEvent) return;
       setEvents((prevEvents) =>
         prevEvents.map((evt) => {
           if (evt.id === activeEvent.id) {
@@ -377,7 +405,7 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
         })
       );
     },
-    [activeEvent.id]
+    [activeEvent]
   );
 
   // Event Switcher
@@ -1046,6 +1074,7 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
   // Regeneration without losing plan ID
   const regenerateRecommendations = useCallback(
     async (useAI = false, apiKey?: string) => {
+      if (!activeEvent) return;
       setIsGenerating(true);
       setGenerationError(null);
       try {
@@ -1078,15 +1107,19 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
   // Delete event
   const deleteCurrentEvent = useCallback(() => {
     if (events.length <= 1) {
-      // If deleting the last event, reset to default sample
-      setEvents(INITIAL_EVENTS);
-      setActiveEventId(INITIAL_EVENTS[0].id);
+      if (cloudSync) {
+        setEvents([]);
+        setActiveEventId('');
+      } else {
+        setEvents(INITIAL_EVENTS);
+        setActiveEventId(INITIAL_EVENTS[0].id);
+      }
       return;
     }
-    const remaining = events.filter((e) => e.id !== activeEvent.id);
+    const remaining = events.filter((e) => e.id !== activeEvent?.id);
     setEvents(remaining);
     setActiveEventId(remaining[0].id);
-  }, [events, activeEvent.id]);
+  }, [events, activeEvent, cloudSync]);
 
   // Reset to default sample events
   const resetToDefaults = useCallback(() => {
@@ -1095,9 +1128,37 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
     setActiveTab('dashboard');
   }, []);
 
+  // Clear all events (Option 3: Clean slate / wipe for account)
+  const clearAllEvents = useCallback(async () => {
+    setEvents([]);
+    setActiveEventId('');
+    if (cloudSync) {
+      setSyncStatus('saving');
+      const res = await eventsApi.save({
+        events: [],
+        activeId: null,
+        baseUpdatedAt: remoteVersionRef.current,
+        force: true,
+      });
+      if (res.ok) {
+        remoteVersionRef.current = res.updatedAt;
+        setSyncStatus('saved');
+      }
+    }
+  }, [cloudSync]);
+
+  // Load sample starter templates into account
+  const loadSampleTemplates = useCallback(() => {
+    setEvents(INITIAL_EVENTS);
+    setActiveEventId(INITIAL_EVENTS[0].id);
+    setActiveTab('dashboard');
+  }, []);
+
   // Export
   const exportCurrentPlan = useCallback(() => {
-    exportPlanAsJson(activeEvent);
+    if (activeEvent) {
+      exportPlanAsJson(activeEvent);
+    }
   }, [activeEvent]);
 
   // Import JSON backup
@@ -1117,6 +1178,7 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
     events,
     activeEvent,
     activeEventId,
+    hasEvents: events.length > 0,
     activeTab,
     budgetSummary,
     timelineAudit,
@@ -1146,6 +1208,8 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
     regenerateRecommendations,
     deleteCurrentEvent,
     resetToDefaults,
+    clearAllEvents,
+    loadSampleTemplates,
     exportCurrentPlan,
     importPlan,
     applyTradeOff,
@@ -1155,6 +1219,9 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
     storageError,
     clearStorageError,
     syncStatus,
+    accountLoad,
+    reloadAccount,
+    hasPlans: events.length > 0,
     resolveSyncConflict,
     retrySync,
     lastChangeDiff,
