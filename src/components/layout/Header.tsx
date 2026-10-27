@@ -1,6 +1,6 @@
 import React from 'react';
+import { Logo } from '../common/Logo';
 import {
-  Sparkles,
   Plus,
   Download,
   Upload,
@@ -92,13 +92,11 @@ export const Header: React.FC<HeaderProps> = ({
           title="Return to Public Landing Page & Features"
           aria-label="EventWise AI Home"
         >
-          <div className="brand-logo" aria-hidden="true">
-            <Sparkles size={20} />
-          </div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
               <h1 className="brand-title" style={{ margin: 0, fontSize: 'inherit', fontWeight: 'inherit', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <span>EventWise AI</span>
+                <span className="sr-only">EventWise AI</span>
+                <Logo size="sm" />
                 <span
                   style={{
                     fontSize: '0.68rem',

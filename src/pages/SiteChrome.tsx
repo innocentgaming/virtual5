@@ -1,15 +1,11 @@
 import React from 'react';
 import { Link } from '../routerComponents';
+import { Logo } from '../components/common/Logo';
 import '../site.css';
 
 export const Brand: React.FC = () => (
   <Link to="/" className="s-brand" aria-label="EventWise AI Home">
-    <span className="s-brand__icon" aria-hidden="true">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-      </svg>
-    </span>
-    <span className="s-brand__name">EventWise <strong>AI</strong></span>
+    <Logo size="md" />
     <span className="s-brand__tag">India</span>
   </Link>
 );

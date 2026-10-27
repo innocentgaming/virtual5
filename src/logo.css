@@ -1,0 +1,32 @@
+.ew-logo {
+  --logo-teal: #0f766e;
+  --logo-marigold: #d97706;
+  --logo-rani: #be185d;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.1em;
+  line-height: 1;
+  font-family: 'Bricolage Grotesque', var(--site-font-head, 'Outfit'), -apple-system, BlinkMacSystemFont, sans-serif;
+  letter-spacing: -0.03em;
+  color: inherit;
+}
+.ew-logo--sm { font-size: 1.05rem; }
+.ew-logo--md { font-size: 1.4rem; }
+.ew-logo--lg { font-size: 2.4rem; }
+[data-color-mode='dark'] .ew-logo { --logo-teal: #2dd4bf; --logo-marigold: #fbbf24; --logo-rani: #f472b6; }
+.ew-logo__row { display: inline-flex; align-items: center; gap: 0.3em; }
+.ew-logo__word { font-weight: 800; }
+.ew-logo__word b { font-weight: 800; color: var(--logo-teal); }
+.ew-logo__ai {
+  font-size: 0.55em;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: #fff;
+  background: var(--logo-teal);
+  border-radius: 999px;
+  padding: 0.2em 0.6em;
+  transform: translateY(0.02em);
+}
+[data-color-mode='dark'] .ew-logo__ai { color: #042f2e; }
+.ew-logo__toran { display: block; width: 0; min-width: 100%; height: 0.62em; overflow: visible; }
