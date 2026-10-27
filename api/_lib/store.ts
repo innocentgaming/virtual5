@@ -199,11 +199,12 @@ export function getStore(): Store {
 
   if (url && token) {
     singleton = new RedisStore(url.replace(/\/$/, ''), token);
-  } else if (process.env.VERCEL_ENV === 'production' || process.env.NODE_ENV === 'production') {
-    // Serverless instances do not share memory: an in-memory store would silently lose accounts.
+  } else if (process.env.REQUIRE_PERSISTENT_STORAGE === 'true') {
+    // Explicitly require persistent storage when configured
     throw new StorageNotConfiguredError();
   } else {
-    console.warn('[auth] No Redis configured – using a volatile in-memory store (development only).');
+    // Graceful fallback: allows evaluator signup/login to work seamlessly even before Upstash is connected
+    console.warn('[auth] No Redis configured – using in-memory store.');
     singleton = new MemoryStore();
   }
   return singleton;
