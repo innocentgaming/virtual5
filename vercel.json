@@ -1,5 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "env": {
+    "ALLOW_MEMORY_STORE": "true"
+  },
   "headers": [
     {
       "source": "/(.*)",
