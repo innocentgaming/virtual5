@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build && node scripts/check-size-budget.mjs",
+    "start": "tsx server.mjs",
     "analyze": "node scripts/run-analyze.mjs",
     "check:budget": "node scripts/check-size-budget.mjs",
     "lint": "oxlint",
@@ -17,7 +18,8 @@
   "dependencies": {
     "lucide-react": "^1.61.0",
     "react": "^19.3.1",
-    "react-dom": "^19.3.1"
+    "react-dom": "^19.3.1",
+    "tsx": "^4.23.15"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^7.0.1",

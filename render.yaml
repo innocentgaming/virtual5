@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: eventwise-ai
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: ALLOW_MEMORY_STORE
+        value: "true"
+      - key: AUTH_SECRET
+        generateValue: true
+      - key: VITE_GEMINI_API_KEY
+        sync: false
