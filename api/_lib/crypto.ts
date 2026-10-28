@@ -65,6 +65,10 @@ let devSecret: string | null = null;
 export function getAuthSecret(): string {
   const secret = process.env.AUTH_SECRET;
   if (secret && secret.length >= 32) return secret;
+  if (process.env.ALLOW_MEMORY_STORE === 'true') {
+    devSecret ??= 'eventwise_demo_fallback_auth_secret_key_32_chars';
+    return devSecret;
+  }
   if (process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV === 'production') {
     throw new Error('AUTH_SECRET must be set to a random string of at least 32 characters.');
   }
