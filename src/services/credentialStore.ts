@@ -16,3 +16,4 @@ export async function offerToSaveCredentials(email: string, password: string, na
     /* unsupported, blocked or declined by the user: signing in still works */
   }
 }
+

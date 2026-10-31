@@ -197,3 +197,4 @@ describe('session signing secret', () => {
     expect(a).not.toContain('redis-token-abc');
   });
 });
+
