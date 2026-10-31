@@ -1,14 +1,17 @@
 import React, { useMemo, useState, Suspense } from 'react';
 import {
   Calendar,
+  CalendarPlus,
   MapPin,
   Users,
+  UserPlus,
   IndianRupee,
   CheckCircle2,
   AlertTriangle,
   Clock,
   Sparkles,
   ArrowRight,
+  ArrowUpRight,
   TrendingUp,
   AlertCircle,
   PartyPopper,
@@ -17,79 +20,145 @@ import {
   ChevronUp,
   MessageCircle,
   HelpCircle,
+  Store,
+  Wallet,
 } from 'lucide-react';
-import type { EventPlan, BudgetSummary, DecisionInsight, TradeOffOption, PlanChangeDiff } from '../../types/event';
+import type {
+  EventPlan,
+  BudgetSummary,
+  BudgetCategory,
+  DecisionInsight,
+  TradeOffOption,
+  PlanChangeDiff,
+} from '../../types/event';
 import type { NavigationTab, ScenarioInput } from '../../hooks/useEventPlan';
 import { useCountUp } from '../../hooks/useCountUp';
 import { formatCurrency, formatIndianShort, formatPercent } from '../../utils/formatters';
-import { Card, CardHeader, Button, Badge, EmptyState, Skeleton, Toast, Modal } from '../ui';
+import { Button, Badge, Skeleton, Toast, Modal, type BadgeVariant } from '../ui';
 import { lazyWithPreload } from '../../utils/lazyWithPreload';
 import { TOTAL_DECISION_RULES_COUNT } from '../../services/decisionEngine';
 import { ChaosBar } from '../demo/ChaosBar';
+import '../../dashboard.css';
 
 const ScenarioChangePanel = lazyWithPreload(() =>
   import('../scenarios/ScenarioChangePanel').then((m) => ({ default: m.ScenarioChangePanel }))
 );
 
+interface TimelineAudit {
+  completedCount: number;
+  totalCount: number;
+  progressPercentage: number;
+  overdueCount: number;
+  upcomingCount?: number;
+  criticalUpcoming?: string[];
+}
+
 interface DashboardOverviewProps {
   plan: EventPlan;
   budgetSummary: BudgetSummary;
-  timelineAudit: {
-    overdueCount: number;
-    upcomingCount: number;
-    completedCount: number;
-    totalCount: number;
-    progressPercentage: number;
-  };
+  timelineAudit: TimelineAudit;
+  decisionInsights?: DecisionInsight[];
   onNavigateTab: (tab: NavigationTab) => void;
-  onToggleTask: (id: string) => void;
-  onRegenerateIdeas: () => void;
-  onOpenCopilot?: () => void;
-  onExportCalendar?: () => void;
-  onApplyTradeOff?: (tradeOff: TradeOffOption, title?: string) => void;
+  onToggleTask: (taskId: string) => void;
+  onRegenerateIdeas?: () => void;
   onApplyScenario?: (scenario: ScenarioInput) => void;
-  onUndoLastChange?: () => void;
+  onOpenCopilot?: () => void;
+  onApplyTradeOff?: (tradeOff: TradeOffOption, ruleTitle?: string) => void;
   lastChangeDiff?: PlanChangeDiff | null;
+  onUndoLastChange?: () => void;
   onClearDiff?: () => void;
+  onExportCalendar?: () => void;
+  isPulsing?: boolean;
   isGenerating?: boolean;
 }
+
+const MS_PER_DAY = 86_400_000;
+
+const CATEGORY_LABELS: Record<BudgetCategory, string> = {
+  venue: 'Venue',
+  catering: 'Catering',
+  decor: 'Decor',
+  photography: 'Photography',
+  entertainment: 'Entertainment',
+  logistics: 'Logistics',
+  invitations: 'Invitations',
+  contingency: 'Contingency',
+  other: 'Other',
+};
+
+/** Parses a YYYY-MM-DD string as a local calendar date (avoids UTC off-by-one). */
+function parseLocalDate(value: string): Date | null {
+  const [y, m, d] = value.split('-').map(Number);
+  if (!y || !m || !d) return null;
+  return new Date(y, m - 1, d);
+}
+
+function startOfToday(): Date {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+/** Whole days from today (local) to the given date. Negative when in the past. */
+function daysFromToday(value: string): number | null {
+  const date = parseLocalDate(value);
+  if (!date) return null;
+  return Math.round((date.getTime() - startOfToday().getTime()) / MS_PER_DAY);
+}
+
+function describeDue(diff: number | null, raw: string): string {
+  if (diff === null) return `Due: ${raw}`;
+  if (diff < -1) return `${Math.abs(diff)} days overdue`;
+  if (diff === -1) return '1 day overdue';
+  if (diff === 0) return 'Due today';
+  if (diff === 1) return 'Due tomorrow';
+  return `Due in ${diff} days`;
+}
+
+interface PanelHeadProps {
+  title: React.ReactNode;
+  subtitle?: React.ReactNode;
+  aside?: React.ReactNode;
+}
+
+const PanelHead: React.FC<PanelHeadProps> = ({ title, subtitle, aside }) => (
+  <div className="dash-panel__head">
+    <div>
+      <h3 className="dash-panel__title">{title}</h3>
+      {subtitle && <p className="dash-panel__sub">{subtitle}</p>}
+    </div>
+    {aside && <div className="dash-panel__aside">{aside}</div>}
+  </div>
+);
 
 export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   plan,
   budgetSummary,
   timelineAudit,
+  decisionInsights = [],
   onNavigateTab,
   onToggleTask,
-  onOpenCopilot,
-  onExportCalendar,
-  onApplyTradeOff,
   onApplyScenario,
-  onUndoLastChange,
+  onOpenCopilot,
+  onApplyTradeOff,
   lastChangeDiff,
+  onUndoLastChange,
   onClearDiff,
-  isGenerating = false,
+  onExportCalendar,
+  isPulsing,
+  isGenerating,
 }) => {
-  const [showAllAlerts, setShowAllAlerts] = useState(false);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [isScenarioModalOpen, setIsScenarioModalOpen] = useState(false);
   const [expandedWhy, setExpandedWhy] = useState<Record<string, boolean>>({});
-  const [isPulsing, setIsPulsing] = useState(false);
-
-  const triggerPulse = () => {
-    setIsPulsing(true);
-    setTimeout(() => setIsPulsing(false), 1200);
-  };
+  const [showAllAlerts, setShowAllAlerts] = useState(false);
+  const [isScenarioModalOpen, setIsScenarioModalOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const toggleWhy = (id: string) => {
     setExpandedWhy((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  // Countdown in days
-  const diffDays = useMemo(() => {
-    const targetDate = new Date(plan.eventDate);
-    const now = new Date();
-    return Math.ceil((targetDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-  }, [plan.eventDate]);
+  // Countdown in whole local days (negative once the event has passed)
+  const diffDays = useMemo(() => daysFromToday(plan.eventDate) ?? 0, [plan.eventDate]);
 
   // Vendor calculations
   const bookedVendors = useMemo(
@@ -98,7 +167,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   );
   const totalVendors = plan.vendors.length;
 
-  // Guest calculations (including plus-ones)
+  // Guest calculations
   const confirmedGuests = useMemo(() => {
     const guests = plan.guests || [];
     return guests
@@ -106,18 +175,21 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
       .reduce((acc, g) => acc + 1 + (g.plusOne ? 1 : 0), 0);
   }, [plan.guests]);
 
-  // Per-guest cost
+  // Per-guest budget calculation
   const perGuestCost = useMemo(() => {
-    return budgetSummary.perGuestCost || Math.round(budgetSummary.totalBudget / Math.max(plan.guestCount, 1));
+    if (budgetSummary.perGuestCost && budgetSummary.perGuestCost > 0) {
+      return budgetSummary.perGuestCost;
+    }
+    return plan.guestCount > 0 ? Math.round(budgetSummary.totalBudget / plan.guestCount) : 0;
   }, [budgetSummary.perGuestCost, budgetSummary.totalBudget, plan.guestCount]);
 
   // Animated Count-Up figures (skips under reduced motion or tests)
-  const animatedDiffDays = useCountUp(diffDays < 0 ? 0 : diffDays);
+  const animatedDiffDays = useCountUp(Math.abs(diffDays));
   const animatedCompleted = useCountUp(timelineAudit.completedCount);
   const animatedBookedVendors = useCountUp(bookedVendors);
   const animatedConfirmedGuests = useCountUp(confirmedGuests);
 
-  // Budget utilization metrics for ring
+  // Utilization calculation
   const utilizationPercent = useMemo(() => {
     if (typeof budgetSummary.utilizationPercentage === 'number') {
       return Math.round(budgetSummary.utilizationPercentage);
@@ -129,111 +201,152 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   const ringColor = useMemo(() => {
     if (utilizationPercent >= 100) return 'var(--color-danger)';
     if (utilizationPercent >= 80) return 'var(--color-warning)';
-    return 'var(--accent-primary)';
+    return 'var(--color-success)';
   }, [utilizationPercent]);
 
-  // Ring circumference (radius = 38)
-  const ringRadius = 38;
+  const ringRadius = 34;
   const ringCircumference = 2 * Math.PI * ringRadius;
   const ringOffset = ringCircumference * (1 - Math.min(utilizationPercent, 100) / 100);
+
+  // Progress ratios for the KPI meters (0-100)
+  const clampPct = (n: number) => (Number.isFinite(n) ? Math.max(0, Math.min(100, n)) : 0);
+  const taskPct = clampPct(timelineAudit.progressPercentage);
+  const vendorPct = clampPct(totalVendors > 0 ? (bookedVendors / totalVendors) * 100 : 0);
+  const rsvpPct = clampPct((confirmedGuests / Math.max(plan.guestCount, 1)) * 100);
+
+  // Budget split by category (largest first, zero-value categories hidden)
+  const categoryBreakdown = useMemo(() => {
+    const entries = (Object.entries(budgetSummary.categoryTotals || {}) as [BudgetCategory, number][])
+      .filter(([, amount]) => typeof amount === 'number' && amount > 0)
+      .sort((a, b) => b[1] - a[1]);
+    const sum = entries.reduce((acc, [, amount]) => acc + amount, 0);
+    return {
+      sum,
+      rows: entries.slice(0, 6).map(([category, amount]) => ({
+        category,
+        amount,
+        share: sum > 0 ? (amount / sum) * 100 : 0,
+      })),
+    };
+  }, [budgetSummary.categoryTotals]);
 
   // Decision engine insights sorted by severity
   const sortedInsights = useMemo(() => {
     const severityScore: Record<string, number> = {
-      action_required: 0,
-      warning: 1,
-      suggestion: 2,
-      positive: 3,
+      action_required: 3,
+      warning: 2,
+      suggestion: 1,
+      positive: 0,
     };
-    const insights = plan.decisionInsights || [];
-    return [...insights].sort((a, b) => {
-      const scoreA = severityScore[a.type] ?? 4;
-      const scoreB = severityScore[b.type] ?? 4;
-      return scoreA - scoreB;
+    return [...decisionInsights].sort((a, b) => {
+      const scoreDiff = (severityScore[b.type] ?? 0) - (severityScore[a.type] ?? 0);
+      if (scoreDiff !== 0) return scoreDiff;
+      return (b.tradeOffs?.length || 0) - (a.tradeOffs?.length || 0);
     });
-  }, [plan.decisionInsights]);
+  }, [decisionInsights]);
 
   const displayedInsights = showAllAlerts ? sortedInsights : sortedInsights.slice(0, 3);
 
-  // Next up tasks (next 3 upcoming or overdue)
+  // Next up tasks (overdue first, then soonest due)
   const nextUpTasks = useMemo(() => {
-    const uncompleted = plan.tasks.filter((t) => !t.completed);
-    const todayStr = new Date().toISOString().split('T')[0];
-    return uncompleted
+    return plan.tasks
+      .filter((t) => !t.completed)
+      .map((task) => ({ task, diff: daysFromToday(task.dueDate) }))
       .sort((a, b) => {
-        const isOverdueA = a.dueDate < todayStr;
-        const isOverdueB = b.dueDate < todayStr;
-        if (isOverdueA && !isOverdueB) return -1;
-        if (!isOverdueA && isOverdueB) return 1;
-        return a.dueDate.localeCompare(b.dueDate);
+        const overdueA = a.diff !== null && a.diff < 0;
+        const overdueB = b.diff !== null && b.diff < 0;
+        if (overdueA && !overdueB) return -1;
+        if (!overdueA && overdueB) return 1;
+        return a.task.dueDate.localeCompare(b.task.dueDate);
       })
-      .slice(0, 3);
+      .slice(0, 4);
   }, [plan.tasks]);
 
   const handleTaskCheck = (taskId: string, title: string, isCurrentlyDone: boolean) => {
     onToggleTask(taskId);
-    if (!isCurrentlyDone) {
-      setToastMessage(`✓ Task completed: ${title}`);
-    }
+    setToastMessage(!isCurrentlyDone ? `✓ Completed: ${title}` : `Marked incomplete: ${title}`);
   };
 
   const getInsightIcon = (type: DecisionInsight['type']) => {
     switch (type) {
       case 'action_required':
-        return <AlertCircle size={18} color="var(--color-danger)" />;
+        return <AlertCircle size={18} />;
       case 'warning':
-        return <AlertTriangle size={18} color="var(--color-warning)" />;
+        return <AlertTriangle size={18} />;
       case 'suggestion':
-        return <TrendingUp size={18} color="var(--accent-primary)" />;
+        return <TrendingUp size={18} />;
       default:
-        return <CheckCircle2 size={18} color="var(--color-success)" />;
+        return <CheckCircle2 size={18} />;
     }
   };
 
   const getEventTypeIcon = (type: string) => {
     switch (type) {
       case 'wedding':
-        return <Heart size={20} />;
+        return <Heart size={14} />;
       case 'birthday':
-        return <PartyPopper size={20} />;
+        return <PartyPopper size={14} />;
       default:
-        return <Users size={20} />;
+        return <Users size={14} />;
     }
   };
 
-  const getBadgeVariant = (type: string): 'wedding' | 'birthday' | 'community' => {
+  const getBadgeVariant = (type: string): BadgeVariant => {
     switch (type) {
       case 'wedding':
-        return 'wedding';
+        return 'danger';
       case 'birthday':
-        return 'birthday';
+        return 'warning';
       default:
-        return 'community';
+        return 'neutral';
     }
   };
 
   if (isGenerating) {
     return (
-      <div className="dashboard-grid-12" aria-busy="true" aria-label="Loading event dashboard">
-        <div className="dashboard-hero-col">
-          <Skeleton shape="block" height={180} />
+      <div className="dash" aria-busy="true" aria-label="Loading event dashboard">
+        <div className="dash-skeleton-hero">
+          <Skeleton shape="block" height={200} />
         </div>
-        <div className="dashboard-metric-col"><Skeleton shape="block" height={100} /></div>
-        <div className="dashboard-metric-col"><Skeleton shape="block" height={100} /></div>
-        <div className="dashboard-metric-col"><Skeleton shape="block" height={100} /></div>
-        <div className="dashboard-metric-col"><Skeleton shape="block" height={100} /></div>
-        <div className="dashboard-main-col">
-          <Skeleton shape="block" height={260} />
+        <div className="dash-skeleton-kpis">
+          <Skeleton shape="block" height={120} />
+          <Skeleton shape="block" height={120} />
+          <Skeleton shape="block" height={120} />
+          <Skeleton shape="block" height={120} />
         </div>
-        <div className="dashboard-side-col">
-          <Skeleton shape="block" height={260} />
+        <div className="dash__main">
+          <Skeleton shape="block" height={280} />
+        </div>
+        <div className="dash__side">
+          <Skeleton shape="block" height={280} />
         </div>
       </div>
     );
   }
 
+  const countdownLabel =
+    diffDays === 0
+      ? 'Event Day 🎉'
+      : diffDays < 0
+      ? Math.abs(diffDays) === 1
+        ? 'Day since event'
+        : 'Days since event'
+      : diffDays === 1
+      ? 'Day to go'
+      : 'Days to go';
+
+  const eventDateLabel = parseLocalDate(plan.eventDate)?.toLocaleDateString('en-IN', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+
+  const remaining = budgetSummary.remainingBalance;
+  const isOver = remaining < 0;
+
   return (
-    <div className="dashboard-grid-12">
+    <div className="dash">
       {toastMessage && (
         <Toast
           message={toastMessage}
@@ -243,256 +356,153 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
       )}
 
       {/* =========================================================================
-          1. HERO EVENT BANNER CARD (Full 12 columns)
+          1. HERO — event identity, countdown, budget seal
           ========================================================================= */}
-      <div className="dashboard-hero-col">
-        <Card
-          id="tour-hero-kpis"
-          className={`hero-banner-card ${isPulsing ? 'dashboard-pulse-highlight' : ''}`}
-          style={{
-            background: 'linear-gradient(135deg, var(--surface-raised) 0%, var(--surface-subtle) 100%)',
-            border: '1px solid var(--border)',
-            boxShadow: 'var(--shadow-md)',
-            position: 'relative',
-            overflow: 'hidden',
-          }}
-        >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-6)' }}>
-            {/* Left: Event Identity & Date */}
-            <div style={{ flex: '1 1 340px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-2)', flexWrap: 'wrap' }}>
-                <Badge variant={getBadgeVariant(plan.eventType)}>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                    {getEventTypeIcon(plan.eventType)}
-                    <span>{plan.eventType.toUpperCase()}</span>
-                  </span>
-                </Badge>
-                <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', fontWeight: 600 }}>
-                  Theme: {plan.theme}
-                </span>
-                {plan.culturalTraditions && (
-                  <Badge variant="success" dot>
-                    Traditions Configured
-                  </Badge>
-                )}
-              </div>
-
-              <h2
-                style={{
-                  fontSize: 'var(--text-2xl)',
-                  fontFamily: 'var(--font-display)',
-                  color: 'var(--text)',
-                  marginBottom: 'var(--space-2)',
-                  lineHeight: 1.2,
-                }}
-              >
-                {plan.title}
-              </h2>
-
-              <div style={{ display: 'flex', gap: 'var(--space-4)', flexWrap: 'wrap', color: 'var(--text-muted)', fontSize: 'var(--text-sm)' }}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-1)' }}>
-                  <MapPin size={16} />
-                  <span>{plan.city}</span>
-                </span>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-1)' }}>
-                  <Calendar size={16} />
-                  <span>{new Date(plan.eventDate).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                </span>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-1)' }}>
-                  <Users size={16} />
-                  <span className="tabular-nums">{plan.guestCount} guests invited</span>
-                </span>
-              </div>
-            </div>
-
-            {/* Middle: Big Countdown Badge */}
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: 'var(--space-3) var(--space-5)',
-                background: 'var(--surface)',
-                border: '1px solid var(--border)',
-                borderRadius: 'var(--radius-lg)',
-                minWidth: '130px',
-              }}
-            >
-              <span
-                className="tabular-nums"
-                style={{
-                  fontSize: '2.25rem',
-                  fontWeight: 800,
-                  color: diffDays <= 7 ? 'var(--color-danger)' : 'var(--text)',
-                  lineHeight: 1,
-                  fontFamily: 'var(--font-sans)',
-                }}
-              >
-                {animatedDiffDays}
+      <section
+        id="tour-hero-kpis"
+        className={`dash-hero ${isPulsing ? 'dashboard-pulse-highlight' : ''}`}
+        aria-labelledby="dash-event-title"
+      >
+        <div>
+          <div className="dash-hero__eyebrow">
+            <Badge variant={getBadgeVariant(plan.eventType)}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                {getEventTypeIcon(plan.eventType)}
+                <span>{plan.eventType.toUpperCase()}</span>
               </span>
-              <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: '4px' }}>
-                {diffDays === 0 ? 'Event Day 🎉' : diffDays === 1 ? 'Day to go' : 'Days to go'}
-              </span>
+            </Badge>
+            <span className="dash-hero__theme">Theme: {plan.theme}</span>
+            {plan.culturalTraditions && (
+              <Badge variant="success" dot>
+                Traditions Configured
+              </Badge>
+            )}
+          </div>
+
+          <h2 id="dash-event-title" className="dash-hero__title">
+            {plan.title}
+          </h2>
+
+          <ul className="dash-meta">
+            <li>
+              <MapPin size={16} aria-hidden="true" />
+              <span>{plan.venueName ? `${plan.venueName}, ${plan.city}` : plan.city}</span>
+            </li>
+            <li>
+              <Calendar size={16} aria-hidden="true" />
+              <span>{eventDateLabel || plan.eventDate}</span>
+            </li>
+            <li>
+              <Users size={16} aria-hidden="true" />
+              <span className="tabular-nums">{plan.guestCount} guests invited</span>
+            </li>
+          </ul>
+
+          <div className="dash-progress">
+            <div className="dash-progress__row">
+              <span>Preparation progress</span>
+              <strong className="tabular-nums">{formatPercent(taskPct)}</strong>
             </div>
-
-            {/* Right: ₹ Budget Utilization Ring */}
             <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 'var(--space-4)',
-                background: 'var(--surface)',
-                border: '1px solid var(--border)',
-                borderRadius: 'var(--radius-lg)',
-                padding: 'var(--space-3) var(--space-5)',
-                minWidth: '260px',
-              }}
+              className="dash-track"
+              role="progressbar"
+              aria-label="Preparation progress"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={Math.round(taskPct)}
             >
-              <div style={{ position: 'relative', width: '84px', height: '84px', flexShrink: 0 }}>
-                <svg width="84" height="84" viewBox="0 0 84 84">
-                  <circle
-                    cx="42"
-                    cy="42"
-                    r={ringRadius}
-                    fill="transparent"
-                    stroke="var(--border)"
-                    strokeWidth="7"
-                  />
-                  <circle
-                    className="budget-ring-circle"
-                    cx="42"
-                    cy="42"
-                    r={ringRadius}
-                    fill="transparent"
-                    stroke={ringColor}
-                    strokeWidth="7"
-                    strokeDasharray={ringCircumference}
-                    strokeDashoffset={ringOffset}
-                    strokeLinecap="round"
-                    transform="rotate(-90 42 42)"
-                  />
-                </svg>
-                <div
-                  style={{
-                    position: 'absolute',
-                    inset: 0,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexDirection: 'column',
-                  }}
-                >
-                  <span className="tabular-nums" style={{ fontSize: '0.9rem', fontWeight: 800, color: ringColor, lineHeight: 1 }}>
-                    {utilizationPercent}%
-                  </span>
-                  <span style={{ fontSize: '0.55rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>
-                    used
-                  </span>
-                </div>
-              </div>
-
-              <div>
-                <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  Budget Utilization
-                </div>
-                <div className="tabular-nums" style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text)', marginTop: '2px' }}>
-                  {formatIndianShort(budgetSummary.totalEstimated)}
-                  <span style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-muted)' }}> of </span>
-                  {formatIndianShort(budgetSummary.totalBudget)}
-                </div>
-                <div style={{ display: 'flex', gap: 'var(--space-1)', marginTop: '4px' }}>
-                  {utilizationPercent >= 100 ? (
-                    <Badge variant="danger">Budget Exceeded</Badge>
-                  ) : utilizationPercent >= 80 ? (
-                    <Badge variant="warning">Near Limit</Badge>
-                  ) : (
-                    <Badge variant="success">On Track</Badge>
-                  )}
-                </div>
-              </div>
+              <span className="dash-track__fill" style={{ '--pct': `${taskPct}%` } as React.CSSProperties} />
             </div>
           </div>
-        </Card>
-      </div>
+        </div>
+
+        <div className="dash-hero__aside">
+          <div className="dash-seal dash-seal--countdown">
+            <span
+              className={`dash-countdown__num tabular-nums ${diffDays >= 0 && diffDays <= 7 ? 'dash-countdown__num--soon' : ''}`}
+            >
+              {animatedDiffDays}
+            </span>
+            <span className="dash-eyebrow">{countdownLabel}</span>
+          </div>
+
+          <div className="dash-seal">
+            <div className="dash-ring">
+              <svg width="88" height="88" viewBox="0 0 84 84" aria-hidden="true">
+                <circle cx="42" cy="42" r={ringRadius} fill="transparent" stroke="var(--border)" strokeWidth="6" />
+                <circle
+                  className="budget-ring-circle"
+                  cx="42"
+                  cy="42"
+                  r={ringRadius}
+                  fill="transparent"
+                  stroke={ringColor}
+                  strokeWidth="6"
+                  strokeDasharray={ringCircumference}
+                  strokeDashoffset={ringOffset}
+                  strokeLinecap="round"
+                  transform="rotate(-90 42 42)"
+                />
+              </svg>
+              <div className="dash-ring__label">
+                <span className="dash-ring__pct tabular-nums" style={{ color: ringColor }}>
+                  {utilizationPercent}%
+                </span>
+                <span className="dash-ring__used">used</span>
+              </div>
+            </div>
+
+            <div className="dash-seal__figures">
+              <span className="dash-eyebrow">Budget Utilization</span>
+              <span className="dash-seal__amount tabular-nums">
+                {formatIndianShort(budgetSummary.totalEstimated)} <span>of</span>{' '}
+                {formatIndianShort(budgetSummary.totalBudget)}
+              </span>
+              {utilizationPercent >= 100 ? (
+                <Badge variant="danger">Budget Exceeded</Badge>
+              ) : utilizationPercent >= 80 ? (
+                <Badge variant="warning">Near Limit</Badge>
+              ) : (
+                <Badge variant="success">On Track</Badge>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* =========================================================================
           WHAT CHANGED? REAL-TIME PARAMETER & DECISION DIFF BANNER
           ========================================================================= */}
       {lastChangeDiff && (
-        <div
+        <aside
           role="status"
           aria-live="polite"
           id="what-changed-diff-banner"
-          className="what-changed-banner"
-          style={{
-            gridColumn: 'span 12',
-            background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(168, 85, 247, 0.06) 100%)',
-            border: '1.5px solid var(--accent-primary, #6366f1)',
-            borderRadius: 'var(--radius-lg, 12px)',
-            padding: '0.75rem 1rem',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '0.45rem',
-            boxShadow: '0 2px 8px rgba(99, 102, 241, 0.08)',
-          }}
+          className="dash-banner what-changed-banner"
         >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <span
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: '24px',
-                  height: '24px',
-                  borderRadius: '6px',
-                  background: 'var(--accent-primary, #6366f1)',
-                  color: '#ffffff',
-                }}
-              >
+          <div className="dash-banner__row">
+            <div className="dash-banner__lead">
+              <span className="dash-chip" aria-hidden="true">
                 <Sparkles size={14} />
               </span>
-              <strong style={{ fontSize: '0.85rem', color: 'var(--text)' }}>
-                What changed?
-              </strong>
-              <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+              <strong>What changed?</strong>
+              <span>
                 ({lastChangeDiff.timestamp}) — {lastChangeDiff.summary}
               </span>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <div className="dash-panel__aside">
               {onUndoLastChange && plan.changeLog && plan.changeLog.length > 0 && (
-                <button
-                  type="button"
-                  onClick={onUndoLastChange}
-                  style={{
-                    padding: '3px 10px',
-                    fontSize: '0.75rem',
-                    fontWeight: 700,
-                    borderRadius: '6px',
-                    border: '1px solid var(--border)',
-                    background: 'var(--surface-raised)',
-                    cursor: 'pointer',
-                  }}
-                >
+                <button type="button" className="dash-link-btn" onClick={onUndoLastChange}>
                   Undo edit
                 </button>
               )}
               {onClearDiff && (
                 <button
                   type="button"
+                  className="dash-icon-btn"
                   onClick={onClearDiff}
                   aria-label="Dismiss what changed diff"
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: 'var(--text-muted)',
-                    cursor: 'pointer',
-                    padding: '2px 6px',
-                    fontSize: '0.9rem',
-                    fontWeight: 700,
-                  }}
                 >
                   ✕
                 </button>
@@ -501,316 +511,273 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
           </div>
 
           {lastChangeDiff.details.length > 1 && (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', marginTop: '0.15rem' }}>
+            <div className="dash-tags">
               {lastChangeDiff.details.map((detail, idx) => (
-                <span
-                  key={idx}
-                  style={{
-                    fontSize: '0.72rem',
-                    fontWeight: 600,
-                    padding: '2px 8px',
-                    borderRadius: '4px',
-                    background: 'rgba(99, 102, 241, 0.12)',
-                    color: 'var(--accent-primary, #6366f1)',
-                  }}
-                >
+                <span key={idx} className="dash-tag">
                   {detail}
                 </span>
               ))}
             </div>
           )}
-        </div>
+        </aside>
       )}
 
       {/* =========================================================================
-          2. DYNAMIC CHAOS & SCENARIO HUB BAR (1-Click Simulations & Instant Trade-offs)
+          2. CHAOS & SCENARIO HUB BAR (1-click simulations & instant trade-offs)
           ========================================================================= */}
-      <div style={{ gridColumn: 'span 12' }}>
+      <div>
         <ChaosBar
           plan={plan}
+          budgetSummary={budgetSummary}
           onApplyScenario={(s) => {
-            if (onApplyScenario) {
-              onApplyScenario(s);
-              triggerPulse();
-              setToastMessage(`✓ Applied scenario: ${s.scenarioName || 'Parameters updated'}`);
-            }
+            if (onApplyScenario) onApplyScenario(s);
+            setToastMessage(`Simulated scenario: ${s.scenarioName}`);
           }}
-          onApplyTradeOff={(to, title) => {
+          onApplyTradeOff={(to, ruleTitle) => {
             if (onApplyTradeOff) {
-              onApplyTradeOff(to, title);
-              triggerPulse();
-              setToastMessage(`✓ Applied trade-off: ${to.label}`);
+              onApplyTradeOff(to, ruleTitle || '');
+              setToastMessage(`✓ Applied: ${to.label}`);
             }
           }}
           onUndoLastChange={() => {
             if (onUndoLastChange) {
               onUndoLastChange();
-              triggerPulse();
               setToastMessage('✓ Rolled back last change');
             }
           }}
           onOpenFullModal={() => setIsScenarioModalOpen(true)}
-          onFlashMetrics={triggerPulse}
         />
       </div>
 
       {/* =========================================================================
-          3. FOUR CLICKABLE METRIC CARDS (3 columns each)
+          3. KPI STRIP — four connected, clickable metrics
           ========================================================================= */}
-      <div className="dashboard-metric-col">
-        <Card
-          interactive
-          onClick={() => onNavigateTab('budget')}
-          role="button"
-          tabIndex={0}
-          aria-label="Per-guest budget breakdown"
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigateTab('budget'); } }}
-        >
-          <dl style={{ margin: 0, padding: 0 }}>
-            <dt className="stat-label">
-              <IndianRupee size={14} aria-hidden="true" />
-              <span>Per-Guest Cost</span>
-            </dt>
-            <dd className="stat-value tabular-nums" style={{ margin: 0 }}>
-              {formatCurrency(perGuestCost)}
-            </dd>
-            <dd className="stat-subtext" style={{ margin: 0 }}>
-              <span>Total Budget: </span>
-              <span className="tabular-nums" style={{ fontWeight: 600 }}>{formatIndianShort(budgetSummary.totalBudget)}</span>
-            </dd>
-          </dl>
-        </Card>
-      </div>
+      <div className="dash-kpis">
+        <button type="button" className="dash-kpi" onClick={() => onNavigateTab('budget')}>
+          <span className="dash-kpi__head">
+            <IndianRupee size={14} aria-hidden="true" />
+            <span>Per-Guest Cost</span>
+          </span>
+          <span className="dash-kpi__value tabular-nums">{formatCurrency(perGuestCost)}</span>
+          <span className="dash-kpi__sub">
+            <span>Total Budget: </span>
+            <strong className="tabular-nums">{formatIndianShort(budgetSummary.totalBudget)}</strong>
+          </span>
+          <span className="dash-track" aria-hidden="true">
+            <span
+              className="dash-track__fill"
+              style={{ '--pct': `${clampPct(utilizationPercent)}%` } as React.CSSProperties}
+            />
+          </span>
+          <ArrowUpRight className="dash-kpi__go" size={16} aria-hidden="true" />
+          <span className="sr-only">Go to budget</span>
+        </button>
 
-      <div className="dashboard-metric-col">
-        <Card
-          interactive
-          onClick={() => onNavigateTab('timeline')}
-          role="button"
-          tabIndex={0}
-          aria-label="Completed tasks summary"
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigateTab('timeline'); } }}
-        >
-          <dl style={{ margin: 0, padding: 0 }}>
-            <dt className="stat-label">
-              <Clock size={14} aria-hidden="true" />
-              <span>Tasks Done</span>
-            </dt>
-            <dd className="stat-value tabular-nums" style={{ margin: 0 }}>
-              {animatedCompleted} / {timelineAudit.totalCount}
-            </dd>
-            <dd className="stat-subtext" style={{ margin: 0 }}>
-              <span>Task Completion: </span>
-              <span className="tabular-nums" style={{ fontWeight: 600 }}>{formatPercent(timelineAudit.progressPercentage)}</span>
-            </dd>
-          </dl>
-        </Card>
-      </div>
+        <button type="button" className="dash-kpi" onClick={() => onNavigateTab('timeline')}>
+          <span className="dash-kpi__head">
+            <Clock size={14} aria-hidden="true" />
+            <span>Tasks Done</span>
+          </span>
+          <span className="dash-kpi__value tabular-nums">
+            {animatedCompleted} <small>/ {timelineAudit.totalCount}</small>
+          </span>
+          <span className="dash-kpi__sub">
+            <span>Task Completion: </span>
+            <strong className="tabular-nums">{formatPercent(timelineAudit.progressPercentage)}</strong>
+          </span>
+          <span className="dash-track" aria-hidden="true">
+            <span className="dash-track__fill" style={{ '--pct': `${taskPct}%` } as React.CSSProperties} />
+          </span>
+          <ArrowUpRight className="dash-kpi__go" size={16} aria-hidden="true" />
+          <span className="sr-only">Go to timeline</span>
+        </button>
 
-      <div className="dashboard-metric-col">
-        <Card
-          interactive
-          onClick={() => onNavigateTab('vendors')}
-          role="button"
-          tabIndex={0}
-          aria-label="Booked vendors summary"
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigateTab('vendors'); } }}
-        >
-          <dl style={{ margin: 0, padding: 0 }}>
-            <dt className="stat-label">
-              <AlertTriangle size={14} aria-hidden="true" />
-              <span>Vendors Booked</span>
-            </dt>
-            <dd className="stat-value tabular-nums" style={{ margin: 0 }}>
-              {animatedBookedVendors} / {totalVendors}
-            </dd>
-            <dd className="stat-subtext" style={{ margin: 0 }}>
-              <span>Estimated Spend: </span>
-              <span className="tabular-nums" style={{ fontWeight: 600 }}>{formatIndianShort(budgetSummary.totalEstimated)}</span>
-            </dd>
-          </dl>
-        </Card>
-      </div>
+        <button type="button" className="dash-kpi" onClick={() => onNavigateTab('vendors')}>
+          <span className="dash-kpi__head">
+            <Store size={14} aria-hidden="true" />
+            <span>Vendors Booked</span>
+          </span>
+          <span className="dash-kpi__value tabular-nums">
+            {animatedBookedVendors} <small>/ {totalVendors}</small>
+          </span>
+          <span className="dash-kpi__sub">
+            <span>Estimated Spend: </span>
+            <strong className="tabular-nums">{formatIndianShort(budgetSummary.totalEstimated)}</strong>
+          </span>
+          <span className="dash-track" aria-hidden="true">
+            <span className="dash-track__fill" style={{ '--pct': `${vendorPct}%` } as React.CSSProperties} />
+          </span>
+          <ArrowUpRight className="dash-kpi__go" size={16} aria-hidden="true" />
+          <span className="sr-only">Go to vendors</span>
+        </button>
 
-      <div className="dashboard-metric-col">
-        <Card
-          interactive
-          onClick={() => onNavigateTab('guests')}
-          role="button"
-          tabIndex={0}
-          aria-label="Confirmed guest count"
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigateTab('guests'); } }}
-        >
-          <dl style={{ margin: 0, padding: 0 }}>
-            <dt className="stat-label">
-              <Users size={14} aria-hidden="true" />
-              <span>RSVPs Confirmed</span>
-            </dt>
-            <dd className="stat-value tabular-nums" style={{ margin: 0 }}>
-              {animatedConfirmedGuests} / {plan.guestCount}
-            </dd>
-            <dd className="stat-subtext" style={{ margin: 0 }}>
-              <span>Attendance Rate: </span>
-              <span className="tabular-nums" style={{ fontWeight: 600 }}>
-                {formatPercent((confirmedGuests / Math.max(plan.guestCount, 1)) * 100)}
-              </span>
-            </dd>
-          </dl>
-        </Card>
+        <button type="button" className="dash-kpi" onClick={() => onNavigateTab('guests')}>
+          <span className="dash-kpi__head">
+            <Users size={14} aria-hidden="true" />
+            <span>RSVPs Confirmed</span>
+          </span>
+          <span className="dash-kpi__value tabular-nums">
+            {animatedConfirmedGuests} <small>/ {plan.guestCount}</small>
+          </span>
+          <span className="dash-kpi__sub">
+            <span>Attendance Rate: </span>
+            <strong className="tabular-nums">
+              {formatPercent((confirmedGuests / Math.max(plan.guestCount, 1)) * 100)}
+            </strong>
+          </span>
+          <span className="dash-track" aria-hidden="true">
+            <span className="dash-track__fill" style={{ '--pct': `${rsvpPct}%` } as React.CSSProperties} />
+          </span>
+          <ArrowUpRight className="dash-kpi__go" size={16} aria-hidden="true" />
+          <span className="sr-only">Go to guests</span>
+        </button>
       </div>
 
       {/* =========================================================================
-          4. MAIN COLUMN (8 cols): Next Up Tasks & Quick Actions
+          4. MAIN COLUMN: Next Up, Quick Actions
           ========================================================================= */}
-      <div className="dashboard-main-col">
-        {/* Next Up Tasks Panel */}
-        <Card>
-          <CardHeader
+      <div className="dash__main">
+        <section className="dash-panel" aria-label="Next up">
+          <PanelHead
             title="Next Up"
             subtitle="Prioritized upcoming milestones & overdue tasks"
-            action={
+            aside={
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => onNavigateTab('timeline')}
                 rightIcon={<ArrowRight size={14} />}
               >
-                View all tasks ({plan.tasks.length})
+                Open timeline
               </Button>
             }
           />
 
           {nextUpTasks.length === 0 ? (
-            <EmptyState
-              title="All tasks completed 🎉"
-              description="You have completed every scheduled preparation task for this event."
-            />
+            <div className="dash-empty" role="status">
+              <strong>All tasks completed 🎉</strong>
+              <p>You have completed every scheduled preparation task for this event.</p>
+            </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-              {nextUpTasks.map((task) => {
-                const todayStr = new Date().toISOString().split('T')[0];
-                const isOverdue = task.dueDate < todayStr && !task.completed;
-
+            <ul className="dash-list">
+              {nextUpTasks.map(({ task, diff }) => {
+                const isOverdue = diff !== null && diff < 0;
                 return (
-                  <div
-                    key={task.id}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: 'var(--space-3) var(--space-4)',
-                      background: isOverdue ? 'var(--color-danger-bg)' : 'var(--surface-subtle)',
-                      border: `1px solid ${isOverdue ? 'var(--color-danger-border)' : 'var(--border)'}`,
-                      borderRadius: 'var(--radius-md)',
-                      gap: 'var(--space-3)',
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', flex: 1 }}>
-                      <input
-                        type="checkbox"
-                        checked={task.completed}
-                        onChange={() => handleTaskCheck(task.id, task.title, task.completed)}
-                        style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--accent-primary)' }}
-                        aria-label={`Mark "${task.title}" complete`}
-                      />
-                      <div>
-                        <div style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--text)' }}>
-                          {task.title}
-                        </div>
-                        <div style={{ fontSize: 'var(--text-xs)', color: isOverdue ? 'var(--color-danger-text)' : 'var(--text-muted)' }}>
-                          Due: {task.dueDate} {isOverdue && '• Overdue'}
-                        </div>
+                  <li key={task.id} className={`dash-task ${isOverdue ? 'dash-task--overdue' : ''}`}>
+                    <input
+                      type="checkbox"
+                      className="dash-check"
+                      checked={task.completed}
+                      onChange={() => handleTaskCheck(task.id, task.title, task.completed)}
+                      aria-label={`Mark "${task.title}" complete`}
+                    />
+                    <div className="dash-task__body">
+                      <div className="dash-task__title">{task.title}</div>
+                      <div className="dash-task__meta">
+                        {describeDue(diff, task.dueDate)}
+                        {parseLocalDate(task.dueDate) && (
+                          <>
+                            {' · '}
+                            {parseLocalDate(task.dueDate)!.toLocaleDateString('en-IN', {
+                              day: 'numeric',
+                              month: 'short',
+                            })}
+                          </>
+                        )}
                       </div>
                     </div>
-
-                    <div>
-                      {isOverdue ? (
-                        <Badge variant="danger">Overdue</Badge>
-                      ) : (
-                        <Badge variant="neutral">{task.category}</Badge>
-                      )}
-                    </div>
-                  </div>
+                    {isOverdue ? (
+                      <Badge variant="danger">Overdue</Badge>
+                    ) : (
+                      <Badge variant="neutral" className="dash-task__cat">
+                        {String(task.category).replace(/_/g, ' ')}
+                      </Badge>
+                    )}
+                  </li>
                 );
               })}
-            </div>
+            </ul>
           )}
-        </Card>
+        </section>
 
-        {/* Quick Action Bar */}
-        <Card>
-          <CardHeader
+        <section className="dash-panel" aria-label="Quick planner actions">
+          <PanelHead
             title="Quick Planner Actions"
             subtitle="Frequently accessed workflows & on-ground exports"
           />
-          <div style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
-            <Button
-              variant="outline"
-              size="md"
-              onClick={() => onNavigateTab('budget')}
-              leadingIcon={<IndianRupee size={16} />}
-            >
-              Add Expense
-            </Button>
-            <Button
-              variant="outline"
-              size="md"
-              onClick={() => onNavigateTab('guests')}
-              leadingIcon={<Users size={16} />}
-            >
-              Add Guest
-            </Button>
-            <Button
-              variant="outline"
-              size="md"
-              onClick={() => onNavigateTab('guests')}
-              leadingIcon={<MessageCircle size={16} color="#25d366" />}
-            >
-              WhatsApp Invites
-            </Button>
+          <div className="dash-actions">
+            <button type="button" className="dash-action" onClick={() => onNavigateTab('budget')}>
+              <span className="dash-chip" aria-hidden="true">
+                <IndianRupee size={15} />
+              </span>
+              <span className="dash-action__label">
+                Add Expense
+                <span className="dash-action__hint">Log a cost or quote</span>
+              </span>
+            </button>
+            <button type="button" className="dash-action" onClick={() => onNavigateTab('guests')}>
+              <span className="dash-chip" aria-hidden="true">
+                <UserPlus size={15} />
+              </span>
+              <span className="dash-action__label">
+                Add Guest
+                <span className="dash-action__hint">Grow the guest list</span>
+              </span>
+            </button>
+            <button type="button" className="dash-action" onClick={() => onNavigateTab('guests')}>
+              <span className="dash-chip" aria-hidden="true">
+                <MessageCircle size={15} color="#25d366" />
+              </span>
+              <span className="dash-action__label">
+                WhatsApp Invites
+                <span className="dash-action__hint">Send invitations</span>
+              </span>
+            </button>
             {onExportCalendar && (
-              <Button
-                variant="outline"
-                size="md"
-                onClick={onExportCalendar}
-                leadingIcon={<Calendar size={16} />}
-              >
-                Export iCal
-              </Button>
+              <button type="button" className="dash-action" onClick={onExportCalendar}>
+                <span className="dash-chip" aria-hidden="true">
+                  <CalendarPlus size={15} />
+                </span>
+                <span className="dash-action__label">
+                  Export iCal
+                  <span className="dash-action__hint">Timeline reminders</span>
+                </span>
+              </button>
             )}
             {onOpenCopilot && (
-              <Button
-                variant="primary"
-                size="md"
-                onClick={onOpenCopilot}
-                leadingIcon={<Sparkles size={16} />}
-              >
-                Ask Copilot
-              </Button>
+              <button type="button" className="dash-action dash-action--primary" onClick={onOpenCopilot}>
+                <span className="dash-chip" aria-hidden="true">
+                  <Sparkles size={15} />
+                </span>
+                <span className="dash-action__label">
+                  Ask Copilot
+                  <span className="dash-action__hint">Plan with AI</span>
+                </span>
+              </button>
             )}
           </div>
-        </Card>
+        </section>
       </div>
 
       {/* =========================================================================
-          5. SIDE COLUMN (4 cols): Needs Attention Panel
+          5. SIDE COLUMN: Needs Attention, Budget at a glance
           ========================================================================= */}
-      <div className="dashboard-side-col">
-        <Card id="tour-decision-engine" style={{ borderLeft: '4px solid var(--color-warning)' }}>
-          <CardHeader
+      <div className="dash__side">
+        <section id="tour-decision-engine" className="dash-panel" aria-label="Needs attention">
+          <PanelHead
             title="Needs Attention"
             subtitle={`${sortedInsights.length} active alerts • Rules fired: ${sortedInsights.length} / ${TOTAL_DECISION_RULES_COUNT}`}
-            action={
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Badge variant="neutral" size="sm" title={`${sortedInsights.length} out of ${TOTAL_DECISION_RULES_COUNT} deterministic rules triggered`}>
+            aside={
+              <>
+                <Badge
+                  variant="neutral"
+                  size="sm"
+                  title={`${sortedInsights.length} out of ${TOTAL_DECISION_RULES_COUNT} deterministic rules triggered`}
+                >
                   {sortedInsights.length}/{TOTAL_DECISION_RULES_COUNT} Fired
                 </Badge>
                 {sortedInsights.length > 3 && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowAllAlerts((prev) => !prev)}
-                  >
+                  <Button variant="ghost" size="sm" onClick={() => setShowAllAlerts((prev) => !prev)}>
                     {showAllAlerts ? (
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                         Less <ChevronUp size={14} />
@@ -822,172 +789,168 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                     )}
                   </Button>
                 )}
-              </div>
+              </>
             }
           />
 
           {sortedInsights.length === 0 ? (
-            <EmptyState
-              title="All clear 🎉"
-              description="Your event preparation is running on schedule with zero high-priority conflicts."
-            />
+            <div className="dash-empty" role="status">
+              <strong>All clear 🎉</strong>
+              <p>Your event preparation is running on schedule with zero high-priority conflicts.</p>
+            </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+            <div className="dash-list">
               {displayedInsights.map((insight) => (
-                <div
-                  key={insight.id}
-                  style={{
-                    padding: 'var(--space-3) var(--space-4)',
-                    background:
-                      insight.type === 'action_required'
-                        ? 'var(--color-danger-bg)'
-                        : insight.type === 'warning'
-                        ? 'var(--color-warning-bg)'
-                        : 'var(--surface-subtle)',
-                    border: `1px solid ${
-                      insight.type === 'action_required'
-                        ? 'var(--color-danger-border)'
-                        : insight.type === 'warning'
-                        ? 'var(--color-warning-border)'
-                        : 'var(--border)'
-                    }`,
-                    borderRadius: 'var(--radius-md)',
-                  }}
-                >
-                  <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'flex-start' }}>
-                    <div style={{ marginTop: '2px' }}>{getInsightIcon(insight.type)}</div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text)' }}>
-                        {insight.title}
-                      </div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '2px 0 6px 0', lineHeight: 1.4 }}>
-                        {insight.message}
-                      </div>
+                <article key={insight.id} className={`dash-insight dash-insight--${insight.type}`}>
+                  <span className="dash-insight__icon" aria-hidden="true">
+                    {getInsightIcon(insight.type)}
+                  </span>
+                  <div>
+                    <h4 className="dash-insight__title">{insight.title}</h4>
+                    <p className="dash-insight__msg">{insight.message}</p>
 
-                      {/* Explainability Accordion: Why am I seeing this? */}
-                      <div style={{ marginTop: 'var(--space-1)', marginBottom: 'var(--space-2)' }}>
-                        <button
-                          type="button"
-                          onClick={() => toggleWhy(insight.id)}
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            background: 'none',
-                            border: 'none',
-                            color: 'var(--accent-primary)',
-                            fontSize: '0.68rem',
-                            fontWeight: 700,
-                            cursor: 'pointer',
-                            padding: '2px 0',
-                          }}
-                          aria-expanded={Boolean(expandedWhy[insight.id])}
-                          aria-label={`Explain reason for ${insight.title}`}
-                        >
-                          <HelpCircle size={12} />
-                          <span>Why am I seeing this?</span>
-                          {expandedWhy[insight.id] ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
-                        </button>
+                    {/* Explainability accordion: Why am I seeing this? */}
+                    <button
+                      type="button"
+                      className="dash-why"
+                      onClick={() => toggleWhy(insight.id)}
+                      aria-expanded={Boolean(expandedWhy[insight.id])}
+                      aria-label={`Explain reason for ${insight.title}`}
+                    >
+                      <HelpCircle size={13} aria-hidden="true" />
+                      <span>Why am I seeing this?</span>
+                      {expandedWhy[insight.id] ? (
+                        <ChevronUp size={12} aria-hidden="true" />
+                      ) : (
+                        <ChevronDown size={12} aria-hidden="true" />
+                      )}
+                    </button>
 
-                        {expandedWhy[insight.id] && (
-                          <div
-                            style={{
-                              marginTop: '4px',
-                              padding: '6px 8px',
-                              borderRadius: 'var(--radius-sm)',
-                              background: 'var(--surface)',
-                              border: '1px dashed var(--border)',
-                              fontSize: '0.68rem',
-                              lineHeight: '1.4',
-                              animation: 'fadeIn 0.15s ease',
-                            }}
-                          >
-                            <div style={{ fontWeight: 700, color: 'var(--accent-primary)', marginBottom: '2px' }}>
-                              Rule: {insight.ruleName || insight.ruleId || 'Deterministic Engine Rule'}
-                            </div>
-                            {insight.whyExplanation && (
-                              <div style={{ color: 'var(--text)', marginBottom: '3px' }}>
-                                {insight.whyExplanation}
-                              </div>
-                            )}
-                            {insight.thresholdMet && (
-                              <div style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono, monospace)', fontSize: '0.64rem' }}>
-                                Trigger: {insight.thresholdMet}
-                              </div>
-                            )}
-                          </div>
+                    {expandedWhy[insight.id] && (
+                      <div className="dash-why__box">
+                        <div className="dash-why__rule">
+                          Rule: {insight.ruleName || insight.ruleId || 'Deterministic Engine Rule'}
+                        </div>
+                        {insight.whyExplanation && <div>{insight.whyExplanation}</div>}
+                        {insight.thresholdMet && (
+                          <div className="dash-why__trigger">Trigger: {insight.thresholdMet}</div>
                         )}
                       </div>
+                    )}
 
-                      {/* 1-Click Actionable Trade-Offs */}
-                      {insight.tradeOffs && insight.tradeOffs.length > 0 && (
-                        <div style={{ marginTop: 'var(--space-2)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                          <div style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-                            Trade-offs (1-Click Apply):
-                          </div>
-                          {insight.tradeOffs.map((to) => (
-                            <div
-                              key={to.id}
-                              style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                                background: 'var(--surface)',
-                                border: '1px solid var(--border)',
-                                borderRadius: 'var(--radius-sm)',
-                                padding: '4px 8px',
-                                gap: '6px',
+                    {/* 1-click actionable trade-offs */}
+                    {insight.tradeOffs && insight.tradeOffs.length > 0 && (
+                      <div className="dash-tradeoffs">
+                        <div className="dash-tradeoffs__label">Trade-offs (1-Click Apply):</div>
+                        {insight.tradeOffs.map((to) => (
+                          <div key={to.id} className="dash-tradeoff">
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div className="dash-tradeoff__name">{to.label}</div>
+                              <div className="dash-tradeoff__impact">{to.impactFormatted}</div>
+                            </div>
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              onClick={() => {
+                                if (onApplyTradeOff) {
+                                  onApplyTradeOff(to, insight.title);
+                                  setToastMessage(`✓ Applied: ${to.label}`);
+                                }
                               }}
                             >
-                              <div style={{ flex: 1, minWidth: 0 }}>
-                                <div style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text)' }}>
-                                  {to.label}
-                                </div>
-                                <div style={{ fontSize: '0.65rem', color: 'var(--accent-primary)', fontWeight: 600 }}>
-                                  {to.impactFormatted}
-                                </div>
-                              </div>
-                              <Button
-                                variant="primary"
-                                size="sm"
-                                style={{ fontSize: '0.68rem', padding: '2px 8px', height: '26px' }}
-                                onClick={() => {
-                                  if (onApplyTradeOff) {
-                                    onApplyTradeOff(to, insight.title);
-                                    setToastMessage(`✓ Applied: ${to.label}`);
-                                  }
-                                }}
-                              >
-                                Apply
-                              </Button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                              Apply
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
 
-                      {insight.actionLabel && (!insight.tradeOffs || insight.tradeOffs.length === 0) && (
+                    {insight.actionLabel && (!insight.tradeOffs || insight.tradeOffs.length === 0) && (
+                      <div style={{ marginTop: 'var(--space-3)' }}>
                         <Button
                           variant="secondary"
                           size="sm"
-                          style={{ fontSize: '0.72rem', padding: '2px 8px', minHeight: '28px', marginTop: '4px' }}
                           onClick={() => {
                             if (insight.category === 'budget') onNavigateTab('budget');
                             else if (insight.category === 'timeline') onNavigateTab('timeline');
                             else if (insight.category === 'vendors') onNavigateTab('vendors');
-                            else if (insight.category === 'capacity') onNavigateTab('guests');
-                            else onNavigateTab('budget');
+                            else onNavigateTab('guests');
                           }}
                         >
                           {insight.actionLabel}
                         </Button>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
-                </div>
+                </article>
               ))}
             </div>
           )}
-        </Card>
+        </section>
+
+        <section className="dash-panel" aria-label="Budget at a glance">
+          <PanelHead
+            title="Budget at a Glance"
+            subtitle="Where the money is planned to go"
+            aside={
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onNavigateTab('budget')}
+                rightIcon={<ArrowRight size={14} />}
+              >
+                Open budget
+              </Button>
+            }
+          />
+
+          {categoryBreakdown.rows.length === 0 ? (
+            <div className="dash-empty" role="status">
+              <Wallet size={28} aria-hidden="true" />
+              <strong>No expenses planned yet</strong>
+              <p>Add your first expense and the category split will appear here.</p>
+            </div>
+          ) : (
+            <ul className="dash-cats">
+              {categoryBreakdown.rows.map((row, idx) => (
+                <li
+                  key={row.category}
+                  className="dash-cat"
+                  style={{ '--c': `var(--dash-c${idx + 1})` } as React.CSSProperties}
+                >
+                  <div className="dash-cat__row">
+                    <span className="dash-cat__name">
+                      <span className="dash-cat__dot" aria-hidden="true" />
+                      {CATEGORY_LABELS[row.category] || row.category}
+                    </span>
+                    <span className="dash-cat__amt tabular-nums">
+                      <strong>{formatIndianShort(row.amount)}</strong> · {formatPercent(row.share)}
+                    </span>
+                  </div>
+                  <div className="dash-track" aria-hidden="true">
+                    <span
+                      className="dash-track__fill"
+                      style={{ '--pct': `${clampPct(row.share)}%` } as React.CSSProperties}
+                    />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <dl className="dash-ledger">
+            <div>
+              <dt>{isOver ? 'Over budget by' : 'Remaining balance'}</dt>
+              <dd className={`tabular-nums ${isOver ? 'is-over' : ''}`}>
+                {formatIndianShort(Math.abs(remaining))}
+              </dd>
+            </div>
+            <div>
+              <dt>Contingency buffer</dt>
+              <dd className="tabular-nums">{formatIndianShort(budgetSummary.contingencyAmount)}</dd>
+            </div>
+          </dl>
+        </section>
       </div>
 
       {/* Scenario Simulation Modal */}
