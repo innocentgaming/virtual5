@@ -1,9 +1,11 @@
 import { createContext } from 'react';
-import type { AuthResult, AuthStatus, AuthUser, UserRole } from '../types/auth';
+import type { AuthResult, AuthStatus, AuthUser, StorageKind, UserRole } from '../types/auth';
 
 export interface AuthContextType {
   user: AuthUser | null;
   status: AuthStatus;
+  /** How the server stores accounts (`memory` = temporary, accounts are lost on restart). */
+  storage?: StorageKind | null;
   login: (email: string, password: string, remember: boolean) => Promise<AuthResult>;
   signup: (data: {
     name: string;

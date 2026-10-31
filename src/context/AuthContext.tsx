@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import type { AuthResult, AuthStatus, AuthUser } from '../types/auth';
+import type { AuthResult, AuthStatus, AuthUser, StorageKind } from '../types/auth';
 import { authApi } from '../services/authApi';
+import { offerToSaveCredentials } from '../services/credentialStore';
 import { clearAllStorageData } from '../services/storageService';
 import { AuthContext, type AuthContextType } from './authContextInstance';
 
@@ -11,10 +12,12 @@ function toResult(r: { ok: boolean; error?: string }): AuthResult {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [status, setStatus] = useState<AuthStatus>('loading');
+  const [storage, setStorage] = useState<StorageKind | null>(null);
 
   const refresh = useCallback(async () => {
     const res = await authApi.me();
     if (res.ok) {
+      setStorage(res.storage ?? null);
       setUser(res.user);
       setStatus(res.user ? 'authenticated' : 'anonymous');
     } else if (res.code === 'network') {
@@ -31,6 +34,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     void authApi.me().then((res) => {
       if (cancelled) return;
       if (res.ok) {
+        setStorage(res.storage ?? null);
         setUser(res.user);
         setStatus(res.user ? 'authenticated' : 'anonymous');
       } else {
@@ -47,6 +51,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (res.ok) {
       setUser(res.user);
       setStatus('authenticated');
+      if (remember) void offerToSaveCredentials(email, password, res.user.name);
     }
     return toResult(res);
   }, []);
@@ -56,6 +61,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (res.ok) {
       setUser(res.user);
       setStatus('authenticated');
+      void offerToSaveCredentials(data.email, data.password, res.user.name);
     }
     return toResult(res);
   }, []);
@@ -106,8 +112,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 
   const value = useMemo<AuthContextType>(
-    () => ({ user, status, login, signup, logout, forgotPassword, resetPassword, updateProfile, changePassword, deleteAccount, refresh }),
-    [user, status, login, signup, logout, forgotPassword, resetPassword, updateProfile, changePassword, deleteAccount, refresh]
+    () => ({ user, status, storage, login, signup, logout, forgotPassword, resetPassword, updateProfile, changePassword, deleteAccount, refresh }),
+    [user, status, storage, login, signup, logout, forgotPassword, resetPassword, updateProfile, changePassword, deleteAccount, refresh]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

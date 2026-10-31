@@ -3,8 +3,13 @@
  *
  * Production: Upstash Redis over its REST API (works on Vercel through the Upstash / Vercel KV
  * marketplace integration – the env vars are injected automatically).
- * Development: an in-memory store so `npm run dev` works with zero setup (data resets on restart).
+ * Self-hosted / local: a JSON file store (set DATA_DIR, defaults to ./.data in development) so accounts
+ * survive restarts without a database.
+ * Last resort: an in-memory store. It is VOLATILE: every restart / cold start / extra serverless instance
+ * forgets all accounts, which shows up as "I registered but my password is wrong".
  */
+import fs from 'node:fs';
+import path from 'node:path';
 
 export type Role = 'planner' | 'host' | 'vendor';
 
@@ -27,7 +32,7 @@ export interface EventsDoc {
 }
 
 export interface Store {
-  readonly kind: 'redis' | 'memory';
+  readonly kind: 'redis' | 'file' | 'memory';
   getUserIdByEmail(email: string): Promise<string | null>;
   getUser(id: string): Promise<UserRecord | null>;
   /** Atomically claims the email; returns false if it is already registered. */
@@ -118,32 +123,31 @@ export class RedisStore implements Store {
 }
 
 // ---------------------------------------------------------------------------
-// In-memory (development / tests)
+// In-memory fallback (local development / zero-setup testing)
 // ---------------------------------------------------------------------------
 
 export class MemoryStore implements Store {
-  readonly kind = 'memory' as const;
-  private users = new Map<string, UserRecord>();
-  private emails = new Map<string, string>();
-  private resets = new Map<string, { userId: string; exp: number }>();
-  private events = new Map<string, EventsDoc>();
-  private counters = new Map<string, { count: number; exp: number }>();
+  readonly kind: 'memory' | 'file' = 'memory';
+  protected users = new Map<string, UserRecord>();
+  protected emails = new Map<string, string>();
+  protected resets = new Map<string, { userId: string; exp: number }>();
+  protected events = new Map<string, EventsDoc>();
+  protected counters = new Map<string, { count: number; exp: number }>();
 
   async getUserIdByEmail(email: string) {
     return this.emails.get(email) ?? null;
   }
   async getUser(id: string) {
-    const u = this.users.get(id);
-    return u ? { ...u } : null;
+    return this.users.get(id) ?? null;
   }
   async createUser(user: UserRecord) {
     if (this.emails.has(user.email)) return false;
     this.emails.set(user.email, user.id);
-    this.users.set(user.id, { ...user });
+    this.users.set(user.id, user);
     return true;
   }
   async updateUser(user: UserRecord) {
-    this.users.set(user.id, { ...user });
+    this.users.set(user.id, user);
   }
   async deleteUser(user: UserRecord) {
     this.users.delete(user.id);
@@ -177,6 +181,95 @@ export class MemoryStore implements Store {
 }
 
 // ---------------------------------------------------------------------------
+// JSON file store (persists across restarts; single server process)
+// ---------------------------------------------------------------------------
+
+interface FileSnapshot {
+  users: UserRecord[];
+  emails: [string, string][];
+  resets: [string, { userId: string; exp: number }][];
+  events: [string, EventsDoc][];
+}
+
+export class FileStore extends MemoryStore {
+  override readonly kind = 'file' as const;
+  private readonly file: string;
+
+  constructor(dir: string) {
+    super();
+    const resolved = path.resolve(dir);
+    fs.mkdirSync(resolved, { recursive: true });
+    this.file = path.join(resolved, 'eventwise-store.json');
+    this.load();
+    this.persist(); // fail fast (so getStore can fall back) if the directory is not writable
+  }
+
+  private load(): void {
+    let raw: string;
+    try {
+      raw = fs.readFileSync(this.file, 'utf8');
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code !== 'ENOENT') console.warn('[auth] Could not read account store:', err);
+      return;
+    }
+    try {
+      const snap = JSON.parse(raw) as Partial<FileSnapshot>;
+      for (const u of snap.users ?? []) this.users.set(u.id, u);
+      for (const [email, id] of snap.emails ?? []) this.emails.set(email, id);
+      for (const [digest, rec] of snap.resets ?? []) if (rec.exp > Date.now()) this.resets.set(digest, rec);
+      for (const [id, doc] of snap.events ?? []) this.events.set(id, doc);
+    } catch (err) {
+      // Never silently overwrite a file we could not understand: keep a copy for recovery.
+      console.error('[auth] Account store is corrupted; keeping a backup and starting empty.', err);
+      try {
+        fs.copyFileSync(this.file, `${this.file}.corrupt-${Date.now()}`);
+      } catch {
+        /* best effort */
+      }
+    }
+  }
+
+  private persist(): void {
+    const snap: FileSnapshot = {
+      users: [...this.users.values()],
+      emails: [...this.emails.entries()],
+      resets: [...this.resets.entries()].filter(([, r]) => r.exp > Date.now()),
+      events: [...this.events.entries()],
+    };
+    const tmp = `${this.file}.${process.pid}.tmp`;
+    fs.writeFileSync(tmp, JSON.stringify(snap), { mode: 0o600 });
+    fs.renameSync(tmp, this.file); // atomic: a crash mid-write can never leave a half-written store
+  }
+
+  override async createUser(user: UserRecord) {
+    const created = await super.createUser(user);
+    if (created) this.persist();
+    return created;
+  }
+  override async updateUser(user: UserRecord) {
+    await super.updateUser(user);
+    this.persist();
+  }
+  override async deleteUser(user: UserRecord) {
+    await super.deleteUser(user);
+    this.persist();
+  }
+  override async putResetToken(digest: string, userId: string, ttlSeconds: number) {
+    await super.putResetToken(digest, userId, ttlSeconds);
+    this.persist();
+  }
+  override async consumeResetToken(digest: string) {
+    const id = await super.consumeResetToken(digest);
+    this.persist();
+    return id;
+  }
+  override async putEvents(userId: string, doc: EventsDoc) {
+    await super.putEvents(userId, doc);
+    this.persist();
+  }
+}
+
+// ---------------------------------------------------------------------------
 
 let singleton: Store | null = null;
 let override: Store | null = null;
@@ -203,6 +296,17 @@ export function getStore(): Store {
     return singleton;
   }
 
+  // Self-hosted with a persistent disk (e.g. a Render disk mounted at DATA_DIR): accounts live in a file.
+  const dataDir = process.env.DATA_DIR?.trim();
+  if (dataDir) {
+    try {
+      singleton = new FileStore(dataDir);
+      return singleton;
+    } catch (err) {
+      console.error(`[auth] DATA_DIR "${dataDir}" is not usable, ignoring it:`, err);
+    }
+  }
+
   // A serverless deployment (Vercel) has no shared memory between invocations: accounts kept in a
   // MemoryStore silently disappear on the next cold start, so "Sign in" fails for people who already
   // registered. In production we therefore refuse to run without a real database instead of pretending
@@ -215,7 +319,20 @@ export function getStore(): Store {
     throw new StorageNotConfiguredError();
   }
 
-  console.warn('[auth] No Redis configured – using in-memory store (development only, data resets on restart).');
+  // Local development: keep accounts in ./.data so they survive dev-server restarts.
+  if (!isProd && process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
+    try {
+      singleton = new FileStore('.data');
+      console.warn('[auth] No Redis configured – storing accounts in ./.data (development only).');
+      return singleton;
+    } catch (err) {
+      console.warn('[auth] Could not use ./.data, falling back to memory:', err);
+    }
+  }
+
+  console.warn(
+    '[auth] No Redis configured – using the VOLATILE in-memory store: every account is lost on restart. Connect Upstash Redis (or set DATA_DIR to a persistent disk).'
+  );
   singleton = new MemoryStore();
   return singleton;
 }

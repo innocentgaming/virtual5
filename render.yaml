@@ -9,10 +9,18 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      - key: NPM_CONFIG_PRODUCTION
+        value: "false"
       - key: ALLOW_MEMORY_STORE
         value: "true"
       - key: AUTH_SECRET
         generateValue: true
+      # Accounts must be stored somewhere that survives restarts (Render's free plan sleeps and wipes memory).
+      # Create a free Upstash Redis database and paste its REST URL / token here.
+      - key: UPSTASH_REDIS_REST_URL
+        sync: false
+      - key: UPSTASH_REDIS_REST_TOKEN
+        sync: false
       - key: VITE_GEMINI_API_KEY
         sync: false
 

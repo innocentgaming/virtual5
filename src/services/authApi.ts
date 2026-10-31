@@ -1,4 +1,4 @@
-import type { AuthUser, UserRole } from '../types/auth';
+import type { AuthUser, StorageKind, UserRole } from '../types/auth';
 import type { EventPlan } from '../types/event';
 
 export interface RemoteEventsDoc {
@@ -72,7 +72,7 @@ async function req<T>(path: string, options: RequestInit = {}): Promise<ApiResul
 }
 
 export const authApi = {
-  me: () => req<{ user: AuthUser | null }>('/api/auth/me'),
+  me: () => req<{ user: AuthUser | null; storage?: StorageKind }>('/api/auth/me'),
   login: (data: { email: string; password: string; remember?: boolean }) =>
     req<{ user: AuthUser }>('/api/auth/login', { method: 'POST', body: JSON.stringify(data) }),
   signup: (data: { name: string; email: string; password: string; role: UserRole; organization?: string; acceptTerms: boolean }) =>

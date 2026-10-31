@@ -12,6 +12,9 @@ export interface AuthUser {
   createdAt: string;
 }
 
+/** Where the server keeps accounts. `memory` is volatile: accounts vanish whenever the server restarts. */
+export type StorageKind = 'redis' | 'file' | 'memory';
+
 export type AuthStatus = 'loading' | 'authenticated' | 'anonymous';
 
 export interface AuthResult {

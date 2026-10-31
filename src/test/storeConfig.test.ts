@@ -1,4 +1,7 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 
 /**
  * Accounts must live in a real database in production. An in-memory store on a serverless host
@@ -47,12 +50,43 @@ describe('getStore persistence rules', () => {
     expect(getStore().kind).toBe('redis');
   });
 
-  it('keeps the zero-setup in-memory store for local development', async () => {
+  it('keeps the zero-setup in-memory store under the test runner', async () => {
     clearRedisEnv();
     vi.stubEnv('VERCEL_ENV', '');
-    vi.stubEnv('NODE_ENV', 'development');
+    vi.stubEnv('NODE_ENV', 'test');
+    vi.stubEnv('DATA_DIR', '');
     vi.spyOn(console, 'warn').mockImplementation(() => {});
     const { getStore } = await freshStoreModule();
     expect(getStore().kind).toBe('memory');
+  });
+
+  it('persists accounts to a file when DATA_DIR is set, even in production', async () => {
+    clearRedisEnv();
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ew-data-'));
+    vi.stubEnv('VERCEL_ENV', 'production');
+    vi.stubEnv('DATA_DIR', dir);
+    try {
+      const { getStore } = await freshStoreModule();
+      expect(getStore().kind).toBe('file');
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('falls back to the production rule when DATA_DIR is not writable', async () => {
+    clearRedisEnv();
+    // A directory path *inside a regular file* can never be created (ENOTDIR), even when running as root.
+    const blocker = fs.mkdtempSync(path.join(os.tmpdir(), 'ew-block-'));
+    const notADir = path.join(blocker, 'file.txt');
+    fs.writeFileSync(notADir, 'x');
+    vi.stubEnv('VERCEL_ENV', 'production');
+    vi.stubEnv('DATA_DIR', path.join(notADir, 'data'));
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const { getStore, StorageNotConfiguredError } = await freshStoreModule();
+      expect(() => getStore()).toThrow(StorageNotConfiguredError);
+    } finally {
+      fs.rmSync(blocker, { recursive: true, force: true });
+    }
   });
 });

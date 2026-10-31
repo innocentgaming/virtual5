@@ -11,6 +11,7 @@ import {
   assertSameOrigin,
   clearSessionCookie,
   getClientIp,
+  getSessionPayload,
   getSessionUser,
   rateLimit,
   readJson,
@@ -133,10 +134,22 @@ const logout: Handler = async (req, res, store) => {
 const me: Handler = async (req, res, store) => {
   const user = await getSessionUser(req, store);
   if (!user) {
-    sendJson(res, 200, { user: null }, { 'Set-Cookie': req.headers.cookie?.includes('ew_session') ? clearSessionCookie() : [] });
+    sendJson(
+      res,
+      200,
+      { user: null, storage: store.kind },
+      { 'Set-Cookie': req.headers.cookie?.includes('ew_session') ? clearSessionCookie() : [] }
+    );
     return;
   }
-  sendJson(res, 200, { user: toPublicUser(user) });
+  // "Keep me signed in": a remembered session is renewed whenever it is used and at least a day old,
+  // so people who open the app regularly are never asked to sign in again.
+  const payload = getSessionPayload(req);
+  const now = Math.floor(Date.now() / 1000);
+  if (payload && payload.exp - payload.iat > SESSION_TTL && now - payload.iat > DAY) {
+    issueSession(res, user, true);
+  }
+  sendJson(res, 200, { user: toPublicUser(user), storage: store.kind });
 };
 
 const forgotPassword: Handler = async (req, res, store) => {

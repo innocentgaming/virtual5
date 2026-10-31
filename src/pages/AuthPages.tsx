@@ -31,6 +31,16 @@ const AuthLayout: React.FC<{ side: keyof typeof SIDE_COPY; children: React.React
 
 const Spinner = () => <span className="s-spinner" aria-hidden="true" />;
 
+/** Shown only when the server keeps accounts in temporary memory (they are erased on every restart). */
+const VolatileStorageNotice: React.FC<{ storage?: string | null }> = ({ storage }) =>
+  storage === 'memory' ? (
+    <div role="status" className="s-alert s-alert--info">
+      Heads-up: this server stores accounts in temporary memory, so they are erased whenever it restarts or sleeps.
+      That is why a correct password can suddenly say &ldquo;incorrect&rdquo;. The site owner needs to connect a
+      database (see the README) to keep accounts permanently.
+    </div>
+  ) : null;
+
 const ErrorBox: React.FC<{ message: string | null }> = ({ message }) =>
   message ? (
     <div role="alert" className="s-alert s-alert--error">
@@ -42,7 +52,7 @@ const ErrorBox: React.FC<{ message: string | null }> = ({ message }) =>
 
 export function LoginPage(): React.ReactElement {
   usePageTitle('Sign in | EventWise AI', { noindex: true });
-  const { login } = useAuth();
+  const { login, storage } = useAuth();
   const { search } = useLocation();
   const next = safeNextPath(search.get('next'));
   const [email, setEmail] = useState('');
@@ -66,10 +76,11 @@ export function LoginPage(): React.ReactElement {
       <h1>Sign in</h1>
       <p className="s-auth__sub">Welcome back. Enter your details to open your plans.</p>
       <form className="s-form" onSubmit={submit} noValidate={false}>
+        <VolatileStorageNotice storage={storage} />
         <ErrorBox message={error} />
         <div className="s-field">
           <label htmlFor="login-email">Email</label>
-          <input id="login-email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoFocus />
+          <input id="login-email" name="email" type="email" autoComplete="username" required value={email} onChange={(e) => setEmail(e.target.value)} autoFocus />
         </div>
         <PasswordFieldS id="login-password" label="Password" value={password} onChange={setPassword} autoComplete="current-password" />
         <div className="s-form__row">
@@ -97,7 +108,7 @@ export function LoginPage(): React.ReactElement {
 
 export function SignupPage(): React.ReactElement {
   usePageTitle('Create your account | EventWise AI', { noindex: true });
-  const { signup } = useAuth();
+  const { signup, storage } = useAuth();
   const { search } = useLocation();
   const next = safeNextPath(search.get('next'));
   const [name, setName] = useState('');
@@ -124,6 +135,7 @@ export function SignupPage(): React.ReactElement {
       <h1>Create your account</h1>
       <p className="s-auth__sub">Free to use. Takes under a minute.</p>
       <form className="s-form" onSubmit={submit}>
+        <VolatileStorageNotice storage={storage} />
         <ErrorBox message={error} />
         <div className="s-field">
           <label htmlFor="su-name">Full name</label>
@@ -131,7 +143,7 @@ export function SignupPage(): React.ReactElement {
         </div>
         <div className="s-field">
           <label htmlFor="su-email">Email</label>
-          <input id="su-email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+          <input id="su-email" name="email" type="email" autoComplete="username" required value={email} onChange={(e) => setEmail(e.target.value)} />
         </div>
         <div className="s-field">
           <label htmlFor="su-role">I am planning as</label>

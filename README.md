@@ -24,7 +24,7 @@
 > 
 > * **100% Offline-First Deterministic Engine**: 12 modular business rules execute instantly without third-party API dependencies or network connectivity.
 > * **Interactive Landing-Page Live Demo Window**: Full what-if playground with before/after comparison, suggested trade-off fixes, visitor steppers, and shareable states.
-> * **Accounts & Cloud Events Sync**: Scrypt-hashed credentials stored in Upstash Redis (required in production so accounts persist across sign-ins; a volatile in-memory store is used only in local development). A new account starts empty and only ever sees its own plans.
+> * **Accounts & Cloud Events Sync**: Scrypt-hashed credentials stored in Upstash Redis (or a file store via `DATA_DIR`); one of them is required in production so accounts persist across sign-ins. See *Accounts & Staying Signed In* below. A new account starts empty and only ever sees its own plans.
 > * **Native Indian Rupee (`₹`) Economics**: First-class support for `en-IN` grouping (e.g., `₹35,00,000`), Lakhs (`₹35L`) and Crores (`₹2.5 Cr`) shorthand, and contingency modeling.
 > * **Real-Time Dynamic Change & Trade-off Loop**: Detects quote hikes (+20%), guest surges (+50), weather risks, or date compressions, computes concrete Rupee trade-offs, and provides 1-click execution with a 20-step undo history.
 > * **Deep Cultural Guardrails**: Built-in 10:00 PM outdoor sound curfew alerts, dedicated Jain / Pure Veg kitchen isolation protocols, and Vedic Muhurat Run of Show pacing.
@@ -257,6 +257,23 @@ Finished in 194ms on 115 files with 116 rules using 12 threads.
 ```text
 found 0 vulnerabilities
 ```
+
+---
+
+## 🔐 Accounts & Staying Signed In (fixing "my correct password says incorrect")
+
+Accounts must be stored somewhere that **survives restarts**. If the server only keeps them in memory (`ALLOW_MEMORY_STORE=true` with no database), every restart, cold start, sleep (Render free plan) or extra serverless instance (Vercel) forgets all accounts, so signing in with the right password fails with *"Incorrect email or password."* The sign-in page now warns you when this is the case.
+
+Pick **one** of these:
+
+| Where it runs | What to do |
+| --- | --- |
+| **Vercel** (recommended) | Project → *Storage* → *Marketplace* → **Upstash Redis** → *Connect*. It injects `KV_REST_API_URL` / `KV_REST_API_TOKEN`; redeploy. Nothing else is needed (the session key is derived from the database token, or set your own `AUTH_SECRET`). |
+| **Render / any host** | Create a free database at [upstash.com](https://upstash.com) and set `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN`. |
+| **A server with a persistent disk** | Set `DATA_DIR` to the mounted disk path (e.g. `/var/data`). Accounts and the session key are stored there; no database needed. |
+| **Local development** | Nothing: accounts are kept in `./.data` and survive `npm run dev` restarts. |
+
+"Keep me signed in" issues a 30-day cookie that is renewed automatically while you keep using the app. After signing in or up, supporting browsers offer to save the password in their password manager.
 
 ---
 

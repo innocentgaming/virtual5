@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { verifySessionToken } from './crypto.js';
+import { verifySessionToken, type SessionPayload } from './crypto.js';
 import type { Store, UserRecord } from './store.js';
 
 export interface ApiRequest extends IncomingMessage {
@@ -132,6 +132,10 @@ export function assertSameOrigin(req: IncomingMessage): void {
   } catch {
     throw new HttpError(403, 'Cross-origin request blocked.', 'forbidden_origin');
   }
+}
+
+export function getSessionPayload(req: ApiRequest): SessionPayload | null {
+  return verifySessionToken(parseCookies(req.headers.cookie)[SESSION_COOKIE]);
 }
 
 export async function getSessionUser(req: ApiRequest, store: Store): Promise<UserRecord | null> {

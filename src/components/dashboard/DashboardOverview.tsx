@@ -232,18 +232,19 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
 
   // Decision engine insights sorted by severity
   const sortedInsights = useMemo(() => {
+    const raw = (decisionInsights && decisionInsights.length > 0) ? decisionInsights : (plan.decisionInsights || []);
     const severityScore: Record<string, number> = {
       action_required: 3,
       warning: 2,
       suggestion: 1,
       positive: 0,
     };
-    return [...decisionInsights].sort((a, b) => {
+    return [...raw].sort((a, b) => {
       const scoreDiff = (severityScore[b.type] ?? 0) - (severityScore[a.type] ?? 0);
       if (scoreDiff !== 0) return scoreDiff;
       return (b.tradeOffs?.length || 0) - (a.tradeOffs?.length || 0);
     });
-  }, [decisionInsights]);
+  }, [decisionInsights, plan.decisionInsights]);
 
   const displayedInsights = showAllAlerts ? sortedInsights : sortedInsights.slice(0, 3);
 
