@@ -2,6 +2,7 @@ import type { EventPlan } from '../types/event';
 import { INITIAL_EVENTS } from '../data/sampleEvents';
 import { validateAndSanitizeEventPlan } from '../utils/validators';
 import { storedEventPlanSchema } from '../schemas/eventSchemas';
+import { reportClientError } from '../utils/reportError';
 
 export const STORAGE_SCHEMA_VERSION = 2;
 export const STORAGE_KEY_EVENTS = 'eventwise_ai_events_v2';
@@ -179,7 +180,7 @@ export function loadSavedEvents(fallbackToSample: boolean = true, storageKey: st
 
     return validated;
   } catch (err) {
-    console.error('Failed to parse stored events from localStorage, resetting to defaults.', err);
+    reportClientError(err, 'Failed to parse stored events from localStorage');
     return fallbackToSample ? INITIAL_EVENTS : [];
   }
 }
@@ -201,7 +202,7 @@ export function saveEvents(events: EventPlan[], storageKey: string = STORAGE_KEY
     }
 
     if (serialized.length > MAX_STORAGE_BYTES) {
-      console.warn(`Storage payload exceeded limit of ${MAX_STORAGE_BYTES} bytes. Operation aborted.`);
+      reportClientError(new Error(`Storage payload exceeded limit of ${MAX_STORAGE_BYTES} bytes`), 'saveEvents');
       return false;
     }
 
@@ -211,7 +212,7 @@ export function saveEvents(events: EventPlan[], storageKey: string = STORAGE_KEY
     clearStorageError();
     return true;
   } catch (err: unknown) {
-    console.error('Failed to save events to localStorage (quota exceeded or storage blocked).', err);
+    reportClientError(err, 'Failed to save events to localStorage');
     if (
       err instanceof Error &&
       (err.name === 'QuotaExceededError' ||
@@ -241,7 +242,7 @@ export function clearAllStorageData(): void {
     }
     localStorage.removeItem('eventwise_setup_draft_v2');
   } catch (err) {
-    console.error('Failed to clear storage data:', err);
+    reportClientError(err, 'Failed to clear storage data');
   }
 }
 
@@ -255,7 +256,7 @@ export function clearAccountStorageData(): void {
     localStorage.removeItem(STORAGE_KEY_ACCOUNT_EVENTS);
     localStorage.removeItem(STORAGE_KEY_ACCOUNT_ACTIVE_ID);
   } catch (err) {
-    console.error('Failed to clear account storage data:', err);
+    reportClientError(err, 'Failed to clear account storage data');
   }
 }
 
@@ -281,7 +282,7 @@ export function saveActiveEventId(id: string, storageKey: string = STORAGE_KEY_A
     }
     localStorage.setItem(storageKey, cleanId);
   } catch (err) {
-    console.error('Failed to save active event id', err);
+    reportClientError(err, 'Failed to save active event id');
   }
 }
 

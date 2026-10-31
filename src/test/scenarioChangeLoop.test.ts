@@ -77,9 +77,9 @@ describe('Comprehensive Core Loop & Change Scenarios (Step 5)', () => {
     const spikeInsight = insights.find((i) => i.id === 'rule-vendor-cost-spike' || i.id === 'rule-budget-overrun');
     expect(spikeInsight).toBeDefined();
     expect(spikeInsight?.tradeOffs).toBeDefined();
-    expect(spikeInsight!.tradeOffs!.length).toBeGreaterThanOrEqual(2);
+    expect(spikeInsight?.tradeOffs?.length).toBeGreaterThanOrEqual(2);
 
-    const decorCut = spikeInsight!.tradeOffs!.find((t) => t.actionType === 'reduce_budget_item');
+    const decorCut = spikeInsight?.tradeOffs?.find((t) => t.actionType === 'reduce_budget_item');
     expect(decorCut).toBeDefined();
     expect(decorCut?.payload.amount).toBeGreaterThan(0);
     expect(decorCut?.impactFormatted).toMatch(/₹/);
@@ -98,9 +98,9 @@ describe('Comprehensive Core Loop & Change Scenarios (Step 5)', () => {
     const cancelInsight = insights.find((i) => i.id.startsWith('rule-vendor-cancelled'));
     expect(cancelInsight).toBeDefined();
     expect(cancelInsight?.tradeOffs).toBeDefined();
-    expect(cancelInsight!.tradeOffs!.length).toBeGreaterThanOrEqual(2);
+    expect(cancelInsight?.tradeOffs?.length).toBeGreaterThanOrEqual(2);
 
-    const replaceTradeOff = cancelInsight!.tradeOffs!.find((t) => t.actionType === 'update_vendor_status');
+    const replaceTradeOff = cancelInsight?.tradeOffs?.find((t) => t.actionType === 'update_vendor_status');
     expect(replaceTradeOff).toBeDefined();
     expect(replaceTradeOff?.payload.vendorId).toBe('v-caterer');
   });
@@ -136,7 +136,7 @@ describe('Comprehensive Core Loop & Change Scenarios (Step 5)', () => {
     expect(capacityInsight).toBeDefined();
     expect(capacityInsight?.tradeOffs).toBeDefined();
 
-    const capTradeOff = capacityInsight!.tradeOffs!.find((t) => t.actionType === 'adjust_guest_count');
+    const capTradeOff = capacityInsight?.tradeOffs?.find((t) => t.actionType === 'adjust_guest_count');
     expect(capTradeOff).toBeDefined();
     expect(capTradeOff?.payload.newGuestCount).toBe(220);
   });
@@ -177,7 +177,7 @@ describe('Comprehensive Core Loop & Change Scenarios (Step 5)', () => {
     expect(weatherInsight).toBeDefined();
     expect(weatherInsight?.tradeOffs).toBeDefined();
 
-    const indoorTradeOff = weatherInsight!.tradeOffs!.find((t) => t.actionType === 'update_venue');
+    const indoorTradeOff = weatherInsight?.tradeOffs?.find((t) => t.actionType === 'update_venue');
     expect(indoorTradeOff).toBeDefined();
     expect(indoorTradeOff?.payload.venuePreference).toBe('banquet_hall');
   });
@@ -194,7 +194,7 @@ describe('Comprehensive Core Loop & Change Scenarios (Step 5)', () => {
     expect(overBudgetInsight).toBeDefined();
     expect(overBudgetInsight?.tradeOffs?.length).toBeGreaterThanOrEqual(2);
 
-    const cateringTradeOff = overBudgetInsight!.tradeOffs!.find(
+    const cateringTradeOff = overBudgetInsight?.tradeOffs?.find(
       (t) => t.id === 'to-switch-buffet'
     );
     expect(cateringTradeOff).toBeDefined();
@@ -238,7 +238,7 @@ describe('Comprehensive Core Loop & Change Scenarios (Step 5)', () => {
     expect(jainInsight).toBeDefined();
     expect(jainInsight?.tradeOffs).toBeDefined();
 
-    const jainTradeOff = jainInsight!.tradeOffs!.find((t) => t.actionType === 'apply_dietary_counter');
+    const jainTradeOff = jainInsight?.tradeOffs?.find((t) => t.actionType === 'apply_dietary_counter');
     expect(jainTradeOff).toBeDefined();
     expect(jainTradeOff?.payload.name).toContain('Jain');
   });
@@ -255,7 +255,7 @@ describe('Comprehensive Core Loop & Change Scenarios (Step 5)', () => {
     expect(curfewInsight).toBeDefined();
     expect(curfewInsight?.tradeOffs?.length).toBeGreaterThanOrEqual(2);
 
-    const shiftTradeOff = curfewInsight!.tradeOffs!.find((t) => t.id === 'to-curfew-shift');
+    const shiftTradeOff = curfewInsight?.tradeOffs?.find((t) => t.id === 'to-curfew-shift');
     expect(shiftTradeOff).toBeDefined();
     expect(shiftTradeOff?.actionType).toBe('add_task');
   });
@@ -273,7 +273,7 @@ describe('Comprehensive Core Loop & Change Scenarios (Step 5)', () => {
     expect(permitInsight).toBeDefined();
     expect(permitInsight?.tradeOffs?.length).toBeGreaterThanOrEqual(1);
 
-    const permitTradeOff = permitInsight!.tradeOffs!.find((t) => t.id === 'to-permit-fast-track');
+    const permitTradeOff = permitInsight?.tradeOffs?.find((t) => t.id === 'to-permit-fast-track');
     expect(permitTradeOff).toBeDefined();
     expect(permitTradeOff?.actionType).toBe('add_task');
   });

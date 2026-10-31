@@ -74,7 +74,7 @@ const BudgetItemRow = React.memo<BudgetItemRowProps>(({
   onDeleteExpense,
 }) => {
   const hasActual = item.actualCost !== undefined;
-  const diff = hasActual ? item.actualCost! - item.estimatedCost : 0;
+  const diff = hasActual && item.actualCost !== undefined ? item.actualCost - item.estimatedCost : 0;
   const diffPct = item.estimatedCost > 0 ? (diff / item.estimatedCost) * 100 : 0;
   const isSpike = diffPct >= 20;
 
@@ -118,7 +118,7 @@ const BudgetItemRow = React.memo<BudgetItemRowProps>(({
       <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'right' }} className="tabular-nums">
         {hasActual ? (
           <strong style={{ color: diff > 0 ? 'var(--color-danger)' : 'var(--text)' }}>
-            {formatCurrency(item.actualCost!)}
+            {formatCurrency(item.actualCost ?? 0)}
           </strong>
         ) : (
           <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>Pending quote</span>

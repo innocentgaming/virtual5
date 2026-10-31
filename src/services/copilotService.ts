@@ -7,6 +7,7 @@ import {
   requestGeminiContent,
   redactSecrets,
 } from './geminiClient';
+import { reportClientError } from '../utils/reportError';
 import { sanitizeString } from '../utils/validators';
 
 export interface CopilotMessage {
@@ -477,11 +478,11 @@ Valid actionType values: 'reduce_budget_item', 'increase_budget', 'adjust_guest_
     }
 
     if (result.error) {
-      console.warn('GenAI Copilot request failed, using grounded answer:', redactSecrets(result.error, apiKey));
+      reportClientError(new Error(redactSecrets(result.error, apiKey)), 'GenAI Copilot request failed');
     }
   } catch (err: unknown) {
     const errMsg = err instanceof Error ? err.message : String(err);
-    console.warn('GenAI Copilot request failed, using grounded answer:', redactSecrets(errMsg, apiKey));
+    reportClientError(new Error(redactSecrets(errMsg, apiKey)), 'GenAI Copilot request failed');
   }
 
   const fallbackAnswer = `*(Offline Rule Engine Fallback — API unavailable)*\n\n${generateCopilotAnswer(question, plan)}`;

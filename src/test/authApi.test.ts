@@ -214,7 +214,7 @@ describe('Serverless Auth & Cloud Events API', () => {
     expect(forgotData.devResetLink).toBeDefined();
 
     // Extract token from dev reset link
-    const resetUrl = new URL(forgotData.devResetLink!);
+    const resetUrl = new URL(forgotData.devResetLink || '');
     const token = resetUrl.searchParams.get('token');
     expect(token).toBeTruthy();
 

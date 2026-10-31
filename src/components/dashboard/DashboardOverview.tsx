@@ -679,7 +679,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                         {parseLocalDate(task.dueDate) && (
                           <>
                             {' · '}
-                            {parseLocalDate(task.dueDate)!.toLocaleDateString('en-IN', {
+                            {parseLocalDate(task.dueDate)?.toLocaleDateString('en-IN', {
                               day: 'numeric',
                               month: 'short',
                             })}

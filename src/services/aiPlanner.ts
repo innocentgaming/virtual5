@@ -22,6 +22,7 @@ import {
   sanitizeIdeaItem,
   LIMITS,
 } from '../utils/validators';
+import { reportClientError } from '../utils/reportError';
 
 export interface AIPlanningRequest {
   eventType: EventType;
@@ -214,6 +215,13 @@ Directives:
         'AI API returned status ' + (result.statusCode || 'timeout') + ', falling back to rule engine: ' +
           redactSecrets(result.error || 'Unknown error', apiKey)
       );
+      reportClientError(
+        new Error(
+          'AI API returned status ' + (result.statusCode || 'timeout') + ', falling back to rule engine: ' +
+            redactSecrets(result.error || 'Unknown error', apiKey)
+        ),
+        'aiPlanner'
+      );
       return generateFallbackPlan(request);
     }
 
@@ -222,7 +230,7 @@ Directives:
     const parsed = JSON.parse(cleanedJson);
 
     if (!validateAIPlanResponse(parsed)) {
-      console.warn('AI returned schema mismatch, using fallback planner.');
+      reportClientError(new Error('AI returned schema mismatch, using fallback planner.'), 'aiPlanner');
       return generateFallbackPlan(request);
     }
 
@@ -300,7 +308,12 @@ Directives:
 
     return plan;
   } catch (err) {
-    console.warn('AI request failed or timed out. Gracefully switching to deterministic fallback engine.', err);
+    const errMsg = err instanceof Error ? err.message : String(err);
+    console.warn(
+      'AI request failed or timed out. Gracefully switching to deterministic fallback engine.',
+      redactSecrets(errMsg, apiKey)
+    );
+    reportClientError(err, 'aiPlanner fallback');
     return generateFallbackPlan(request);
   }
 }

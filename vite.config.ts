@@ -29,8 +29,8 @@ function lucidePlugin() {
         }
       }
     }
-  } catch (e) {
-    console.error('Failed to parse lucide-react.mjs', e);
+  } catch {
+    // Fallback if parsing fails
   }
 
   return {
@@ -92,8 +92,7 @@ function apiDevPlugin(): Plugin {
             return await mod.default(req, res);
           }
           next();
-        } catch (err) {
-          console.error('API dev server error:', err);
+        } catch {
           if (!res.headersSent) {
             res.statusCode = 500;
             res.setHeader('Content-Type', 'application/json');
@@ -167,5 +166,6 @@ export default defineConfig({
     testTimeout: 75000,
     hookTimeout: 45000,
     fileParallelism: false,
+
   },
 });

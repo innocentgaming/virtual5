@@ -98,7 +98,7 @@ describe('Decision Rules Registry — Comprehensive Rule Boundary Tests', () => 
         expect(res.type).toBe('warning');
         expect(res.ruleId).toBe('RULE_2_VENDOR_SPIKE');
         expect(res.tradeOffs).toBeDefined();
-        expect(res.tradeOffs!.length).toBeGreaterThanOrEqual(2);
+        expect(res.tradeOffs?.length).toBeGreaterThanOrEqual(2);
       }
     });
 
@@ -200,7 +200,7 @@ describe('Decision Rules Registry — Comprehensive Rule Boundary Tests', () => 
       const summary = calculateBudgetSummary(largePlan.totalBudget, largePlan.budgetItems, largePlan.contingencyRate, largePlan.guestCount);
       const res = ruleLargeCapacityAndPerGuest.evaluate(largePlan, summary, new Date('2026-06-01'));
       expect(res).not.toBeNull();
-      const insights = Array.isArray(res) ? res : [res!];
+      const insights = Array.isArray(res) ? res : res ? [res] : [];
       expect(insights.some((i) => i.id === 'rule-large-capacity')).toBe(true);
     });
 
@@ -222,7 +222,7 @@ describe('Decision Rules Registry — Comprehensive Rule Boundary Tests', () => 
       const summary = calculateBudgetSummary(weddingPlan.totalBudget, weddingPlan.budgetItems, weddingPlan.contingencyRate, weddingPlan.guestCount);
       const res = ruleSoundCurfewAndPermit.evaluate(weddingPlan, summary, new Date('2026-06-01'));
       expect(res).not.toBeNull();
-      const insights = Array.isArray(res) ? res : [res!];
+      const insights = Array.isArray(res) ? res : res ? [res] : [];
       expect(insights.some((i) => i.id === 'rule-baraat-curfew')).toBe(true);
     });
   });

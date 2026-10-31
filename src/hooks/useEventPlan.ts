@@ -26,6 +26,7 @@ import {
   sanitizeEventForStorage,
 } from '../services/storageService';
 import { eventsApi, type RemoteEventsDoc } from '../services/authApi';
+import { reportClientError } from '../utils/reportError';
 import {
   calculateBudgetSummary,
   evaluateDecisionRules,
@@ -452,7 +453,7 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
         setActiveTab('dashboard');
         return newPlan;
       } catch (err) {
-        console.error('Plan generation failed, using rule engine', err);
+        reportClientError(err, 'Plan generation failed, using rule engine');
         const fallback = generateFallbackPlan(input);
         setEvents((prev) => [fallback, ...prev]);
         setActiveEventId(fallback.id);
@@ -944,7 +945,7 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
             : 'catering';
           updatedBudgetItems = updatedBudgetItems.map((item) => {
             if (item.category === targetCategory || (!targetCategory && item.category === 'catering')) {
-              const spikeAmount = Math.round(item.estimatedCost * (scenario.vendorPriceSpikePercent! / 100));
+              const spikeAmount = Math.round(item.estimatedCost * ((scenario.vendorPriceSpikePercent ?? 0) / 100));
               const newActual = (item.actualCost || item.estimatedCost) + spikeAmount;
               changeDescriptions.push(
                 `${item.name} quote spiked by ${scenario.vendorPriceSpikePercent}% (+${formatCurrency(spikeAmount)})`

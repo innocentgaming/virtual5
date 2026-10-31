@@ -19,21 +19,9 @@ describe('Step 0 Accessibility Baseline Audit - All Main Views', () => {
   const budgetSummary = calculateBudgetSummary(event.totalBudget, event.budgetItems, event.contingencyRate);
   const timelineAudit = auditTimelineTasks(event.tasks);
 
-  async function checkAxe(name: string, ui: React.ReactElement) {
+  async function checkAxe(_name: string, ui: React.ReactElement) {
     const { container } = render(ui);
     const results = await axe(container);
-    console.log(`\n--- [Axe Scan] ${name} (Violations: ${results.violations.length}) ---`);
-    if (results.violations.length > 0) {
-      results.violations.forEach((v) => {
-        console.log(`❌ [${v.impact?.toUpperCase()}] Rule: ${v.id} (${v.description}) - ${v.nodes.length} nodes`);
-        v.nodes.slice(0, 3).forEach((n) => {
-          console.log(`   - Node: ${n.target.join(' ')}`);
-          console.log(`     Summary: ${n.failureSummary}`);
-        });
-      });
-    } else {
-      console.log(`✅ Zero axe violations in ${name}!`);
-    }
     return results.violations;
   }
 
