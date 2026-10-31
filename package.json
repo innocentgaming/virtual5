@@ -1,9 +1,12 @@
 {
   "name": "eventwise-ai",
   "private": true,
-  "version": "1.1.0",
+  "version": "1.2.0",
   "type": "module",
-  "description": "EventWise AI - An Intelligent, Personalized Event Planning Assistant",
+  "description": "Cultural-first intelligent event planning platform engineered for Indian celebrations",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build && node scripts/check-size-budget.mjs",
@@ -13,9 +16,12 @@
     "analyze": "node scripts/run-analyze.mjs",
     "check:budget": "node scripts/check-size-budget.mjs",
     "lint": "oxlint",
+    "typecheck": "tsc -b --noEmit",
+    "format": "prettier --write .",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@types/node": "^24.19.2",
@@ -27,7 +33,8 @@
     "react-dom": "^19.3.1",
     "tsx": "^4.23.15",
     "typescript": "~6.0.3",
-    "vite": "^8.3.4"
+    "vite": "^8.3.4",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^7.0.1",
@@ -39,6 +46,7 @@
     "jest-axe": "^11.0.0",
     "jsdom": "^30.1.3",
     "oxlint": "^1.88.0",
+    "prettier": "^3.9.10",
     "rollup-plugin-visualizer": "^7.1.1",
     "vitest": "^5.0.5"
   }

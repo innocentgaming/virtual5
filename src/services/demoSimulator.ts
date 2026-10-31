@@ -69,6 +69,14 @@ function toIsoDate(d: Date): string {
   return `${yyyy}-${mm}-${dd}`;
 }
 
+/**
+ * Injects a real-world chaos scenario into an EventPlan (vendor price hikes, guest surges, date pull-ins).
+ *
+ * @param plan - Current active EventPlan
+ * @param id - DemoScenarioId identifier
+ * @param now - Reference anchor date for schedule recalculations
+ * @returns Modified EventPlan with injected disruption
+ */
 export function applyDemoScenario(plan: EventPlan, id: DemoScenarioId, now: Date = new Date()): EventPlan {
   switch (id) {
     case 'caterer': {
@@ -184,6 +192,13 @@ export interface DemoSnapshot {
   insights: DecisionInsight[];
 }
 
+/**
+ * Captures an instantaneous snapshot of budget metrics, projected totals, and decision insights.
+ *
+ * @param plan - Current EventPlan
+ * @param now - Reference anchor date
+ * @returns Computed DemoSnapshot object
+ */
 export function snapshotPlan(plan: EventPlan, now: Date = new Date()): DemoSnapshot {
   const summary = calculateBudgetSummary(plan.totalBudget, plan.budgetItems, plan.contingencyRate, plan.guestCount);
   const overrun = plan.budgetItems.reduce((sum, item) => {
@@ -194,6 +209,14 @@ export function snapshotPlan(plan: EventPlan, now: Date = new Date()): DemoSnaps
   return { summary, projectedTotal: summary.totalEstimated + overrun, overrun, insights };
 }
 
+/**
+ * Sequentially applies multiple simulation scenarios to an EventPlan.
+ *
+ * @param plan - Starting EventPlan
+ * @param ids - Array of scenario identifiers to apply in order
+ * @param now - Reference anchor date
+ * @returns Compound disrupted EventPlan
+ */
 export function applyAll(plan: EventPlan, ids: DemoScenarioId[], now: Date = new Date()): EventPlan {
   return ids.reduce((acc, id) => applyDemoScenario(acc, id, now), plan);
 }

@@ -714,10 +714,11 @@ export const EventWebsiteModal: React.FC<EventWebsiteModalProps> = ({
                 ) : (
                   <form onSubmit={handleRsvpSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                     <div>
-                      <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, marginBottom: '3px' }}>
+                      <label htmlFor="preview-rsvp-name" style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, marginBottom: '3px' }}>
                         Your Full Name *
                       </label>
                       <input
+                        id="preview-rsvp-name"
                         type="text"
                         required
                         value={rsvpName}
@@ -737,10 +738,11 @@ export const EventWebsiteModal: React.FC<EventWebsiteModalProps> = ({
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                       <div>
-                        <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, marginBottom: '3px' }}>
+                        <label htmlFor="preview-rsvp-attending" style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, marginBottom: '3px' }}>
                           Attendance
                         </label>
                         <select
+                          id="preview-rsvp-attending"
                           value={rsvpAttending}
                           onChange={(e) => setRsvpAttending(e.target.value as 'attending' | 'declined')}
                           style={{
@@ -759,10 +761,11 @@ export const EventWebsiteModal: React.FC<EventWebsiteModalProps> = ({
                       </div>
 
                       <div>
-                        <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, marginBottom: '3px' }}>
+                        <label htmlFor="preview-rsvp-diet" style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, marginBottom: '3px' }}>
                           Dietary Choice
                         </label>
                         <select
+                          id="preview-rsvp-diet"
                           value={rsvpDiet}
                           onChange={(e) => setRsvpDiet(e.target.value as 'veg' | 'jain' | 'nonveg')}
                           style={{
@@ -819,10 +822,16 @@ export const EventWebsiteModal: React.FC<EventWebsiteModalProps> = ({
             </h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
               {THEMES.map((theme) => (
-                <div
+                <button
+                  type="button"
                   key={theme.id}
                   onClick={() => setSelectedThemeId(theme.id)}
+                  aria-pressed={selectedThemeId === theme.id}
                   style={{
+                    display: 'block',
+                    width: '100%',
+                    textAlign: 'left',
+                    font: 'inherit',
                     padding: '1rem',
                     borderRadius: 'var(--radius-md)',
                     border: selectedThemeId === theme.id ? `2px solid var(--accent-primary)` : '1px solid var(--border)',
@@ -840,7 +849,7 @@ export const EventWebsiteModal: React.FC<EventWebsiteModalProps> = ({
                     <div style={{ width: 18, height: 18, borderRadius: '50%', background: theme.accent }} />
                     <div style={{ width: 18, height: 18, borderRadius: '50%', background: theme.cardBg }} />
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           </div>

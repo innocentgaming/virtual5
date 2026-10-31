@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   ci:
-    name: Lint, Test & Build Verification
+    name: Lint, Typecheck, Test, Build & Audit Verification
     runs-on: ubuntu-latest
 
     steps:
@@ -30,8 +30,14 @@ jobs:
       - name: Run Linter (oxlint)
         run: npm run lint
 
+      - name: Run Typecheck
+        run: npm run typecheck
+
       - name: Run Full Test Suite (vitest)
         run: npm test
 
       - name: Verify Production Build & Size Budget
         run: npm run build
+
+      - name: Security Audit
+        run: npm audit --audit-level=high

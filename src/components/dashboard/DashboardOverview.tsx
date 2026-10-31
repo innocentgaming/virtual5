@@ -966,13 +966,13 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
             <ScenarioChangePanel
               plan={plan}
               budgetSummary={budgetSummary}
-              onApplyScenario={(s) => {
+              onApplyScenario={(s: ScenarioInput) => {
                 if (onApplyScenario) {
                   onApplyScenario(s);
                   setToastMessage(`✓ Applied scenario: ${s.scenarioName || 'Parameters updated'}`);
                 }
               }}
-              onApplyTradeOff={(to, title) => {
+              onApplyTradeOff={(to: TradeOffOption, title?: string) => {
                 if (onApplyTradeOff) {
                   onApplyTradeOff(to, title);
                   setToastMessage(`✓ Applied trade-off: ${to.label}`);

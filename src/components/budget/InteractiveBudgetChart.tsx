@@ -148,7 +148,7 @@ const InteractiveBudgetChartComponent: React.FC<InteractiveBudgetChartProps> = (
                   <td style={{ padding: '0.75rem 0.5rem', textAlign: 'right' }} className="tabular-nums">
                     100%
                   </td>
-                  <td />
+                  <td aria-label="Empty cell" />
                 </tr>
               </tfoot>
             </table>

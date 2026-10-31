@@ -11,6 +11,13 @@ export type ApiResult<T> =
   | ({ ok: true } & T)
   | { ok: false; error: string; code?: string; status?: number; [key: string]: unknown };
 
+/**
+ * Sends an authenticated API request with JSON headers and credentials.
+ *
+ * @param path - Server endpoint path (e.g. '/api/auth/me')
+ * @param options - Standard fetch options including HTTP method and request body
+ * @returns Parsed JSON response wrapped in a typed ApiResult
+ */
 export async function apiRequest<T>(path: string, options: RequestInit = {}): Promise<ApiResult<T>> {
   const headers = new Headers(options.headers);
   if (options.body && !headers.has('Content-Type')) {

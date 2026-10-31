@@ -132,7 +132,7 @@ function Stat({ label, value, hint }: { label: string; value: number | string; h
 function Overview() {
   const { data, error, loading, reload } = useLoad<AdminStats>(() => adminApi.stats(), []);
   if (error) return <ErrorBanner message={error} onRetry={reload} />;
-  if (!data) return <p role="status" className="adm-muted">Loading overview…</p>;
+  if (!data) return <output className="adm-muted">Loading overview…</output>;
   const t = data.totals;
   const max = Math.max(1, ...data.signupsByDay.map((d) => d.count));
   const roleTotal = Math.max(1, t.users);
@@ -150,7 +150,7 @@ function Overview() {
 
       <div className="adm-card">
         <h2>New sign-ups, last 30 days</h2>
-        <svg className="adm-chart" viewBox="0 0 300 80" role="img" aria-label={`Daily sign-ups for the last 30 days, ${t.new30} in total`} preserveAspectRatio="none">
+        <svg role="img" className="adm-chart" viewBox="0 0 300 80" aria-label={`Daily sign-ups for the last 30 days, ${t.new30} in total`} preserveAspectRatio="none">
           {data.signupsByDay.map((d, i) => {
             const h = (d.count / max) * 70;
             return (
@@ -229,7 +229,7 @@ function UsersTab({ selfId }: { selfId: string }) {
         <button type="button" className="btn btn-secondary btn-sm" onClick={() => void reload()}><RefreshCw size={14} /> Refresh</button>
       </div>
 
-      {notice && <p role="status" className="adm-notice">{notice}</p>}
+      {notice && <output className="adm-notice">{notice}</output>}
       {actionError && <ErrorBanner message={actionError} />}
       {error && <ErrorBanner message={error} onRetry={reload} />}
 
@@ -395,7 +395,7 @@ function DataTab() {
       <div className="adm-card">
         <h2>Backup</h2>
         <p>Download everything: users, event plans, RSVP links and replies, and the activity log, as one JSON file. Do this regularly. To restore, run <code>npm run restore -- file.json</code> on the server.</p>
-        {msg && <p role="status" className="adm-notice">{msg}</p>}
+        {msg && <output className="adm-notice">{msg}</output>}
         {err && <ErrorBanner message={err} />}
         <Button variant="primary" onClick={download} isLoading={busy} leftIcon={<Download size={15} />}>Download backup</Button>
       </div>

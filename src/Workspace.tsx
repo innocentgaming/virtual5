@@ -18,6 +18,7 @@ import {
 import { PersonaSwitcher } from './components/demo/PersonaSwitcher';
 import { DemoTour } from './components/demo/DemoTour';
 import { lazyWithPreload } from './utils/lazyWithPreload';
+import type { TaskCategory } from './types/event';
 import './index.css';
 
 // Code-split tabs and drawer via lazyWithPreload with prefetch & test bypass
@@ -138,7 +139,11 @@ export function Workspace({ mode }: { mode: WorkspaceMode }) {
   } = useEventPlan({ cloudSync: mode === 'account', onSessionExpired: refresh });
 
   const [isCreatingNew, setIsCreatingNew] = useState(false);
-  const [isWebsiteOpen, setIsWebsiteOpen] = useState(false);
+  const [isWebsiteOpen, setIsWebsiteOpen] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const websiteParam = new URLSearchParams(window.location.search).get('website');
+    return websiteParam === '1' || websiteParam === 'true';
+  });
   const [isCopilotOpen, setIsCopilotOpen] = useState(false);
   const [colorMode, setColorMode] = useState<'light' | 'dark'>(() => {
     const saved = localStorage.getItem('eventwise_color_mode');
@@ -156,11 +161,6 @@ export function Workspace({ mode }: { mode: WorkspaceMode }) {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
-
-    const websiteParam = params.get('website');
-    if (websiteParam === '1' || websiteParam === 'true') {
-      setIsWebsiteOpen(true);
-    }
 
     const eventParam = params.get('event');
     if (eventParam && events.length > 0) {
@@ -217,13 +217,14 @@ export function Workspace({ mode }: { mode: WorkspaceMode }) {
   };
 
   // Sync color mode and event theme to document root (html and body) and localStorage
+  const activeEventType = activeEvent?.eventType;
   useEffect(() => {
     try {
       localStorage.setItem('eventwise_color_mode', colorMode);
     } catch {
       // ignore
     }
-    const themeName = activeEvent ? activeEvent.eventType : 'wedding';
+    const themeName = activeEventType || 'wedding';
     document.documentElement.setAttribute('data-color-mode', colorMode);
     document.documentElement.setAttribute('data-theme', themeName);
     document.documentElement.style.colorScheme = colorMode;
@@ -231,7 +232,7 @@ export function Workspace({ mode }: { mode: WorkspaceMode }) {
       document.body.setAttribute('data-color-mode', colorMode);
       document.body.setAttribute('data-theme', themeName);
     }
-  }, [colorMode, activeEvent?.eventType]);
+  }, [colorMode, activeEventType]);
 
   const toggleColorMode = () => {
     setColorMode((prev) => (prev === 'light' ? 'dark' : 'light'));
@@ -707,7 +708,7 @@ export function Workspace({ mode }: { mode: WorkspaceMode }) {
               {activeTab === 'ai' && (
                 <AIAssistantModal
                   plan={activeEvent}
-                  onRegeneratePlan={async (useAI, apiKey) => {
+                  onRegeneratePlan={async (useAI?: boolean, apiKey?: string) => {
                     await regenerateRecommendations(useAI, apiKey);
                     showToast(useAI ? 'GenAI generation completed!' : 'Rule Engine plan re-evaluated!');
                   }}
@@ -727,7 +728,7 @@ export function Workspace({ mode }: { mode: WorkspaceMode }) {
           onClose={() => setIsCopilotOpen(false)}
           onApplyTradeOff={applyTradeOff}
           activeTab={activeTab}
-          onPinTask={(t) => {
+          onPinTask={(t: { title: string; category?: TaskCategory; notes?: string }) => {
             if (!activeEvent) return;
             addTask({
               title: t.title,
@@ -986,7 +987,7 @@ export function Workspace({ mode }: { mode: WorkspaceMode }) {
             plan={activeEvent}
             onAddGuest={addGuest}
             onUpdateGuest={updateGuest}
-            onToast={(msg) => showToast(msg)}
+            onToast={(msg: string) => showToast(msg)}
           />
         </Suspense>
       )}

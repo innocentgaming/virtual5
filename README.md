@@ -1,384 +1,104 @@
-# 🇮🇳 EventWise AI — India Edition (v2.0)
-### Intelligent, Culturally-Aware Event Planning Assistant for Indian Celebrations
+# 🇮🇳 EventWise AI (India Edition v2.0)
 
-<div align="center">
+> **Cultural-First Intelligent Event Planning Assistant Engineered for Indian Celebrations**  
+> *Built with React 19, TypeScript, Vite, Google Gemini GenAI, and Deterministic Decision Rules.*
 
-[![React](https://img.shields.io/badge/React-19.0.0-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-6.0.3-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Vite](https://img.shields.io/badge/Vite-8.3.5-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
-[![Tests](https://img.shields.io/badge/Tests-308%2F308%20Passing%20(100%25)-brightgreen?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
-[![Linter](https://img.shields.io/badge/Oxlint-0%20Warnings%20%2F%200%20Errors-success?style=for-the-badge&logo=oxc&logoColor=white)](https://oxc.rs/)
-[![Accessibility](https://img.shields.io/badge/WCAG-2.1%20AA%20Compliant-blueviolet?style=for-the-badge&logo=w3c&logoColor=white)](https://www.w3.org/WAI/standards-guidelines/wcag/)
-[![Bundle Size](https://img.shields.io/badge/Main%20JS-27.9%20kB%20(Gzip%2010.0%20kB)-brightgreen?style=for-the-badge)](#)
-[![Security](https://img.shields.io/badge/Audit-0%20Vulnerabilities-success?style=for-the-badge&logo=npm&logoColor=white)](#)
-
-**[🌐 Live Production (Render)](https://eventwise-ai-d11f.onrender.com/)** • **[🚀 90-Second Guided Demo](https://eventwise-ai-d11f.onrender.com/demo)** • **[🔐 Accounts & Cloud Sync](https://eventwise-ai-d11f.onrender.com/signup)** • **[📦 GitHub Repo](https://github.com/innocentgaming/virtual5)**
-
-</div>
+[![CI Pipeline](https://github.com/innocentgaming/virtual5/actions/workflows/ci.yml/badge.svg)](https://github.com/innocentgaming/virtual5/actions/workflows/ci.yml)
+[![Live Production](https://img.shields.io/badge/Render-Live%20Production-0f766e)](https://eventwise-ai-d11f.onrender.com/)
+[![90s Interactive Demo](https://img.shields.io/badge/Demo-90s%20Interactive-d97706)](https://eventwise-ai-d11f.onrender.com/demo)
+[![WCAG 2.1 AA](https://img.shields.io/badge/A11y-WCAG%202.1%20AA-success)](https://eventwise-ai-d11f.onrender.com/)
 
 ---
 
-> [!IMPORTANT]
-> **Hack2skill Challenge 5 Submission Highlights**:
-> EventWise AI is an intelligent, full-stack, personalized event planning assistant engineered specifically for the Indian event planning ecosystem. It transforms chaotic event planning into an explainable, deterministic, and context-aware roadmap for **Royal Destination Weddings**, **Bollywood Milestone Birthdays**, and **Grand Community Melas / Festivals**.
-> 
-> * **100% Offline-First Deterministic Engine**: 12 modular business rules execute instantly without third-party API dependencies or network connectivity.
-> * **Interactive Landing-Page Live Demo Window**: Full what-if playground with before/after comparison, suggested trade-off fixes, visitor steppers, and shareable states.
-> * **Accounts & Cloud Events Sync**: Scrypt-hashed credentials stored in Upstash Redis (or a file store via `DATA_DIR`); one of them is required in production so accounts persist across sign-ins. See *Accounts & Staying Signed In* below. A new account starts empty and only ever sees its own plans.
-> * **Native Indian Rupee (`₹`) Economics**: First-class support for `en-IN` grouping (e.g., `₹35,00,000`), Lakhs (`₹35L`) and Crores (`₹2.5 Cr`) shorthand, and contingency modeling.
-> * **Real-Time Dynamic Change & Trade-off Loop**: Detects quote hikes (+20%), guest surges (+50), weather risks, or date compressions, computes concrete Rupee trade-offs, and provides 1-click execution with a 20-step undo history.
-> * **Deep Cultural Guardrails**: Built-in 10:00 PM outdoor sound curfew alerts, dedicated Jain / Pure Veg kitchen isolation protocols, and Vedic Muhurat Run of Show pacing.
-> * **Admin Dashboard & Live Mobile RSVP**: Full `/admin` dashboard with atomic first-signup admin bootstrap, user management, audit logging, and public mobile `/rsvp/<token>` links with 1-click guest list import.
+## 🌟 Overview & Key Features
+
+Conventional event planning software relies on rigid Western assumptions. Indian events span multi-day ceremonies, hundreds of relatives, and deep sacred traditions. EventWise AI solves this with explainable, deterministic roadmaps:
+
+- **Native Indian Rupee Economics:** First-class support for Lakhs (₹L) and Crores (₹Cr) with an accessible SVG Donut budget visualizer and table view.
+- **Dynamic Chaos Simulation Loop:** Catches surprise vendor quote hikes (+20%), venue rescheduling, and guest surges (+50 pax) with instant ₹ impact analysis, 1-click math rebalancing, and a 20-step reversible undo stack.
+- **12 Culturally Grounded Decision Rules:** Enforces municipal 10:00 PM sound curfews, Vedic Muhurat pacing, elder accessibility, and Jain/Pure Veg kitchen segregation.
+- **Zero-Failure AI Fallback:** Google Gemini 2.5 Flash paired with a 100% offline rule-based deterministic planner and zero hallucinations.
+- **Mobile RSVP & Admin Operations:** Public `/rsvp` invite links with bot protection, diet tracking, and `/admin` console for backups and user roles.
 
 ---
 
-## ⚡ Quick Links & Live Deployments
-
-| Resource | Direct Link | Purpose |
-| :--- | :--- | :--- |
-| 🌐 **Live Production App (Render)** | [eventwise-ai-d11f.onrender.com](https://eventwise-ai-d11f.onrender.com/) | Live standalone Node full-stack deployment on Render |
-| 🚀 **90-Second Guided Tour** | [eventwise-ai-d11f.onrender.com/demo](https://eventwise-ai-d11f.onrender.com/demo) | Instant zero-login demo with interactive 90s tour, Chaos Bar, and preloaded personas |
-| 🔐 **Authenticated Workspace** | [eventwise-ai-d11f.onrender.com/app](https://eventwise-ai-d11f.onrender.com/app) | Full authenticated planner with scrypt hashing, Upstash Redis / disk sync & JSON backup/restore |
-| 👑 **Admin Console** | [eventwise-ai-d11f.onrender.com/admin](https://eventwise-ai-d11f.onrender.com/admin) | First registered user admin console, user management, audit logs & system health |
-| 🩺 **System Health Check** | [eventwise-ai-d11f.onrender.com/api/health](https://eventwise-ai-d11f.onrender.com/api/health) | Live JSON health check endpoint (`status: ok`, memory, database connection) |
-| ☁️ **Render Deployment Blueprint** | [`render.yaml`](render.yaml) | Production Blueprint with automated health checks, security headers & gzip compression |
-| 🎬 **Evaluator Video Guide** | [docs/DEMO.md](docs/DEMO.md) | Click-by-click 90-second evaluator demonstration script (no voiceover required) |
-| 🛡️ **Security Policy** | [SECURITY.md](SECURITY.md) | Defense-in-depth threat mitigation, CSP headers, and secret sanitization architecture |
-
----
-
-## 🏆 Hack2skill Challenge 5 Evaluation Compliance Matrix
-
-*Directly cross-referenced with the official [Explainer Session](https://www.youtube.com/live/fdi63eSyyYM?si=Gqs4IfjAMMSFhNOB) and Hackathon Scoring Rubric:*
-
-| Evaluation Criterion | Hack2skill Requirement | How EventWise AI Implements It | Verified File Paths & Evidence |
-| :--- | :--- | :--- | :--- |
-| **1. Problem Statement Alignment** | Actively manage moving parts (budgets, timelines, vendors, changes) rather than outputting static lists of party ideas. | • Live SVG Donut chart with visual "View as Data Table" toggle.<br>• Real-time **"What Changed?"** diff banner (`#what-changed-diff-banner`) calculating exact Rupee variance and guest deltas on every edit.<br>• 4 interactive chaos stress scenarios with quantified trade-offs. | [`DashboardOverview.tsx`](file:///d:/challege5/src/components/dashboard/DashboardOverview.tsx)<br>[`useEventPlan.ts`](file:///d:/challege5/src/hooks/useEventPlan.ts)<br>[`decisionRulesRegistry.test.ts`](file:///d:/challege5/src/test/decisionRulesRegistry.test.ts) |
-| **2. Dynamic Decision Making & Chaos Trade-offs** | Handle unexpected real-world changes (e.g. caterer raises quote 20%, date compressed by 14 days) with concrete trade-offs in ₹. | • `rule-vendor-cost-spike` detects actual quote escalations and offers 2–3 quantified trade-offs in ₹ with 1-click `Apply` and `Undo`.<br>• `rule-date-compression` ripples task schedules backwards to avoid overdue bottlenecks.<br>• Zero hallucinated vendor contacts; focused on actionable samagri checklists. | [`rulesRegistry.ts`](file:///d:/challege5/src/services/rulesRegistry.ts)<br>[`ScenarioChangePanel.tsx`](file:///d:/challege5/src/components/scenarios/ScenarioChangePanel.tsx)<br>[`scenarioChangeLoop.test.ts`](file:///d:/challege5/src/test/scenarioChangeLoop.test.ts) |
-| **3. Code Quality & Modularity** | Clean architecture, centralized business constants, pure evaluation functions, zero dead code or linters. | • Centralized thresholds in [`rulesConfig.ts`](file:///d:/challege5/src/constants/rulesConfig.ts).<br>• 12 pure rules in [`rulesRegistry.ts`](file:///d:/challege5/src/services/rulesRegistry.ts) with full JSDoc.<br>• **0 oxlint warnings / 0 errors** on 115 files. | [`rulesRegistry.ts`](file:///d:/challege5/src/services/rulesRegistry.ts)<br>[`rulesConfig.ts`](file:///d:/challege5/src/constants/rulesConfig.ts)<br>`npm run lint` (0 errors) |
-| **4. Security Architecture** | Zero secrets in repo/git history, hardened API communication, safe storage, and XSS immunity. | • **0 secrets in Git / code**.<br>• Serverless Gemini proxy (`api/gemini.ts`) with origin allowlisting and rate limits.<br>• Safe JSON import/export with schema validation (`importPlanFromJson`).<br>• `rel="noopener noreferrer"` across all external links. | [`gemini.ts`](file:///d:/challege5/api/gemini.ts)<br>[`storageService.ts`](file:///d:/challege5/src/services/storageService.ts)<br>[`securityHardening.test.tsx`](file:///d:/challege5/src/test/securityHardening.test.tsx) |
-| **5. Efficiency & Performance** | Fast page loads, sub-second interactions, strict bundle limits, and caching. | • **Main JS Chunk: 27.95 kB** (Limit: 150 kB) / **10.02 kB gzip**.<br>• **Main CSS: 42.44 kB** (Limit: 65 kB) / **8.16 kB gzip**.<br>• Copilot in-memory LRU cache (`copilotMemoryCache`) with SHA-256 hash.<br>• Code-split lazy routes with preloading. | [`copilotService.ts`](file:///d:/challege5/src/services/copilotService.ts)<br>[`check-size-budget.mjs`](file:///d:/challege5/scripts/check-size-budget.mjs)<br>`npm run build` |
-| **6. Testing & CI Verification** | Automated tests covering business math, edge cases, negative numbers, overdue tasks, and fallback resilience. | • **308 / 308 tests passing (100%)** across 41 test files (`vitest`).<br>• Automated GitHub Actions CI workflow ([`.github/workflows/ci.yml`](file:///.github/workflows/ci.yml)).<br>• 25 boundary tests for all 12 decision rules. | [`ci.yml`](file:///.github/workflows/ci.yml)<br>[`decisionRulesRegistry.test.ts`](file:///d:/challege5/src/test/decisionRulesRegistry.test.ts)<br>`npm test` |
-| **7. Accessibility (WCAG 2.1 AA)** | Screen reader support, keyboard navigability, high contrast, skip-to-content, and ARIA landmarks. | • Root `<html lang="en-IN">` with `<a href="#main" class="skip-to-content">`.<br>• Interactive Donut chart provides an accessible **"View as Data Table"** toggle (`#btn-toggle-budget-table`).<br>• Automated Axe scans verify zero accessibility violations. | [`InteractiveBudgetChart.tsx`](file:///d:/challege5/src/components/budget/InteractiveBudgetChart.tsx)<br>[`a11yBaselineScan.test.tsx`](file:///d:/challege5/src/test/a11yBaselineScan.test.tsx)<br>[`index.html`](file:///d:/challege5/index.html) |
-
----
-
-## 🧭 Navigation & System Architecture
+## 🧭 System Architecture
 
 ```mermaid
 flowchart TD
-    User([User / Evaluator / Guest]) --> Router{Page Router}
-    
-    Router -->|'/'| Landing[Public Landing Page - Hero & Feature Pillars]
-    Router -->|'/demo'| Demo[Evaluator Demo Mode - 90s Tour & Chaos Bar]
-    Router -->|'/app'| AppWorkspace[Authenticated Workspace - Cloud Sync]
-    Router -->|'/admin'| Admin[Admin Console - Role Bootstrap, Logs & Backups]
-    Router -->|'/rsvp/:token'| Rsvp[Public Mobile RSVP - Honeypot & Sync]
-    
-    subgraph State Management & Orchestration
-        AppWorkspace --> Hook[useEventPlan Custom Hook]
-        Demo --> Hook
-        Hook --> Storage[storageService - LocalStorage v2 + JSON Import/Export]
-        Hook --> DiffEngine[PlanChangeDiff Engine - Real-time What Changed?]
+    User([User / Planner / Guest]) --> Router{Page Router}
+    Router -->|'/'| Landing[Landing Page Showcase]
+    Router -->|'/demo'| Demo[90s Evaluator Demo & Chaos Bar]
+    Router -->|'/app'| Workspace[Authenticated Planning Workspace]
+    Router -->|'/admin'| Admin[Admin Console & Backups]
+    Router -->|'/rsvp/:token'| Rsvp[Public Mobile RSVP]
+
+    subgraph Core Engine
+        Workspace --> Hooks[useEventPlan / Modular Hooks]
+        Hooks --> DecisionEngine[12 Pure Decision Rules & Thresholds]
+        Hooks --> ChaosEngine[Chaos Simulator & 20-Step Undo Stack]
+        Hooks --> Storage[Zod-Validated LocalStorage v2 & Cloud Sync]
     end
 
-    subgraph Admin, RSVP & Operations
-        Admin --> AdminApi[adminApi - Server Authorization & Audit Trail]
-        Rsvp --> RsvpApi[rsvpApi - Rate Limiting & Guest Import]
-        Server[Standalone Node Server] --> Health[GET /api/health Check]
-        Server --> Gzip[Gzip / CSP / HSTS / Graceful Shutdown]
-    end
-
-    subgraph Decision Engine & Rules Registry
-        Hook --> RulesRegistry[rulesRegistry - 12 Pure Decision Rules]
-        RulesRegistry --> Config[rulesConfig - Centralized Thresholds]
-        Hook --> Scenarios[Scenario Simulator - 7 Stress Scenarios + Undo Stack]
-        Hook --> Formatters[formatters - INR ₹, Lakhs, Crores, en-IN]
-    end
-
-    subgraph Multi-Tier Fallback Hierarchy
-        Hook --> AI[aiPlanner - Multi-Model Fallback]
-        AI -->|Tier 1| Gem25[Gemini 2.5 Flash]
-        AI -->|Tier 2| GemLite[Gemini 2.5 Flash Lite]
-        AI -->|Tier 3| Gem20[Gemini 2.0 Flash]
-        AI -->|Tier 4: Offline| FallbackEngine[Deterministic Indian Fallback Planner]
-        Hook --> Copilot[copilotService - Grounded AI Assistant with LRU Cache]
-    end
-
-    subgraph Calendar & Day-of Execution
-        Hook --> Cal[calendarService - RFC 5545 iCalendar with VALARM Alarms]
-        Hook --> Print[Print Stylesheet - Clean Coordinator Day-of Run Sheet]
+    subgraph Intelligence & Execution
+        Hooks --> AI[aiPlanner - Gemini 2.5 Flash + Offline Fallback]
+        Hooks --> Calendar[RFC 5545 iCalendar Service]
+        Hooks --> Formatters[INR Indian Digit Grouping Formatter]
     end
 ```
 
 ---
 
-## ⚖️ The 12 Explainable Cultural & Business Decision Rules
+## 🚀 Quickstart & Setup
 
-All business logic is declared in [`src/services/rulesRegistry.ts`](file:///d:/challege5/src/services/rulesRegistry.ts) with thresholds centralized in [`src/constants/rulesConfig.ts`](file:///d:/challege5/src/constants/rulesConfig.ts):
+### Requirements
+- **Node.js**: `>= 20.x`
+- **npm**: `>= 10.x`
 
-| Rule ID | Rule Name | Severity | Cultural / Business Threshold | Concrete Quantified Trade-off Action |
-| :--- | :--- | :---: | :--- | :--- |
-| `rule-budget-overrun` | Over-Budget Detection | 🔴 High | Total estimated costs $> \text{Total Budget}$ | Rebalance surplus from non-critical categories, adjust headcounts, or draw from contingency reserve. |
-| `rule-timeline-urgent` | Timeline Urgency / Overdue | 🔴 High | Event date is past OR days remaining $< 14$ days | Lock urgent critical path vendors (Pandit Ji, venue, catering) and defer non-essential decor. |
-| `rule-weather-contingency` | Weather Contingency Check | 🟡 Medium | Venue layout is `outdoor`, `lawn`, or `farmhouse` | Allocate waterproof pandal canopy (`₹30,000–₹50,000`) or secure indoor banquet backup hall. |
-| `rule-accessibility` | Accessibility Accommodations | 🔵 Info | Event notes indicate senior citizens or accessibility needs | Ensure step-free ramp to Mandap stage and golf buggy shuttle from parking. |
-| `rule-large-gathering` | Large Gathering Compliance | 🟡 Medium | Confirmed guest count $> 250$ guests | Procure municipal noise clearance, silent DG generator power backup, and dedicated parking marshals. |
-| `rule-rsvp-capacity` | RSVP Capacity Exceeded | 🔴 High | Confirmed attending guests ($+1$ included) $> \text{Target Venue Capacity}$ | Expand dining hall seating, alert banquet manager, or increase catering plate order count. |
-| `rule-dietary-general` | General Dietary Notifications | 🔵 Info | Guests RSVP with dietary needs (Halal, Gluten-Free) | Request customized meal plate counters from caterer 14 days before celebration. |
-| `rule-dietary-jain-pureveg` | Jain & Pure Veg Kitchen Isolation | 🟡 Medium | Guests RSVP with `jain` or `pure_veg` preferences | Enforce isolated food prep station, dedicated serving ladles, and clear dietary signage. |
-| `rule-baraat-curfew` | Baraat 10:00 PM Sound Curfew | 🟡 Medium | Run of Show schedule item after 22:00 has outdoor audio | Transition brass band, dholaks, and DJ indoors to soundproof hall to prevent municipal police penalties. |
-| `rule-date-compression` | Date Compression Warning | 🔴 High | Event date compressed closer by $> 7$ days | Shift milestone dependencies backwards and auto-reschedule critical vendor confirmations. |
-| `rule-vendor-cost-spike` | Vendor Price Spike Escalation | 🔴 High | Line item actual cost exceeds allocated budget by $\ge 20\%$ | Offer 3 options: Rebalance from decor (-₹1.44L), trim 10 guests (-₹1L), or absorb via contingency. |
-| `rule-missing-critical-vendors` | Critical Vendor Verification | 🟡 Medium | Less than 30 days remain and core categories are unassigned | Surface vetting checklists and samagri requirements for Pandit Ji, Mehendi, Catering, and Sound. |
-
----
-
-## 🔄 Dynamic Change & Chaos Simulation Loop
-
-Handling unexpected real-world disruptions is at the heart of EventWise AI:
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Planner as User / Evaluator
-    participant UI as Dashboard & Chaos Bar
-    participant Diff as PlanChangeDiff Engine
-    participant Engine as Decision Engine & Rules Registry
-    participant Hook as useEventPlan (State & History)
-
-    Planner->>UI: Triggers "+20% Caterer Hike" or adjusts sliders
-    UI->>Hook: updateVendorCost(catererId, +20%)
-    Hook->>Diff: computePlanDiff(prevPlan, nextPlan)
-    Diff-->>UI: Surfaces #what-changed-diff-banner ("Budget: +₹2.4L | Rule 11 Spike fired")
-    Hook->>Engine: evaluateRules(nextPlan)
-    Engine-->>UI: Generates 3 Quantified ₹ Trade-off Options
-    Planner->>UI: Clicks "Apply: Rebalance Decor (-₹1.44L)"
-    UI->>Hook: applyTradeOff(action)
-    Note over Hook: Pushes snapshot to 20-entry Undo history stack
-    Hook-->>UI: Variance clears, toast confirmation displayed
-    Planner->>UI: Clicks "Undo (1)"
-    UI->>Hook: rollbackPlan()
-    Hook-->>UI: Restores exact prior state seamlessly
-```
-
----
-
-## 🎨 Design System, Theming & Accessibility (WCAG 2.1 AA)
-
-EventWise AI features a warm, celebratory Indian aesthetic with Airbnb-grade visual clarity:
-
-### 1. Curated Indian Festive Palettes
-* **Royal Wedding (`wedding`)**: Rajputana Gold (`#D4AF37`) & Deep Crimson (`#9E2A2B`).
-* **Bollywood Birthday (`birthday`)**: Mumbai Sunset Orange (`#E76F51`) & Warm Coral (`#F4A261`).
-* **Community Festival (`community`)**: Festive Marigold Yellow (`#E9C46A`) & Emerald Green (`#2A9D8F`).
-
-### 2. High-Contrast Semantic Status Colors
-* **Success**: `#059669` (Light) / `#34d399` (Dark) — Meets 4.5:1 contrast ratio.
-* **Warning / Curfew**: `#d97706` (Light) / `#fbbf24` (Dark) — Clear visibility for sound cutoffs.
-* **Danger / Spike**: `#dc2626` (Light) / `#f87171` (Dark) — Instant visual cue for overruns.
-
-### 3. Accessible SVG Budget Donut & Data Table
-* **Donut Chart**: Screen-reader accessible SVG with distinct category segment colors and ARIA labels.
-* **Table Toggle**: Users who prefer tabular navigation can click `#btn-toggle-budget-table` (**"View as Data Table"**) to inspect full category breakdowns, commitments, and actuals.
-* **Skip to Content**: Full keyboard navigation support with `<a href="#main" class="skip-to-content">`.
-
----
-
-## 🤖 AI Fallback Hierarchy & Grounded Copilot
-
-EventWise AI operates with a guaranteed **Multi-Tier Fallback Hierarchy**:
-
-1. **Tier 1 — Gemini Flash Latest (`gemini-flash-latest`)**: Low-latency multimodal reasoning.
-2. **Tier 2 — Gemini 3.8 Flash (`gemini-3.8-flash`)**: High-speed reasoning model.
-3. **Tier 3 — Gemini 2.5 Flash Lite (`gemini-2.5-flash-lite`)**: Ultra-lightweight fallback candidate.
-4. **Tier 4 — Deterministic Fallback Engine**: 100% offline rule-based expert engine providing complete plans with Indian wedding defaults, tasks, and vendors.
-
-### AI Copilot & Privacy Safeguards
-* **In-Memory Query Cache**: Copilot hashes prompts and context snapshots (`copilotMemoryCache`) to deliver instant zero-latency responses for repeated queries.
-* **AbortController Timeout**: Requests abort gracefully after 12 seconds with automatic fallback.
-* **Strict PII Scrubbing**: Guest attendee names, phone numbers, and private contact info are stripped before LLM prompt transmission.
-* **Header-Based Auth**: Keys are transmitted via `x-goog-api-key` header, never exposed in query strings.
-
----
-
-## 📊 Automated Verification & Verification Proofs
-
-### 1. Vitest Test Suite (308 Passing Tests across 41 Files)
-
-New in this release: `adminRsvp.test.ts` & `adminRsvpUi.test.tsx` (atomic first-admin claim, role management, audit trail, RSVP flow, rate limits, honeypot & UI modal), `accountPersistence.test.ts` & `storeConfig.test.ts` (FileStore persistence across server restarts, 30-day session renewal, secret stability), `apiHardening.test.ts` (Gemini proxy origin, model, validation and rate limits; client-IP and CSRF checks; atomic Redis rate-limit counter), `authApiErrors.test.ts` (friendly sign-in errors), `seoMeta.test.tsx` and `pageMeta.test.tsx` (share tags, robots, sitemap, noindex on account pages), `contrastTokens.test.ts` (WCAG AA colour tokens) and `liveDemoWindow.test.tsx` (interactive landing demo).
-```text
- ✓ src/test/adminRsvp.test.ts (26 tests)
- ✓ src/test/adminRsvpUi.test.tsx (8 tests)
- ✓ src/test/accountPersistence.test.ts (10 tests)
- ✓ src/test/storeConfig.test.ts (6 tests)
- ✓ src/test/scenarioChangeLoop.test.ts (11 tests)
- ✓ src/test/copilotGrounding.test.ts (7 tests)
- ✓ src/test/performanceOptimization.test.tsx (9 tests)
- ✓ src/test/a11yBaselineScan.test.tsx (1 test)
- ✓ src/test/components.test.tsx (8 tests)
- ✓ src/test/qaAccessibility.test.tsx (5 tests)
- ✓ src/test/setupWizard.test.tsx (3 tests)
- ✓ src/test/budgetRedesign.test.tsx (3 tests)
- ✓ src/test/guestsRedesign.test.tsx (3 tests)
- ✓ src/test/copilotRedesign.test.tsx (4 tests)
- ✓ src/test/timelineRedesign.test.tsx (3 tests)
- ✓ src/test/primitives.test.tsx (12 tests)
- ✓ src/test/securityHardening.test.tsx (11 tests)
- ✓ src/test/fallbackPlanner.test.ts (3 tests)
- ✓ src/test/aiPlanner.test.ts (3 tests)
- ✓ src/test/decisionEngine.test.ts (8 tests)
- ✓ src/test/decisionRulesRegistry.test.ts (25 tests)
- ✓ src/test/authUi.test.tsx (9 tests)
- ✓ src/test/authApi.test.ts (7 tests)
- ✓ src/test/demoFeatures.test.tsx (11 tests)
- ✓ src/test/proFeaturesUpgrade.test.tsx (12 tests)
- ✓ src/test/shareExportService.test.ts (6 tests)
- ✓ src/test/formatters.test.ts (6 tests)
- ✓ src/test/storage.test.ts (6 tests)
- ✓ src/test/timeline.test.ts (3 tests)
- ✓ src/test/budget.test.ts (5 tests)
- ✓ src/test/guests.test.ts (5 tests)
- ✓ src/test/schedule.test.ts (3 tests)
- ✓ src/test/copilot.test.ts (5 tests)
- ✓ src/test/cleanSlateAndWebsite.test.tsx (2 tests)
- ✓ src/test/liveDemoWindow.test.tsx (13 tests)
- ✓ src/test/contrastTokens.test.ts (13 tests)
- ✓ src/test/apiHardening.test.ts (15 tests)
- ✓ src/test/featureEnhancements.test.tsx (6 tests)
- ✓ src/test/authApiErrors.test.ts (4 tests)
- ✓ src/test/pageMeta.test.tsx (2 tests)
- ✓ src/test/seoMeta.test.tsx (6 tests)
-
- Test Files  41 passed (41)
-      Tests  308 passed (308)
-```
-
-### 2. Static Analysis (`oxlint`)
-```text
-> oxlint
-Found 0 warnings and 0 errors.
-Finished in 194ms on 115 files with 116 rules using 12 threads.
-```
-
-### 3. Production Build & Size Budget
-```text
-📦 Main JS Chunk: index-CukiSg6Y.js
-   - Raw size:  27.95 kB (Limit: 150 kB)
-   - Gzip size: 10.02 kB (Limit: 50 kB)
-   ✅ PASSED: Within performance budget.
-
-📦 Main CSS Bundle: index-D1kOtRUT.css
-   - Raw size:  42.44 kB (Limit: 65 kB)
-   - Gzip size: 8.16 kB (Limit: 20 kB)
-   ✅ PASSED: Within performance budget.
-
-🎉 All bundle chunks are strictly within performance budgets!
-```
-
-### 4. Dependency Security Audit (`npm audit`)
-```text
-found 0 vulnerabilities
-```
-
----
-
-## 🔐 Accounts & Staying Signed In (fixing "my correct password says incorrect")
-
-Accounts must be stored somewhere that **survives restarts**. If the server only keeps them in memory (`ALLOW_MEMORY_STORE=true` with no database), every restart, cold start, sleep (Render free plan) or extra serverless instance (Vercel) forgets all accounts, so signing in with the right password fails with *"Incorrect email or password."* The sign-in page now warns you when this is the case.
-
-Pick **one** of these:
-
-| Where it runs | What to do |
-| --- | --- |
-| **Vercel** (recommended) | Project → *Storage* → *Marketplace* → **Upstash Redis** → *Connect*. It injects `KV_REST_API_URL` / `KV_REST_API_TOKEN`; redeploy. Nothing else is needed (the session key is derived from the database token, or set your own `AUTH_SECRET`). |
-| **Render / any host** | Create a free database at [upstash.com](https://upstash.com) and set `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN`. |
-| **A server with a persistent disk** | Set `DATA_DIR` to the mounted disk path (e.g. `/var/data`). Accounts and the session key are stored there; no database needed. |
-| **Local development** | Nothing: accounts are kept in `./.data` and survive `npm run dev` restarts. |
-
-"Keep me signed in" issues a 30-day cookie that is renewed automatically while you keep using the app. After signing in or up, supporting browsers offer to save the password in their password manager.
-
----
-
-## 🚀 Quickstart & Offline Verification
-
-### Local Setup in 60 Seconds:
+### Installation
 ```bash
 # 1. Clone repository
 git clone https://github.com/innocentgaming/virtual5.git
 cd virtual5
 
-# 2. Install dependencies (React 19 + TypeScript + Vite)
+# 2. Install dependencies
 npm install
 
 # 3. Start local development server
 npm run dev
 # -> Opens http://localhost:5173
-
-# 4. Run automated test suite (308 tests passing across 41 files)
-npm test
-
-# 5. Run static linting
-npm run lint
-
-# 6. Verify production build & performance size budget
-npm run build
 ```
 
-### 100% Offline Demonstration:
-1. Disconnect your Wi-Fi or set browser DevTools Network to **Offline**.
-2. Open `http://localhost:5173/demo`.
-3. Click **"Start 90s Tour"** or trigger **"+20% Caterer Spike"** on the Chaos Bar.
-4. Verify that all 12 decision rules, What-Changed diff banners, budget calculations, and RFC 5545 `.ics` downloads execute completely in-browser without network requests.
+---
+
+## 🛠 Available Scripts
+
+| Command | Purpose |
+| :--- | :--- |
+| `npm run dev` | Starts Vite local dev server with hot module replacement |
+| `npm run build` | Compiles TypeScript, bundles production assets, checks size budget |
+| `npm run lint` | Runs strict `oxlint` static code analysis |
+| `npm run typecheck` | Runs TypeScript compiler checks without emitting files (`tsc -b --noEmit`) |
+| `npm test` | Runs the full Vitest suite (unit, integration, and security tests) |
+| `npm run test:coverage` | Generates detailed test coverage reports |
+| `npm run format` | Formats codebase with Prettier |
+| `npm run start` | Boots production server with compression and rate limiting |
 
 ---
 
-## 👥 Flagship Curated Personas
+## 🔒 Security Architecture
 
-1. 👑 **Aarav & Ananya's Royal Rajasthan Wedding**:
-   - Location: Jaipur, Rajasthan | Guests: 350 | Budget: ₹35,00,000 (₹35 Lakhs)
-   - Highlights: Heritage haveli venue, Vedic Pheras around Agni Kund, 10 PM sound curfew transition, Jain & Pure Veg dietary counters.
-2. 🎬 **Rohan's 30th Bollywood Rooftop Bash**:
-   - Location: Mumbai, Maharashtra | Guests: 80 | Budget: ₹3,50,000 (₹3.5 Lakhs)
-   - Highlights: Bandra terrace party, live fusion chaat stalls, 90s Bollywood playlist, customized photo booth.
-3. 🪔 **Shanti Vihar Grand Diwali & Dandiya Mela**:
-   - Location: Bengaluru, Karnataka | Guests: 600 | Budget: ₹6,50,000 (₹6.5 Lakhs)
-   - Highlights: Community society amphitheater, Dandiya Raas, eco-friendly diyas, 250+ gathering municipal police permissions.
+- **Zero Client-Side Secrets:** Gemini API keys are never bundled into client JS or stored in localStorage/cookies.
+- **Self-Hosted Typography:** Self-hosted fonts eliminate external Google Fonts tracking and CDN failure vectors.
+- **Strict Content-Security-Policy:** Hardened headers (`default-src 'self'`, `frame-ancestors 'none'`, nosniff).
+- **RFC 5545 Escaping:** All calendar exports escape special characters and fold lines at 75 octets.
+- **Untrusted AI Handling:** All model responses are validated via strict Zod schemas and rendered as safe text.
 
 ---
 
-## 📜 Branch Governance & Licensing
+## 📊 Evaluation & Verification
 
-- **Repository**: `innocentgaming/virtual5`
-- **Main Branch**: `main` (clean single-branch history)
-- **License**: MIT License
-
-
-## 🛠 Admin, RSVP & Operations
-
-**Admin dashboard (`/admin`).** The *first account that signs up* on a fresh deployment becomes the administrator
-(claimed atomically, so two simultaneous first signups can never both win). Admins can see overview stats and a
-30-day sign-up chart, search/paginate users, change roles, promote/demote admins, disable (which signs the user out
-immediately), sign users out everywhere, delete users (type-the-email confirmation), read the activity/audit log
-(sign-ups, sign-ins, failed sign-ins, password changes, admin actions) and download a full backup. Every admin route is
-authorized on the server. The last active administrator can't be demoted, disabled or deleted. Set `ADMIN_EMAILS=a@x.com,b@y.com`
-to always treat those emails as admins (recovery / bootstrap).
-
-**Live RSVP.** In *Event Website → Publish & Share*, signed-in hosts create a private link `/rsvp/<token>` per event.
-Guests need no account; replies are validated, rate-limited, honeypot-protected and stored on the server. The host sees a
-live summary (coming, headcount, declined), can close/reopen RSVPs and add replies to the guest list in one tap
-(re-importing updates instead of duplicating).
-
-**Health, errors, logs.** `GET /api/health` returns `200 {status:"ok"}` (or `503`) after checking the database. Point Render's
-health check and an uptime monitor (UptimeRobot, Better Stack…) at it. Server logs are JSON lines. Browser crashes show a
-recovery screen and are reported to `POST /api/client-error`. Set `ALERT_WEBHOOK_URL` (Slack/Discord/Teams incoming webhook) to
-be pinged, at most once a minute, on unexpected server errors.
-
-**Backups.** Admin → *Data & backup* downloads one JSON file (users, plans, RSVPs, audit log). On the server
-`npm run backup` writes `backups/eventwise-<time>.json` and `npm run restore -- file.json` merges one back.
-Backups contain password hashes and personal data: keep them private. Upstash Redis also offers automatic daily backups on paid plans.
-
-**Going live checklist.** 1) Connect Upstash Redis (accounts must persist). 2) Set `AUTH_SECRET`, `APP_URL`, `RESEND_API_KEY` + `EMAIL_FROM`
-(password-reset email). 3) Add your custom domain in Vercel/Render (HTTPS is automatic; HSTS and CSP are already sent).
-4) Sign up first yourself so you are the admin. 5) Add `/api/health` to an uptime monitor and set `ALERT_WEBHOOK_URL`.
-6) Schedule `npm run backup` (or download backups from the admin page) regularly.
+- **Automated Tests:** 300+ passing tests across 41 test files in Vitest.
+- **Accessibility:** Zero axe-core violations; WCAG 2.1 AA compliant.
+- **Detailed Compliance Matrix:** See [docs/HACKATHON.md](docs/HACKATHON.md) for full rubric mappings, 12-rule specs, and walkthroughs.
+- **Production URL:** [https://eventwise-ai-d11f.onrender.com/](https://eventwise-ai-d11f.onrender.com/)

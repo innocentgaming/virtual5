@@ -53,7 +53,7 @@ const call = (method: 'GET' | 'POST', path: string, body?: unknown, cookie?: str
   fetch(`${base}${path}`, {
     method,
     headers: { ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}), Origin: base, ...(cookie ? { Cookie: cookie } : {}), ...extraHeaders },
-    body: body !== undefined ? JSON.stringify(body) : undefined,
+    ...(method !== 'GET' && body !== undefined ? { body: JSON.stringify(body) } : {}),
   });
 
 const cookieOf = (res: Response) => `ew_session=${/ew_session=([^;]+)/.exec(res.headers.get('set-cookie') ?? '')?.[1]}`;

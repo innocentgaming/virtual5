@@ -1,4 +1,12 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+function getFormattedTime(): string {
+  return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+let messageIdCounter = 0;
+function generateMessageId(prefix: string): string {
+  messageIdCounter += 1;
+  return prefix + '-' + Date.now() + '-' + messageIdCounter;
+}
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import {
   Sparkles,
   X,
@@ -167,7 +175,7 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
       id: 'msg-welcome',
       sender: 'assistant',
       text: `Namaste! I'm your EventWise Copilot. I'm actively analyzing **${plan.title}** (${plan.guestCount} guests in ${plan.city}). What can I help you optimize or plan today?`,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      timestamp: getFormattedTime(),
     },
   ]);
 
@@ -206,46 +214,48 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
       textareaRef.current?.focus();
     }, 50);
 
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        onClose();
+        return;
+      }
+
+      if (e.key === 'Tab') {
+        const focusable = drawerRef.current?.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        if (!focusable || focusable.length === 0) return;
+
+        const firstElement = focusable[0];
+        const lastElement = focusable[focusable.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === firstElement) {
+            lastElement.focus();
+            e.preventDefault();
+          }
+        } else {
+          if (document.activeElement === lastElement) {
+            firstElement.focus();
+            e.preventDefault();
+          }
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
     return () => {
       clearTimeout(timeoutId);
+      window.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = originalOverflow;
       document.body.style.paddingRight = originalPaddingRight;
       if (previouslyFocusedElementRef.current && typeof previouslyFocusedElementRef.current.focus === 'function') {
         previouslyFocusedElementRef.current.focus();
       }
     };
-  }, [isOpen]);
-
-  // Trap focus and Esc
-  const handleKeyDownDrawer = (e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      e.stopPropagation();
-      onClose();
-      return;
-    }
-
-    if (e.key === 'Tab') {
-      const focusable = drawerRef.current?.querySelectorAll<HTMLElement>(
-        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-      );
-      if (!focusable || focusable.length === 0) return;
-
-      const firstElement = focusable[0];
-      const lastElement = focusable[focusable.length - 1];
-
-      if (e.shiftKey) {
-        if (document.activeElement === firstElement) {
-          lastElement.focus();
-          e.preventDefault();
-        }
-      } else {
-        if (document.activeElement === lastElement) {
-          firstElement.focus();
-          e.preventDefault();
-        }
-      }
-    }
-  };
+  }, [isOpen, onClose]);
 
   // Smart auto-scroll
   useEffect(() => {
@@ -267,7 +277,7 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
           id: msgId,
           sender: 'assistant',
           text: fullText,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          timestamp: getFormattedTime(),
           isFallback,
           proposedActions: actions,
         },
@@ -281,7 +291,7 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
       id: msgId,
       sender: 'assistant',
       text: '',
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      timestamp: getFormattedTime(),
       isFallback,
       proposedActions: undefined,
     };
@@ -306,17 +316,17 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
     }, 18);
   };
 
-  const handleSendPrompt = async (promptText: string) => {
+  const handleSendPrompt = useCallback(async (promptText: string) => {
     if (!promptText.trim() || isThinking) return;
 
     const trimmedPrompt = promptText.trim();
     setLastUserPrompt(trimmedPrompt);
 
     const userMsg: ChatMessage = {
-      id: 'usr-' + Date.now(),
+      id: generateMessageId('usr'),
       sender: 'user',
       text: trimmedPrompt,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      timestamp: getFormattedTime(),
     };
 
     setMessages((prev) => [...prev, userMsg]);
@@ -332,24 +342,24 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
       const answerText = await generateCopilotAnswerAsync(trimmedPrompt, plan);
       const { cleanText, actions } = extractCopilotActions(answerText, plan);
       setIsAiOnline(true);
-      streamAssistantText('ast-' + Date.now(), cleanText, actions, false);
+      streamAssistantText(generateMessageId('ast'), cleanText, actions, false);
     } catch {
       setIsAiOnline(false);
       const fallbackText = generateCopilotAnswer(trimmedPrompt, plan);
       const { cleanText, actions } = extractCopilotActions(fallbackText, plan);
-      streamAssistantText('ast-' + Date.now(), cleanText, actions, true);
+      streamAssistantText(generateMessageId('ast'), cleanText, actions, true);
     } finally {
       setIsThinking(false);
     }
-  };
+  }, [isThinking, plan]);
 
   const lastSuggestionClickRef = useRef(0);
-  const handleSuggestionClick = (chip: string) => {
+  const handleSuggestionClick = useCallback((chip: string) => {
     const now = Date.now();
     if (now - lastSuggestionClickRef.current < 400 || isThinking) return;
     lastSuggestionClickRef.current = now;
     handleSendPrompt(chip);
-  };
+  }, [isThinking, handleSendPrompt]);
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -384,7 +394,7 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
         id: 'msg-welcome',
         sender: 'assistant',
         text: `Namaste! I'm your EventWise Copilot. I'm actively analyzing **${plan.title}** (${plan.guestCount} guests in ${plan.city}). What can I help you optimize or plan today?`,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        timestamp: getFormattedTime(),
       },
     ]);
     setShowClearConfirm(false);
@@ -402,38 +412,34 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
         zIndex: 'var(--z-modal)',
         display: 'flex',
         justifyContent: 'flex-end',
-        backgroundColor: 'rgba(15, 23, 42, 0.55)',
-        backdropFilter: 'blur(4px)',
-        animation: 'fadeIn 0.2s ease',
-      }}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="copilot-drawer-title"
-      onKeyDown={handleKeyDownDrawer}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
       }}
     >
-      {/* Pre-guard for focus trapping */}
-      <div
-        tabIndex={0}
-        aria-hidden="true"
-        style={{ position: 'fixed', top: 0, left: 0, width: 0, height: 0, opacity: 0, pointerEvents: 'none' }}
-        onFocus={() => {
-          if (drawerRef.current) {
-            const focusable = drawerRef.current.querySelectorAll<HTMLElement>(
-              'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-            );
-            if (focusable.length > 0) focusable[focusable.length - 1].focus();
-          }
+      <button
+        type="button"
+        aria-label="Close assistant overlay"
+        onClick={onClose}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          border: 'none',
+          backgroundColor: 'rgba(15, 23, 42, 0.55)',
+          backdropFilter: 'blur(4px)',
+          animation: 'fadeIn 0.2s ease',
+          cursor: 'default',
         }}
       />
-
       <div
         ref={drawerRef}
         id="tour-copilot-drawer"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="copilot-drawer-title"
         className="copilot-drawer-container"
         style={{
+          position: 'relative',
+          zIndex: 1,
           width: '100%',
           maxWidth: '520px',
           height: '100%',
@@ -890,21 +896,6 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
           </Button>
         </form>
       </div>
-
-      {/* Post-guard for focus trapping */}
-      <div
-        tabIndex={0}
-        aria-hidden="true"
-        style={{ position: 'fixed', top: 0, left: 0, width: 0, height: 0, opacity: 0, pointerEvents: 'none' }}
-        onFocus={() => {
-          if (drawerRef.current) {
-            const focusable = drawerRef.current.querySelectorAll<HTMLElement>(
-              'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-            );
-            if (focusable.length > 0) focusable[0].focus();
-          }
-        }}
-      />
     </div>
   );
 };

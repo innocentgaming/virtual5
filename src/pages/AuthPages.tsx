@@ -80,7 +80,7 @@ export function LoginPage(): React.ReactElement {
         <ErrorBox message={error} />
         <div className="s-field">
           <label htmlFor="login-email">Email</label>
-          <input id="login-email" name="email" type="email" autoComplete="username" required value={email} onChange={(e) => setEmail(e.target.value)} autoFocus />
+          <input id="login-email" name="email" type="email" autoComplete="username" required value={email} onChange={(e) => setEmail(e.target.value)} />
         </div>
         <PasswordFieldS id="login-password" label="Password" value={password} onChange={setPassword} autoComplete="current-password" />
         <div className="s-form__row">
@@ -139,7 +139,7 @@ export function SignupPage(): React.ReactElement {
         <ErrorBox message={error} />
         <div className="s-field">
           <label htmlFor="su-name">Full name</label>
-          <input id="su-name" autoComplete="name" required minLength={2} maxLength={80} value={name} onChange={(e) => setName(e.target.value)} autoFocus />
+          <input id="su-name" autoComplete="name" required minLength={2} maxLength={80} value={name} onChange={(e) => setName(e.target.value)} />
         </div>
         <div className="s-field">
           <label htmlFor="su-email">Email</label>
@@ -217,7 +217,7 @@ export function ForgotPasswordPage(): React.ReactElement {
             <ErrorBox message={error} />
             <div className="s-field">
               <label htmlFor="fp-email">Email</label>
-              <input id="fp-email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoFocus />
+              <input id="fp-email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
             <button type="submit" className="s-btn s-btn--ink s-btn--block" disabled={busy}>
               {busy ? <><Spinner /> Sending</> : 'Send reset link'}

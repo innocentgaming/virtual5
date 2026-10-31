@@ -483,8 +483,8 @@ export function LiveDemoWindow(): React.ReactElement {
                   <li
                     key={s.key}
                     className={hoverKey === s.key ? 'is-on' : ''}
-                    onMouseEnter={() => setHoverKey(s.key)}
-                    onMouseLeave={() => setHoverKey(null)}
+                    onPointerEnter={() => setHoverKey(s.key)}
+                    onPointerLeave={() => setHoverKey(null)}
                   >
                     <i style={{ background: CATEGORY_COLORS[s.key as BudgetCategory] ?? '#64748b' }} />
                     <span>{s.key}</span>

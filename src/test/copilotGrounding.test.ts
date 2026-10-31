@@ -239,7 +239,7 @@ describe('Copilot Grounding, Privacy & Action Safety (Step 2)', () => {
       validateStructuredAction(
         {
           label: 'Delete Database',
-          actionType: 'delete_database' as any,
+          actionType: 'delete_database' as unknown as Parameters<typeof validateStructuredAction>[0]['actionType'],
           deltaAmount: 1000,
         },
         samplePlan

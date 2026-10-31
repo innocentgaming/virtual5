@@ -366,9 +366,13 @@ export const TimelineManager: React.FC<TimelineManagerProps> = ({
   };
 
   // Date horizon calculations
+  const [todayAnchor] = useState(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  });
   const { today, daysUntilEvent, isPastEvent, isShortNotice } = useMemo(() => {
-    const t = new Date();
-    t.setHours(0, 0, 0, 0);
+    const t = todayAnchor;
     const target = new Date(plan.eventDate);
     const diff = Math.ceil((target.getTime() - t.getTime()) / (1000 * 60 * 60 * 24));
     return {
@@ -377,7 +381,7 @@ export const TimelineManager: React.FC<TimelineManagerProps> = ({
       isPastEvent: diff < 0,
       isShortNotice: diff >= 0 && diff <= 21,
     };
-  }, [plan.eventDate]);
+  }, [todayAnchor, plan.eventDate]);
 
   // Overall Task Audit
   const audit = useMemo(() => {

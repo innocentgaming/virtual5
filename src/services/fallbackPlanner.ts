@@ -50,6 +50,13 @@ function calculateTaskDate(eventDateStr: string, daysBeforeEvent: number): strin
   return `${yyyy}-${mm}-${dd}`;
 }
 
+/**
+ * Deterministically constructs a comprehensive, culturally rich Indian event blueprint
+ * without requiring external LLM network connectivity.
+ *
+ * @param input - High-level event requirements (eventType, totalBudget, guestCount, city, preferences)
+ * @returns Fully generated EventPlan with budget, tasks, vendors, ideas, and schedule
+ */
 export function generateFallbackPlan(input: PlanGenerationInput): EventPlan {
   const guestCount = Math.max(1, input.guestCount || (input.eventType === 'wedding' ? 250 : input.eventType === 'birthday' ? 60 : 300));
   const totalBudget = Math.max(0, input.totalBudget || (input.eventType === 'wedding' ? 1500000 : input.eventType === 'birthday' ? 250000 : 500000));

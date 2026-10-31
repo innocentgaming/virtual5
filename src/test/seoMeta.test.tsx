@@ -7,15 +7,15 @@ describe('SEO & Share Metadata Suite', () => {
   const indexHtml = fs.readFileSync(path.join(rootDir, 'index.html'), 'utf8');
 
   it('includes canonical link in index.html', () => {
-    expect(indexHtml).toContain('<link rel="canonical" href="https://virtual5.vercel.app/" />');
+    expect(indexHtml).toMatch(/<link rel="canonical" href="https:\/\/(eventwise-ai-d11f\.onrender\.com|virtual5\.vercel\.app)\/" \/>/);
   });
 
   it('includes complete OpenGraph meta tags in index.html', () => {
     expect(indexHtml).toContain('<meta property="og:type" content="website" />');
     expect(indexHtml).toContain('<meta property="og:site_name" content="EventWise AI" />');
     expect(indexHtml).toContain('<meta property="og:title" content="EventWise AI: plan weddings, birthdays and melas in India" />');
-    expect(indexHtml).toContain('<meta property="og:url" content="https://virtual5.vercel.app/" />');
-    expect(indexHtml).toContain('<meta property="og:image" content="https://virtual5.vercel.app/og-image.png" />');
+    expect(indexHtml).toMatch(/<meta property="og:url" content="https:\/\/(eventwise-ai-d11f\.onrender\.com|virtual5\.vercel\.app)\/" \/>/);
+    expect(indexHtml).toMatch(/<meta property="og:image" content="https:\/\/(eventwise-ai-d11f\.onrender\.com|virtual5\.vercel\.app)\/og-image\.png" \/>/);
     expect(indexHtml).toContain('<meta property="og:image:width" content="1200" />');
     expect(indexHtml).toContain('<meta property="og:image:height" content="630" />');
   });
@@ -23,7 +23,7 @@ describe('SEO & Share Metadata Suite', () => {
   it('includes Twitter summary card tags in index.html', () => {
     expect(indexHtml).toContain('<meta name="twitter:card" content="summary_large_image" />');
     expect(indexHtml).toContain('<meta name="twitter:title" content="EventWise AI: plan weddings, birthdays and melas in India" />');
-    expect(indexHtml).toContain('<meta name="twitter:image" content="https://virtual5.vercel.app/og-image.png" />');
+    expect(indexHtml).toMatch(/<meta name="twitter:image" content="https:\/\/(eventwise-ai-d11f\.onrender\.com|virtual5\.vercel\.app)\/og-image\.png" \/>/);
   });
 
   it('declares mobile theme-color and apple-touch-icon in index.html', () => {

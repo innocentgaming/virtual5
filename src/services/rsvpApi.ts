@@ -35,6 +35,12 @@ export const rsvpApi = {
     post<{ ok: boolean; updated?: boolean }>('/api/rsvp/submit', data),
 };
 
+/**
+ * Generates the full public RSVP URL for guest invitation distribution.
+ *
+ * @param token - Unique public RSVP slug / token
+ * @returns Fully qualified URL (e.g. 'https://domain.com/rsvp/abc-123')
+ */
 export function rsvpUrlFor(token: string): string {
   return `${window.location.origin}/rsvp/${token}`;
 }

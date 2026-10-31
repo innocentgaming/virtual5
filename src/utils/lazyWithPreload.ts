@@ -1,5 +1,6 @@
 import React from 'react';
 
+// eslint-disable-next-line typescript/no-explicit-any
 export interface PreloadableComponent<T extends React.ComponentType<any>> {
   (props: React.ComponentProps<T>): React.ReactElement | null;
   preload: () => Promise<{ default: T }>;
@@ -15,6 +16,7 @@ export async function preloadAllTabs(): Promise<void> {
  * Creates a lazy-loaded component with manual and idle prefetch capabilities.
  * Supports synchronous bypass in test environments once preloaded to keep synchronous test assertions stable.
  */
+// eslint-disable-next-line typescript/no-explicit-any
 export function lazyWithPreload<T extends React.ComponentType<any>>(
   factory: () => Promise<{ default: T }>
 ): PreloadableComponent<T> {
@@ -37,9 +39,11 @@ export function lazyWithPreload<T extends React.ComponentType<any>>(
 
   const Component = (props: React.ComponentProps<T>): React.ReactElement | null => {
     if (loadedComponent) {
-      return React.createElement(loadedComponent, props);
+      // eslint-disable-next-line typescript/no-explicit-any
+      return React.createElement(loadedComponent as any, props as any);
     }
-    return React.createElement(LazyComp, props);
+    // eslint-disable-next-line typescript/no-explicit-any
+    return React.createElement(LazyComp as any, props as any);
   };
 
   return Object.assign(Component, { preload }) as PreloadableComponent<T>;

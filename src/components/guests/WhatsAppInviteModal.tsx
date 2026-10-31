@@ -40,8 +40,8 @@ export const WhatsAppInviteModal: React.FC<WhatsAppInviteModalProps> = ({
       }
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
-    } catch (e) {
-      console.error('Failed to copy', e);
+    } catch {
+      // copy failure
     }
   };
 
@@ -62,9 +62,9 @@ export const WhatsAppInviteModal: React.FC<WhatsAppInviteModalProps> = ({
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
         {/* Style Selection Pills */}
         <div>
-          <label className="form-label" style={{ marginBottom: 'var(--space-2)' }}>
+          <span className="form-label" style={{ marginBottom: 'var(--space-2)', display: 'block' }}>
             <span>Select Invitation Tone & Format:</span>
-          </label>
+          </span>
           <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
             <button
               type="button"

@@ -22,6 +22,10 @@ import type {
 import { formatCurrency, formatIndianShort } from '../../utils/formatters';
 import { Card, CardHeader, Button, Badge } from '../ui';
 
+function getInitialTodayDate(): string {
+  return new Date().toISOString().split('T')[0];
+}
+
 interface EventSetupFormProps {
   initialPlan?: EventPlan;
   isEditing?: boolean;
@@ -278,17 +282,14 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
     setCurrentStep((prev) => Math.max(prev - 1, 1) as 1 | 2 | 3 | 4 | 5);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && e.target instanceof HTMLInputElement && currentStep < 5) {
-      e.preventDefault();
+  const handleSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (currentStep < 5) {
       if (canAdvance) {
         handleNext();
       }
+      return;
     }
-  };
-
-  const handleSubmit = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
 
     // Validate all mandatory fields
     if (!title.trim()) {
@@ -350,7 +351,7 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
   };
 
   // Indian Date Constraints (Block Past Dates)
-  const todayDateString = new Date().toISOString().split('T')[0];
+  const [todayDateString] = useState(getInitialTodayDate);
 
   // Calculated per-guest amount
   const calculatedPerGuest = Math.round(totalBudget / Math.max(guestCount, 1));
@@ -460,7 +461,7 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
         </ol>
       </nav>
 
-      <form onSubmit={handleSubmit} onKeyDown={handleKeyDown}>
+      <form onSubmit={handleSubmit}>
         {/* =====================================================================
             STEP 1: EVENT TYPE (Live theme preview cards)
             ===================================================================== */}
@@ -756,7 +757,7 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
                 />
                 <datalist id={cityDatalistId}>
                   {INDIAN_CITIES.map((c) => (
-                    <option key={c} value={c} />
+                    <option key={c} value={c}>{c}</option>
                   ))}
                 </datalist>
               </div>

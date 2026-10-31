@@ -3,12 +3,12 @@ import React, { useEffect, useRef } from 'react';
 export interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  title?: React.ReactNode;
-  subtitle?: React.ReactNode;
+  title?: string;
+  subtitle?: string;
   description?: string;
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
   children: React.ReactNode;
   footer?: React.ReactNode;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
   ariaLabel?: string;
 }
 
@@ -18,9 +18,9 @@ export const Modal: React.FC<ModalProps> = ({
   title,
   subtitle,
   description,
+  size = 'md',
   children,
   footer,
-  size = 'md',
   ariaLabel,
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
@@ -29,19 +29,16 @@ export const Modal: React.FC<ModalProps> = ({
   useEffect(() => {
     if (!isOpen) return;
 
-    // Save previous active element to restore focus on close
-    previousActiveElement.current = document.activeElement as HTMLElement | null;
-
-    // Lock body scroll without layout shift
+    previousActiveElement.current = document.activeElement as HTMLElement;
     const originalOverflow = document.body.style.overflow;
     const originalPaddingRight = document.body.style.paddingRight;
     const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+
+    document.body.style.overflow = 'hidden';
     if (scrollbarWidth > 0) {
       document.body.style.paddingRight = `${scrollbarWidth}px`;
     }
-    document.body.style.overflow = 'hidden';
 
-    // Focus first focusable element inside modal
     const focusableSelector =
       'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
@@ -103,36 +100,21 @@ export const Modal: React.FC<ModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  };
-
   const titleId = title ? 'ui-modal-title' : undefined;
   const descId = description || subtitle ? 'ui-modal-desc' : undefined;
 
   return (
     <div
-      className="ui-modal-backdrop modal-overlay"
-      onClick={handleBackdropClick}
-      data-testid="modal-backdrop"
+      style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
     >
-      {/* Pre-guard for focus trapping */}
-      <div
-        tabIndex={0}
-        aria-hidden="true"
-        style={{ position: 'fixed', top: 0, left: 0, width: 0, height: 0, opacity: 0, pointerEvents: 'none' }}
-        onFocus={() => {
-          if (modalRef.current) {
-            const focusable = modalRef.current.querySelectorAll<HTMLElement>(
-              'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-            );
-            if (focusable.length > 0) focusable[focusable.length - 1].focus();
-          }
-        }}
+      <button
+        type="button"
+        className="ui-modal-backdrop modal-overlay"
+        onClick={onClose}
+        data-testid="modal-backdrop"
+        aria-label="Dismiss backdrop"
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none', cursor: 'default' }}
       />
-
       <div
         ref={modalRef}
         role="dialog"
@@ -142,6 +124,7 @@ export const Modal: React.FC<ModalProps> = ({
         aria-label={ariaLabel || (!titleId ? 'Modal dialog' : undefined)}
         tabIndex={-1}
         className={`ui-modal-container modal-content ui-modal--${size} modal-${size}`}
+        style={{ position: 'relative', zIndex: 1001 }}
       >
         <div className="ui-modal-header modal-header">
           <div className="ui-modal-header-text">
@@ -167,21 +150,6 @@ export const Modal: React.FC<ModalProps> = ({
 
         {footer && <div className="ui-modal-footer modal-footer">{footer}</div>}
       </div>
-
-      {/* Post-guard for focus trapping */}
-      <div
-        tabIndex={0}
-        aria-hidden="true"
-        style={{ position: 'fixed', top: 0, left: 0, width: 0, height: 0, opacity: 0, pointerEvents: 'none' }}
-        onFocus={() => {
-          if (modalRef.current) {
-            const focusable = modalRef.current.querySelectorAll<HTMLElement>(
-              'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-            );
-            if (focusable.length > 0) focusable[0].focus();
-          }
-        }}
-      />
     </div>
   );
 };

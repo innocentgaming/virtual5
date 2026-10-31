@@ -61,9 +61,8 @@ export const PersonaSwitcher: React.FC<PersonaSwitcherProps> = ({
   className = '',
 }) => {
   return (
-    <div
+    <section
       className={`persona-switcher ${className}`}
-      role="region"
       aria-label="Demo Persona Switcher"
       style={{
         display: 'flex',
@@ -167,6 +166,6 @@ export const PersonaSwitcher: React.FC<PersonaSwitcherProps> = ({
           );
         })}
       </div>
-    </div>
+    </section>
   );
 };

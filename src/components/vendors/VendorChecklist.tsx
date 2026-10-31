@@ -410,10 +410,11 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
                     {/* Contact Info & Notes Form */}
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-3)' }}>
                       <div className="form-group">
-                        <label className="form-label" style={{ fontSize: 'var(--text-xs)' }}>
+                        <label htmlFor={`vendor-contact-${vendor.id}`} className="form-label" style={{ fontSize: 'var(--text-xs)' }}>
                           <User size={12} style={{ marginRight: '4px' }} /> Contact Person
                         </label>
                         <input
+                          id={`vendor-contact-${vendor.id}`}
                           type="text"
                           className="form-control"
                           value={vendor.contactName || ''}
@@ -423,10 +424,11 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
                       </div>
 
                       <div className="form-group">
-                        <label className="form-label" style={{ fontSize: 'var(--text-xs)' }}>
+                        <label htmlFor={`vendor-phone-${vendor.id}`} className="form-label" style={{ fontSize: 'var(--text-xs)' }}>
                           <Phone size={12} style={{ marginRight: '4px' }} /> Phone Number
                         </label>
                         <input
+                          id={`vendor-phone-${vendor.id}`}
                           type="text"
                           className="form-control"
                           value={vendor.contactPhone || ''}
@@ -436,10 +438,11 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
                       </div>
 
                       <div className="form-group">
-                        <label className="form-label" style={{ fontSize: 'var(--text-xs)' }}>
+                        <label htmlFor={`vendor-email-${vendor.id}`} className="form-label" style={{ fontSize: 'var(--text-xs)' }}>
                           <Mail size={12} style={{ marginRight: '4px' }} /> Email Address
                         </label>
                         <input
+                          id={`vendor-email-${vendor.id}`}
                           type="email"
                           className="form-control"
                           value={vendor.contactEmail || ''}
@@ -450,8 +453,9 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
                     </div>
 
                     <div className="form-group">
-                      <label className="form-label" style={{ fontSize: 'var(--text-xs)' }}>Negotiation & Interview Notes</label>
+                      <label htmlFor={`vendor-notes-${vendor.id}`} className="form-label" style={{ fontSize: 'var(--text-xs)' }}>Negotiation & Interview Notes</label>
                       <textarea
+                        id={`vendor-notes-${vendor.id}`}
                         rows={2}
                         className="form-control"
                         value={vendor.notes || ''}

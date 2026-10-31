@@ -236,21 +236,20 @@ export const Navigation: React.FC<NavigationProps> = ({
 
       {/* Mobile Drawer Popup for Secondary Tabs */}
       {isMobileMenuOpen && (
-        <div
-          className="modal-overlay"
-          onClick={() => setIsMobileMenuOpen(false)}
-          style={{ zIndex: 85, alignItems: 'flex-end', paddingBottom: '70px' }}
-        >
+        <div style={{ position: 'fixed', inset: 0, zIndex: 85, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: '70px' }}>
+          <button
+            type="button"
+            className="modal-overlay"
+            aria-label="Close menu backdrop"
+            onClick={() => setIsMobileMenuOpen(false)}
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none', background: 'rgba(0,0,0,0.5)', cursor: 'default' }}
+          />
           <div
             className="card"
             role="dialog"
             aria-modal="true"
             aria-label="More Features"
-            style={{ width: '100%', maxWidth: '420px', margin: '0 auto' }}
-            onClick={(e) => e.stopPropagation()}
-            onKeyDown={(e) => {
-              if (e.key === 'Escape') setIsMobileMenuOpen(false);
-            }}
+            style={{ position: 'relative', zIndex: 86, width: '100%', maxWidth: '420px', margin: '0 1rem' }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
               <strong style={{ fontSize: '1rem' }}>More Features</strong>

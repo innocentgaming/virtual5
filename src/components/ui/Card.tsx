@@ -17,6 +17,7 @@ export const Card: React.FC<CardProps> = ({
 
   return (
     <div
+      role={props.role || (isInteractive ? 'button' : undefined)}
       className={`ui-card card ${isInteractive ? 'ui-card--interactive card-interactive' : ''} ${variantClass} ${className}`.trim()}
       tabIndex={isInteractive ? 0 : undefined}
       {...props}

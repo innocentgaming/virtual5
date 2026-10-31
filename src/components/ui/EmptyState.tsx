@@ -16,7 +16,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   className = '',
 }) => {
   return (
-    <div className={`ui-empty-state ${className}`} role="status">
+    <output className={`ui-empty-state ${className}`} style={{ display: 'block' }}>
       {icon ? (
         <div className="ui-empty-state__icon" aria-hidden="true">{icon}</div>
       ) : (
@@ -29,6 +29,6 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       <h3 className="ui-empty-state__title">{title}</h3>
       {description && <p className="ui-empty-state__description">{description}</p>}
       {action && <div className="ui-empty-state__action">{action}</div>}
-    </div>
+    </output>
   );
 };

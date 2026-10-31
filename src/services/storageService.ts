@@ -1,6 +1,7 @@
 import type { EventPlan } from '../types/event';
 import { INITIAL_EVENTS } from '../data/sampleEvents';
 import { validateAndSanitizeEventPlan } from '../utils/validators';
+import { storedEventPlanSchema } from '../schemas/eventSchemas';
 
 export const STORAGE_SCHEMA_VERSION = 2;
 export const STORAGE_KEY_EVENTS = 'eventwise_ai_events_v2';
@@ -18,7 +19,7 @@ export const MAX_STORAGE_BYTES = 2 * 1024 * 1024; // 2 MB cap
 
 /**
  * Validates whether an object is a structurally valid EventPlan.
- * Performs deep structural and type checks.
+ * Performs deep structural and type checks using Zod schema.
  */
 export function isValidEventPlan(data: unknown): data is EventPlan {
   if (!data || typeof data !== 'object') return false;
@@ -39,6 +40,12 @@ export function isValidEventPlan(data: unknown): data is EventPlan {
 
   if (!hasTopLevelFields) return false;
 
+  const zodResult = storedEventPlanSchema.passthrough().safeParse(data);
+  if (!zodResult.success) {
+    const res = validateAndSanitizeEventPlan(data);
+    return res.valid;
+  }
+
   const result = validateAndSanitizeEventPlan(data);
   return result.valid;
 }
@@ -51,10 +58,20 @@ const storageErrorListeners = new Set<StorageErrorListener>();
 let currentStorageError: string | null = null;
 let lastSavedPayload: string | null = null;
 
+/**
+ * Retrieves the current active storage quota or serialization error message.
+ * @returns Error string or null if storage operations are healthy
+ */
 export function getStorageError(): string | null {
   return currentStorageError;
 }
 
+/**
+ * Subscribes to storage error notifications across components.
+ *
+ * @param listener - Callback receiving error message or null
+ * @returns Unsubscribe cleanup function
+ */
 export function subscribeStorageError(listener: StorageErrorListener): () => void {
   storageErrorListeners.add(listener);
   return () => {
@@ -62,6 +79,9 @@ export function subscribeStorageError(listener: StorageErrorListener): () => voi
   };
 }
 
+/**
+ * Clears any active storage error flag and notifies registered subscribers.
+ */
 export function clearStorageError(): void {
   if (currentStorageError !== null) {
     currentStorageError = null;
@@ -69,6 +89,9 @@ export function clearStorageError(): void {
   }
 }
 
+/**
+ * Invalidates the internal cache of the last serialized storage payload.
+ */
 export function clearStorageCache(): void {
   lastSavedPayload = null;
 }

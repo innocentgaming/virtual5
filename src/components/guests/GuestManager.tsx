@@ -152,9 +152,7 @@ const GuestTableRow = React.memo<GuestTableRowProps>(({
       </td>
       <td style={{ padding: 'var(--space-3) var(--space-2)' }}>
         {guest.dietary && guest.dietary !== 'none' ? (
-          <span
-            tabIndex={0}
-            role="note"
+          <span role="note"
             aria-label={`${DIETARY_LABELS[guest.dietary]}: ${DIETARY_TOOLTIPS[guest.dietary]}`}
             title={DIETARY_TOOLTIPS[guest.dietary]}
             style={{
@@ -932,7 +930,7 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
               <tbody>
                 {isVirtual && topSpacerHeight > 0 && (
                   <tr style={{ height: `${topSpacerHeight}px` }} aria-hidden="true">
-                    <td colSpan={7} style={{ padding: 0, border: 'none' }} />
+                    <td colSpan={7} aria-hidden="true" style={{ padding: 0, border: 'none' }}>Spacer</td>
                   </tr>
                 )}
                 {visibleItems.map((guest) => {
@@ -951,7 +949,7 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
                 })}
                 {isVirtual && bottomSpacerHeight > 0 && (
                   <tr style={{ height: `${bottomSpacerHeight}px` }} aria-hidden="true">
-                    <td colSpan={7} style={{ padding: 0, border: 'none' }} />
+                    <td colSpan={7} aria-hidden="true" style={{ padding: 0, border: 'none' }}>Spacer</td>
                   </tr>
                 )}
               </tbody>
@@ -1183,7 +1181,6 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
               value={bulkTableValue}
               onChange={(e) => setBulkTableValue(e.target.value)}
               placeholder="e.g. Table 5 — Royal Haveli Terrace"
-              autoFocus
             />
           </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)' }}>

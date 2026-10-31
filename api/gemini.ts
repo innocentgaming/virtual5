@@ -69,7 +69,7 @@ export function isOriginAllowed(req: IncomingMessage): boolean {
         return value;
       }
     };
-    if (allowList.length > 0 && allowList.some((entry) => hostOf(entry) === originHost)) return true;
+    if (allowList.some((entry) => hostOf(entry) === originHost)) return true;
     const ownHost = String(req.headers['x-forwarded-host'] ?? req.headers.host ?? '');
     return originHost === ownHost;
   }

@@ -134,7 +134,6 @@ export const TableSeatingPlanner: React.FC<TableSeatingPlannerProps> = ({
                 value={newTableName}
                 onChange={(e) => setNewTableName(e.target.value)}
                 style={{ height: '32px', minHeight: '32px', fontSize: 'var(--text-xs)', width: '160px' }}
-                autoFocus
               />
               <Button variant="primary" size="sm" type="submit">
                 Save

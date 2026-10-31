@@ -6,6 +6,13 @@
  */
 type PasswordCredentialCtor = new (data: { id: string; password: string; name?: string }) => Credential;
 
+/**
+ * Prompts the browser's native password manager to securely store user credentials.
+ *
+ * @param email - User identifier / email address
+ * @param password - User authentication password
+ * @param name - Optional user display name
+ */
 export async function offerToSaveCredentials(email: string, password: string, name?: string): Promise<void> {
   if (typeof window === 'undefined' || typeof navigator === 'undefined') return;
   const Ctor = (window as unknown as { PasswordCredential?: PasswordCredentialCtor }).PasswordCredential;

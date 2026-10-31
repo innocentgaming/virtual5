@@ -29,6 +29,8 @@ export const SiteNav: React.FC = () => (
   </header>
 );
 
+const CURRENT_YEAR = new Date().getFullYear();
+
 export const SiteFooter: React.FC = () => (
   <footer className="s-footer">
     <div className="s-wrap s-footer__grid">
@@ -60,7 +62,7 @@ export const SiteFooter: React.FC = () => (
       </div>
     </div>
     <div className="s-wrap s-footer__bottom">
-      <p>© {new Date().getFullYear()} EventWise AI. Built for India First.</p>
+      <p>© {CURRENT_YEAR} EventWise AI. Built for India First.</p>
     </div>
   </footer>
 );

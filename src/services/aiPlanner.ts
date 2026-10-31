@@ -42,16 +42,11 @@ export interface AIPlanningRequest {
   omitNotes?: boolean;
 }
 
+import { geminiPlanResponseSchema } from '../schemas/eventSchemas';
+
 function validateAIPlanResponse(data: unknown): data is Partial<EventPlan> {
-  if (!data || typeof data !== 'object') return false;
-  const obj = data as Record<string, unknown>;
-
-  if (!Array.isArray(obj.budgetItems)) return false;
-  if (!Array.isArray(obj.tasks)) return false;
-  if (!Array.isArray(obj.vendors)) return false;
-  if (!Array.isArray(obj.ideas)) return false;
-
-  return true;
+  const parsed = geminiPlanResponseSchema.safeParse(data);
+  return parsed.success;
 }
 
 interface CacheEntry {
@@ -70,6 +65,10 @@ export function clearPlanCache(): void {
   inFlightRequests.clear();
 }
 
+/**
+ * Returns the current number of cached event plans in memory.
+ * @returns Count of cached plan entries
+ */
 export function getPlanCacheSize(): number {
   return planMemoryCache.size;
 }
@@ -306,6 +305,13 @@ Directives:
   }
 }
 
+/**
+ * Generates an end-to-end culturally grounded Indian celebration plan using Google Gemini GenAI,
+ * with automatic fallback to deterministic rule templates when offline or unconfigured.
+ *
+ * @param request - Configuration options including budget, city, dietary preferences, and event date
+ * @returns Fully populated EventPlan with budget items, timeline milestones, and vendor checklists
+ */
 export async function generateAIEventPlan(request: AIPlanningRequest): Promise<EventPlan> {
   // Check persistent offline mode preference
   const isOfflineMode = typeof window !== 'undefined' &&

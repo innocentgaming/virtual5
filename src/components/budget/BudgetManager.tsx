@@ -982,7 +982,7 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
               <tbody>
                 {isVirtual && topSpacerHeight > 0 && (
                   <tr style={{ height: `${topSpacerHeight}px` }} aria-hidden="true">
-                    <td colSpan={7} style={{ padding: 0, border: 'none' }} />
+                    <td colSpan={7} aria-hidden="true" style={{ padding: 0, border: 'none' }}>Spacer</td>
                   </tr>
                 )}
                 {visibleItems.map((item) => {
@@ -1111,7 +1111,7 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
                 })}
                 {isVirtual && bottomSpacerHeight > 0 && (
                   <tr style={{ height: `${bottomSpacerHeight}px` }} aria-hidden="true">
-                    <td colSpan={7} style={{ padding: 0, border: 'none' }} />
+                    <td colSpan={7} aria-hidden="true" style={{ padding: 0, border: 'none' }}>Spacer</td>
                   </tr>
                 )}
               </tbody>
