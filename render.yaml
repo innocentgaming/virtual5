@@ -16,6 +16,8 @@ services:
         value: "true"
       - key: AUTH_SECRET
         generateValue: true
+      - key: APP_URL
+        value: https://eventwise-ai-d11f.onrender.com
       # Accounts must be stored somewhere that survives restarts (Render's free plan sleeps and wipes memory).
       # Create a free Upstash Redis database and paste its REST URL / token here.
       - key: UPSTASH_REDIS_REST_URL

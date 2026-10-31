@@ -12,7 +12,7 @@
 [![Bundle Size](https://img.shields.io/badge/Main%20JS-27.9%20kB%20(Gzip%2010.0%20kB)-brightgreen?style=for-the-badge)](#)
 [![Security](https://img.shields.io/badge/Audit-0%20Vulnerabilities-success?style=for-the-badge&logo=npm&logoColor=white)](#)
 
-**[🌐 Live Landing Page](https://virtual5.vercel.app/)** • **[🚀 90-Second Guided Demo](https://virtual5.vercel.app/demo)** • **[🔐 Accounts & Cloud Sync](https://virtual5.vercel.app/signup)** • **[📦 GitHub Repo](https://github.com/innocentgaming/virtual5)**
+**[🌐 Live Production (Render)](https://eventwise-ai-d11f.onrender.com/)** • **[🚀 90-Second Guided Demo](https://eventwise-ai-d11f.onrender.com/demo)** • **[🔐 Accounts & Cloud Sync](https://eventwise-ai-d11f.onrender.com/signup)** • **[📦 GitHub Repo](https://github.com/innocentgaming/virtual5)**
 
 </div>
 
@@ -36,10 +36,12 @@
 
 | Resource | Direct Link | Purpose |
 | :--- | :--- | :--- |
-| 🚀 **90-Second Guided Tour** | [virtual5.vercel.app/demo](https://virtual5.vercel.app/demo) | Instant zero-login demo with interactive 90s tour, Chaos Bar, and preloaded personas |
-| 🔐 **Production Application** | [virtual5.vercel.app/app](https://virtual5.vercel.app/app) | Full authenticated planner with scrypt hashing, Upstash Redis sync & JSON backup/restore |
-| 👑 **Admin Console** | [virtual5.vercel.app/admin](https://virtual5.vercel.app/admin) | First registered user admin console, user management, audit logs & system health |
-| ☁️ **Render Deployment** | [`render.yaml`](render.yaml) | Production Blueprint with automated health checks, security headers & gzip compression |
+| 🌐 **Live Production App (Render)** | [eventwise-ai-d11f.onrender.com](https://eventwise-ai-d11f.onrender.com/) | Live standalone Node full-stack deployment on Render |
+| 🚀 **90-Second Guided Tour** | [eventwise-ai-d11f.onrender.com/demo](https://eventwise-ai-d11f.onrender.com/demo) | Instant zero-login demo with interactive 90s tour, Chaos Bar, and preloaded personas |
+| 🔐 **Authenticated Workspace** | [eventwise-ai-d11f.onrender.com/app](https://eventwise-ai-d11f.onrender.com/app) | Full authenticated planner with scrypt hashing, Upstash Redis / disk sync & JSON backup/restore |
+| 👑 **Admin Console** | [eventwise-ai-d11f.onrender.com/admin](https://eventwise-ai-d11f.onrender.com/admin) | First registered user admin console, user management, audit logs & system health |
+| 🩺 **System Health Check** | [eventwise-ai-d11f.onrender.com/api/health](https://eventwise-ai-d11f.onrender.com/api/health) | Live JSON health check endpoint (`status: ok`, memory, database connection) |
+| ☁️ **Render Deployment Blueprint** | [`render.yaml`](render.yaml) | Production Blueprint with automated health checks, security headers & gzip compression |
 | 🎬 **Evaluator Video Guide** | [docs/DEMO.md](docs/DEMO.md) | Click-by-click 90-second evaluator demonstration script (no voiceover required) |
 | 🛡️ **Security Policy** | [SECURITY.md](SECURITY.md) | Defense-in-depth threat mitigation, CSP headers, and secret sanitization architecture |
 
