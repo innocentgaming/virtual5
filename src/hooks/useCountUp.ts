@@ -8,7 +8,11 @@ export function useCountUp(target: number, duration = 650): number {
   const isReduced =
     typeof window === 'undefined' ||
     import.meta.env?.MODE === 'test' ||
-    Boolean(typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    Boolean(
+      typeof window !== 'undefined' &&
+      window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+    );
 
   const [value, setValue] = useState<number>(0);
 

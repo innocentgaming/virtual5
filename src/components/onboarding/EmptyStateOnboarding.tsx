@@ -104,13 +104,17 @@ export const EmptyStateOnboarding: React.FC<EmptyStateOnboardingProps> = ({
   });
 
   return (
-    <div className="onboarding-hub" style={{ maxWidth: '1100px', margin: '0 auto', padding: '1rem 1rem 3rem' }}>
+    <div
+      className="onboarding-hub"
+      style={{ maxWidth: '1100px', margin: '0 auto', padding: '1rem 1rem 3rem' }}
+    >
       {/* Welcome & Profile Header Banner */}
       <section
         className="card"
         style={{
           padding: '2.5rem 2rem',
-          background: 'linear-gradient(135deg, var(--surface-raised) 0%, var(--surface-subtle) 100%)',
+          background:
+            'linear-gradient(135deg, var(--surface-raised) 0%, var(--surface-subtle) 100%)',
           border: '1px solid var(--border)',
           borderRadius: 'var(--radius-lg)',
           boxShadow: 'var(--shadow-md)',
@@ -133,9 +137,25 @@ export const EmptyStateOnboarding: React.FC<EmptyStateOnboardingProps> = ({
           }}
         />
 
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1.5rem' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'flex-start',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '1.5rem',
+          }}
+        >
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.65rem',
+                marginBottom: '0.75rem',
+                flexWrap: 'wrap',
+              }}
+            >
               <span
                 style={{
                   display: 'inline-flex',
@@ -161,19 +181,44 @@ export const EmptyStateOnboarding: React.FC<EmptyStateOnboardingProps> = ({
                 </Badge>
               )}
               {user?.organization && (
-                <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                <span
+                  style={{
+                    fontSize: 'var(--text-xs)',
+                    color: 'var(--text-muted)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 4,
+                  }}
+                >
                   <Building2 size={12} />
                   {user.organization}
                 </span>
               )}
             </div>
 
-            <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: 800, color: 'var(--text)', margin: '0 0 0.5rem', lineHeight: 1.2 }}>
+            <h1
+              style={{
+                fontSize: 'var(--text-2xl)',
+                fontWeight: 800,
+                color: 'var(--text)',
+                margin: '0 0 0.5rem',
+                lineHeight: 1.2,
+              }}
+            >
               Welcome, {user?.name || 'Celebration Host'}!
             </h1>
-            <p style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)', maxWidth: '640px', margin: 0, lineHeight: 1.5 }}>
-              Your workspace is clean and ready. There are no pre-saved plans in your account. You can create your first personalized celebration,
-              explore tailored concepts, or build an interactive invitation website.
+            <p
+              style={{
+                color: 'var(--text-muted)',
+                fontSize: 'var(--text-sm)',
+                maxWidth: '640px',
+                margin: 0,
+                lineHeight: 1.5,
+              }}
+            >
+              Your workspace is clean and ready. There are no pre-saved plans in your account. You
+              can create your first personalized celebration, explore tailored concepts, or build an
+              interactive invitation website.
             </p>
           </div>
 
@@ -202,11 +247,24 @@ export const EmptyStateOnboarding: React.FC<EmptyStateOnboardingProps> = ({
 
       {/* 3 Pillars Action Grid */}
       <section style={{ marginBottom: '2.5rem' }} aria-label="Creation methods">
-        <h2 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, marginBottom: '1rem', color: 'var(--text)' }}>
+        <h2
+          style={{
+            fontSize: 'var(--text-lg)',
+            fontWeight: 700,
+            marginBottom: '1rem',
+            color: 'var(--text)',
+          }}
+        >
           Start Your Celebration
         </h2>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.25rem' }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+            gap: '1.25rem',
+          }}
+        >
           {/* Action 1: AI Planner */}
           <div
             className="card"
@@ -234,7 +292,8 @@ export const EmptyStateOnboarding: React.FC<EmptyStateOnboardingProps> = ({
                   width: 44,
                   height: 44,
                   borderRadius: '12px',
-                  background: 'linear-gradient(135deg, rgba(217, 119, 6, 0.2), rgba(231, 111, 81, 0.2))',
+                  background:
+                    'linear-gradient(135deg, rgba(217, 119, 6, 0.2), rgba(231, 111, 81, 0.2))',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -243,14 +302,38 @@ export const EmptyStateOnboarding: React.FC<EmptyStateOnboardingProps> = ({
               >
                 <Sparkles size={22} color="var(--accent-primary)" />
               </div>
-              <h3 style={{ fontSize: 'var(--text-md)', fontWeight: 700, margin: '0 0 0.5rem', color: 'var(--text)' }}>
+              <h3
+                style={{
+                  fontSize: 'var(--text-md)',
+                  fontWeight: 700,
+                  margin: '0 0 0.5rem',
+                  color: 'var(--text)',
+                }}
+              >
                 ✨ AI Celebration Planner
               </h3>
-              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', margin: 0, lineHeight: 1.5 }}>
-                Describe your vision in plain words. Gemini GenAI automatically computes localized itemized budgets, Muhurat timelines, vendor checklists, and contingency buffers.
+              <p
+                style={{
+                  fontSize: 'var(--text-xs)',
+                  color: 'var(--text-muted)',
+                  margin: 0,
+                  lineHeight: 1.5,
+                }}
+              >
+                Describe your vision in plain words. Gemini GenAI automatically computes localized
+                itemized budgets, Muhurat timelines, vendor checklists, and contingency buffers.
               </p>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--accent-primary)', fontSize: 'var(--text-xs)', fontWeight: 700 }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                color: 'var(--accent-primary)',
+                fontSize: 'var(--text-xs)',
+                fontWeight: 700,
+              }}
+            >
               Launch AI Planner <ChevronRight size={14} />
             </div>
           </div>
@@ -282,7 +365,8 @@ export const EmptyStateOnboarding: React.FC<EmptyStateOnboardingProps> = ({
                   width: 44,
                   height: 44,
                   borderRadius: '12px',
-                  background: 'linear-gradient(135deg, rgba(42, 157, 143, 0.2), rgba(38, 70, 83, 0.2))',
+                  background:
+                    'linear-gradient(135deg, rgba(42, 157, 143, 0.2), rgba(38, 70, 83, 0.2))',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -291,14 +375,38 @@ export const EmptyStateOnboarding: React.FC<EmptyStateOnboardingProps> = ({
               >
                 <Plus size={22} color="#2a9d8f" />
               </div>
-              <h3 style={{ fontSize: 'var(--text-md)', fontWeight: 700, margin: '0 0 0.5rem', color: 'var(--text)' }}>
+              <h3
+                style={{
+                  fontSize: 'var(--text-md)',
+                  fontWeight: 700,
+                  margin: '0 0 0.5rem',
+                  color: 'var(--text)',
+                }}
+              >
                 📝 Custom Event Wizard
               </h3>
-              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', margin: 0, lineHeight: 1.5 }}>
-                Configure dates, city, guest capacity, venue preferences, catering style, and cultural traditions step-by-step with real-time budget forecasting.
+              <p
+                style={{
+                  fontSize: 'var(--text-xs)',
+                  color: 'var(--text-muted)',
+                  margin: 0,
+                  lineHeight: 1.5,
+                }}
+              >
+                Configure dates, city, guest capacity, venue preferences, catering style, and
+                cultural traditions step-by-step with real-time budget forecasting.
               </p>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#2a9d8f', fontSize: 'var(--text-xs)', fontWeight: 700 }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                color: '#2a9d8f',
+                fontSize: 'var(--text-xs)',
+                fontWeight: 700,
+              }}
+            >
               Open Setup Wizard <ChevronRight size={14} />
             </div>
           </div>
@@ -330,7 +438,8 @@ export const EmptyStateOnboarding: React.FC<EmptyStateOnboardingProps> = ({
                   width: 44,
                   height: 44,
                   borderRadius: '12px',
-                  background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2))',
+                  background:
+                    'linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2))',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -339,14 +448,38 @@ export const EmptyStateOnboarding: React.FC<EmptyStateOnboardingProps> = ({
               >
                 <Globe size={22} color="#6366f1" />
               </div>
-              <h3 style={{ fontSize: 'var(--text-md)', fontWeight: 700, margin: '0 0 0.5rem', color: 'var(--text)' }}>
+              <h3
+                style={{
+                  fontSize: 'var(--text-md)',
+                  fontWeight: 700,
+                  margin: '0 0 0.5rem',
+                  color: 'var(--text)',
+                }}
+              >
                 🌐 Event Website & RSVP Portal
               </h3>
-              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', margin: 0, lineHeight: 1.5 }}>
-                Build a shareable invitation website with live countdown, Muhurat schedule, venue map, and interactive online RSVP for your guests.
+              <p
+                style={{
+                  fontSize: 'var(--text-xs)',
+                  color: 'var(--text-muted)',
+                  margin: 0,
+                  lineHeight: 1.5,
+                }}
+              >
+                Build a shareable invitation website with live countdown, Muhurat schedule, venue
+                map, and interactive online RSVP for your guests.
               </p>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#6366f1', fontSize: 'var(--text-xs)', fontWeight: 700 }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                color: '#6366f1',
+                fontSize: 'var(--text-xs)',
+                fontWeight: 700,
+              }}
+            >
               Launch Website Builder <ChevronRight size={14} />
             </div>
           </div>
@@ -355,12 +488,30 @@ export const EmptyStateOnboarding: React.FC<EmptyStateOnboardingProps> = ({
 
       {/* Interactive Search & Celebration Concepts Explorer */}
       <section style={{ marginBottom: '2.5rem' }} aria-label="Celebration concepts explorer">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', marginBottom: '1rem' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '1rem',
+            marginBottom: '1rem',
+          }}
+        >
           <div>
-            <h2 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, margin: 0, color: 'var(--text)' }}>
+            <h2
+              style={{
+                fontSize: 'var(--text-lg)',
+                fontWeight: 700,
+                margin: 0,
+                color: 'var(--text)',
+              }}
+            >
               Explore Celebration Concepts
             </h2>
-            <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', margin: '4px 0 0' }}>
+            <p
+              style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', margin: '4px 0 0' }}
+            >
               Search themes, venues, or locations to quick-start a plan customized for you.
             </p>
           </div>
@@ -395,7 +546,13 @@ export const EmptyStateOnboarding: React.FC<EmptyStateOnboardingProps> = ({
         </div>
 
         {/* Ideas Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+            gap: '1rem',
+          }}
+        >
           {filteredIdeas.map((idea) => (
             <div
               key={idea.id}
@@ -411,18 +568,51 @@ export const EmptyStateOnboarding: React.FC<EmptyStateOnboardingProps> = ({
               }}
             >
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: '0.5rem',
+                  }}
+                >
                   <span style={{ fontSize: '1.5rem' }}>{idea.icon}</span>
-                  <Badge variant={idea.eventType === 'wedding' ? 'wedding' : idea.eventType === 'birthday' ? 'birthday' : 'community'} size="sm">
+                  <Badge
+                    variant={
+                      idea.eventType === 'wedding'
+                        ? 'wedding'
+                        : idea.eventType === 'birthday'
+                          ? 'birthday'
+                          : 'community'
+                    }
+                    size="sm"
+                  >
                     {idea.eventType}
                   </Badge>
                 </div>
-                <h4 style={{ fontSize: 'var(--text-sm)', fontWeight: 700, margin: '0 0 0.35rem', color: 'var(--text)' }}>
+                <h4
+                  style={{
+                    fontSize: 'var(--text-sm)',
+                    fontWeight: 700,
+                    margin: '0 0 0.35rem',
+                    color: 'var(--text)',
+                  }}
+                >
                   {idea.title}
                 </h4>
-                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                <div
+                  style={{
+                    fontSize: 'var(--text-xs)',
+                    color: 'var(--text-muted)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '3px',
+                  }}
+                >
                   <span>📍 {idea.city}</span>
-                  <span>👥 {idea.guestCount} Guests • 💰 ₹{(idea.totalBudget / 100000).toFixed(1)} Lakh</span>
+                  <span>
+                    👥 {idea.guestCount} Guests • 💰 ₹{(idea.totalBudget / 100000).toFixed(1)} Lakh
+                  </span>
                   <span style={{ fontStyle: 'italic', marginTop: '2px' }}>"{idea.theme}"</span>
                 </div>
               </div>
@@ -458,7 +648,8 @@ export const EmptyStateOnboarding: React.FC<EmptyStateOnboardingProps> = ({
             Looking for pre-filled demo data?
           </strong>
           <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', margin: 0 }}>
-            If you want to inspect a complete pre-filled wedding, birthday, and community mela template, you can load them into this browser.
+            If you want to inspect a complete pre-filled wedding, birthday, and community mela
+            template, you can load them into this browser.
           </p>
         </div>
         <Button

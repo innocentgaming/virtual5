@@ -31,8 +31,19 @@ export const Logo: React.FC<LogoProps> = ({ size = 'md', plain = false, classNam
       <span className="ew-logo__ai">AI</span>
     </span>
     {!plain && (
-      <svg className="ew-logo__toran" viewBox="0 0 174 22" preserveAspectRatio="none" focusable="false">
-        <path d="M2 3 Q87 27 172 3" fill="none" stroke="var(--logo-marigold)" strokeWidth="1.6" strokeLinecap="round" />
+      <svg
+        className="ew-logo__toran"
+        viewBox="0 0 174 22"
+        preserveAspectRatio="none"
+        focusable="false"
+      >
+        <path
+          d="M2 3 Q87 27 172 3"
+          fill="none"
+          stroke="var(--logo-marigold)"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+        />
         {BEADS.map((b) => (
           <circle key={b.cx} cx={b.cx} cy={b.cy} r="3.4" fill={b.color} />
         ))}

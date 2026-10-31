@@ -4,7 +4,7 @@ import { repaceTimelineTasks } from '../services/decisionEngine';
 
 export function useTimeline(
   activeEvent: EventPlan | undefined,
-  updateEvent: (updated: EventPlan) => void
+  updateEvent: (updated: EventPlan) => void,
 ) {
   const addTask = useCallback(
     (task: Omit<TaskItem, 'id'>) => {
@@ -18,7 +18,7 @@ export function useTimeline(
         tasks: [...activeEvent.tasks, newTask],
       });
     },
-    [activeEvent, updateEvent]
+    [activeEvent, updateEvent],
   );
 
   const updateTask = useCallback(
@@ -29,7 +29,7 @@ export function useTimeline(
         tasks: activeEvent.tasks.map((t) => (t.id === task.id ? task : t)),
       });
     },
-    [activeEvent, updateEvent]
+    [activeEvent, updateEvent],
   );
 
   const deleteTask = useCallback(
@@ -40,7 +40,7 @@ export function useTimeline(
         tasks: activeEvent.tasks.filter((t) => t.id !== id),
       });
     },
-    [activeEvent, updateEvent]
+    [activeEvent, updateEvent],
   );
 
   const toggleTask = useCallback(
@@ -51,7 +51,7 @@ export function useTimeline(
         tasks: activeEvent.tasks.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t)),
       });
     },
-    [activeEvent, updateEvent]
+    [activeEvent, updateEvent],
   );
 
   const addScheduleItem = useCallback(
@@ -66,7 +66,7 @@ export function useTimeline(
         schedule: [...(activeEvent.schedule || []), newItem],
       });
     },
-    [activeEvent, updateEvent]
+    [activeEvent, updateEvent],
   );
 
   const updateScheduleItem = useCallback(
@@ -77,7 +77,7 @@ export function useTimeline(
         schedule: (activeEvent.schedule || []).map((s) => (s.id === item.id ? item : s)),
       });
     },
-    [activeEvent, updateEvent]
+    [activeEvent, updateEvent],
   );
 
   const deleteScheduleItem = useCallback(
@@ -88,20 +88,24 @@ export function useTimeline(
         schedule: (activeEvent.schedule || []).filter((s) => s.id !== id),
       });
     },
-    [activeEvent, updateEvent]
+    [activeEvent, updateEvent],
   );
 
   const repaceTimeline = useCallback(
     (newDateStr: string) => {
       if (!activeEvent) return;
-      const updatedTasks = repaceTimelineTasks(activeEvent.tasks, activeEvent.eventDate, newDateStr);
+      const updatedTasks = repaceTimelineTasks(
+        activeEvent.tasks,
+        activeEvent.eventDate,
+        newDateStr,
+      );
       updateEvent({
         ...activeEvent,
         eventDate: newDateStr,
         tasks: updatedTasks,
       });
     },
-    [activeEvent, updateEvent]
+    [activeEvent, updateEvent],
   );
 
   return {
@@ -115,4 +119,3 @@ export function useTimeline(
     repaceTimeline,
   };
 }
-

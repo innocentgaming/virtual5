@@ -35,7 +35,10 @@ export function detectBlockedTasks(tasks: TaskItem[], currentDateStr?: string): 
         const depDate = new Date(depTask.dueDate);
         depDate.setHours(0, 0, 0, 0);
         // If prerequisite is overdue or due on/after the dependent task
-        if (depDate.getTime() < now.getTime() || depDate.getTime() >= new Date(task.dueDate).getTime()) {
+        if (
+          depDate.getTime() < now.getTime() ||
+          depDate.getTime() >= new Date(task.dueDate).getTime()
+        ) {
           blockedList.push({
             blockedTaskId: task.id,
             blockedTaskTitle: task.title,
@@ -64,7 +67,7 @@ export function repaceTimelineTasks(
   tasks: TaskItem[],
   oldDateStr: string,
   newDateStr: string,
-  currentDateStr?: string
+  currentDateStr?: string,
 ): TaskItem[] {
   if (!tasks || tasks.length === 0) return [];
 
@@ -96,9 +99,12 @@ export function repaceTimelineTasks(
     if (daysRemaining <= SHORT_NOTICE_DAYS_CRITICAL) {
       let offsetDaysFromNow = 1;
       if (task.priority === 'urgent') offsetDaysFromNow = Math.min(daysRemaining, 2);
-      else if (task.priority === 'high') offsetDaysFromNow = Math.min(daysRemaining, Math.max(2, Math.round(daysRemaining * 0.4)));
-      else if (task.priority === 'medium') offsetDaysFromNow = Math.min(daysRemaining, Math.max(3, Math.round(daysRemaining * 0.7)));
-      else offsetDaysFromNow = Math.min(daysRemaining, Math.max(4, Math.round(daysRemaining * 0.9)));
+      else if (task.priority === 'high')
+        offsetDaysFromNow = Math.min(daysRemaining, Math.max(2, Math.round(daysRemaining * 0.4)));
+      else if (task.priority === 'medium')
+        offsetDaysFromNow = Math.min(daysRemaining, Math.max(3, Math.round(daysRemaining * 0.7)));
+      else
+        offsetDaysFromNow = Math.min(daysRemaining, Math.max(4, Math.round(daysRemaining * 0.9)));
 
       const newDate = new Date(now.getTime() + offsetDaysFromNow * 86400000);
       const yyyy = newDate.getFullYear();
@@ -110,8 +116,14 @@ export function repaceTimelineTasks(
     // Standard proportional re-pacing
     const taskCurrentDate = new Date(task.dueDate);
     taskCurrentDate.setHours(0, 0, 0, 0);
-    const oldLeadDays = Math.max(0, Math.round((oldTargetDate.getTime() - taskCurrentDate.getTime()) / 86400000));
-    const oldTotalSpan = Math.max(1, Math.round((oldTargetDate.getTime() - now.getTime()) / 86400000));
+    const oldLeadDays = Math.max(
+      0,
+      Math.round((oldTargetDate.getTime() - taskCurrentDate.getTime()) / 86400000),
+    );
+    const oldTotalSpan = Math.max(
+      1,
+      Math.round((oldTargetDate.getTime() - now.getTime()) / 86400000),
+    );
     const ratio = Math.max(0.05, Math.min(1.0, oldLeadDays / oldTotalSpan));
 
     const newLeadDays = Math.max(1, Math.round(daysRemaining * ratio));
@@ -138,7 +150,7 @@ export function repaceTimelineTasks(
  */
 export function auditTimelineTasks(
   tasks: TaskItem[],
-  currentDateStr?: string
+  currentDateStr?: string,
 ): {
   overdueCount: number;
   upcomingCount: number;
@@ -146,7 +158,11 @@ export function auditTimelineTasks(
   totalCount: number;
   progressPercentage: number;
   blockedCount: number;
-  tasksWithStatus: (TaskItem & { isOverdue: boolean; isBlocked?: boolean; blockedByNames?: string[] })[];
+  tasksWithStatus: (TaskItem & {
+    isOverdue: boolean;
+    isBlocked?: boolean;
+    blockedByNames?: string[];
+  })[];
 } {
   const now = currentDateStr ? new Date(currentDateStr) : new Date();
   now.setHours(0, 0, 0, 0);
@@ -215,4 +231,3 @@ export function auditTimelineTasks(
     tasksWithStatus,
   };
 }
-

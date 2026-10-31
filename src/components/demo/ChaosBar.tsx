@@ -111,7 +111,7 @@ export const ChaosBar: React.FC<ChaosBarProps> = ({
 
   // Find the top trade-off from active insights to offer quick 1-click execution
   const topTradeOff = plan.decisionInsights?.find(
-    (ins) => ins.tradeOffs && ins.tradeOffs.length > 0
+    (ins) => ins.tradeOffs && ins.tradeOffs.length > 0,
   )?.tradeOffs?.[0];
 
   return (
@@ -119,7 +119,8 @@ export const ChaosBar: React.FC<ChaosBarProps> = ({
       id="tour-chaos-bar"
       className={`chaos-bar ${className}`}
       style={{
-        background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(236, 72, 153, 0.06) 100%)',
+        background:
+          'linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(236, 72, 153, 0.06) 100%)',
         border: '1.5px solid var(--accent-secondary, #f59e0b)',
         borderRadius: 'var(--radius-lg, 12px)',
         padding: '0.75rem 1rem',
@@ -181,7 +182,8 @@ export const ChaosBar: React.FC<ChaosBarProps> = ({
                 color: 'var(--text-muted, #64748b)',
               }}
             >
-              Simulate disruptions, watch the budget recalculate in real time, and execute quantified trade-offs.
+              Simulate disruptions, watch the budget recalculate in real time, and execute
+              quantified trade-offs.
             </p>
           </div>
         </div>
@@ -366,7 +368,7 @@ export const ChaosBar: React.FC<ChaosBarProps> = ({
                     padding: '0.6rem 0.85rem',
                     background: 'none',
                     border: 'none',
-                    
+
                     textAlign: 'left',
                     fontSize: '0.8rem',
                     fontWeight: 600,
@@ -425,7 +427,14 @@ export const ChaosBar: React.FC<ChaosBarProps> = ({
             fontSize: '0.78rem',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text, #1e293b)' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              color: 'var(--text, #1e293b)',
+            }}
+          >
             <Sparkles size={14} color="var(--accent-primary, #b45309)" />
             <span>
               <strong>Trade-off suggestion:</strong> {topTradeOff.label} — {topTradeOff.description}

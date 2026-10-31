@@ -63,8 +63,7 @@ export const Navigation: React.FC<NavigationProps> = ({
           }}
           title="Over Budget"
         >
-          !
-          <span className="sr-only"> (Warning: Over Budget)</span>
+          !<span className="sr-only"> (Warning: Over Budget)</span>
         </span>
       ) : undefined,
     },
@@ -236,22 +235,53 @@ export const Navigation: React.FC<NavigationProps> = ({
 
       {/* Mobile Drawer Popup for Secondary Tabs */}
       {isMobileMenuOpen && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 85, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: '70px' }}>
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 85,
+            display: 'flex',
+            alignItems: 'flex-end',
+            justifyContent: 'center',
+            paddingBottom: '70px',
+          }}
+        >
           <button
             type="button"
             className="modal-overlay"
             aria-label="Close menu backdrop"
             onClick={() => setIsMobileMenuOpen(false)}
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none', background: 'rgba(0,0,0,0.5)', cursor: 'default' }}
+            style={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              border: 'none',
+              background: 'rgba(0,0,0,0.5)',
+              cursor: 'default',
+            }}
           />
           <div
             className="card"
             role="dialog"
             aria-modal="true"
             aria-label="More Features"
-            style={{ position: 'relative', zIndex: 86, width: '100%', maxWidth: '420px', margin: '0 1rem' }}
+            style={{
+              position: 'relative',
+              zIndex: 86,
+              width: '100%',
+              maxWidth: '420px',
+              margin: '0 1rem',
+            }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '1rem',
+              }}
+            >
               <strong style={{ fontSize: '1rem' }}>More Features</strong>
               <button
                 type="button"

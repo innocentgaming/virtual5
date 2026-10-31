@@ -43,7 +43,10 @@ const STORY: DemoScenarioId[] = ['caterer', 'guests', 'rain', 'date'];
 const BASE_STEP_MS = 3200;
 
 function prefersReducedMotion(): boolean {
-  return typeof window !== 'undefined' && Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);
+  return (
+    typeof window !== 'undefined' &&
+    Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches)
+  );
 }
 
 function donutSegments(totals: Record<string, number>) {
@@ -119,7 +122,9 @@ export function LiveDemoWindow(): React.ReactElement {
         ...plan,
         guestCount: nextGuests,
         budgetItems: plan.budgetItems.map((item) =>
-          item.isPerGuest ? { ...item, estimatedCost: Math.round(item.estimatedCost * ratio) } : item,
+          item.isPerGuest
+            ? { ...item, estimatedCost: Math.round(item.estimatedCost * ratio) }
+            : item,
         ),
       };
     }
@@ -136,7 +141,8 @@ export function LiveDemoWindow(): React.ReactElement {
 
   const delta = current.projectedTotal - baseline.projectedTotal;
   const overBudget = current.projectedTotal > scenarioPlan.totalBudget;
-  const utilisation = scenarioPlan.totalBudget > 0 ? (current.projectedTotal / scenarioPlan.totalBudget) * 100 : 0;
+  const utilisation =
+    scenarioPlan.totalBudget > 0 ? (current.projectedTotal / scenarioPlan.totalBudget) * 100 : 0;
   const perGuest = Math.round(current.projectedTotal / Math.max(1, scenarioPlan.guestCount));
   const segments = useMemo(() => donutSegments(current.summary.categoryTotals), [current]);
 
@@ -191,19 +197,22 @@ export function LiveDemoWindow(): React.ReactElement {
     const stepDuration = Math.round(BASE_STEP_MS / speed);
 
     STORY.forEach((id, i) => {
-      const t = window.setTimeout(() => {
-        setStoryIdx(i);
-        setActive((prev) => (prev.includes(id) ? prev : [...prev, id]));
-        setCaption(DEMO_SCENARIOS.find((s) => s.id === id)?.caption ?? null);
-        if (i === 0) setView('overview');
-        if (i === 1) setView('budget');
-        if (i === 2) setView('schedule');
-        if (i === 3) setView('alerts');
-        if (i === STORY.length - 1) {
-          const end = window.setTimeout(() => setPlaying(false), stepDuration);
-          timers.current.push(end);
-        }
-      }, (i + 1) * stepDuration);
+      const t = window.setTimeout(
+        () => {
+          setStoryIdx(i);
+          setActive((prev) => (prev.includes(id) ? prev : [...prev, id]));
+          setCaption(DEMO_SCENARIOS.find((s) => s.id === id)?.caption ?? null);
+          if (i === 0) setView('overview');
+          if (i === 1) setView('budget');
+          if (i === 2) setView('schedule');
+          if (i === 3) setView('alerts');
+          if (i === STORY.length - 1) {
+            const end = window.setTimeout(() => setPlaying(false), stepDuration);
+            timers.current.push(end);
+          }
+        },
+        (i + 1) * stepDuration,
+      );
       timers.current.push(t);
     });
   };
@@ -224,16 +233,25 @@ export function LiveDemoWindow(): React.ReactElement {
     }
   };
 
-  const warnings = current.insights.filter((i) => i.type === 'warning' || i.type === 'action_required');
+  const warnings = current.insights.filter(
+    (i) => i.type === 'warning' || i.type === 'action_required',
+  );
   const hovered = segments.find((s) => s.key === hoverKey);
-  const hasModifications = active.length > 0 || guestAdjustment !== 0 || budgetAdjustment !== 0 || tradeOffApplied;
+  const hasModifications =
+    active.length > 0 || guestAdjustment !== 0 || budgetAdjustment !== 0 || tradeOffApplied;
 
   return (
     <div className="dw" role="region" aria-label="Interactive demo of an EventWise AI plan">
       <div className="dw__chrome" aria-hidden="true">
-        <span className="dw__dots"><i /><i /><i /></span>
+        <span className="dw__dots">
+          <i />
+          <i />
+          <i />
+        </span>
         <span className="dw__url">eventwise.ai/demo</span>
-        <span className="dw__live"><b /> Live sample</span>
+        <span className="dw__live">
+          <b /> Live sample
+        </span>
       </div>
 
       <div className="dw__bar">
@@ -263,7 +281,12 @@ export function LiveDemoWindow(): React.ReactElement {
           >
             ‹ Step
           </button>
-          <button type="button" className="dw__play" onClick={playing ? stopStory : playStory} aria-pressed={playing}>
+          <button
+            type="button"
+            className="dw__play"
+            onClick={playing ? stopStory : playStory}
+            aria-pressed={playing}
+          >
             {playing ? 'Pause story' : 'Play story'}
           </button>
           <button
@@ -304,10 +327,15 @@ export function LiveDemoWindow(): React.ReactElement {
               type="button"
               className={`dw__navbtn ${v.id === view ? 'is-on' : ''}`}
               aria-current={v.id === view ? 'page' : undefined}
-              onClick={() => { stopStory(); setView(v.id); }}
+              onClick={() => {
+                stopStory();
+                setView(v.id);
+              }}
             >
               {v.label}
-              {v.id === 'alerts' && warnings.length > 0 && <span className="dw__count">{warnings.length}</span>}
+              {v.id === 'alerts' && warnings.length > 0 && (
+                <span className="dw__count">{warnings.length}</span>
+              )}
             </button>
           ))}
         </nav>
@@ -317,12 +345,14 @@ export function LiveDemoWindow(): React.ReactElement {
             <div>
               <h3 className="dw__title">{scenarioPlan.title}</h3>
               <p className="dw__meta">
-                {scenarioPlan.city.split(',')[0]} · {scenarioPlan.guestCount} guests · {scenarioPlan.eventDate}
+                {scenarioPlan.city.split(',')[0]} · {scenarioPlan.guestCount} guests ·{' '}
+                {scenarioPlan.eventDate}
               </p>
             </div>
             {hasModifications && (
               <span className={`dw__delta ${delta > 0 ? 'is-up' : ''}`} aria-live="polite">
-                {delta >= 0 ? '+' : '−'}{formatIndianShort(Math.abs(delta))} vs. original plan
+                {delta >= 0 ? '+' : '−'}
+                {formatIndianShort(Math.abs(delta))} vs. original plan
               </span>
             )}
           </header>
@@ -343,7 +373,9 @@ export function LiveDemoWindow(): React.ReactElement {
               </div>
               <div className={`dw__kpi ${overBudget ? 'is-bad' : 'is-good'}`}>
                 <span>{overBudget ? 'Over by' : 'Headroom'}</span>
-                <strong>{formatIndianShort(Math.abs(scenarioPlan.totalBudget - current.projectedTotal))}</strong>
+                <strong>
+                  {formatIndianShort(Math.abs(scenarioPlan.totalBudget - current.projectedTotal))}
+                </strong>
               </div>
 
               {/* Before and After Comparison */}
@@ -362,7 +394,9 @@ export function LiveDemoWindow(): React.ReactElement {
                   <div className="dw__compare-item">
                     <span>Net Delta:</span>
                     <strong style={{ color: delta > 0 ? 'var(--dw-bad)' : 'var(--dw-good)' }}>
-                      {delta >= 0 ? `+${formatIndianShort(delta)}` : `-${formatIndianShort(Math.abs(delta))}`}
+                      {delta >= 0
+                        ? `+${formatIndianShort(delta)}`
+                        : `-${formatIndianShort(Math.abs(delta))}`}
                     </strong>
                   </div>
                   <div className="dw__compare-item">
@@ -379,14 +413,18 @@ export function LiveDemoWindow(): React.ReactElement {
                 <div className="dw__fix-banner" role="alert">
                   <div>
                     <strong>⚠️ Over budget: </strong>
-                    <span>Trim discretionary decor & entertainment 20% to restore contingency headroom.</span>
+                    <span>
+                      Trim discretionary decor & entertainment 20% to restore contingency headroom.
+                    </span>
                   </div>
                   <button
                     type="button"
                     className={`dw__fix-btn ${tradeOffApplied ? 'is-active' : ''}`}
                     onClick={() => setTradeOffApplied(!tradeOffApplied)}
                   >
-                    {tradeOffApplied ? '✓ Trade-off Applied (−20% Decor)' : '⚡ Apply Suggested Fix'}
+                    {tradeOffApplied
+                      ? '✓ Trade-off Applied (−20% Decor)'
+                      : '⚡ Apply Suggested Fix'}
                   </button>
                 </div>
               )}
@@ -437,18 +475,29 @@ export function LiveDemoWindow(): React.ReactElement {
                   <button
                     type="button"
                     className="dw__btn-icon"
-                    onClick={() => { setGuestAdjustment(0); setBudgetAdjustment(0); }}
+                    onClick={() => {
+                      setGuestAdjustment(0);
+                      setBudgetAdjustment(0);
+                    }}
                   >
                     Reset numbers
                   </button>
                 )}
               </div>
 
-              <div className="dw__meter" role="img" aria-label={`Budget used: ${formatPercent(utilisation)}`}>
-                <span style={{ width: `${Math.min(100, utilisation)}%` }} className={overBudget ? 'is-bad' : ''} />
+              <div
+                className="dw__meter"
+                role="img"
+                aria-label={`Budget used: ${formatPercent(utilisation)}`}
+              >
+                <span
+                  style={{ width: `${Math.min(100, utilisation)}%` }}
+                  className={overBudget ? 'is-bad' : ''}
+                />
               </div>
               <p className="dw__meter-note">
-                {formatPercent(utilisation)} of budget committed, including a {formatIndianShort(current.summary.contingencyAmount)} contingency reserve.
+                {formatPercent(utilisation)} of budget committed, including a{' '}
+                {formatIndianShort(current.summary.contingencyAmount)} contingency reserve.
               </p>
             </div>
           )}
@@ -461,7 +510,10 @@ export function LiveDemoWindow(): React.ReactElement {
                     {segments.map((s) => (
                       <circle
                         key={s.key}
-                        cx="70" cy="70" r="54" fill="none"
+                        cx="70"
+                        cy="70"
+                        r="54"
+                        fill="none"
                         stroke={CATEGORY_COLORS[s.key as BudgetCategory] ?? '#64748b'}
                         strokeWidth={hoverKey === s.key ? 22 : 18}
                         strokeDasharray={`${Math.max(0, s.length - 1.5)} ${s.circumference}`}
@@ -472,7 +524,9 @@ export function LiveDemoWindow(): React.ReactElement {
                       />
                     ))}
                   </g>
-                  <text x="70" y="66" textAnchor="middle" className="dw__donut-top">{hovered ? hovered.key : 'Total'}</text>
+                  <text x="70" y="66" textAnchor="middle" className="dw__donut-top">
+                    {hovered ? hovered.key : 'Total'}
+                  </text>
                   <text x="70" y="84" textAnchor="middle" className="dw__donut-val">
                     {formatIndianShort(hovered ? hovered.value : current.summary.totalEstimated)}
                   </text>
@@ -486,7 +540,9 @@ export function LiveDemoWindow(): React.ReactElement {
                     onPointerEnter={() => setHoverKey(s.key)}
                     onPointerLeave={() => setHoverKey(null)}
                   >
-                    <i style={{ background: CATEGORY_COLORS[s.key as BudgetCategory] ?? '#64748b' }} />
+                    <i
+                      style={{ background: CATEGORY_COLORS[s.key as BudgetCategory] ?? '#64748b' }}
+                    />
                     <span>{s.key}</span>
                     <b>{formatIndianShort(s.value)}</b>
                     <em>{formatPercent(s.share * 100)}</em>
@@ -494,7 +550,10 @@ export function LiveDemoWindow(): React.ReactElement {
                 ))}
               </ul>
               {current.overrun > 0 && (
-                <p className="dw__overrun">Quotes are {formatCurrency(current.overrun)} above estimate and counted in projected spend.</p>
+                <p className="dw__overrun">
+                  Quotes are {formatCurrency(current.overrun)} above estimate and counted in
+                  projected spend.
+                </p>
               )}
             </div>
           )}
@@ -506,11 +565,17 @@ export function LiveDemoWindow(): React.ReactElement {
                   <span className="dw__time">{row.time}</span>
                   <span className="dw__what">
                     {row.activity}
-                    <small>{row.location} · {row.responsibleRole}</small>
+                    <small>
+                      {row.location} · {row.responsibleRole}
+                    </small>
                   </span>
                 </li>
               ))}
-              {(scenarioPlan.schedule ?? []).length === 0 && <li><span className="dw__what">No schedule items in this sample.</span></li>}
+              {(scenarioPlan.schedule ?? []).length === 0 && (
+                <li>
+                  <span className="dw__what">No schedule items in this sample.</span>
+                </li>
+              )}
             </ol>
           )}
 
@@ -520,14 +585,18 @@ export function LiveDemoWindow(): React.ReactElement {
                 <div className="dw__fix-banner" role="alert">
                   <div>
                     <strong>⚠️ Over budget warning: </strong>
-                    <span>Trim discretionary decor & entertainment 20% to restore contingency headroom.</span>
+                    <span>
+                      Trim discretionary decor & entertainment 20% to restore contingency headroom.
+                    </span>
                   </div>
                   <button
                     type="button"
                     className={`dw__fix-btn ${tradeOffApplied ? 'is-active' : ''}`}
                     onClick={() => setTradeOffApplied(!tradeOffApplied)}
                   >
-                    {tradeOffApplied ? '✓ Trade-off Applied (−20% Decor)' : '⚡ Apply Suggested Fix'}
+                    {tradeOffApplied
+                      ? '✓ Trade-off Applied (−20% Decor)'
+                      : '⚡ Apply Suggested Fix'}
                   </button>
                 </div>
               )}
@@ -565,13 +634,19 @@ export function LiveDemoWindow(): React.ReactElement {
             </button>
           ))}
           {hasModifications && (
-            <button type="button" className="dw__chip dw__chip--ghost" onClick={reset}>Undo all</button>
+            <button type="button" className="dw__chip dw__chip--ghost" onClick={reset}>
+              Undo all
+            </button>
           )}
         </div>
         <p className="dw__caption" aria-live="polite">
           {caption ?? 'Tap a what-if to see the plan react. Nothing here is saved.'}
         </p>
-        {playing && !prefersReducedMotion() && <div className="dw__progress" key={active.length}><span /></div>}
+        {playing && !prefersReducedMotion() && (
+          <div className="dw__progress" key={active.length}>
+            <span />
+          </div>
+        )}
         <Link to={`/demo?event=${encodeURIComponent(base.id)}&tour=1`} className="dw__cta">
           Open the full demo with guided tour →
         </Link>

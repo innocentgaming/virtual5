@@ -20,13 +20,29 @@ export class ErrorBoundary extends React.Component<{ children: React.ReactNode }
   render(): React.ReactNode {
     if (!this.state.failed) return this.props.children;
     return (
-      <main role="alert" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', padding: '2rem', textAlign: 'center' }}>
+      <main
+        role="alert"
+        style={{
+          minHeight: '100vh',
+          display: 'grid',
+          placeItems: 'center',
+          padding: '2rem',
+          textAlign: 'center',
+        }}
+      >
         <div style={{ maxWidth: 420 }}>
-          <h1 style={{ fontFamily: 'Fraunces, Georgia, serif', marginBottom: 8 }}>Something went wrong</h1>
+          <h1 style={{ fontFamily: 'Fraunces, Georgia, serif', marginBottom: 8 }}>
+            Something went wrong
+          </h1>
           <p style={{ color: 'var(--text-muted)', marginBottom: 20 }}>
-            The page hit an unexpected problem. Your saved plans are safe. Reload to continue; if it keeps happening, tell us and we will fix it.
+            The page hit an unexpected problem. Your saved plans are safe. Reload to continue; if it
+            keeps happening, tell us and we will fix it.
           </p>
-          <button type="button" className="btn btn-primary" onClick={() => window.location.reload()}>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() => window.location.reload()}
+          >
             Reload the page
           </button>
         </div>

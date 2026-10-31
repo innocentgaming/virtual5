@@ -16,10 +16,9 @@ describe('useBudget Hook', () => {
       currentPlan = updated;
     });
 
-    const { result, rerender } = renderHook(
-      ({ plan }) => useBudget(plan, updateEvent),
-      { initialProps: { plan: currentPlan } }
-    );
+    const { result, rerender } = renderHook(({ plan }) => useBudget(plan, updateEvent), {
+      initialProps: { plan: currentPlan },
+    });
 
     act(() => {
       result.current.addBudgetItem({
@@ -40,7 +39,9 @@ describe('useBudget Hook', () => {
     act(() => {
       result.current.updateBudgetItem({ ...added, actualCost: 80000 });
     });
-    expect(currentPlan.budgetItems.find((b) => b.name === 'Floral Archway')?.actualCost).toBe(80000);
+    expect(currentPlan.budgetItems.find((b) => b.name === 'Floral Archway')?.actualCost).toBe(
+      80000,
+    );
 
     // Update contingency
     act(() => {
@@ -82,10 +83,9 @@ describe('useGuests Hook', () => {
       currentPlan = updated;
     });
 
-    const { result, rerender } = renderHook(
-      ({ plan }) => useGuests(plan, updateEvent),
-      { initialProps: { plan: currentPlan } }
-    );
+    const { result, rerender } = renderHook(({ plan }) => useGuests(plan, updateEvent), {
+      initialProps: { plan: currentPlan },
+    });
 
     act(() => {
       result.current.addGuest({
@@ -139,10 +139,9 @@ describe('useTimeline Hook', () => {
       currentPlan = updated;
     });
 
-    const { result, rerender } = renderHook(
-      ({ plan }) => useTimeline(plan, updateEvent),
-      { initialProps: { plan: currentPlan } }
-    );
+    const { result, rerender } = renderHook(({ plan }) => useTimeline(plan, updateEvent), {
+      initialProps: { plan: currentPlan },
+    });
 
     act(() => {
       result.current.addTask({
@@ -167,7 +166,9 @@ describe('useTimeline Hook', () => {
     act(() => {
       result.current.updateTask({ ...task, title: 'Book Shehnai & Dhol Troupe' });
     });
-    expect(currentPlan.tasks.find((t) => t.id === task.id)?.title).toBe('Book Shehnai & Dhol Troupe');
+    expect(currentPlan.tasks.find((t) => t.id === task.id)?.title).toBe(
+      'Book Shehnai & Dhol Troupe',
+    );
 
     act(() => {
       result.current.deleteTask(task.id);
@@ -181,10 +182,9 @@ describe('useTimeline Hook', () => {
       currentPlan = updated;
     });
 
-    const { result, rerender } = renderHook(
-      ({ plan }) => useTimeline(plan, updateEvent),
-      { initialProps: { plan: currentPlan } }
-    );
+    const { result, rerender } = renderHook(({ plan }) => useTimeline(plan, updateEvent), {
+      initialProps: { plan: currentPlan },
+    });
 
     act(() => {
       result.current.addScheduleItem({
@@ -221,9 +221,7 @@ describe('useTimeline Hook', () => {
 describe('useVirtualList Hook', () => {
   it('returns non-virtual view when items are under threshold', () => {
     const items = Array.from({ length: 20 }, (_, i) => ({ id: i, label: `Item ${i}` }));
-    const { result } = renderHook(() =>
-      useVirtualList(items, { itemHeight: 40, threshold: 50 })
-    );
+    const { result } = renderHook(() => useVirtualList(items, { itemHeight: 40, threshold: 50 }));
 
     expect(result.current.isVirtual).toBe(false);
     expect(result.current.visibleItems.length).toBe(20);
@@ -234,7 +232,7 @@ describe('useVirtualList Hook', () => {
   it('computes virtual slicing window when items exceed threshold', () => {
     const items = Array.from({ length: 300 }, (_, i) => ({ id: i, label: `Item ${i}` }));
     const { result } = renderHook(() =>
-      useVirtualList(items, { itemHeight: 50, threshold: 100, overscan: 2 })
+      useVirtualList(items, { itemHeight: 50, threshold: 100, overscan: 2 }),
     );
 
     expect(result.current.isVirtual).toBe(true);

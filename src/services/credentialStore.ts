@@ -4,7 +4,11 @@
  * (Safari, Firefox) still offer to save through the form's autocomplete attributes.
  * The password is handed straight to the browser and never stored by the app.
  */
-type PasswordCredentialCtor = new (data: { id: string; password: string; name?: string }) => Credential;
+type PasswordCredentialCtor = new (data: {
+  id: string;
+  password: string;
+  name?: string;
+}) => Credential;
 
 /**
  * Prompts the browser's native password manager to securely store user credentials.
@@ -13,9 +17,14 @@ type PasswordCredentialCtor = new (data: { id: string; password: string; name?: 
  * @param password - User authentication password
  * @param name - Optional user display name
  */
-export async function offerToSaveCredentials(email: string, password: string, name?: string): Promise<void> {
+export async function offerToSaveCredentials(
+  email: string,
+  password: string,
+  name?: string,
+): Promise<void> {
   if (typeof window === 'undefined' || typeof navigator === 'undefined') return;
-  const Ctor = (window as unknown as { PasswordCredential?: PasswordCredentialCtor }).PasswordCredential;
+  const Ctor = (window as unknown as { PasswordCredential?: PasswordCredentialCtor })
+    .PasswordCredential;
   if (!Ctor || typeof navigator.credentials?.store !== 'function') return;
   try {
     await navigator.credentials.store(new Ctor({ id: email, password, name }));
@@ -23,4 +32,3 @@ export async function offerToSaveCredentials(email: string, password: string, na
     /* unsupported, blocked or declined by the user: signing in still works */
   }
 }
-

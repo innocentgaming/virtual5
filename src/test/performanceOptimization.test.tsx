@@ -3,11 +3,7 @@ import { renderHook, act } from '@testing-library/react';
 import { useVirtualList } from '../hooks/useVirtualList';
 import { useEventPlan } from '../hooks/useEventPlan';
 import { saveEvents, clearStorageCache } from '../services/storageService';
-import {
-  generateAIEventPlan,
-  clearPlanCache,
-  getPlanCacheSize,
-} from '../services/aiPlanner';
+import { generateAIEventPlan, clearPlanCache, getPlanCacheSize } from '../services/aiPlanner';
 import { requestGeminiContent } from '../services/geminiClient';
 import { INITIAL_EVENTS } from '../data/sampleEvents';
 import type { EventPlan } from '../types/event';
@@ -33,7 +29,7 @@ describe('Performance Optimizations Regression Suite (Step 7)', () => {
           itemHeight: 48,
           overscan: 4,
           threshold: 100,
-        })
+        }),
       );
 
       expect(result.current.isVirtual).toBe(false);
@@ -44,13 +40,16 @@ describe('Performance Optimizations Regression Suite (Step 7)', () => {
     });
 
     it('activates virtual windowing for large lists (> 100 items) rendering only visible window + overscan', () => {
-      const items = Array.from({ length: 500 }, (_, i) => ({ id: `guest-${i}`, name: `Guest ${i}` }));
+      const items = Array.from({ length: 500 }, (_, i) => ({
+        id: `guest-${i}`,
+        name: `Guest ${i}`,
+      }));
       const { result } = renderHook(() =>
         useVirtualList(items, {
           itemHeight: 52,
           overscan: 5,
           threshold: 100,
-        })
+        }),
       );
 
       expect(result.current.isVirtual).toBe(true);
@@ -112,9 +111,34 @@ describe('Performance Optimizations Regression Suite (Step 7)', () => {
       const mockPlan = {
         title: 'Cached Royal Wedding',
         totalBudget: 2500000,
-        budgetItems: [{ id: 'b1', name: 'Venue', category: 'venue', estimatedCost: 1000000, priority: 'critical' }],
-        tasks: [{ id: 't1', title: 'Book Mandap', category: 'venue', priority: 'high', dueDate: '2026-11-20' }],
-        vendors: [{ id: 'v1', name: 'Palace Hall', category: 'venue', status: 'confirmed', estimatedCost: 1000000, role: 'Venue' }],
+        budgetItems: [
+          {
+            id: 'b1',
+            name: 'Venue',
+            category: 'venue',
+            estimatedCost: 1000000,
+            priority: 'critical',
+          },
+        ],
+        tasks: [
+          {
+            id: 't1',
+            title: 'Book Mandap',
+            category: 'venue',
+            priority: 'high',
+            dueDate: '2026-11-20',
+          },
+        ],
+        vendors: [
+          {
+            id: 'v1',
+            name: 'Palace Hall',
+            category: 'venue',
+            status: 'confirmed',
+            estimatedCost: 1000000,
+            role: 'Venue',
+          },
+        ],
         ideas: [{ id: 'i1', title: 'Marigold Arch', category: 'decor', tier: 'balanced' }],
         guests: [{ id: 'g1', name: 'Rohan Sharma', category: 'family', rsvpStatus: 'confirmed' }],
         schedule: [{ id: 's1', time: '10:00', title: 'Barat', category: 'ceremony' }],
@@ -269,9 +293,34 @@ describe('Performance Optimizations Regression Suite (Step 7)', () => {
       const completePlan = {
         title: 'Full Royal Reception',
         totalBudget: 3000000,
-        budgetItems: [{ id: 'b1', name: 'Venue', category: 'venue', estimatedCost: 1000000, priority: 'critical' }],
-        tasks: [{ id: 't1', title: 'Stage Setup', category: 'venue', priority: 'high', dueDate: '2026-11-20' }],
-        vendors: [{ id: 'v1', name: 'Palace', category: 'venue', status: 'confirmed', estimatedCost: 1000000, role: 'Venue' }],
+        budgetItems: [
+          {
+            id: 'b1',
+            name: 'Venue',
+            category: 'venue',
+            estimatedCost: 1000000,
+            priority: 'critical',
+          },
+        ],
+        tasks: [
+          {
+            id: 't1',
+            title: 'Stage Setup',
+            category: 'venue',
+            priority: 'high',
+            dueDate: '2026-11-20',
+          },
+        ],
+        vendors: [
+          {
+            id: 'v1',
+            name: 'Palace',
+            category: 'venue',
+            status: 'confirmed',
+            estimatedCost: 1000000,
+            role: 'Venue',
+          },
+        ],
         ideas: [{ id: 'i1', title: 'Royal Lighting', category: 'decor', tier: 'balanced' }],
         guests: [{ id: 'g1', name: 'Aarav Patel', category: 'family', rsvpStatus: 'confirmed' }],
         schedule: [{ id: 's1', time: '11:00', title: 'Reception', category: 'ceremony' }],
@@ -285,7 +334,7 @@ describe('Performance Optimizations Regression Suite (Step 7)', () => {
             Promise.resolve({
               candidates: [{ content: { parts: [{ text: JSON.stringify(completePlan) }] } }],
             }),
-        })
+        }),
       );
 
       const plan = await generateAIEventPlan({

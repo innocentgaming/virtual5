@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Modal,
-  Button,
-} from '../ui';
+import { Modal, Button } from '../ui';
 import type { EventPlan, GuestItem } from '../../types/event';
 import {
   Smartphone,
@@ -114,7 +111,12 @@ export const EventWebsiteModal: React.FC<EventWebsiteModalProps> = ({
   const [rsvpSuccess, setRsvpSuccess] = useState(false);
 
   // Live countdown calculation
-  const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; minutes: number; seconds: number }>({
+  const [timeLeft, setTimeLeft] = useState<{
+    days: number;
+    hours: number;
+    minutes: number;
+    seconds: number;
+  }>({
     days: 0,
     hours: 0,
     minutes: 0,
@@ -188,14 +190,19 @@ export const EventWebsiteModal: React.FC<EventWebsiteModalProps> = ({
     }, 4000);
   };
 
-  const shareUrl = liveRsvpUrl
-    ?? (typeof window !== 'undefined'
+  const shareUrl =
+    liveRsvpUrl ??
+    (typeof window !== 'undefined'
       ? `${window.location.origin}/app?event=${plan?.eventType || 'wedding'}&website=1`
       : 'https://eventwise.ai/app?website=1');
 
   const handleDownloadQrSvg = () => {
     if (!plan) return;
-    const svgMarkup = generateQRSvg(shareUrl, { size: 400, fgColor: currentTheme.accent, bgColor: '#ffffff' });
+    const svgMarkup = generateQRSvg(shareUrl, {
+      size: 400,
+      fgColor: currentTheme.accent,
+      bgColor: '#ffffff',
+    });
     const blob = new Blob([svgMarkup], { type: 'image/svg+xml;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -376,7 +383,7 @@ export const EventWebsiteModal: React.FC<EventWebsiteModalProps> = ({
             <div style="font-size: 0.85rem; opacity: 0.8;">${t.category} • ${t.priority}</div>
           </div>
         </div>
-      `
+      `,
         )
         .join('')}
     </div>`
@@ -443,7 +450,8 @@ export const EventWebsiteModal: React.FC<EventWebsiteModalProps> = ({
                 padding: 'var(--space-2) var(--space-4)',
                 background: 'transparent',
                 border: 'none',
-                borderBottom: activeTab === tab ? '2px solid var(--accent-primary)' : '2px solid transparent',
+                borderBottom:
+                  activeTab === tab ? '2px solid var(--accent-primary)' : '2px solid transparent',
                 color: activeTab === tab ? 'var(--accent-primary)' : 'var(--text-muted)',
                 fontWeight: 700,
                 fontSize: 'var(--text-sm)',
@@ -457,7 +465,11 @@ export const EventWebsiteModal: React.FC<EventWebsiteModalProps> = ({
               {tab === 'customize' && <Palette size={15} />}
               {tab === 'share' && <Share2 size={15} />}
               <span style={{ textTransform: 'capitalize' }}>
-                {tab === 'preview' ? 'Live Preview' : tab === 'customize' ? 'Design & Themes' : 'Publish & Share'}
+                {tab === 'preview'
+                  ? 'Live Preview'
+                  : tab === 'customize'
+                    ? 'Design & Themes'
+                    : 'Publish & Share'}
               </span>
             </button>
           ))}
@@ -538,8 +550,17 @@ export const EventWebsiteModal: React.FC<EventWebsiteModalProps> = ({
                 {plan.title}
               </h1>
 
-              <p style={{ fontSize: '0.9rem', color: currentTheme.text, opacity: 0.9, maxWidth: '500px', margin: '0 auto 1.25rem' }}>
-                {customGreeting || 'We request the honor of your presence as we celebrate this joyous milestone together.'}
+              <p
+                style={{
+                  fontSize: '0.9rem',
+                  color: currentTheme.text,
+                  opacity: 0.9,
+                  maxWidth: '500px',
+                  margin: '0 auto 1.25rem',
+                }}
+              >
+                {customGreeting ||
+                  'We request the honor of your presence as we celebrate this joyous milestone together.'}
               </p>
 
               <div
@@ -565,7 +586,8 @@ export const EventWebsiteModal: React.FC<EventWebsiteModalProps> = ({
                 <span>•</span>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                   <MapPin size={14} color={currentTheme.accent} />
-                  {plan.venueName ? `${plan.venueName}, ` : ''}{plan.city}
+                  {plan.venueName ? `${plan.venueName}, ` : ''}
+                  {plan.city}
                 </span>
               </div>
             </header>
@@ -597,10 +619,24 @@ export const EventWebsiteModal: React.FC<EventWebsiteModalProps> = ({
                       textAlign: 'center',
                     }}
                   >
-                    <div style={{ fontSize: '1.35rem', fontWeight: 800, color: currentTheme.accent, lineHeight: 1 }}>
+                    <div
+                      style={{
+                        fontSize: '1.35rem',
+                        fontWeight: 800,
+                        color: currentTheme.accent,
+                        lineHeight: 1,
+                      }}
+                    >
                       {item.val}
                     </div>
-                    <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', opacity: 0.8, marginTop: '4px' }}>
+                    <div
+                      style={{
+                        fontSize: '0.65rem',
+                        textTransform: 'uppercase',
+                        opacity: 0.8,
+                        marginTop: '4px',
+                      }}
+                    >
                       {item.label}
                     </div>
                   </div>
@@ -618,10 +654,24 @@ export const EventWebsiteModal: React.FC<EventWebsiteModalProps> = ({
                 marginBottom: '1.5rem',
               }}
             >
-              <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: currentTheme.accent, margin: '0 0 0.75rem' }}>
+              <h3
+                style={{
+                  fontSize: '1.05rem',
+                  fontWeight: 700,
+                  color: currentTheme.accent,
+                  margin: '0 0 0.75rem',
+                }}
+              >
                 Celebration Highlights
               </h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.85rem' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.5rem',
+                  fontSize: '0.85rem',
+                }}
+              >
                 <div>
                   <strong>Theme:</strong> {plan.theme || 'Traditional Grandeur'}
                 </div>
@@ -649,7 +699,14 @@ export const EventWebsiteModal: React.FC<EventWebsiteModalProps> = ({
                   marginBottom: '1.5rem',
                 }}
               >
-                <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: currentTheme.accent, margin: '0 0 0.75rem' }}>
+                <h3
+                  style={{
+                    fontSize: '1.05rem',
+                    fontWeight: 700,
+                    color: currentTheme.accent,
+                    margin: '0 0 0.75rem',
+                  }}
+                >
                   Program Schedule
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -664,7 +721,11 @@ export const EventWebsiteModal: React.FC<EventWebsiteModalProps> = ({
                         borderBottom: `1px solid ${currentTheme.border}`,
                       }}
                     >
-                      <Clock size={15} color={currentTheme.accent} style={{ marginTop: '2px', flexShrink: 0 }} />
+                      <Clock
+                        size={15}
+                        color={currentTheme.accent}
+                        style={{ marginTop: '2px', flexShrink: 0 }}
+                      />
                       <div>
                         <div style={{ fontWeight: 700, fontSize: '0.88rem' }}>{task.title}</div>
                         <div style={{ fontSize: '0.75rem', opacity: 0.8 }}>
@@ -687,7 +748,14 @@ export const EventWebsiteModal: React.FC<EventWebsiteModalProps> = ({
                   padding: '1.5rem',
                 }}
               >
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: currentTheme.accent, margin: '0 0 0.5rem' }}>
+                <h3
+                  style={{
+                    fontSize: '1.1rem',
+                    fontWeight: 700,
+                    color: currentTheme.accent,
+                    margin: '0 0 0.5rem',
+                  }}
+                >
                   Confirm Your RSVP
                 </h3>
                 <p style={{ fontSize: '0.8rem', opacity: 0.85, margin: '0 0 1rem' }}>
@@ -712,9 +780,20 @@ export const EventWebsiteModal: React.FC<EventWebsiteModalProps> = ({
                     <span>RSVP Received! Thank you for celebrating with us.</span>
                   </div>
                 ) : (
-                  <form onSubmit={handleRsvpSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  <form
+                    onSubmit={handleRsvpSubmit}
+                    style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}
+                  >
                     <div>
-                      <label htmlFor="preview-rsvp-name" style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, marginBottom: '3px' }}>
+                      <label
+                        htmlFor="preview-rsvp-name"
+                        style={{
+                          display: 'block',
+                          fontSize: '0.75rem',
+                          fontWeight: 600,
+                          marginBottom: '3px',
+                        }}
+                      >
                         Your Full Name *
                       </label>
                       <input
@@ -736,15 +815,27 @@ export const EventWebsiteModal: React.FC<EventWebsiteModalProps> = ({
                       />
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                    <div
+                      style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}
+                    >
                       <div>
-                        <label htmlFor="preview-rsvp-attending" style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, marginBottom: '3px' }}>
+                        <label
+                          htmlFor="preview-rsvp-attending"
+                          style={{
+                            display: 'block',
+                            fontSize: '0.75rem',
+                            fontWeight: 600,
+                            marginBottom: '3px',
+                          }}
+                        >
                           Attendance
                         </label>
                         <select
                           id="preview-rsvp-attending"
                           value={rsvpAttending}
-                          onChange={(e) => setRsvpAttending(e.target.value as 'attending' | 'declined')}
+                          onChange={(e) =>
+                            setRsvpAttending(e.target.value as 'attending' | 'declined')
+                          }
                           style={{
                             width: '100%',
                             padding: '0.5rem 0.75rem',
@@ -755,13 +846,25 @@ export const EventWebsiteModal: React.FC<EventWebsiteModalProps> = ({
                             fontSize: '0.85rem',
                           }}
                         >
-                          <option value="attending" style={{ background: '#1f2937' }}>Joyfully Accepts</option>
-                          <option value="declined" style={{ background: '#1f2937' }}>Regretfully Declines</option>
+                          <option value="attending" style={{ background: '#1f2937' }}>
+                            Joyfully Accepts
+                          </option>
+                          <option value="declined" style={{ background: '#1f2937' }}>
+                            Regretfully Declines
+                          </option>
                         </select>
                       </div>
 
                       <div>
-                        <label htmlFor="preview-rsvp-diet" style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, marginBottom: '3px' }}>
+                        <label
+                          htmlFor="preview-rsvp-diet"
+                          style={{
+                            display: 'block',
+                            fontSize: '0.75rem',
+                            fontWeight: 600,
+                            marginBottom: '3px',
+                          }}
+                        >
                           Dietary Choice
                         </label>
                         <select
@@ -778,9 +881,15 @@ export const EventWebsiteModal: React.FC<EventWebsiteModalProps> = ({
                             fontSize: '0.85rem',
                           }}
                         >
-                          <option value="veg" style={{ background: '#1f2937' }}>Pure Vegetarian</option>
-                          <option value="jain" style={{ background: '#1f2937' }}>Jain Counter</option>
-                          <option value="nonveg" style={{ background: '#1f2937' }}>Non-Vegetarian</option>
+                          <option value="veg" style={{ background: '#1f2937' }}>
+                            Pure Vegetarian
+                          </option>
+                          <option value="jain" style={{ background: '#1f2937' }}>
+                            Jain Counter
+                          </option>
+                          <option value="nonveg" style={{ background: '#1f2937' }}>
+                            Non-Vegetarian
+                          </option>
                         </select>
                       </div>
                     </div>
@@ -817,10 +926,23 @@ export const EventWebsiteModal: React.FC<EventWebsiteModalProps> = ({
       {activeTab === 'customize' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           <div>
-            <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 700, marginBottom: '0.75rem', color: 'var(--text)' }}>
+            <h3
+              style={{
+                fontSize: 'var(--text-sm)',
+                fontWeight: 700,
+                marginBottom: '0.75rem',
+                color: 'var(--text)',
+              }}
+            >
               Choose Website Visual Palette
             </h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                gap: '1rem',
+              }}
+            >
               {THEMES.map((theme) => (
                 <button
                   type="button"
@@ -834,20 +956,48 @@ export const EventWebsiteModal: React.FC<EventWebsiteModalProps> = ({
                     font: 'inherit',
                     padding: '1rem',
                     borderRadius: 'var(--radius-md)',
-                    border: selectedThemeId === theme.id ? `2px solid var(--accent-primary)` : '1px solid var(--border)',
+                    border:
+                      selectedThemeId === theme.id
+                        ? `2px solid var(--accent-primary)`
+                        : '1px solid var(--border)',
                     background: theme.bgGradient,
                     color: theme.text,
                     cursor: 'pointer',
                     boxShadow: selectedThemeId === theme.id ? 'var(--shadow-md)' : 'none',
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                    <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700 }}>{theme.name}</span>
-                    {selectedThemeId === theme.id && <CheckCircle2 size={16} color="var(--accent-primary)" />}
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      marginBottom: '0.5rem',
+                    }}
+                  >
+                    <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700 }}>
+                      {theme.name}
+                    </span>
+                    {selectedThemeId === theme.id && (
+                      <CheckCircle2 size={16} color="var(--accent-primary)" />
+                    )}
                   </div>
                   <div style={{ display: 'flex', gap: '6px' }}>
-                    <div style={{ width: 18, height: 18, borderRadius: '50%', background: theme.accent }} />
-                    <div style={{ width: 18, height: 18, borderRadius: '50%', background: theme.cardBg }} />
+                    <div
+                      style={{
+                        width: 18,
+                        height: 18,
+                        borderRadius: '50%',
+                        background: theme.accent,
+                      }}
+                    />
+                    <div
+                      style={{
+                        width: 18,
+                        height: 18,
+                        borderRadius: '50%',
+                        background: theme.cardBg,
+                      }}
+                    />
                   </div>
                 </button>
               ))}
@@ -868,11 +1018,26 @@ export const EventWebsiteModal: React.FC<EventWebsiteModalProps> = ({
           </div>
 
           <div>
-            <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 700, marginBottom: '0.75rem', color: 'var(--text)' }}>
+            <h3
+              style={{
+                fontSize: 'var(--text-sm)',
+                fontWeight: 700,
+                marginBottom: '0.75rem',
+                color: 'var(--text)',
+              }}
+            >
               Website Modules & Features
             </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', cursor: 'pointer', fontSize: 'var(--text-xs)' }}>
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.65rem',
+                  cursor: 'pointer',
+                  fontSize: 'var(--text-xs)',
+                }}
+              >
                 <input
                   type="checkbox"
                   checked={showCountdown}
@@ -880,7 +1045,15 @@ export const EventWebsiteModal: React.FC<EventWebsiteModalProps> = ({
                 />
                 <span>Live Countdown Clock</span>
               </label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', cursor: 'pointer', fontSize: 'var(--text-xs)' }}>
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.65rem',
+                  cursor: 'pointer',
+                  fontSize: 'var(--text-xs)',
+                }}
+              >
                 <input
                   type="checkbox"
                   checked={showSchedule}
@@ -888,7 +1061,15 @@ export const EventWebsiteModal: React.FC<EventWebsiteModalProps> = ({
                 />
                 <span>Muhurat & Schedule Milestones</span>
               </label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', cursor: 'pointer', fontSize: 'var(--text-xs)' }}>
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.65rem',
+                  cursor: 'pointer',
+                  fontSize: 'var(--text-xs)',
+                }}
+              >
                 <input
                   type="checkbox"
                   checked={showRsvp}
@@ -921,11 +1102,21 @@ export const EventWebsiteModal: React.FC<EventWebsiteModalProps> = ({
               background: 'var(--surface-raised)',
             }}
           >
-            <h3 style={{ fontSize: 'var(--text-md)', fontWeight: 700, margin: '0 0 0.5rem', color: 'var(--text)' }}>
+            <h3
+              style={{
+                fontSize: 'var(--text-md)',
+                fontWeight: 700,
+                margin: '0 0 0.5rem',
+                color: 'var(--text)',
+              }}
+            >
               1. Live RSVP Link
             </h3>
-            <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', margin: '0 0 1rem' }}>
-              Guests open this link on their phone (no account needed), answer, and their replies are saved to your event. Add them to your guest list with one tap.
+            <p
+              style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', margin: '0 0 1rem' }}
+            >
+              Guests open this link on their phone (no account needed), answer, and their replies
+              are saved to your event. Add them to your guest list with one tap.
             </p>
 
             <LiveRsvpPanel
@@ -946,11 +1137,21 @@ export const EventWebsiteModal: React.FC<EventWebsiteModalProps> = ({
               background: 'var(--surface-raised)',
             }}
           >
-            <h3 style={{ fontSize: 'var(--text-md)', fontWeight: 700, margin: '0 0 0.5rem', color: 'var(--text)' }}>
+            <h3
+              style={{
+                fontSize: 'var(--text-md)',
+                fontWeight: 700,
+                margin: '0 0 0.5rem',
+                color: 'var(--text)',
+              }}
+            >
               2. Download Standalone HTML Website
             </h3>
-            <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', margin: '0 0 1rem' }}>
-              Export a 100% self-contained website file (.html) that you can host on GitHub Pages, Netlify, or open locally in any browser.
+            <p
+              style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', margin: '0 0 1rem' }}
+            >
+              Export a 100% self-contained website file (.html) that you can host on GitHub Pages,
+              Netlify, or open locally in any browser.
             </p>
 
             <Button
@@ -971,11 +1172,22 @@ export const EventWebsiteModal: React.FC<EventWebsiteModalProps> = ({
               background: 'var(--surface-raised)',
             }}
           >
-            <h3 style={{ fontSize: 'var(--text-md)', fontWeight: 700, margin: '0 0 0.5rem', color: 'var(--text)' }}>
+            <h3
+              style={{
+                fontSize: 'var(--text-md)',
+                fontWeight: 700,
+                margin: '0 0 0.5rem',
+                color: 'var(--text)',
+              }}
+            >
               3. Invitation Card QR Code (For Physical Cards)
             </h3>
-            <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', margin: '0 0 1rem' }}>
-              Print this QR code on physical Indian wedding cards, Lagan Patrika, or invitation envelopes. Guests can scan with any smartphone camera to open this website and RSVP immediately.
+            <p
+              style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', margin: '0 0 1rem' }}
+            >
+              Print this QR code on physical Indian wedding cards, Lagan Patrika, or invitation
+              envelopes. Guests can scan with any smartphone camera to open this website and RSVP
+              immediately.
             </p>
 
             <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -989,17 +1201,31 @@ export const EventWebsiteModal: React.FC<EventWebsiteModalProps> = ({
                 }}
               >
                 <img
-                  src={generateQRDataUrl(shareUrl, { size: 130, fgColor: currentTheme.accent, bgColor: '#ffffff' })}
+                  src={generateQRDataUrl(shareUrl, {
+                    size: 130,
+                    fgColor: currentTheme.accent,
+                    bgColor: '#ffffff',
+                  })}
                   alt="Celebration Website QR Code"
                   width={130}
                   height={130}
                   style={{ display: 'block' }}
                 />
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', flex: 1, minWidth: '220px' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.65rem',
+                  flex: 1,
+                  minWidth: '220px',
+                }}
+              >
                 <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
                   <strong>Destination Link:</strong>
-                  <div style={{ wordBreak: 'break-all', marginTop: '2px', opacity: 0.85 }}>{shareUrl}</div>
+                  <div style={{ wordBreak: 'break-all', marginTop: '2px', opacity: 0.85 }}>
+                    {shareUrl}
+                  </div>
                 </div>
                 <div>
                   <Button

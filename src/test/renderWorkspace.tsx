@@ -7,6 +7,6 @@ export function renderWorkspace(mode: 'account' | 'demo' = 'demo'): RenderResult
   return render(
     <AuthProvider>
       <Workspace mode={mode} />
-    </AuthProvider>
+    </AuthProvider>,
   );
 }

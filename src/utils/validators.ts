@@ -75,11 +75,7 @@ export function stripControlChars(input: string): string {
 /**
  * Strips control characters, trims, and truncates to maxLength.
  */
-export function sanitizeString(
-  val: unknown,
-  maxLength: number,
-  fallback = ''
-): string {
+export function sanitizeString(val: unknown, maxLength: number, fallback = ''): string {
   if (typeof val !== 'string' && typeof val !== 'number') {
     return fallback;
   }
@@ -96,7 +92,7 @@ export function sanitizeFiniteNumber(
   val: unknown,
   min: number,
   max: number,
-  fallback: number
+  fallback: number,
 ): number {
   if (val === null || val === undefined || val === '') {
     return fallback;
@@ -122,11 +118,7 @@ export function sanitizeIsoDate(val: unknown, fallback: string): string {
   const day = parseInt(match[3], 10);
 
   const date = new Date(year, month, day);
-  if (
-    date.getFullYear() === year &&
-    date.getMonth() === month &&
-    date.getDate() === day
-  ) {
+  if (date.getFullYear() === year && date.getMonth() === month && date.getDate() === day) {
     return trimmed;
   }
   return fallback;
@@ -156,7 +148,10 @@ const ALLOWED_VENUE_PREFS: readonly VenuePreference[] = [
   'farmhouse_lawn',
   'resort_lawn',
 ];
-export function sanitizeVenuePreference(val: unknown, fallback: VenuePreference = 'banquet_hall'): VenuePreference {
+export function sanitizeVenuePreference(
+  val: unknown,
+  fallback: VenuePreference = 'banquet_hall',
+): VenuePreference {
   return typeof val === 'string' && (ALLOWED_VENUE_PREFS as readonly string[]).includes(val)
     ? (val as VenuePreference)
     : fallback;
@@ -172,7 +167,10 @@ const ALLOWED_FOOD_PREFS: readonly FoodPreference[] = [
   'royal_thali',
   'live_chaat_counters',
 ];
-export function sanitizeFoodPreference(val: unknown, fallback: FoodPreference = 'buffet'): FoodPreference {
+export function sanitizeFoodPreference(
+  val: unknown,
+  fallback: FoodPreference = 'buffet',
+): FoodPreference {
   return typeof val === 'string' && (ALLOWED_FOOD_PREFS as readonly string[]).includes(val)
     ? (val as FoodPreference)
     : fallback;
@@ -187,10 +185,15 @@ const ALLOWED_PRIORITY_AREAS: readonly PriorityArea[] = [
   'budget_savings',
   'guest_experience',
 ];
-export function sanitizePriorityAreas(val: unknown, fallback: PriorityArea[] = ['guest_experience']): PriorityArea[] {
+export function sanitizePriorityAreas(
+  val: unknown,
+  fallback: PriorityArea[] = ['guest_experience'],
+): PriorityArea[] {
   if (!Array.isArray(val)) return fallback;
-  const cleaned = val
-    .filter((item): item is PriorityArea => typeof item === 'string' && (ALLOWED_PRIORITY_AREAS as readonly string[]).includes(item));
+  const cleaned = val.filter(
+    (item): item is PriorityArea =>
+      typeof item === 'string' && (ALLOWED_PRIORITY_AREAS as readonly string[]).includes(item),
+  );
   return cleaned.length > 0 ? cleaned : fallback;
 }
 
@@ -205,14 +208,20 @@ const ALLOWED_BUDGET_CATEGORIES: readonly BudgetCategory[] = [
   'contingency',
   'other',
 ];
-export function sanitizeBudgetCategory(val: unknown, fallback: BudgetCategory = 'other'): BudgetCategory {
+export function sanitizeBudgetCategory(
+  val: unknown,
+  fallback: BudgetCategory = 'other',
+): BudgetCategory {
   return typeof val === 'string' && (ALLOWED_BUDGET_CATEGORIES as readonly string[]).includes(val)
     ? (val as BudgetCategory)
     : fallback;
 }
 
 const ALLOWED_BUDGET_PRIORITIES = ['essential', 'recommended', 'optional'] as const;
-export function sanitizeBudgetItemPriority(val: unknown, fallback: BudgetItem['priority'] = 'recommended'): BudgetItem['priority'] {
+export function sanitizeBudgetItemPriority(
+  val: unknown,
+  fallback: BudgetItem['priority'] = 'recommended',
+): BudgetItem['priority'] {
   return typeof val === 'string' && (ALLOWED_BUDGET_PRIORITIES as readonly string[]).includes(val)
     ? (val as BudgetItem['priority'])
     : fallback;
@@ -234,7 +243,10 @@ export function sanitizeTaskCategory(val: unknown, fallback: TaskCategory = 'fin
 }
 
 const ALLOWED_TASK_PRIORITIES: readonly TaskPriority[] = ['urgent', 'high', 'medium', 'low'];
-export function sanitizeTaskPriority(val: unknown, fallback: TaskPriority = 'medium'): TaskPriority {
+export function sanitizeTaskPriority(
+  val: unknown,
+  fallback: TaskPriority = 'medium',
+): TaskPriority {
   return typeof val === 'string' && (ALLOWED_TASK_PRIORITIES as readonly string[]).includes(val)
     ? (val as TaskPriority)
     : fallback;
@@ -256,7 +268,10 @@ const ALLOWED_VENDOR_CATEGORIES: readonly VendorCategory[] = [
   'mithai_favors',
   'other',
 ];
-export function sanitizeVendorCategory(val: unknown, fallback: VendorCategory = 'other'): VendorCategory {
+export function sanitizeVendorCategory(
+  val: unknown,
+  fallback: VendorCategory = 'other',
+): VendorCategory {
   return typeof val === 'string' && (ALLOWED_VENDOR_CATEGORIES as readonly string[]).includes(val)
     ? (val as VendorCategory)
     : fallback;
@@ -269,21 +284,37 @@ const ALLOWED_VENDOR_STATUSES: readonly VendorStatus[] = [
   'booked',
   'completed',
 ];
-export function sanitizeVendorStatus(val: unknown, fallback: VendorStatus = 'not_started'): VendorStatus {
+export function sanitizeVendorStatus(
+  val: unknown,
+  fallback: VendorStatus = 'not_started',
+): VendorStatus {
   return typeof val === 'string' && (ALLOWED_VENDOR_STATUSES as readonly string[]).includes(val)
     ? (val as VendorStatus)
     : fallback;
 }
 
-const ALLOWED_IDEA_CATEGORIES = ['theme', 'decor', 'activity', 'food', 'entertainment', 'invitation'] as const;
-export function sanitizeIdeaCategory(val: unknown, fallback: PersonalizedIdea['category'] = 'activity'): PersonalizedIdea['category'] {
+const ALLOWED_IDEA_CATEGORIES = [
+  'theme',
+  'decor',
+  'activity',
+  'food',
+  'entertainment',
+  'invitation',
+] as const;
+export function sanitizeIdeaCategory(
+  val: unknown,
+  fallback: PersonalizedIdea['category'] = 'activity',
+): PersonalizedIdea['category'] {
   return typeof val === 'string' && (ALLOWED_IDEA_CATEGORIES as readonly string[]).includes(val)
     ? (val as PersonalizedIdea['category'])
     : fallback;
 }
 
 const ALLOWED_IDEA_TIERS = ['budget', 'balanced', 'premium'] as const;
-export function sanitizeIdeaTier(val: unknown, fallback: PersonalizedIdea['tier'] = 'balanced'): PersonalizedIdea['tier'] {
+export function sanitizeIdeaTier(
+  val: unknown,
+  fallback: PersonalizedIdea['tier'] = 'balanced',
+): PersonalizedIdea['tier'] {
   return typeof val === 'string' && (ALLOWED_IDEA_TIERS as readonly string[]).includes(val)
     ? (val as PersonalizedIdea['tier'])
     : fallback;
@@ -300,7 +331,10 @@ const ALLOWED_DIETARY: readonly DietaryRequirement[] = [
   'kosher',
   'nut_allergy',
 ];
-export function sanitizeDietaryRequirement(val: unknown, fallback: DietaryRequirement = 'none'): DietaryRequirement {
+export function sanitizeDietaryRequirement(
+  val: unknown,
+  fallback: DietaryRequirement = 'none',
+): DietaryRequirement {
   return typeof val === 'string' && (ALLOWED_DIETARY as readonly string[]).includes(val)
     ? (val as DietaryRequirement)
     : fallback;
@@ -334,10 +368,16 @@ export function sanitizeBudgetItem(raw: unknown, index: number): BudgetItem {
     id: generateSafeId('b', index),
     name: sanitizeString(obj.name, LIMITS.MAX_ITEM_NAME_LENGTH, 'Planned Expense'),
     category: sanitizeBudgetCategory(obj.category, 'other'),
-    estimatedCost: sanitizeFiniteNumber(obj.estimatedCost, LIMITS.MIN_COST, LIMITS.MAX_ITEM_COST, 0),
-    actualCost: obj.actualCost !== undefined
-      ? sanitizeFiniteNumber(obj.actualCost, LIMITS.MIN_COST, LIMITS.MAX_ITEM_COST, 0)
-      : undefined,
+    estimatedCost: sanitizeFiniteNumber(
+      obj.estimatedCost,
+      LIMITS.MIN_COST,
+      LIMITS.MAX_ITEM_COST,
+      0,
+    ),
+    actualCost:
+      obj.actualCost !== undefined
+        ? sanitizeFiniteNumber(obj.actualCost, LIMITS.MIN_COST, LIMITS.MAX_ITEM_COST, 0)
+        : undefined,
     isPaid: Boolean(obj.isPaid),
     isPerGuest: Boolean(obj.isPerGuest),
     notes: sanitizeString(obj.notes, LIMITS.MAX_NOTES_LENGTH, ''),
@@ -373,7 +413,12 @@ export function sanitizeVendorItem(raw: unknown, index: number): VendorItem {
     category: sanitizeVendorCategory(obj.category, 'other'),
     role: sanitizeString(obj.role, LIMITS.MAX_ROLE_LENGTH, 'Service Specialist'),
     status: sanitizeVendorStatus(obj.status, 'not_started'),
-    estimatedCost: sanitizeFiniteNumber(obj.estimatedCost, LIMITS.MIN_COST, LIMITS.MAX_ITEM_COST, 0),
+    estimatedCost: sanitizeFiniteNumber(
+      obj.estimatedCost,
+      LIMITS.MIN_COST,
+      LIMITS.MAX_ITEM_COST,
+      0,
+    ),
     contactName: sanitizeString(obj.contactName, 80, ''),
     contactPhone: sanitizeString(obj.contactPhone, 30, ''),
     contactEmail: sanitizeString(obj.contactEmail, 80, ''),
@@ -434,7 +479,7 @@ export interface ValidationResult {
 
 export function validateAndSanitizeEventPlan(
   raw: unknown,
-  fallbackDate = '2026-11-20'
+  fallbackDate = '2026-11-20',
 ): ValidationResult {
   const errors: string[] = [];
 
@@ -469,9 +514,7 @@ export function validateAndSanitizeEventPlan(
     .slice(0, LIMITS.MAX_VENDORS)
     .map((vendor, idx) => sanitizeVendorItem(vendor, idx));
 
-  const ideas = ideasRaw
-    .slice(0, LIMITS.MAX_IDEAS)
-    .map((idea, idx) => sanitizeIdeaItem(idea, idx));
+  const ideas = ideasRaw.slice(0, LIMITS.MAX_IDEAS).map((idea, idx) => sanitizeIdeaItem(idea, idx));
 
   const guests = guestsRaw
     .slice(0, LIMITS.MAX_GUEST_ITEMS)
@@ -496,7 +539,9 @@ export function validateAndSanitizeEventPlan(
       type: (['warning', 'suggestion', 'action_required', 'positive'].includes(String(o.type))
         ? String(o.type)
         : 'suggestion') as DecisionInsight['type'],
-      category: (['budget', 'timeline', 'weather', 'capacity', 'accessibility', 'vendors'].includes(String(o.category))
+      category: (['budget', 'timeline', 'weather', 'capacity', 'accessibility', 'vendors'].includes(
+        String(o.category),
+      )
         ? String(o.category)
         : 'budget') as DecisionInsight['category'],
       title: sanitizeString(o.title, 100, 'Insight'),
@@ -507,7 +552,10 @@ export function validateAndSanitizeEventPlan(
   });
 
   const missingInfoPrompts = Array.isArray(obj.missingInfoPrompts)
-    ? obj.missingInfoPrompts.slice(0, 20).map((p) => sanitizeString(p, 150)).filter(Boolean)
+    ? obj.missingInfoPrompts
+        .slice(0, 20)
+        .map((p) => sanitizeString(p, 150))
+        .filter(Boolean)
     : [];
 
   const plan: EventPlan = {
@@ -516,10 +564,25 @@ export function validateAndSanitizeEventPlan(
     eventType: sanitizeEventType(obj.eventType, 'wedding'),
     eventDate: defaultDate,
     city: sanitizeString(obj.city, LIMITS.MAX_CITY_LENGTH, 'Mumbai'),
-    guestCount: sanitizeFiniteNumber(obj.guestCount, LIMITS.MIN_GUESTS, LIMITS.MAX_GUEST_COUNT, 100),
-    totalBudget: sanitizeFiniteNumber(obj.totalBudget, LIMITS.MIN_BUDGET, LIMITS.MAX_BUDGET, 500000),
+    guestCount: sanitizeFiniteNumber(
+      obj.guestCount,
+      LIMITS.MIN_GUESTS,
+      LIMITS.MAX_GUEST_COUNT,
+      100,
+    ),
+    totalBudget: sanitizeFiniteNumber(
+      obj.totalBudget,
+      LIMITS.MIN_BUDGET,
+      LIMITS.MAX_BUDGET,
+      500000,
+    ),
     currency: '₹',
-    contingencyRate: sanitizeFiniteNumber(obj.contingencyRate, LIMITS.MIN_CONTINGENCY, LIMITS.MAX_CONTINGENCY, 0.10),
+    contingencyRate: sanitizeFiniteNumber(
+      obj.contingencyRate,
+      LIMITS.MIN_CONTINGENCY,
+      LIMITS.MAX_CONTINGENCY,
+      0.1,
+    ),
     venuePreference: sanitizeVenuePreference(obj.venuePreference, 'banquet_hall'),
     foodPreference: sanitizeFoodPreference(obj.foodPreference, 'buffet'),
     theme: sanitizeString(obj.theme, LIMITS.MAX_THEME_LENGTH, 'Royal Elegance'),
@@ -540,7 +603,7 @@ export function validateAndSanitizeEventPlan(
     generationExplanation: sanitizeString(
       obj.generationExplanation,
       LIMITS.MAX_EXPLANATION_LENGTH,
-      'Grounded celebration plan verified against EventWise safety boundaries.'
+      'Grounded celebration plan verified against EventWise safety boundaries.',
     ),
   };
 
@@ -561,7 +624,7 @@ function createEmptySafePlan(fallbackDate: string): EventPlan {
     guestCount: 100,
     totalBudget: 500000,
     currency: '₹',
-    contingencyRate: 0.10,
+    contingencyRate: 0.1,
     venuePreference: 'banquet_hall',
     foodPreference: 'buffet',
     theme: 'Traditional Celebration',

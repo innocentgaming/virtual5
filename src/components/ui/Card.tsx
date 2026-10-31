@@ -51,7 +51,11 @@ export const CardHeader: React.FC<CardHeaderProps> = ({
       <div className="ui-card__header-content">
         {title && (
           <HeadingTag className="ui-card__title card-title">
-            {icon && <span className="card-title-icon" aria-hidden="true">{icon}</span>}
+            {icon && (
+              <span className="card-title-icon" aria-hidden="true">
+                {icon}
+              </span>
+            )}
             <span>{title}</span>
           </HeadingTag>
         )}
@@ -65,11 +69,7 @@ export const CardHeader: React.FC<CardHeaderProps> = ({
 
 export interface CardBodyProps extends React.HTMLAttributes<HTMLDivElement> {}
 
-export const CardBody: React.FC<CardBodyProps> = ({
-  className = '',
-  children,
-  ...props
-}) => {
+export const CardBody: React.FC<CardBodyProps> = ({ className = '', children, ...props }) => {
   return (
     <div className={`ui-card__body ${className}`} {...props}>
       {children}
@@ -81,11 +81,7 @@ export const CardContent = CardBody;
 
 export interface CardFooterProps extends React.HTMLAttributes<HTMLDivElement> {}
 
-export const CardFooter: React.FC<CardFooterProps> = ({
-  className = '',
-  children,
-  ...props
-}) => {
+export const CardFooter: React.FC<CardFooterProps> = ({ className = '', children, ...props }) => {
   return (
     <div className={`ui-card__footer ${className}`} {...props}>
       {children}

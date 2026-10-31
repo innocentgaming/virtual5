@@ -53,12 +53,7 @@ describe('Investor & Evaluator Demo Features Suite', () => {
   describe('PersonaSwitcher', () => {
     it('renders the 3 flagship celebrations with city and budget in ₹ Lakhs', () => {
       const handleSelect = vi.fn();
-      render(
-        <PersonaSwitcher
-          activeEventId={SAMPLE_WEDDING.id}
-          onSelectPersona={handleSelect}
-        />
-      );
+      render(<PersonaSwitcher activeEventId={SAMPLE_WEDDING.id} onSelectPersona={handleSelect} />);
 
       // Verify all 3 options are rendered
       expect(screen.getByText('Aarav & Ananya')).toBeInTheDocument();
@@ -78,12 +73,7 @@ describe('Investor & Evaluator Demo Features Suite', () => {
 
     it('invokes onSelectPersona when an inactive persona is clicked', () => {
       const handleSelect = vi.fn();
-      render(
-        <PersonaSwitcher
-          activeEventId={SAMPLE_WEDDING.id}
-          onSelectPersona={handleSelect}
-        />
-      );
+      render(<PersonaSwitcher activeEventId={SAMPLE_WEDDING.id} onSelectPersona={handleSelect} />);
 
       const birthdayBtn = screen.getByRole('button', { name: /Rohan's 30th/i });
       fireEvent.click(birthdayBtn);
@@ -101,25 +91,24 @@ describe('Investor & Evaluator Demo Features Suite', () => {
       render(<ChaosBar plan={SAMPLE_WEDDING} />);
 
       expect(screen.getByText(/Simulate: Caterer raises price 20%/i)).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /More simulation scenarios/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /More simulation scenarios/i }),
+      ).toBeInTheDocument();
     });
 
     it('triggers caterer price spike on headline button click', () => {
       const onApplyScenario = vi.fn();
-      render(
-        <ChaosBar
-          plan={SAMPLE_WEDDING}
-          onApplyScenario={onApplyScenario}
-        />
-      );
+      render(<ChaosBar plan={SAMPLE_WEDDING} onApplyScenario={onApplyScenario} />);
 
-      const headlineBtn = screen.getByRole('button', { name: /Simulate: Caterer raises price 20%/i });
+      const headlineBtn = screen.getByRole('button', {
+        name: /Simulate: Caterer raises price 20%/i,
+      });
       fireEvent.click(headlineBtn);
 
       expect(onApplyScenario).toHaveBeenCalledWith(
         expect.objectContaining({
           vendorPriceSpikePercent: 20,
-        })
+        }),
       );
     });
 
@@ -144,7 +133,7 @@ describe('Investor & Evaluator Demo Features Suite', () => {
           plan={planWithChange}
           onApplyTradeOff={onApplyTradeOff}
           onUndoLastChange={onUndo}
-        />
+        />,
       );
 
       // Verify proposal and undo buttons exist
@@ -172,7 +161,7 @@ describe('Investor & Evaluator Demo Features Suite', () => {
           onClose={onClose}
           onNavigateTab={onNavigateTab}
           onOpenCopilot={onOpenCopilot}
-        />
+        />,
       );
 
       // Step 1: Dashboard
@@ -195,7 +184,9 @@ describe('Investor & Evaluator Demo Features Suite', () => {
       // Click Next -> Step 4
       fireEvent.click(screen.getByRole('button', { name: /^Next$/i }));
       expect(screen.getByText(/4 of 9/i)).toBeInTheDocument();
-      expect(screen.getByText(/Deterministic Rules & "Why Am I Seeing This\?"/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/Deterministic Rules & "Why Am I Seeing This\?"/i),
+      ).toBeInTheDocument();
 
       // Steps 5-7: timeline, guests, vendors
       fireEvent.click(screen.getByRole('button', { name: /^Next$/i }));
@@ -228,12 +219,7 @@ describe('Investor & Evaluator Demo Features Suite', () => {
 
     it('closes on Escape key press', () => {
       const onClose = vi.fn();
-      render(
-        <DemoTour
-          isOpen={true}
-          onClose={onClose}
-        />
-      );
+      render(<DemoTour isOpen={true} onClose={onClose} />);
 
       fireEvent.keyDown(window, { key: 'Escape' });
       expect(onClose).toHaveBeenCalled();
@@ -274,11 +260,13 @@ describe('Investor & Evaluator Demo Features Suite', () => {
           onNavigateTab={vi.fn()}
           onToggleTask={vi.fn()}
           onRegenerateIdeas={vi.fn()}
-        />
+        />,
       );
 
       // Verify rules fired counter badge
-      expect(screen.getByText(new RegExp(`${insights.length}/${TOTAL_DECISION_RULES_COUNT} Fired`, 'i'))).toBeInTheDocument();
+      expect(
+        screen.getByText(new RegExp(`${insights.length}/${TOTAL_DECISION_RULES_COUNT} Fired`, 'i')),
+      ).toBeInTheDocument();
 
       // Verify "Why am I seeing this?" toggle buttons exist
       const whyButtons = screen.getAllByRole('button', { name: /Explain reason for/i });
@@ -304,7 +292,7 @@ describe('Investor & Evaluator Demo Features Suite', () => {
           isOpen={true}
           onClose={vi.fn()}
           activeTab="budget"
-        />
+        />,
       );
 
       // Budget suggestions
@@ -317,7 +305,7 @@ describe('Investor & Evaluator Demo Features Suite', () => {
           isOpen={true}
           onClose={vi.fn()}
           activeTab="schedule"
-        />
+        />,
       );
       expect(screen.getByText(/10 PM curfew rules & sound permits/i)).toBeInTheDocument();
 
@@ -328,7 +316,7 @@ describe('Investor & Evaluator Demo Features Suite', () => {
           isOpen={true}
           onClose={vi.fn()}
           activeTab="guests"
-        />
+        />,
       );
       expect(screen.getByText(/Jain & Pure Veg separate kitchen tips/i)).toBeInTheDocument();
     });
@@ -341,7 +329,7 @@ describe('Investor & Evaluator Demo Features Suite', () => {
           isOpen={true}
           onClose={vi.fn()}
           onPinTask={onPinTask}
-        />
+        />,
       );
 
       // Welcome message is an assistant message with Pin to plan button
@@ -354,7 +342,7 @@ describe('Investor & Evaluator Demo Features Suite', () => {
         expect.objectContaining({
           title: expect.stringContaining('Action: Namaste!'),
           category: 'final',
-        })
+        }),
       );
 
       // Button updates to "Pinned"

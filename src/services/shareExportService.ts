@@ -132,11 +132,13 @@ export function generateBudgetCsv(plan: EventPlan, budgetSummary: BudgetSummary)
     'Notes',
   ].map((h) => escapeCsv(h));
 
-  const items = plan.budgetItems || (plan as unknown as { budget?: typeof plan.budgetItems }).budget || [];
+  const items =
+    plan.budgetItems || (plan as unknown as { budget?: typeof plan.budgetItems }).budget || [];
 
   const rows = items.map((item) => {
     const hasActual = item.actualCost !== undefined;
-    const variance = hasActual && item.actualCost !== undefined ? item.actualCost - item.estimatedCost : 0;
+    const variance =
+      hasActual && item.actualCost !== undefined ? item.actualCost - item.estimatedCost : 0;
     const status = !hasActual ? 'Estimated' : variance <= 0 ? 'On Budget' : 'Over Budget';
     const payment = item.isPaid ? 'Paid' : 'Invoiced';
     const scale = item.isPerGuest ? 'Per-Guest' : 'Fixed';

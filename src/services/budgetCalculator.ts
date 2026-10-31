@@ -1,9 +1,4 @@
-import type {
-  EventPlan,
-  BudgetSummary,
-  BudgetCategory,
-  BudgetItem,
-} from '../types/event';
+import type { EventPlan, BudgetSummary, BudgetCategory, BudgetItem } from '../types/event';
 
 export type BudgetSummaryPlanInput = Pick<
   EventPlan,
@@ -27,8 +22,8 @@ export type BudgetSummaryPlanInput = Pick<
 export function calculateBudgetSummary(
   planOrBudget: number | BudgetSummaryPlanInput,
   items?: BudgetItem[],
-  contingencyRate: number = 0.10,
-  guestCount: number = 1
+  contingencyRate: number = 0.1,
+  guestCount: number = 1,
 ): BudgetSummary {
   let totalBudget = 0;
   let budgetItems: BudgetItem[] = [];
@@ -38,7 +33,7 @@ export function calculateBudgetSummary(
   if (typeof planOrBudget === 'object' && planOrBudget !== null) {
     totalBudget = planOrBudget.totalBudget;
     budgetItems = planOrBudget.budgetItems || [];
-    rate = planOrBudget.contingencyRate ?? 0.10;
+    rate = planOrBudget.contingencyRate ?? 0.1;
     count = planOrBudget.guestCount ?? 1;
   } else {
     totalBudget = planOrBudget;
@@ -46,7 +41,7 @@ export function calculateBudgetSummary(
   }
 
   const safeBudget = Math.max(0, isNaN(totalBudget) ? 0 : totalBudget);
-  const safeContingencyRate = Math.max(0, Math.min(0.5, isNaN(rate) ? 0.10 : rate));
+  const safeContingencyRate = Math.max(0, Math.min(0.5, isNaN(rate) ? 0.1 : rate));
 
   const categoryTotals: Record<BudgetCategory, number> = {
     venue: 0,
@@ -85,9 +80,8 @@ export function calculateBudgetSummary(
 
   const totalEstimated = nonContingencySum + contingencyAmount;
   const remainingBalance = safeBudget - totalEstimated;
-  const utilizationPercentage = safeBudget > 0
-    ? Math.round((totalEstimated / safeBudget) * 1000) / 10
-    : 0;
+  const utilizationPercentage =
+    safeBudget > 0 ? Math.round((totalEstimated / safeBudget) * 1000) / 10 : 0;
   const isOverBudget = totalEstimated > safeBudget;
 
   const safeGuestCount = Math.max(1, isNaN(count) ? 1 : count);

@@ -218,8 +218,8 @@ describe('Copilot Grounding, Privacy & Action Safety (Step 2)', () => {
           actionType: 'reduce_budget_item',
           deltaAmount: -50000,
         },
-        samplePlan
-      )
+        samplePlan,
+      ),
     ).toBeNull();
 
     // Amount exceeding total budget
@@ -230,8 +230,8 @@ describe('Copilot Grounding, Privacy & Action Safety (Step 2)', () => {
           actionType: 'reduce_budget_item',
           deltaAmount: 999999999,
         },
-        samplePlan
-      )
+        samplePlan,
+      ),
     ).toBeNull();
 
     // Unknown/unauthorized action type
@@ -239,11 +239,13 @@ describe('Copilot Grounding, Privacy & Action Safety (Step 2)', () => {
       validateStructuredAction(
         {
           label: 'Delete Database',
-          actionType: 'delete_database' as unknown as Parameters<typeof validateStructuredAction>[0]['actionType'],
+          actionType: 'delete_database' as unknown as Parameters<
+            typeof validateStructuredAction
+          >[0]['actionType'],
           deltaAmount: 1000,
         },
-        samplePlan
-      )
+        samplePlan,
+      ),
     ).toBeNull();
 
     // Non-existent vendor category for update_vendor_status
@@ -254,8 +256,8 @@ describe('Copilot Grounding, Privacy & Action Safety (Step 2)', () => {
           actionType: 'update_vendor_status',
           targetCategory: 'submarine_operator',
         },
-        samplePlan
-      )
+        samplePlan,
+      ),
     ).toBeNull();
   });
 
@@ -300,7 +302,7 @@ describe('Copilot Grounding, Privacy & Action Safety (Step 2)', () => {
                   },
                 },
               ],
-            })
+            }),
           ),
       });
     });
@@ -308,7 +310,7 @@ describe('Copilot Grounding, Privacy & Action Safety (Step 2)', () => {
     const response = await generateCopilotAnswerAsync(
       'How do I trim 15% from my budget without impacting guests?',
       samplePlan,
-      'test-api-key-123'
+      'test-api-key-123',
     );
 
     // Verify outbound prompt contains real grounded stats
@@ -339,12 +341,18 @@ describe('Copilot Grounding, Privacy & Action Safety (Step 2)', () => {
     expect(budgetAnswer).toContain('[ACTION:');
 
     // Curfew & local municipal rules guidance
-    const curfewAnswer = generateCopilotAnswer('What are the 10 PM curfew rules and sound permits?', samplePlan);
+    const curfewAnswer = generateCopilotAnswer(
+      'What are the 10 PM curfew rules and sound permits?',
+      samplePlan,
+    );
     expect(curfewAnswer).toContain('10:00 PM Sound Curfew');
     expect(curfewAnswer).toContain('Check local ward guidelines');
 
     // Ungrounded external query refusal
-    const ungroundedAnswer = generateCopilotAnswer('What is the current stock price of Reliance and weather tomorrow?', samplePlan);
+    const ungroundedAnswer = generateCopilotAnswer(
+      'What is the current stock price of Reliance and weather tomorrow?',
+      samplePlan,
+    );
     expect(ungroundedAnswer).toContain('grounded specifically in your active event plan');
     expect(ungroundedAnswer).toContain('do not have access to live external weather forecasts');
   });

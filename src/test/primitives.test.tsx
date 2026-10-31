@@ -1,7 +1,16 @@
 import '@testing-library/jest-dom/vitest';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { Button, Modal, ToastProvider, useToast, Toast, Badge, Skeleton, EmptyState } from '../components/ui';
+import {
+  Button,
+  Modal,
+  ToastProvider,
+  useToast,
+  Toast,
+  Badge,
+  Skeleton,
+  EmptyState,
+} from '../components/ui';
 
 describe('UI Primitives — Design System & Accessibility', () => {
   describe('Button Component', () => {
@@ -10,7 +19,7 @@ describe('UI Primitives — Design System & Accessibility', () => {
       render(
         <Button variant="primary" size="md" onClick={handleClick}>
           Click Me
-        </Button>
+        </Button>,
       );
 
       const btn = screen.getByRole('button', { name: /Click Me/i });
@@ -27,7 +36,7 @@ describe('UI Primitives — Design System & Accessibility', () => {
       render(
         <Button disabled onClick={handleClick}>
           Disabled Button
-        </Button>
+        </Button>,
       );
 
       const btn = screen.getByRole('button', { name: /Disabled Button/i });
@@ -42,7 +51,7 @@ describe('UI Primitives — Design System & Accessibility', () => {
       render(
         <Button isLoading onClick={handleClick}>
           Save Plan
-        </Button>
+        </Button>,
       );
 
       const btn = screen.getByRole('button', { name: /Save Plan/i });
@@ -59,10 +68,15 @@ describe('UI Primitives — Design System & Accessibility', () => {
     it('renders with role="dialog", aria-modal="true", and locks body scroll', () => {
       const handleClose = vi.fn();
       render(
-        <Modal isOpen={true} onClose={handleClose} title="Test Modal" description="Modal description">
+        <Modal
+          isOpen={true}
+          onClose={handleClose}
+          title="Test Modal"
+          description="Modal description"
+        >
           <p>Modal content</p>
           <button>Inner Action</button>
-        </Modal>
+        </Modal>,
       );
 
       const dialog = screen.getByRole('dialog');
@@ -77,7 +91,7 @@ describe('UI Primitives — Design System & Accessibility', () => {
       render(
         <Modal isOpen={true} onClose={handleClose} title="Escape Test">
           <p>Press Esc to close</p>
-        </Modal>
+        </Modal>,
       );
 
       fireEvent.keyDown(window, { key: 'Escape' });
@@ -89,7 +103,7 @@ describe('UI Primitives — Design System & Accessibility', () => {
       render(
         <Modal isOpen={true} onClose={handleClose} title="Backdrop Test">
           <p>Click outside to close</p>
-        </Modal>
+        </Modal>,
       );
 
       const backdrop = screen.getByTestId('modal-backdrop');
@@ -102,7 +116,7 @@ describe('UI Primitives — Design System & Accessibility', () => {
         <Modal isOpen={true} onClose={vi.fn()} title="Focus Trap Test">
           <button>First Button</button>
           <button>Second Button</button>
-        </Modal>
+        </Modal>,
       );
 
       const closeBtn = screen.getByRole('button', { name: /Close dialog/i });
@@ -150,7 +164,7 @@ describe('UI Primitives — Design System & Accessibility', () => {
       render(
         <ToastProvider>
           <TestConsumer />
-        </ToastProvider>
+        </ToastProvider>,
       );
 
       const triggerBtn = screen.getByRole('button', { name: /Trigger Notification/i });
@@ -170,9 +184,13 @@ describe('UI Primitives — Design System & Accessibility', () => {
     it('renders dietary badges for Jain and Pure Veg', () => {
       render(
         <div>
-          <Badge variant="dietary" dietaryType="jain">Jain Friendly</Badge>
-          <Badge variant="dietary" dietaryType="pure_veg">100% Pure Veg</Badge>
-        </div>
+          <Badge variant="dietary" dietaryType="jain">
+            Jain Friendly
+          </Badge>
+          <Badge variant="dietary" dietaryType="pure_veg">
+            100% Pure Veg
+          </Badge>
+        </div>,
       );
 
       expect(screen.getByText('Jain Friendly')).toBeInTheDocument();
@@ -186,7 +204,7 @@ describe('UI Primitives — Design System & Accessibility', () => {
         <div>
           <Skeleton shape="circle" width={40} height={40} />
           <Skeleton shape="line" />
-        </div>
+        </div>,
       );
 
       const circle = container.querySelector('.ui-skeleton--circle');
@@ -200,7 +218,7 @@ describe('UI Primitives — Design System & Accessibility', () => {
           title="No tasks found"
           description="You are all caught up on event milestones."
           action={<button>Add First Task</button>}
-        />
+        />,
       );
 
       expect(screen.getByText('No tasks found')).toBeInTheDocument();

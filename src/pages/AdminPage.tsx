@@ -1,5 +1,16 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ArrowLeft, Download, LogOut, RefreshCw, Search, ShieldCheck, Users, Activity, DatabaseBackup, LayoutDashboard } from 'lucide-react';
+import {
+  ArrowLeft,
+  Download,
+  LogOut,
+  RefreshCw,
+  Search,
+  ShieldCheck,
+  Users,
+  Activity,
+  DatabaseBackup,
+  LayoutDashboard,
+} from 'lucide-react';
 import { usePageTitle } from '../router';
 import { Link } from '../routerComponents';
 import { Button, Logo, Modal } from '../components/ui';
@@ -33,7 +44,15 @@ const ACTIVITY_LABELS: Record<string, string> = {
 };
 
 const fmtDate = (iso: string | null | undefined) =>
-  iso ? new Date(iso).toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Never';
+  iso
+    ? new Date(iso).toLocaleString('en-IN', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    : 'Never';
 
 export function AdminPage(): React.ReactElement {
   usePageTitle('Admin | EventWise AI', { noindex: true });
@@ -47,7 +66,9 @@ export function AdminPage(): React.ReactElement {
           <ShieldCheck size={36} aria-hidden="true" />
           <h1>Administrators only</h1>
           <p>Your account does not have access to this area.</p>
-          <Link to="/app" className="btn btn-primary">Back to my events</Link>
+          <Link to="/app" className="btn btn-primary">
+            Back to my events
+          </Link>
         </div>
       </main>
     );
@@ -61,7 +82,9 @@ export function AdminPage(): React.ReactElement {
           <span className="adm-top__badge">Admin</span>
         </div>
         <div className="adm-top__right">
-          <Link to="/app" className="btn btn-ghost btn-sm"><ArrowLeft size={14} /> Back to app</Link>
+          <Link to="/app" className="btn btn-ghost btn-sm">
+            <ArrowLeft size={14} /> Back to app
+          </Link>
           <button type="button" className="btn btn-ghost btn-sm" onClick={() => void logout()}>
             <LogOut size={14} /> Sign out
           </button>
@@ -72,7 +95,16 @@ export function AdminPage(): React.ReactElement {
         <h1 className="adm-title">Administration</h1>
         <div role="tablist" aria-label="Admin sections" className="adm-tabs">
           {TABS.map((t) => (
-            <button key={t.id} type="button" role="tab" id={`adm-tab-${t.id}`} aria-selected={tab === t.id} aria-controls={`adm-panel-${t.id}`} className={`adm-tab ${tab === t.id ? 'is-active' : ''}`} onClick={() => setTab(t.id)}>
+            <button
+              key={t.id}
+              type="button"
+              role="tab"
+              id={`adm-tab-${t.id}`}
+              aria-selected={tab === t.id}
+              aria-controls={`adm-panel-${t.id}`}
+              className={`adm-tab ${tab === t.id ? 'is-active' : ''}`}
+              onClick={() => setTab(t.id)}
+            >
               {t.icon} {t.label}
             </button>
           ))}
@@ -90,7 +122,10 @@ export function AdminPage(): React.ReactElement {
 
 // ---------------------------------------------------------------------------
 
-function useLoad<T>(fn: () => Promise<{ ok: true } & T | { ok: false; error: string }>, deps: React.DependencyList) {
+function useLoad<T>(
+  fn: () => Promise<({ ok: true } & T) | { ok: false; error: string }>,
+  deps: React.DependencyList,
+) {
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -114,7 +149,11 @@ function ErrorBanner({ message, onRetry }: { message: string; onRetry?: () => vo
   return (
     <div role="alert" className="adm-error">
       <span>{message}</span>
-      {onRetry && <button type="button" className="btn btn-sm btn-secondary" onClick={onRetry}>Try again</button>}
+      {onRetry && (
+        <button type="button" className="btn btn-sm btn-secondary" onClick={onRetry}>
+          Try again
+        </button>
+      )}
     </div>
   );
 }
@@ -145,22 +184,43 @@ function Overview() {
         <Stat label="Total users" value={t.users} hint={`${t.new7} new this week`} />
         <Stat label="Active (30 days)" value={t.active30} hint="signed in" />
         <Stat label="Event plans" value={t.events} hint={`${t.usersWithEvents} users have plans`} />
-        <Stat label="Failed sign-ins (24h)" value={t.failedLogins24h} hint={t.failedLogins24h > 20 ? 'Unusually high' : 'Normal'} />
+        <Stat
+          label="Failed sign-ins (24h)"
+          value={t.failedLogins24h}
+          hint={t.failedLogins24h > 20 ? 'Unusually high' : 'Normal'}
+        />
       </div>
 
       <div className="adm-card">
         <h2>New sign-ups, last 30 days</h2>
-        <svg role="img" className="adm-chart" viewBox="0 0 300 80" aria-label={`Daily sign-ups for the last 30 days, ${t.new30} in total`} preserveAspectRatio="none">
+        <svg
+          role="img"
+          className="adm-chart"
+          viewBox="0 0 300 80"
+          aria-label={`Daily sign-ups for the last 30 days, ${t.new30} in total`}
+          preserveAspectRatio="none"
+        >
           {data.signupsByDay.map((d, i) => {
             const h = (d.count / max) * 70;
             return (
-              <rect key={d.date} x={i * 10 + 1} y={76 - h} width={8} height={Math.max(h, d.count ? 2 : 0.8)} rx={1.5} className={d.count ? 'adm-bar' : 'adm-bar adm-bar--empty'}>
+              <rect
+                key={d.date}
+                x={i * 10 + 1}
+                y={76 - h}
+                width={8}
+                height={Math.max(h, d.count ? 2 : 0.8)}
+                rx={1.5}
+                className={d.count ? 'adm-bar' : 'adm-bar adm-bar--empty'}
+              >
                 <title>{`${d.date}: ${d.count}`}</title>
               </rect>
             );
           })}
         </svg>
-        <div className="adm-chart__axis"><span>{data.signupsByDay[0]?.date}</span><span>{data.signupsByDay.at(-1)?.date}</span></div>
+        <div className="adm-chart__axis">
+          <span>{data.signupsByDay[0]?.date}</span>
+          <span>{data.signupsByDay.at(-1)?.date}</span>
+        </div>
       </div>
 
       <div className="adm-card">
@@ -168,13 +228,20 @@ function Overview() {
         <ul className="adm-bars">
           {(['host', 'planner', 'vendor'] as UserRole[]).map((r) => (
             <li key={r}>
-              <span>{r === 'host' ? 'Hosts & couples' : r === 'planner' ? 'Event planners' : 'Vendors'}</span>
-              <span className="adm-meter" aria-hidden="true"><i style={{ width: `${(data.byRole[r] / roleTotal) * 100}%` }} /></span>
+              <span>
+                {r === 'host' ? 'Hosts & couples' : r === 'planner' ? 'Event planners' : 'Vendors'}
+              </span>
+              <span className="adm-meter" aria-hidden="true">
+                <i style={{ width: `${(data.byRole[r] / roleTotal) * 100}%` }} />
+              </span>
               <strong>{data.byRole[r]}</strong>
             </li>
           ))}
         </ul>
-        <p className="adm-muted">{t.admins} administrator{t.admins === 1 ? '' : 's'} · {t.disabled} disabled account{t.disabled === 1 ? '' : 's'}</p>
+        <p className="adm-muted">
+          {t.admins} administrator{t.admins === 1 ? '' : 's'} · {t.disabled} disabled account
+          {t.disabled === 1 ? '' : 's'}
+        </p>
       </div>
     </div>
   );
@@ -189,7 +256,10 @@ function UsersTab({ selfId }: { selfId: string }) {
   const [actionError, setActionError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<AdminUserRow | null>(null);
   const [confirmEmail, setConfirmEmail] = useState('');
-  const { data, error, loading, reload } = useLoad(() => adminApi.users({ q: query, page, filter }), [query, page, filter]);
+  const { data, error, loading, reload } = useLoad(
+    () => adminApi.users({ q: query, page, filter }),
+    [query, page, filter],
+  );
 
   useEffect(() => {
     const t = window.setTimeout(() => {
@@ -216,17 +286,32 @@ function UsersTab({ selfId }: { selfId: string }) {
         <label className="adm-search">
           <Search size={15} aria-hidden="true" />
           <span className="sr-only">Search users</span>
-          <input type="search" placeholder="Search name, email or organisation" value={q} onChange={(e) => setQ(e.target.value)} maxLength={80} />
+          <input
+            type="search"
+            placeholder="Search name, email or organisation"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            maxLength={80}
+          />
         </label>
         <label>
           <span className="sr-only">Filter users</span>
-          <select className="form-control" value={filter} onChange={(e) => { setPage(1); setFilter(e.target.value); }}>
+          <select
+            className="form-control"
+            value={filter}
+            onChange={(e) => {
+              setPage(1);
+              setFilter(e.target.value);
+            }}
+          >
             <option value="">All users</option>
             <option value="admins">Administrators</option>
             <option value="disabled">Disabled</option>
           </select>
         </label>
-        <button type="button" className="btn btn-secondary btn-sm" onClick={() => void reload()}><RefreshCw size={14} /> Refresh</button>
+        <button type="button" className="btn btn-secondary btn-sm" onClick={() => void reload()}>
+          <RefreshCw size={14} /> Refresh
+        </button>
       </div>
 
       {notice && <output className="adm-notice">{notice}</output>}
@@ -258,8 +343,18 @@ function UsersTab({ selfId }: { selfId: string }) {
                     <div className="adm-muted">{u.email}</div>
                   </td>
                   <td data-label="Role">
-                    <select aria-label={`Role for ${u.name}`} className="form-control adm-select" value={u.role} disabled={self}
-                      onChange={(e) => void act(() => adminApi.updateUser(u.id, { role: e.target.value as UserRole }), `Updated ${u.name}.`)}>
+                    <select
+                      aria-label={`Role for ${u.name}`}
+                      className="form-control adm-select"
+                      value={u.role}
+                      disabled={self}
+                      onChange={(e) =>
+                        void act(
+                          () => adminApi.updateUser(u.id, { role: e.target.value as UserRole }),
+                          `Updated ${u.name}.`,
+                        )
+                      }
+                    >
                       <option value="host">Host</option>
                       <option value="planner">Planner</option>
                       <option value="vendor">Vendor</option>
@@ -269,18 +364,58 @@ function UsersTab({ selfId }: { selfId: string }) {
                   <td data-label="Joined">{fmtDate(u.createdAt)}</td>
                   <td data-label="Last sign-in">{fmtDate(u.lastLoginAt)}</td>
                   <td data-label="Actions">
-                    {self ? <span className="adm-muted">This is you</span> : (
+                    {self ? (
+                      <span className="adm-muted">This is you</span>
+                    ) : (
                       <div className="adm-rowactions">
-                        <button type="button" className="btn btn-sm btn-secondary" onClick={() => void act(() => adminApi.updateUser(u.id, { isAdmin: !u.isAdmin }), u.isAdmin ? `${u.name} is no longer an admin.` : `${u.name} is now an admin.`)}>
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-secondary"
+                          onClick={() =>
+                            void act(
+                              () => adminApi.updateUser(u.id, { isAdmin: !u.isAdmin }),
+                              u.isAdmin
+                                ? `${u.name} is no longer an admin.`
+                                : `${u.name} is now an admin.`,
+                            )
+                          }
+                        >
                           {u.isAdmin ? 'Remove admin' : 'Make admin'}
                         </button>
-                        <button type="button" className="btn btn-sm btn-secondary" onClick={() => void act(() => adminApi.updateUser(u.id, { disabled: !u.disabled }), u.disabled ? `${u.name} can sign in again.` : `${u.name} has been disabled and signed out.`)}>
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-secondary"
+                          onClick={() =>
+                            void act(
+                              () => adminApi.updateUser(u.id, { disabled: !u.disabled }),
+                              u.disabled
+                                ? `${u.name} can sign in again.`
+                                : `${u.name} has been disabled and signed out.`,
+                            )
+                          }
+                        >
                           {u.disabled ? 'Enable' : 'Disable'}
                         </button>
-                        <button type="button" className="btn btn-sm btn-secondary" onClick={() => void act(() => adminApi.revokeSessions(u.id), `${u.name} was signed out everywhere.`)}>
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-secondary"
+                          onClick={() =>
+                            void act(
+                              () => adminApi.revokeSessions(u.id),
+                              `${u.name} was signed out everywhere.`,
+                            )
+                          }
+                        >
                           Sign out
                         </button>
-                        <button type="button" className="btn btn-sm adm-danger" onClick={() => { setDeleting(u); setConfirmEmail(''); }}>
+                        <button
+                          type="button"
+                          className="btn btn-sm adm-danger"
+                          onClick={() => {
+                            setDeleting(u);
+                            setConfirmEmail('');
+                          }}
+                        >
                           Delete
                         </button>
                       </div>
@@ -290,7 +425,11 @@ function UsersTab({ selfId }: { selfId: string }) {
               );
             })}
             {data && data.users.length === 0 && (
-              <tr><td colSpan={6} className="adm-empty">No users match your search.</td></tr>
+              <tr>
+                <td colSpan={6} className="adm-empty">
+                  No users match your search.
+                </td>
+              </tr>
             )}
           </tbody>
         </table>
@@ -298,27 +437,75 @@ function UsersTab({ selfId }: { selfId: string }) {
 
       {data && (
         <div className="adm-pager">
-          <span className="adm-muted">{data.total} user{data.total === 1 ? '' : 's'}</span>
+          <span className="adm-muted">
+            {data.total} user{data.total === 1 ? '' : 's'}
+          </span>
           <div>
-            <button type="button" className="btn btn-sm btn-secondary" disabled={page <= 1} onClick={() => setPage(page - 1)}>Previous</button>
-            <span className="adm-muted"> Page {page} of {pages} </span>
-            <button type="button" className="btn btn-sm btn-secondary" disabled={page >= pages} onClick={() => setPage(page + 1)}>Next</button>
+            <button
+              type="button"
+              className="btn btn-sm btn-secondary"
+              disabled={page <= 1}
+              onClick={() => setPage(page - 1)}
+            >
+              Previous
+            </button>
+            <span className="adm-muted">
+              {' '}
+              Page {page} of {pages}{' '}
+            </span>
+            <button
+              type="button"
+              className="btn btn-sm btn-secondary"
+              disabled={page >= pages}
+              onClick={() => setPage(page + 1)}
+            >
+              Next
+            </button>
           </div>
         </div>
       )}
 
       {deleting && (
-        <Modal isOpen onClose={() => setDeleting(null)} title="Delete this user?" subtitle={deleting.email} size="sm" ariaLabel="Delete user confirmation">
-          <p>This permanently deletes <strong>{deleting.name}</strong> and all of their event plans. It cannot be undone. Type their email to confirm.</p>
-          <label htmlFor="adm-confirm" className="form-label">Email to confirm</label>
-          <input id="adm-confirm" className="form-control" value={confirmEmail} onChange={(e) => setConfirmEmail(e.target.value)} autoComplete="off" />
+        <Modal
+          isOpen
+          onClose={() => setDeleting(null)}
+          title="Delete this user?"
+          subtitle={deleting.email}
+          size="sm"
+          ariaLabel="Delete user confirmation"
+        >
+          <p>
+            This permanently deletes <strong>{deleting.name}</strong> and all of their event plans.
+            It cannot be undone. Type their email to confirm.
+          </p>
+          <label htmlFor="adm-confirm" className="form-label">
+            Email to confirm
+          </label>
+          <input
+            id="adm-confirm"
+            className="form-control"
+            value={confirmEmail}
+            onChange={(e) => setConfirmEmail(e.target.value)}
+            autoComplete="off"
+          />
           <div className="adm-modalactions">
-            <Button variant="secondary" onClick={() => setDeleting(null)}>Cancel</Button>
-            <Button variant="primary" disabled={confirmEmail !== deleting.email} onClick={() => {
-              const target = deleting;
-              setDeleting(null);
-              void act(() => adminApi.deleteUser(target.id, confirmEmail), `${target.name} was deleted.`);
-            }}>Delete permanently</Button>
+            <Button variant="secondary" onClick={() => setDeleting(null)}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              disabled={confirmEmail !== deleting.email}
+              onClick={() => {
+                const target = deleting;
+                setDeleting(null);
+                void act(
+                  () => adminApi.deleteUser(target.id, confirmEmail),
+                  `${target.name} was deleted.`,
+                );
+              }}
+            >
+              Delete permanently
+            </Button>
           </div>
         </Modal>
       )}
@@ -328,7 +515,10 @@ function UsersTab({ selfId }: { selfId: string }) {
 
 function ActivityTab() {
   const [type, setType] = useState('');
-  const { data, error, loading, reload } = useLoad<{ entries: AuditRow[] }>(() => adminApi.activity(type || undefined), [type]);
+  const { data, error, loading, reload } = useLoad<{ entries: AuditRow[] }>(
+    () => adminApi.activity(type || undefined),
+    [type],
+  );
   const types = useMemo(() => Object.keys(ACTIVITY_LABELS), []);
   return (
     <div className="adm-stack">
@@ -337,27 +527,57 @@ function ActivityTab() {
           <span className="sr-only">Filter by activity type</span>
           <select className="form-control" value={type} onChange={(e) => setType(e.target.value)}>
             <option value="">All activity</option>
-            {types.map((t) => <option key={t} value={t}>{ACTIVITY_LABELS[t]}</option>)}
+            {types.map((t) => (
+              <option key={t} value={t}>
+                {ACTIVITY_LABELS[t]}
+              </option>
+            ))}
           </select>
         </label>
-        <button type="button" className="btn btn-secondary btn-sm" onClick={() => void reload()}><RefreshCw size={14} /> Refresh</button>
+        <button type="button" className="btn btn-secondary btn-sm" onClick={() => void reload()}>
+          <RefreshCw size={14} /> Refresh
+        </button>
       </div>
       {error && <ErrorBanner message={error} onRetry={reload} />}
       <div className="adm-tablewrap" aria-busy={loading}>
         <table className="adm-table">
           <caption className="sr-only">Recent activity</caption>
-          <thead><tr><th scope="col">When</th><th scope="col">What</th><th scope="col">Who</th><th scope="col">Details</th><th scope="col">IP</th></tr></thead>
+          <thead>
+            <tr>
+              <th scope="col">When</th>
+              <th scope="col">What</th>
+              <th scope="col">Who</th>
+              <th scope="col">Details</th>
+              <th scope="col">IP</th>
+            </tr>
+          </thead>
           <tbody>
             {data?.entries.map((a) => (
-              <tr key={a.id} className={a.type === 'login_failed' || a.type === 'login_blocked' ? 'is-warn' : ''}>
+              <tr
+                key={a.id}
+                className={a.type === 'login_failed' || a.type === 'login_blocked' ? 'is-warn' : ''}
+              >
                 <td data-label="When">{fmtDate(a.at)}</td>
                 <td data-label="What">{ACTIVITY_LABELS[a.type] ?? a.type}</td>
-                <td data-label="Who">{a.actorEmail ?? a.targetEmail ?? '—'}{a.actorEmail && a.targetEmail && a.targetEmail !== a.actorEmail ? <div className="adm-muted">→ {a.targetEmail}</div> : null}</td>
+                <td data-label="Who">
+                  {a.actorEmail ?? a.targetEmail ?? '—'}
+                  {a.actorEmail && a.targetEmail && a.targetEmail !== a.actorEmail ? (
+                    <div className="adm-muted">→ {a.targetEmail}</div>
+                  ) : null}
+                </td>
                 <td data-label="Details">{a.detail ?? ''}</td>
-                <td data-label="IP" className="adm-muted">{a.ip ?? ''}</td>
+                <td data-label="IP" className="adm-muted">
+                  {a.ip ?? ''}
+                </td>
               </tr>
             ))}
-            {data && data.entries.length === 0 && <tr><td colSpan={5} className="adm-empty">No activity recorded yet.</td></tr>}
+            {data && data.entries.length === 0 && (
+              <tr>
+                <td colSpan={5} className="adm-empty">
+                  No activity recorded yet.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
@@ -377,7 +597,10 @@ function DataTab() {
     setErr(null);
     const res = await adminApi.downloadBackup();
     setBusy(false);
-    if (res.ok) setMsg('Backup downloaded. Store it somewhere safe: it contains password hashes and personal data.');
+    if (res.ok)
+      setMsg(
+        'Backup downloaded. Store it somewhere safe: it contains password hashes and personal data.',
+      );
     else setErr(res.error);
   };
 
@@ -385,19 +608,43 @@ function DataTab() {
     <div className="adm-stack">
       <div className="adm-card">
         <h2>Storage</h2>
-        {error ? <ErrorBanner message={error} onRetry={reload} /> : (
+        {error ? (
+          <ErrorBanner message={error} onRetry={reload} />
+        ) : (
           <p>
-            Database: <strong>{data ? (data.storage === 'redis' ? 'Upstash Redis (persistent)' : data.storage === 'file' ? 'Disk file (persistent)' : 'Temporary memory (NOT persistent)') : '…'}</strong>
+            Database:{' '}
+            <strong>
+              {data
+                ? data.storage === 'redis'
+                  ? 'Upstash Redis (persistent)'
+                  : data.storage === 'file'
+                    ? 'Disk file (persistent)'
+                    : 'Temporary memory (NOT persistent)'
+                : '…'}
+            </strong>
           </p>
         )}
-        <p className="adm-muted">Live health check: <code>/api/health</code>. Point your uptime monitor at it.</p>
+        <p className="adm-muted">
+          Live health check: <code>/api/health</code>. Point your uptime monitor at it.
+        </p>
       </div>
       <div className="adm-card">
         <h2>Backup</h2>
-        <p>Download everything: users, event plans, RSVP links and replies, and the activity log, as one JSON file. Do this regularly. To restore, run <code>npm run restore -- file.json</code> on the server.</p>
+        <p>
+          Download everything: users, event plans, RSVP links and replies, and the activity log, as
+          one JSON file. Do this regularly. To restore, run{' '}
+          <code>npm run restore -- file.json</code> on the server.
+        </p>
         {msg && <output className="adm-notice">{msg}</output>}
         {err && <ErrorBanner message={err} />}
-        <Button variant="primary" onClick={download} isLoading={busy} leftIcon={<Download size={15} />}>Download backup</Button>
+        <Button
+          variant="primary"
+          onClick={download}
+          isLoading={busy}
+          leftIcon={<Download size={15} />}
+        >
+          Download backup
+        </Button>
       </div>
     </div>
   );

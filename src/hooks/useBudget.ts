@@ -3,7 +3,7 @@ import type { EventPlan, BudgetItem } from '../types/event';
 
 export function useBudget(
   activeEvent: EventPlan | undefined,
-  updateEvent: (updated: EventPlan) => void
+  updateEvent: (updated: EventPlan) => void,
 ) {
   const addBudgetItem = useCallback(
     (item: Omit<BudgetItem, 'id'>) => {
@@ -17,7 +17,7 @@ export function useBudget(
         budgetItems: [...activeEvent.budgetItems, newItem],
       });
     },
-    [activeEvent, updateEvent]
+    [activeEvent, updateEvent],
   );
 
   const updateBudgetItem = useCallback(
@@ -28,7 +28,7 @@ export function useBudget(
         budgetItems: activeEvent.budgetItems.map((b) => (b.id === item.id ? item : b)),
       });
     },
-    [activeEvent, updateEvent]
+    [activeEvent, updateEvent],
   );
 
   const deleteBudgetItem = useCallback(
@@ -39,7 +39,7 @@ export function useBudget(
         budgetItems: activeEvent.budgetItems.filter((b) => b.id !== id),
       });
     },
-    [activeEvent, updateEvent]
+    [activeEvent, updateEvent],
   );
 
   const updateContingencyRate = useCallback(
@@ -51,7 +51,7 @@ export function useBudget(
         contingencyRate: safeRate,
       });
     },
-    [activeEvent, updateEvent]
+    [activeEvent, updateEvent],
   );
 
   return {
@@ -61,4 +61,3 @@ export function useBudget(
     updateContingencyRate,
   };
 }
-

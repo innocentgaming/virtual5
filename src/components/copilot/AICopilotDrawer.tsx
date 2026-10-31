@@ -191,7 +191,7 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
 
   const contextSuggestions = useMemo(
     () => getContextSuggestions(activeTab, plan.eventType),
-    [activeTab, plan.eventType]
+    [activeTab, plan.eventType],
   );
 
   // Focus restoration & initial focus with scroll lock
@@ -223,7 +223,7 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
 
       if (e.key === 'Tab') {
         const focusable = drawerRef.current?.querySelectorAll<HTMLElement>(
-          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
         );
         if (!focusable || focusable.length === 0) return;
 
@@ -251,7 +251,10 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
       window.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = originalOverflow;
       document.body.style.paddingRight = originalPaddingRight;
-      if (previouslyFocusedElementRef.current && typeof previouslyFocusedElementRef.current.focus === 'function') {
+      if (
+        previouslyFocusedElementRef.current &&
+        typeof previouslyFocusedElementRef.current.focus === 'function'
+      ) {
         previouslyFocusedElementRef.current.focus();
       }
     };
@@ -264,10 +267,18 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
     }
   }, [messages, isThinking, isOpen]);
 
-  const streamAssistantText = (msgId: string, fullText: string, actions?: TradeOffOption[], isFallback?: boolean) => {
-    const prefersReduced = typeof window !== 'undefined' && Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);
+  const streamAssistantText = (
+    msgId: string,
+    fullText: string,
+    actions?: TradeOffOption[],
+    isFallback?: boolean,
+  ) => {
+    const prefersReduced =
+      typeof window !== 'undefined' &&
+      Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches);
     const isTest =
-      (globalThis as unknown as { process?: { env?: { NODE_ENV?: string } } }).process?.env?.NODE_ENV === 'test' ||
+      (globalThis as unknown as { process?: { env?: { NODE_ENV?: string } } }).process?.env
+        ?.NODE_ENV === 'test' ||
       typeof (window as unknown as { __vitest__?: unknown }).__vitest__ !== 'undefined';
 
     if (prefersReduced || isTest || fullText.length < 50) {
@@ -304,62 +315,66 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
         clearInterval(timer);
         setMessages((prev) =>
           prev.map((m) =>
-            m.id === msgId ? { ...m, text: fullText, proposedActions: actions } : m
-          )
+            m.id === msgId ? { ...m, text: fullText, proposedActions: actions } : m,
+          ),
         );
       } else {
         const slice = fullText.slice(0, cursor);
-        setMessages((prev) =>
-          prev.map((m) => (m.id === msgId ? { ...m, text: slice } : m))
-        );
+        setMessages((prev) => prev.map((m) => (m.id === msgId ? { ...m, text: slice } : m)));
       }
     }, 18);
   };
 
-  const handleSendPrompt = useCallback(async (promptText: string) => {
-    if (!promptText.trim() || isThinking) return;
+  const handleSendPrompt = useCallback(
+    async (promptText: string) => {
+      if (!promptText.trim() || isThinking) return;
 
-    const trimmedPrompt = promptText.trim();
-    setLastUserPrompt(trimmedPrompt);
+      const trimmedPrompt = promptText.trim();
+      setLastUserPrompt(trimmedPrompt);
 
-    const userMsg: ChatMessage = {
-      id: generateMessageId('usr'),
-      sender: 'user',
-      text: trimmedPrompt,
-      timestamp: getFormattedTime(),
-    };
+      const userMsg: ChatMessage = {
+        id: generateMessageId('usr'),
+        sender: 'user',
+        text: trimmedPrompt,
+        timestamp: getFormattedTime(),
+      };
 
-    setMessages((prev) => [...prev, userMsg]);
-    setInputVal('');
-    setShowSuggestions(false);
-    setIsThinking(true);
+      setMessages((prev) => [...prev, userMsg]);
+      setInputVal('');
+      setShowSuggestions(false);
+      setIsThinking(true);
 
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-    }
+      if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto';
+      }
 
-    try {
-      const answerText = await generateCopilotAnswerAsync(trimmedPrompt, plan);
-      const { cleanText, actions } = extractCopilotActions(answerText, plan);
-      setIsAiOnline(true);
-      streamAssistantText(generateMessageId('ast'), cleanText, actions, false);
-    } catch {
-      setIsAiOnline(false);
-      const fallbackText = generateCopilotAnswer(trimmedPrompt, plan);
-      const { cleanText, actions } = extractCopilotActions(fallbackText, plan);
-      streamAssistantText(generateMessageId('ast'), cleanText, actions, true);
-    } finally {
-      setIsThinking(false);
-    }
-  }, [isThinking, plan]);
+      try {
+        const answerText = await generateCopilotAnswerAsync(trimmedPrompt, plan);
+        const { cleanText, actions } = extractCopilotActions(answerText, plan);
+        setIsAiOnline(true);
+        streamAssistantText(generateMessageId('ast'), cleanText, actions, false);
+      } catch {
+        setIsAiOnline(false);
+        const fallbackText = generateCopilotAnswer(trimmedPrompt, plan);
+        const { cleanText, actions } = extractCopilotActions(fallbackText, plan);
+        streamAssistantText(generateMessageId('ast'), cleanText, actions, true);
+      } finally {
+        setIsThinking(false);
+      }
+    },
+    [isThinking, plan],
+  );
 
   const lastSuggestionClickRef = useRef(0);
-  const handleSuggestionClick = useCallback((chip: string) => {
-    const now = Date.now();
-    if (now - lastSuggestionClickRef.current < 400 || isThinking) return;
-    lastSuggestionClickRef.current = now;
-    handleSendPrompt(chip);
-  }, [isThinking, handleSendPrompt]);
+  const handleSuggestionClick = useCallback(
+    (chip: string) => {
+      const now = Date.now();
+      if (now - lastSuggestionClickRef.current < 400 || isThinking) return;
+      lastSuggestionClickRef.current = now;
+      handleSendPrompt(chip);
+    },
+    [isThinking, handleSendPrompt],
+  );
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -482,7 +497,15 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
             </div>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                <h2 id="copilot-drawer-title" style={{ fontSize: 'var(--text-base)', fontWeight: 800, color: 'var(--text)', margin: 0 }}>
+                <h2
+                  id="copilot-drawer-title"
+                  style={{
+                    fontSize: 'var(--text-base)',
+                    fontWeight: 800,
+                    color: 'var(--text)',
+                    margin: 0,
+                  }}
+                >
                   EventWise Copilot
                 </h2>
                 {/* Status Pill with Tooltip */}
@@ -494,7 +517,16 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
                       : 'Offline Planner: Deterministic rule engine active. 100% offline-ready.'
                   }
                 >
-                  <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', backgroundColor: isAiOnline ? '#10b981' : '#f59e0b', marginRight: '4px' }} />
+                  <span
+                    style={{
+                      display: 'inline-block',
+                      width: '6px',
+                      height: '6px',
+                      borderRadius: '50%',
+                      backgroundColor: isAiOnline ? '#10b981' : '#f59e0b',
+                      marginRight: '4px',
+                    }}
+                  />
                   {isAiOnline ? 'AI Online' : 'Offline Planner'}
                 </Badge>
               </div>
@@ -544,14 +576,30 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
               gap: 'var(--space-3)',
             }}
           >
-            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-danger-text)', fontWeight: 600 }}>
+            <span
+              style={{
+                fontSize: 'var(--text-xs)',
+                color: 'var(--color-danger-text)',
+                fontWeight: 600,
+              }}
+            >
               Reset conversation to initial greeting?
             </span>
             <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-              <Button variant="secondary" size="sm" onClick={() => setShowClearConfirm(false)} style={{ padding: '2px 8px' }}>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setShowClearConfirm(false)}
+                style={{ padding: '2px 8px' }}
+              >
                 Cancel
               </Button>
-              <Button variant="danger" size="sm" onClick={handleClearChat} style={{ padding: '2px 8px' }}>
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={handleClearChat}
+                style={{ padding: '2px 8px' }}
+              >
                 Clear Chat
               </Button>
             </div>
@@ -595,7 +643,11 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
                   padding: '0 4px',
                 }}
               >
-                {m.sender === 'assistant' ? <Bot size={13} color="var(--accent-primary)" /> : <User size={13} />}
+                {m.sender === 'assistant' ? (
+                  <Bot size={13} color="var(--accent-primary)" />
+                ) : (
+                  <User size={13} />
+                )}
                 <span>{m.sender === 'assistant' ? 'EventWise Copilot' : 'You'}</span>
                 <span>·</span>
                 <time dateTime={m.timestamp}>{m.timestamp}</time>
@@ -609,7 +661,8 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
                   borderRadius: 'var(--radius-lg)',
                   borderBottomRightRadius: m.sender === 'user' ? '2px' : 'var(--radius-lg)',
                   borderBottomLeftRadius: m.sender === 'assistant' ? '2px' : 'var(--radius-lg)',
-                  backgroundColor: m.sender === 'user' ? 'var(--accent-primary)' : 'var(--surface-subtle)',
+                  backgroundColor:
+                    m.sender === 'user' ? 'var(--accent-primary)' : 'var(--surface-subtle)',
                   color: m.sender === 'user' ? '#ffffff' : 'var(--text)',
                   fontSize: 'var(--text-sm)',
                   lineHeight: '1.55',
@@ -635,7 +688,15 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
                       borderRadius: 'var(--radius-md)',
                     }}
                   >
-                    <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--accent-primary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    <div
+                      style={{
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        color: 'var(--accent-primary)',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.04em',
+                      }}
+                    >
                       ⚡ Grounded Action Proposal
                     </div>
                     {m.proposedActions.map((action) => {
@@ -652,8 +713,21 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
                             borderRadius: 'var(--radius-sm)',
                           }}
                         >
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-                            <span style={{ fontWeight: 700, fontSize: 'var(--text-xs)', color: 'var(--text)' }}>
+                          <div
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              gap: '8px',
+                            }}
+                          >
+                            <span
+                              style={{
+                                fontWeight: 700,
+                                fontSize: 'var(--text-xs)',
+                                color: 'var(--text)',
+                              }}
+                            >
                               {action.label}
                             </span>
                             <Badge variant="info" size="sm">
@@ -663,7 +737,13 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
                           <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-muted)' }}>
                             {action.description}
                           </p>
-                          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '4px' }}>
+                          <div
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'flex-end',
+                              marginTop: '4px',
+                            }}
+                          >
                             <Button
                               variant={isApplied ? 'secondary' : 'primary'}
                               size="sm"
@@ -688,7 +768,18 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
 
                 {/* Copy button, Pin to Plan, and Engine badge on assistant messages */}
                 {m.sender === 'assistant' && (
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-2)', marginTop: 'var(--space-2)', paddingTop: 'var(--space-2)', borderTop: '1px solid var(--border)', flexWrap: 'wrap' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: 'var(--space-2)',
+                      marginTop: 'var(--space-2)',
+                      paddingTop: 'var(--space-2)',
+                      borderTop: '1px solid var(--border)',
+                      flexWrap: 'wrap',
+                    }}
+                  >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <Badge variant={m.isFallback ? 'warning' : 'success'} size="sm">
                         {m.isFallback ? 'Offline Rule Engine' : 'Gemini 2.5 AI'}
@@ -722,7 +813,11 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
                           variant="ghost"
                           size="sm"
                           onClick={() => {
-                            const firstLine = m.text.split('\n')[0].replace(/\*\*/g, '').replace(/[#\n-]/g, ' ').trim();
+                            const firstLine = m.text
+                              .split('\n')[0]
+                              .replace(/\*\*/g, '')
+                              .replace(/[#\n-]/g, ' ')
+                              .trim();
                             const summary = firstLine.slice(0, 60);
                             onPinTask({
                               title: `Action: ${summary}${firstLine.length > 60 ? '...' : ''}`,
@@ -735,7 +830,13 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
                           style={{ padding: '2px 6px', fontSize: '11px' }}
                           title="Pin recommendation to event plan tasks"
                           aria-label="Pin recommendation as task"
-                          leadingIcon={pinnedIds.has(m.id) ? <BookmarkCheck size={12} color="var(--color-success)" /> : <BookmarkPlus size={12} />}
+                          leadingIcon={
+                            pinnedIds.has(m.id) ? (
+                              <BookmarkCheck size={12} color="var(--color-success)" />
+                            ) : (
+                              <BookmarkPlus size={12} />
+                            )
+                          }
                         >
                           {pinnedIds.has(m.id) ? 'Pinned' : 'Pin to plan'}
                         </Button>
@@ -747,7 +848,13 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
                         style={{ padding: '2px 6px', fontSize: '11px' }}
                         title="Copy response"
                         aria-label="Copy assistant response"
-                        leadingIcon={copiedId === m.id ? <Check size={12} color="var(--color-success)" /> : <Copy size={12} />}
+                        leadingIcon={
+                          copiedId === m.id ? (
+                            <Check size={12} color="var(--color-success)" />
+                          ) : (
+                            <Copy size={12} />
+                          )
+                        }
                       >
                         {copiedId === m.id ? 'Copied' : 'Copy'}
                       </Button>
@@ -794,8 +901,24 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
             borderTop: '1px solid var(--border)',
           }}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: showSuggestions ? '6px' : 0 }}>
-            <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: showSuggestions ? '6px' : 0,
+            }}
+          >
+            <span
+              style={{
+                fontSize: 'var(--text-xs)',
+                fontWeight: 700,
+                color: 'var(--text-muted)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+              }}
+            >
               <Lightbulb size={13} color="var(--color-warning)" /> Context Queries
             </span>
             <button

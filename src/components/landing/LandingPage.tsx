@@ -106,7 +106,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-8)', paddingBottom: 'var(--space-8)' }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 'var(--space-8)',
+        paddingBottom: 'var(--space-8)',
+      }}
+    >
       {/* =====================================================================
           1. HERO SECTION
           ===================================================================== */}
@@ -115,13 +122,24 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         style={{
           position: 'relative',
           padding: 'var(--space-8) var(--space-6)',
-          background: 'linear-gradient(135deg, rgba(79, 70, 229, 0.08) 0%, rgba(245, 158, 11, 0.08) 100%)',
+          background:
+            'linear-gradient(135deg, rgba(79, 70, 229, 0.08) 0%, rgba(245, 158, 11, 0.08) 100%)',
           borderRadius: 'var(--radius-xl)',
           border: '1px solid var(--border)',
           overflow: 'hidden',
         }}
       >
-        <div style={{ maxWidth: '860px', margin: '0 auto', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-4)' }}>
+        <div
+          style={{
+            maxWidth: '860px',
+            margin: '0 auto',
+            textAlign: 'center',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 'var(--space-4)',
+          }}
+        >
           {/* Tagline Pill */}
           <div
             style={{
@@ -155,7 +173,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               letterSpacing: '-0.02em',
             }}
           >
-            Every Indian Celebration Deserves <span style={{ color: 'var(--accent-primary)' }}>Flawless Execution</span>
+            Every Indian Celebration Deserves{' '}
+            <span style={{ color: 'var(--accent-primary)' }}>Flawless Execution</span>
           </h2>
 
           {/* Subtitle */}
@@ -168,11 +187,21 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               margin: 0,
             }}
           >
-            From ₹ Lakhs & Crores budgeting with 1-click CSV exports to Jain & Satvik food quarantine, 10:00 PM sound curfew alerts, and instant WhatsApp invitation broadcasts. Plan without chaos.
+            From ₹ Lakhs & Crores budgeting with 1-click CSV exports to Jain & Satvik food
+            quarantine, 10:00 PM sound curfew alerts, and instant WhatsApp invitation broadcasts.
+            Plan without chaos.
           </p>
 
           {/* Dual Action Buttons */}
-          <div style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap', justifyContent: 'center', marginTop: 'var(--space-2)' }}>
+          <div
+            style={{
+              display: 'flex',
+              gap: 'var(--space-3)',
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+              marginTop: 'var(--space-2)',
+            }}
+          >
             <Button
               variant="primary"
               size="lg"
@@ -215,10 +244,25 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               width: '100%',
             }}
           >
-            <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <span
+              style={{
+                fontSize: 'var(--text-xs)',
+                fontWeight: 700,
+                color: 'var(--text-muted)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+              }}
+            >
               ⚡ Interactive Demo Celebrations (1-Click Switch):
             </span>
-            <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <div
+              style={{
+                display: 'flex',
+                gap: 'var(--space-2)',
+                flexWrap: 'wrap',
+                justifyContent: 'center',
+              }}
+            >
               {events.map((evt) => {
                 const isSelected = evt.id === activeEvent.id;
                 return (
@@ -229,7 +273,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     style={{
                       padding: '6px 14px',
                       borderRadius: 'var(--radius-full)',
-                      border: isSelected ? '2px solid var(--accent-primary)' : '1px solid var(--border)',
+                      border: isSelected
+                        ? '2px solid var(--accent-primary)'
+                        : '1px solid var(--border)',
                       background: isSelected ? 'var(--surface-raised)' : 'var(--surface-subtle)',
                       color: isSelected ? 'var(--accent-primary)' : 'var(--text)',
                       fontWeight: isSelected ? 700 : 500,
@@ -242,9 +288,21 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                       transition: 'all 0.15s ease',
                     }}
                   >
-                    <span>{evt.eventType === 'wedding' ? '👑' : evt.eventType === 'birthday' ? '🎉' : '🪔'}</span>
-                    <span>{evt.title} ({evt.city})</span>
-                    {isSelected && <Badge variant="success" size="sm">Active</Badge>}
+                    <span>
+                      {evt.eventType === 'wedding'
+                        ? '👑'
+                        : evt.eventType === 'birthday'
+                          ? '🎉'
+                          : '🪔'}
+                    </span>
+                    <span>
+                      {evt.title} ({evt.city})
+                    </span>
+                    {isSelected && (
+                      <Badge variant="success" size="sm">
+                        Active
+                      </Badge>
+                    )}
                   </button>
                 );
               })}
@@ -260,7 +318,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         <div className="grid-cols-4">
           <div className="stat-card" style={{ textAlign: 'center' }}>
             <span className="stat-label">Total Budgets Calibrated</span>
-            <span className="stat-value tabular-nums" style={{ color: 'var(--accent-primary)' }}>₹25+ Cr</span>
+            <span className="stat-value tabular-nums" style={{ color: 'var(--accent-primary)' }}>
+              ₹25+ Cr
+            </span>
             <span className="stat-subtext">Optimized with 0% leakages</span>
           </div>
 
@@ -272,13 +332,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
           <div className="stat-card" style={{ textAlign: 'center' }}>
             <span className="stat-label">Client-Side Privacy</span>
-            <span className="stat-value tabular-nums" style={{ color: 'var(--color-success)' }}>100%</span>
+            <span className="stat-value tabular-nums" style={{ color: 'var(--color-success)' }}>
+              100%
+            </span>
             <span className="stat-subtext">Zero external broker tracking</span>
           </div>
 
           <div className="stat-card" style={{ textAlign: 'center' }}>
             <span className="stat-label">Execution Architecture</span>
-            <span className="stat-value" style={{ fontSize: '1.25rem' }}>Offline-First</span>
+            <span className="stat-value" style={{ fontSize: '1.25rem' }}>
+              Offline-First
+            </span>
             <span className="stat-subtext">Runs anywhere without internet</span>
           </div>
         </div>
@@ -289,11 +353,22 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           ===================================================================== */}
       <section aria-labelledby="pillars-heading">
         <div style={{ textAlign: 'center', marginBottom: 'var(--space-6)' }}>
-          <h2 id="pillars-heading" style={{ fontSize: 'var(--text-2xl)', fontWeight: 800, margin: '0 0 var(--space-2) 0' }}>
+          <h2
+            id="pillars-heading"
+            style={{ fontSize: 'var(--text-2xl)', fontWeight: 800, margin: '0 0 var(--space-2) 0' }}
+          >
             Engineered For The Complexities of Indian Events
           </h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)', maxWidth: '640px', margin: '0 auto' }}>
-            Multi-day rituals, diverse dietary traditions, and vendor cashflow negotiations — all solved in one cohesive tool.
+          <p
+            style={{
+              color: 'var(--text-muted)',
+              fontSize: 'var(--text-sm)',
+              maxWidth: '640px',
+              margin: '0 auto',
+            }}
+          >
+            Multi-day rituals, diverse dietary traditions, and vendor cashflow negotiations — all
+            solved in one cohesive tool.
           </p>
         </div>
 
@@ -302,7 +377,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           <Card>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                <div style={{ padding: '8px', borderRadius: 'var(--radius-md)', background: 'rgba(79, 70, 229, 0.12)', color: 'var(--accent-primary)' }}>
+                <div
+                  style={{
+                    padding: '8px',
+                    borderRadius: 'var(--radius-md)',
+                    background: 'rgba(79, 70, 229, 0.12)',
+                    color: 'var(--accent-primary)',
+                  }}
+                >
                   <IndianRupee size={22} />
                 </div>
                 <div>
@@ -315,12 +397,28 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 </div>
               </div>
 
-              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
-                Automatic cost-per-guest calculations calibrated in Indian numbering conventions (₹ Lakhs and ₹ Crores). Features 4-tier milestone settlement schedules (Booking advance, Mid-tasting, Day-of handover, Final retention).
+              <p
+                style={{
+                  fontSize: 'var(--text-xs)',
+                  color: 'var(--text-secondary)',
+                  lineHeight: 1.5,
+                  margin: 0,
+                }}
+              >
+                Automatic cost-per-guest calculations calibrated in Indian numbering conventions (₹
+                Lakhs and ₹ Crores). Features 4-tier milestone settlement schedules (Booking
+                advance, Mid-tasting, Day-of handover, Final retention).
               </p>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 'var(--space-1)' }}>
-                <Button variant="outline" size="sm" onClick={() => onNavigateTab('budget')} rightIcon={<ArrowRight size={14} />}>
+              <div
+                style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 'var(--space-1)' }}
+              >
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onNavigateTab('budget')}
+                  rightIcon={<ArrowRight size={14} />}
+                >
                   Explore Budget Tracker
                 </Button>
               </div>
@@ -331,7 +429,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           <Card>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                <div style={{ padding: '8px', borderRadius: 'var(--radius-md)', background: 'rgba(217, 119, 6, 0.12)', color: 'var(--color-warning)' }}>
+                <div
+                  style={{
+                    padding: '8px',
+                    borderRadius: 'var(--radius-md)',
+                    background: 'rgba(217, 119, 6, 0.12)',
+                    color: 'var(--color-warning)',
+                  }}
+                >
                   <Clock size={22} />
                 </div>
                 <div>
@@ -344,12 +449,28 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 </div>
               </div>
 
-              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
-                Calibrate Haldi, Baraat procession, Milni, and Pheras down to the exact minute. Use the 1-click timing ripple controller for delayed Baraats and copy official police loudspeaker NOC application letters.
+              <p
+                style={{
+                  fontSize: 'var(--text-xs)',
+                  color: 'var(--text-secondary)',
+                  lineHeight: 1.5,
+                  margin: 0,
+                }}
+              >
+                Calibrate Haldi, Baraat procession, Milni, and Pheras down to the exact minute. Use
+                the 1-click timing ripple controller for delayed Baraats and copy official police
+                loudspeaker NOC application letters.
               </p>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 'var(--space-1)' }}>
-                <Button variant="outline" size="sm" onClick={() => onNavigateTab('schedule')} rightIcon={<ArrowRight size={14} />}>
+              <div
+                style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 'var(--space-1)' }}
+              >
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onNavigateTab('schedule')}
+                  rightIcon={<ArrowRight size={14} />}
+                >
                   Explore Run of Show
                 </Button>
               </div>
@@ -360,7 +481,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           <Card>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                <div style={{ padding: '8px', borderRadius: 'var(--radius-md)', background: 'rgba(16, 185, 129, 0.12)', color: 'var(--color-success)' }}>
+                <div
+                  style={{
+                    padding: '8px',
+                    borderRadius: 'var(--radius-md)',
+                    background: 'rgba(16, 185, 129, 0.12)',
+                    color: 'var(--color-success)',
+                  }}
+                >
                   <Users size={22} />
                 </div>
                 <div>
@@ -373,12 +501,28 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 </div>
               </div>
 
-              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
-                Guarantee zero cross-contamination with dedicated Jain and Pure Veg counters. Seat guests by family tables with capacity limits, and broadcast royal digital WhatsApp invites with 1-click web sync.
+              <p
+                style={{
+                  fontSize: 'var(--text-xs)',
+                  color: 'var(--text-secondary)',
+                  lineHeight: 1.5,
+                  margin: 0,
+                }}
+              >
+                Guarantee zero cross-contamination with dedicated Jain and Pure Veg counters. Seat
+                guests by family tables with capacity limits, and broadcast royal digital WhatsApp
+                invites with 1-click web sync.
               </p>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 'var(--space-1)' }}>
-                <Button variant="outline" size="sm" onClick={() => onNavigateTab('guests')} rightIcon={<ArrowRight size={14} />}>
+              <div
+                style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 'var(--space-1)' }}
+              >
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onNavigateTab('guests')}
+                  rightIcon={<ArrowRight size={14} />}
+                >
                   Explore Guest Manager
                 </Button>
               </div>
@@ -389,7 +533,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           <Card>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                <div style={{ padding: '8px', borderRadius: 'var(--radius-md)', background: 'rgba(59, 130, 246, 0.12)', color: 'var(--color-info)' }}>
+                <div
+                  style={{
+                    padding: '8px',
+                    borderRadius: 'var(--radius-md)',
+                    background: 'rgba(59, 130, 246, 0.12)',
+                    color: 'var(--color-info)',
+                  }}
+                >
                   <Calculator size={22} />
                 </div>
                 <div>
@@ -402,12 +553,28 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 </div>
               </div>
 
-              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
-                Tailored interview questions for Pandit Ji, Mehendi artists, Dhol bands, and Halwais. Includes an authentic tax calculator comparing composite catering (5%) vs decor/sound (18%) and TDS deductions.
+              <p
+                style={{
+                  fontSize: 'var(--text-xs)',
+                  color: 'var(--text-secondary)',
+                  lineHeight: 1.5,
+                  margin: 0,
+                }}
+              >
+                Tailored interview questions for Pandit Ji, Mehendi artists, Dhol bands, and
+                Halwais. Includes an authentic tax calculator comparing composite catering (5%) vs
+                decor/sound (18%) and TDS deductions.
               </p>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 'var(--space-1)' }}>
-                <Button variant="outline" size="sm" onClick={() => onNavigateTab('vendors')} rightIcon={<ArrowRight size={14} />}>
+              <div
+                style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 'var(--space-1)' }}
+              >
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onNavigateTab('vendors')}
+                  rightIcon={<ArrowRight size={14} />}
+                >
                   Explore Vendor Tools
                 </Button>
               </div>
@@ -421,10 +588,20 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           ===================================================================== */}
       <section aria-labelledby="showcase-heading">
         <div style={{ textAlign: 'center', marginBottom: 'var(--space-6)' }}>
-          <h2 id="showcase-heading" style={{ fontSize: 'var(--text-2xl)', fontWeight: 800, margin: '0 0 var(--space-2) 0' }}>
+          <h2
+            id="showcase-heading"
+            style={{ fontSize: 'var(--text-2xl)', fontWeight: 800, margin: '0 0 var(--space-2) 0' }}
+          >
             Curated Inspiration for Every Region
           </h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)', maxWidth: '640px', margin: '0 auto' }}>
+          <p
+            style={{
+              color: 'var(--text-muted)',
+              fontSize: 'var(--text-sm)',
+              maxWidth: '640px',
+              margin: '0 auto',
+            }}
+          >
             From Rajasthani heritage havelis to open-air beach lawns and luxury five-star banquets.
           </p>
         </div>
@@ -432,48 +609,87 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         <div className="grid-cols-3">
           <div className="venue-card">
             <div className="venue-card-media">
-              <img src="/images/jaipur_palace_venue.jpg" alt="Heritage Palace & Haveli Courtyard" loading="lazy" />
+              <img
+                src="/images/jaipur_palace_venue.jpg"
+                alt="Heritage Palace & Haveli Courtyard"
+                loading="lazy"
+              />
               <div className="venue-card-badge-top">
                 <Badge variant="wedding">Royal Haveli</Badge>
                 <Badge variant="success">Verified</Badge>
               </div>
             </div>
             <div className="venue-card-body">
-              <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 700 }}>Heritage Haveli & Palaces</h4>
-              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', margin: '4px 0 0 0' }}>
-                Carved stone jharokhas, torch-lit baraat pathways, and royal courtyards for grand Rajputana weddings.
+              <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 700 }}>
+                Heritage Haveli & Palaces
+              </h4>
+              <p
+                style={{
+                  fontSize: 'var(--text-xs)',
+                  color: 'var(--text-muted)',
+                  margin: '4px 0 0 0',
+                }}
+              >
+                Carved stone jharokhas, torch-lit baraat pathways, and royal courtyards for grand
+                Rajputana weddings.
               </p>
             </div>
           </div>
 
           <div className="venue-card">
             <div className="venue-card-media">
-              <img src="/images/mandap_floral_decor.jpg" alt="Traditional Marigold Mandap Setup" loading="lazy" />
+              <img
+                src="/images/mandap_floral_decor.jpg"
+                alt="Traditional Marigold Mandap Setup"
+                loading="lazy"
+              />
               <div className="venue-card-badge-top">
                 <Badge variant="neutral">Mandap Decor</Badge>
                 <Badge variant="warning">Auspicious</Badge>
               </div>
             </div>
             <div className="venue-card-body">
-              <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 700 }}>Sacred Mandap & Floral Stages</h4>
-              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', margin: '4px 0 0 0' }}>
-                Fresh marigold and jasmine arches, brass oil diyas, and sheltered Vedic havan kund arrangements.
+              <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 700 }}>
+                Sacred Mandap & Floral Stages
+              </h4>
+              <p
+                style={{
+                  fontSize: 'var(--text-xs)',
+                  color: 'var(--text-muted)',
+                  margin: '4px 0 0 0',
+                }}
+              >
+                Fresh marigold and jasmine arches, brass oil diyas, and sheltered Vedic havan kund
+                arrangements.
               </p>
             </div>
           </div>
 
           <div className="venue-card">
             <div className="venue-card-media">
-              <img src="/images/indian_gourmet_catering.jpg" alt="Satvik & Gourmet Feast Banquets" loading="lazy" />
+              <img
+                src="/images/indian_gourmet_catering.jpg"
+                alt="Satvik & Gourmet Feast Banquets"
+                loading="lazy"
+              />
               <div className="venue-card-badge-top">
                 <Badge variant="birthday">Gourmet Feast</Badge>
                 <Badge variant="success">Satvik</Badge>
               </div>
             </div>
             <div className="venue-card-body">
-              <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 700 }}>Satvik & Gourmet Banquets</h4>
-              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', margin: '4px 0 0 0' }}>
-                Authentic copper handi cooking, live chaat counters, and zero cross-contamination Jain dining wings.
+              <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 700 }}>
+                Satvik & Gourmet Banquets
+              </h4>
+              <p
+                style={{
+                  fontSize: 'var(--text-xs)',
+                  color: 'var(--text-muted)',
+                  margin: '4px 0 0 0',
+                }}
+              >
+                Authentic copper handi cooking, live chaat counters, and zero cross-contamination
+                Jain dining wings.
               </p>
             </div>
           </div>
@@ -485,10 +701,20 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           ===================================================================== */}
       <section aria-labelledby="how-it-works-heading">
         <div style={{ textAlign: 'center', marginBottom: 'var(--space-6)' }}>
-          <h2 id="how-it-works-heading" style={{ fontSize: 'var(--text-2xl)', fontWeight: 800, margin: '0 0 var(--space-2) 0' }}>
+          <h2
+            id="how-it-works-heading"
+            style={{ fontSize: 'var(--text-2xl)', fontWeight: 800, margin: '0 0 var(--space-2) 0' }}
+          >
             Plan Your Celebration In 3 Simple Steps
           </h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)', maxWidth: '640px', margin: '0 auto' }}>
+          <p
+            style={{
+              color: 'var(--text-muted)',
+              fontSize: 'var(--text-sm)',
+              maxWidth: '640px',
+              margin: '0 auto',
+            }}
+          >
             A proven methodology designed to replace spreadsheet confusion with automated clarity.
           </p>
         </div>
@@ -496,30 +722,87 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         <div className="grid-cols-3">
           <Card>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-              <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--accent-primary)', lineHeight: 1 }}>01</div>
-              <h3 style={{ margin: 0, fontSize: 'var(--text-base)', fontWeight: 700 }}>Set Horizon & Traditions</h3>
-              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>
-                Input your event city, guest headcount, auspicious Muhurat dates, and cultural traditions (Hindu, Muslim, Sikh, Jain, Christian).
+              <div
+                style={{
+                  fontSize: '1.75rem',
+                  fontWeight: 800,
+                  color: 'var(--accent-primary)',
+                  lineHeight: 1,
+                }}
+              >
+                01
+              </div>
+              <h3 style={{ margin: 0, fontSize: 'var(--text-base)', fontWeight: 700 }}>
+                Set Horizon & Traditions
+              </h3>
+              <p
+                style={{
+                  fontSize: 'var(--text-xs)',
+                  color: 'var(--text-muted)',
+                  lineHeight: 1.5,
+                  margin: 0,
+                }}
+              >
+                Input your event city, guest headcount, auspicious Muhurat dates, and cultural
+                traditions (Hindu, Muslim, Sikh, Jain, Christian).
               </p>
             </div>
           </Card>
 
           <Card>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-              <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--color-warning)', lineHeight: 1 }}>02</div>
-              <h3 style={{ margin: 0, fontSize: 'var(--text-base)', fontWeight: 700 }}>Calibrate Budgets & Day-of</h3>
-              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>
-                Auto-allocate funds in ₹ Lakhs, segregate Jain dining counters, and synchronize minute-by-minute vendor cue sheets.
+              <div
+                style={{
+                  fontSize: '1.75rem',
+                  fontWeight: 800,
+                  color: 'var(--color-warning)',
+                  lineHeight: 1,
+                }}
+              >
+                02
+              </div>
+              <h3 style={{ margin: 0, fontSize: 'var(--text-base)', fontWeight: 700 }}>
+                Calibrate Budgets & Day-of
+              </h3>
+              <p
+                style={{
+                  fontSize: 'var(--text-xs)',
+                  color: 'var(--text-muted)',
+                  lineHeight: 1.5,
+                  margin: 0,
+                }}
+              >
+                Auto-allocate funds in ₹ Lakhs, segregate Jain dining counters, and synchronize
+                minute-by-minute vendor cue sheets.
               </p>
             </div>
           </Card>
 
           <Card>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-              <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--color-success)', lineHeight: 1 }}>03</div>
-              <h3 style={{ margin: 0, fontSize: 'var(--text-base)', fontWeight: 700 }}>Execute With Zero Chaos</h3>
-              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>
-                Broadcast digital WhatsApp invites, preview Baraat timing shifts, and print day-of binders for your on-ground team.
+              <div
+                style={{
+                  fontSize: '1.75rem',
+                  fontWeight: 800,
+                  color: 'var(--color-success)',
+                  lineHeight: 1,
+                }}
+              >
+                03
+              </div>
+              <h3 style={{ margin: 0, fontSize: 'var(--text-base)', fontWeight: 700 }}>
+                Execute With Zero Chaos
+              </h3>
+              <p
+                style={{
+                  fontSize: 'var(--text-xs)',
+                  color: 'var(--text-muted)',
+                  lineHeight: 1.5,
+                  margin: 0,
+                }}
+              >
+                Broadcast digital WhatsApp invites, preview Baraat timing shifts, and print day-of
+                binders for your on-ground team.
               </p>
             </div>
           </Card>
@@ -531,7 +814,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           ===================================================================== */}
       <section aria-labelledby="testimonials-heading">
         <div style={{ textAlign: 'center', marginBottom: 'var(--space-6)' }}>
-          <h2 id="testimonials-heading" style={{ fontSize: 'var(--text-2xl)', fontWeight: 800, margin: '0 0 var(--space-2) 0' }}>
+          <h2
+            id="testimonials-heading"
+            style={{ fontSize: 'var(--text-2xl)', fontWeight: 800, margin: '0 0 var(--space-2) 0' }}
+          >
             Trusted By Hosts Across India
           </h2>
           <p style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)' }}>
@@ -542,18 +828,40 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         <div className="grid-cols-3">
           {TESTIMONIALS.map((t, idx) => (
             <Card key={idx}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', height: '100%', justifyContent: 'space-between' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 'var(--space-3)',
+                  height: '100%',
+                  justifyContent: 'space-between',
+                }}
+              >
                 <div style={{ display: 'flex', gap: '2px' }}>
                   {[...Array(t.rating)].map((_, i) => (
                     <Star key={i} size={14} fill="#f59e0b" color="#f59e0b" />
                   ))}
                 </div>
-                <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text)', lineHeight: 1.6, fontStyle: 'italic', margin: 0 }}>
+                <p
+                  style={{
+                    fontSize: 'var(--text-xs)',
+                    color: 'var(--text)',
+                    lineHeight: 1.6,
+                    fontStyle: 'italic',
+                    margin: 0,
+                  }}
+                >
                   "{t.quote}"
                 </p>
                 <div style={{ borderTop: '1px solid var(--border)', paddingTop: 'var(--space-2)' }}>
-                  <div style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text)' }}>{t.author}</div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{t.role} • {t.city}</div>
+                  <div
+                    style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text)' }}
+                  >
+                    {t.author}
+                  </div>
+                  <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                    {t.role} • {t.city}
+                  </div>
                 </div>
               </div>
             </Card>
@@ -566,7 +874,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           ===================================================================== */}
       <section aria-labelledby="faq-heading">
         <div style={{ textAlign: 'center', marginBottom: 'var(--space-6)' }}>
-          <h2 id="faq-heading" style={{ fontSize: 'var(--text-2xl)', fontWeight: 800, margin: '0 0 var(--space-2) 0' }}>
+          <h2
+            id="faq-heading"
+            style={{ fontSize: 'var(--text-2xl)', fontWeight: 800, margin: '0 0 var(--space-2) 0' }}
+          >
             Frequently Asked Questions
           </h2>
           <p style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)' }}>
@@ -574,7 +885,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </p>
         </div>
 
-        <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+        <div
+          style={{
+            maxWidth: '800px',
+            margin: '0 auto',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 'var(--space-3)',
+          }}
+        >
           {FAQS.map((faq, idx) => {
             const isOpen = openFaqIndex === idx;
             return (
@@ -608,7 +927,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   aria-expanded={isOpen}
                 >
                   <span>{faq.question}</span>
-                  {isOpen ? <ChevronUp size={18} color="var(--accent-primary)" /> : <ChevronDown size={18} color="var(--text-muted)" />}
+                  {isOpen ? (
+                    <ChevronUp size={18} color="var(--accent-primary)" />
+                  ) : (
+                    <ChevronDown size={18} color="var(--text-muted)" />
+                  )}
                 </button>
                 {isOpen && (
                   <div
@@ -635,7 +958,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           ===================================================================== */}
       <section
         style={{
-          background: 'linear-gradient(135deg, var(--surface-raised) 0%, var(--surface-subtle) 100%)',
+          background:
+            'linear-gradient(135deg, var(--surface-raised) 0%, var(--surface-subtle) 100%)',
           borderRadius: 'var(--radius-xl)',
           border: '2px solid var(--accent-primary)',
           padding: 'var(--space-8) var(--space-6)',
@@ -643,15 +967,40 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           boxShadow: 'var(--shadow-md)',
         }}
       >
-        <div style={{ maxWidth: '640px', margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-4)' }}>
-          <Badge variant="wedding" size="lg">Ready To Celebrate?</Badge>
-          <h2 style={{ fontSize: 'var(--text-3xl)', fontWeight: 800, margin: 0, color: 'var(--text)' }}>
+        <div
+          style={{
+            maxWidth: '640px',
+            margin: '0 auto',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 'var(--space-4)',
+          }}
+        >
+          <Badge variant="wedding" size="lg">
+            Ready To Celebrate?
+          </Badge>
+          <h2
+            style={{
+              fontSize: 'var(--text-3xl)',
+              fontWeight: 800,
+              margin: 0,
+              color: 'var(--text)',
+            }}
+          >
             Start Planning Your Event In Minutes
           </h2>
           <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', margin: 0 }}>
             Join thousands of Indian families and coordinators who plan with zero spreadsheet chaos.
           </p>
-          <div style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <div
+            style={{
+              display: 'flex',
+              gap: 'var(--space-3)',
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+            }}
+          >
             <Button
               variant="primary"
               size="lg"

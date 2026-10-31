@@ -33,7 +33,10 @@
   flex-direction: column;
 }
 
-.site h1, .site h2, .site h3, .site h4 {
+.site h1,
+.site h2,
+.site h3,
+.site h4 {
   font-family: var(--site-font-head);
   letter-spacing: -0.025em;
   color: var(--site-ink);
@@ -307,9 +310,15 @@
   overflow: hidden;
   background: #e2e8f0;
 }
-.s-bar span:nth-child(1) { background: var(--site-teal); }
-.s-bar span:nth-child(2) { background: var(--site-marigold); }
-.s-bar span:nth-child(3) { background: #cbd5e1; }
+.s-bar span:nth-child(1) {
+  background: var(--site-teal);
+}
+.s-bar span:nth-child(2) {
+  background: var(--site-marigold);
+}
+.s-bar span:nth-child(3) {
+  background: #cbd5e1;
+}
 
 .s-sheet__legend {
   display: flex;
@@ -718,7 +727,8 @@
   color: var(--site-ink);
 }
 
-.s-field input, .s-field select {
+.s-field input,
+.s-field select {
   width: 100%;
   padding: 0.65rem 0.85rem;
   border-radius: 8px;
@@ -727,7 +737,8 @@
   font-size: 0.925rem;
   background: #fff;
 }
-.s-field input:focus, .s-field select:focus {
+.s-field input:focus,
+.s-field select:focus {
   outline: none;
   border-color: var(--site-teal);
   box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
@@ -758,7 +769,8 @@
   text-decoration: underline;
 }
 
-.s-auth__switch, .s-auth__demo {
+.s-auth__switch,
+.s-auth__demo {
   font-size: 0.85rem;
   color: var(--site-muted);
   margin-top: 1.25rem;
@@ -798,7 +810,9 @@
 }
 
 @keyframes s-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Legal Pages */

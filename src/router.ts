@@ -3,9 +3,15 @@ import { useState, useEffect } from 'react';
 export function safeNextPath(candidate: string | null | undefined, defaultPath = '/app'): string {
   if (!candidate || typeof candidate !== 'string') return defaultPath;
   const trimmed = candidate.trim();
-  if (!trimmed.startsWith('/') || trimmed.startsWith('//') || trimmed.startsWith('/\\')) return defaultPath;
+  if (!trimmed.startsWith('/') || trimmed.startsWith('//') || trimmed.startsWith('/\\'))
+    return defaultPath;
   if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(trimmed)) return defaultPath;
-  if (trimmed === '/login' || trimmed.startsWith('/login?') || trimmed === '/signup' || trimmed.startsWith('/signup?')) {
+  if (
+    trimmed === '/login' ||
+    trimmed.startsWith('/login?') ||
+    trimmed === '/signup' ||
+    trimmed.startsWith('/signup?')
+  ) {
     return defaultPath;
   }
   return trimmed;
@@ -23,7 +29,10 @@ export function navigate(to: string, options: { replace?: boolean } = {}): void 
 export function useLocation() {
   const [loc, setLoc] = useState(() => ({
     pathname: typeof window !== 'undefined' ? window.location.pathname : '/',
-    search: typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams(),
+    search:
+      typeof window !== 'undefined'
+        ? new URLSearchParams(window.location.search)
+        : new URLSearchParams(),
   }));
 
   useEffect(() => {
@@ -74,4 +83,3 @@ export function usePageTitle(title: string, options: PageMetaOptions = {}): void
     };
   }, [title, options.noindex]);
 }
-

@@ -36,9 +36,7 @@ export const ScenarioChangePanel: React.FC<ScenarioChangePanelProps> = ({
   const [customPriceSpike, setCustomPriceSpike] = useState<number>(20);
   const [customGuestDelta, setCustomGuestDelta] = useState<number>(40);
   const [customDateDays, setCustomDateDays] = useState<number>(-20);
-  const [selectedVendorId, setSelectedVendorId] = useState<string>(
-    plan.vendors[0]?.id || ''
-  );
+  const [selectedVendorId, setSelectedVendorId] = useState<string>(plan.vendors[0]?.id || '');
 
   // Collect all trade-offs from active insights
   const allTradeOffs: { insightTitle: string; tradeOff: TradeOffOption }[] = [];
@@ -149,7 +147,14 @@ export const ScenarioChangePanel: React.FC<ScenarioChangePanelProps> = ({
           }}
         >
           <div>
-            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>
+            <div
+              style={{
+                fontSize: 'var(--text-xs)',
+                color: 'var(--text-muted)',
+                textTransform: 'uppercase',
+                fontWeight: 700,
+              }}
+            >
               Budget Utilization
             </div>
             <div
@@ -162,7 +167,13 @@ export const ScenarioChangePanel: React.FC<ScenarioChangePanelProps> = ({
             >
               {Math.round(budgetSummary.utilizationPercentage)}%
               {budgetSummary.isOverBudget && (
-                <span style={{ fontSize: 'var(--text-xs)', marginLeft: '6px', color: 'var(--color-danger)' }}>
+                <span
+                  style={{
+                    fontSize: 'var(--text-xs)',
+                    marginLeft: '6px',
+                    color: 'var(--color-danger)',
+                  }}
+                >
                   (Over by {formatCurrency(Math.abs(budgetSummary.remainingBalance))})
                 </span>
               )}
@@ -170,31 +181,68 @@ export const ScenarioChangePanel: React.FC<ScenarioChangePanelProps> = ({
           </div>
 
           <div>
-            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>
+            <div
+              style={{
+                fontSize: 'var(--text-xs)',
+                color: 'var(--text-muted)',
+                textTransform: 'uppercase',
+                fontWeight: 700,
+              }}
+            >
               Per-Guest Cost
             </div>
-            <div className="tabular-nums" style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text)' }}>
+            <div
+              className="tabular-nums"
+              style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text)' }}
+            >
               {formatCurrency(budgetSummary.perGuestCost || 0)}
-              <span style={{ fontSize: 'var(--text-xs)', fontWeight: 500, color: 'var(--text-muted)', marginLeft: '4px' }}>
+              <span
+                style={{
+                  fontSize: 'var(--text-xs)',
+                  fontWeight: 500,
+                  color: 'var(--text-muted)',
+                  marginLeft: '4px',
+                }}
+              >
                 / guest
               </span>
             </div>
           </div>
 
           <div>
-            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>
+            <div
+              style={{
+                fontSize: 'var(--text-xs)',
+                color: 'var(--text-muted)',
+                textTransform: 'uppercase',
+                fontWeight: 700,
+              }}
+            >
               Target Headcount
             </div>
-            <div className="tabular-nums" style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text)' }}>
+            <div
+              className="tabular-nums"
+              style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text)' }}
+            >
               {plan.guestCount} guests
             </div>
           </div>
 
           <div>
-            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>
+            <div
+              style={{
+                fontSize: 'var(--text-xs)',
+                color: 'var(--text-muted)',
+                textTransform: 'uppercase',
+                fontWeight: 700,
+              }}
+            >
               Active Rules Triggered
             </div>
-            <div className="tabular-nums" style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--accent-primary)' }}>
+            <div
+              className="tabular-nums"
+              style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--accent-primary)' }}
+            >
               {plan.decisionInsights ? plan.decisionInsights.length : 0} alerts
             </div>
           </div>
@@ -208,12 +256,23 @@ export const ScenarioChangePanel: React.FC<ScenarioChangePanelProps> = ({
           subtitle="Instant stress-testing presets simulating unexpected Indian celebration changes"
         />
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 'var(--space-3)' }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+            gap: 'var(--space-3)',
+          }}
+        >
           <Button
             variant={activePreset === 'caterer_spike' ? 'primary' : 'outline'}
             size="md"
             onClick={() => handlePreset('caterer_spike')}
-            style={{ justifyContent: 'flex-start', padding: 'var(--space-3) var(--space-4)', height: 'auto', textAlign: 'left' }}
+            style={{
+              justifyContent: 'flex-start',
+              padding: 'var(--space-3) var(--space-4)',
+              height: 'auto',
+              textAlign: 'left',
+            }}
           >
             <div>
               <div style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -229,7 +288,12 @@ export const ScenarioChangePanel: React.FC<ScenarioChangePanelProps> = ({
             variant={activePreset === 'guest_surge' ? 'primary' : 'outline'}
             size="md"
             onClick={() => handlePreset('guest_surge')}
-            style={{ justifyContent: 'flex-start', padding: 'var(--space-3) var(--space-4)', height: 'auto', textAlign: 'left' }}
+            style={{
+              justifyContent: 'flex-start',
+              padding: 'var(--space-3) var(--space-4)',
+              height: 'auto',
+              textAlign: 'left',
+            }}
           >
             <div>
               <div style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -245,7 +309,12 @@ export const ScenarioChangePanel: React.FC<ScenarioChangePanelProps> = ({
             variant={activePreset === 'date_rush' ? 'primary' : 'outline'}
             size="md"
             onClick={() => handlePreset('date_rush')}
-            style={{ justifyContent: 'flex-start', padding: 'var(--space-3) var(--space-4)', height: 'auto', textAlign: 'left' }}
+            style={{
+              justifyContent: 'flex-start',
+              padding: 'var(--space-3) var(--space-4)',
+              height: 'auto',
+              textAlign: 'left',
+            }}
           >
             <div>
               <div style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -261,7 +330,12 @@ export const ScenarioChangePanel: React.FC<ScenarioChangePanelProps> = ({
             variant={activePreset === 'outdoor_lawn' ? 'primary' : 'outline'}
             size="md"
             onClick={() => handlePreset('outdoor_lawn')}
-            style={{ justifyContent: 'flex-start', padding: 'var(--space-3) var(--space-4)', height: 'auto', textAlign: 'left' }}
+            style={{
+              justifyContent: 'flex-start',
+              padding: 'var(--space-3) var(--space-4)',
+              height: 'auto',
+              textAlign: 'left',
+            }}
           >
             <div>
               <div style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -277,7 +351,12 @@ export const ScenarioChangePanel: React.FC<ScenarioChangePanelProps> = ({
             variant={activePreset === 'vendor_cancel' ? 'primary' : 'outline'}
             size="md"
             onClick={() => handlePreset('vendor_cancel')}
-            style={{ justifyContent: 'flex-start', padding: 'var(--space-3) var(--space-4)', height: 'auto', textAlign: 'left' }}
+            style={{
+              justifyContent: 'flex-start',
+              padding: 'var(--space-3) var(--space-4)',
+              height: 'auto',
+              textAlign: 'left',
+            }}
           >
             <div>
               <div style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -293,7 +372,12 @@ export const ScenarioChangePanel: React.FC<ScenarioChangePanelProps> = ({
             variant={activePreset === 'budget_cut' ? 'primary' : 'outline'}
             size="md"
             onClick={() => handlePreset('budget_cut')}
-            style={{ justifyContent: 'flex-start', padding: 'var(--space-3) var(--space-4)', height: 'auto', textAlign: 'left' }}
+            style={{
+              justifyContent: 'flex-start',
+              padding: 'var(--space-3) var(--space-4)',
+              height: 'auto',
+              textAlign: 'left',
+            }}
           >
             <div>
               <div style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -314,7 +398,13 @@ export const ScenarioChangePanel: React.FC<ScenarioChangePanelProps> = ({
           subtitle="Manually adjust variance values and apply custom shifts"
         />
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 'var(--space-4)' }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+            gap: 'var(--space-4)',
+          }}
+        >
           {/* Price Spike */}
           <div>
             <label className="form-label" htmlFor="spike-input">
@@ -349,7 +439,10 @@ export const ScenarioChangePanel: React.FC<ScenarioChangePanelProps> = ({
           {/* Guest Count */}
           <div>
             <label className="form-label" htmlFor="guest-input">
-              Guest Count Shift: <strong className="tabular-nums">{customGuestDelta > 0 ? `+${customGuestDelta}` : customGuestDelta}</strong>
+              Guest Count Shift:{' '}
+              <strong className="tabular-nums">
+                {customGuestDelta > 0 ? `+${customGuestDelta}` : customGuestDelta}
+              </strong>
             </label>
             <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
               <input
@@ -380,7 +473,10 @@ export const ScenarioChangePanel: React.FC<ScenarioChangePanelProps> = ({
           {/* Date Shift */}
           <div>
             <label className="form-label" htmlFor="date-input">
-              Date Move (Days): <strong className="tabular-nums">{customDateDays > 0 ? `+${customDateDays}` : customDateDays} d</strong>
+              Date Move (Days):{' '}
+              <strong className="tabular-nums">
+                {customDateDays > 0 ? `+${customDateDays}` : customDateDays} d
+              </strong>
             </label>
             <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
               <input
@@ -463,10 +559,15 @@ export const ScenarioChangePanel: React.FC<ScenarioChangePanelProps> = ({
               fontSize: 'var(--text-sm)',
             }}
           >
-            <CheckCircle2 size={32} color="var(--color-success)" style={{ margin: '0 auto var(--space-2)' }} />
+            <CheckCircle2
+              size={32}
+              color="var(--color-success)"
+              style={{ margin: '0 auto var(--space-2)' }}
+            />
             <div>All plan parameters are currently aligned with zero pending trade-offs.</div>
             <div style={{ fontSize: 'var(--text-xs)', marginTop: '4px' }}>
-              Simulate a vendor quote spike or guest surge above to test the engine's trade-off calculations.
+              Simulate a vendor quote spike or guest surge above to test the engine's trade-off
+              calculations.
             </div>
           </div>
         ) : (
@@ -493,10 +594,23 @@ export const ScenarioChangePanel: React.FC<ScenarioChangePanelProps> = ({
                       Triggered by: {insightTitle}
                     </span>
                   </div>
-                  <div style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--text)', marginTop: '4px' }}>
+                  <div
+                    style={{
+                      fontSize: 'var(--text-sm)',
+                      fontWeight: 700,
+                      color: 'var(--text)',
+                      marginTop: '4px',
+                    }}
+                  >
                     {tradeOff.label}
                   </div>
-                  <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginTop: '2px' }}>
+                  <div
+                    style={{
+                      fontSize: 'var(--text-xs)',
+                      color: 'var(--text-muted)',
+                      marginTop: '2px',
+                    }}
+                  >
                     {tradeOff.description}
                   </div>
                 </div>
@@ -555,8 +669,14 @@ export const ScenarioChangePanel: React.FC<ScenarioChangePanelProps> = ({
                   <span style={{ fontWeight: 700, color: 'var(--text)' }}>{entry.changeTitle}</span>
                   <span style={{ color: 'var(--text-muted)' }}>— {entry.description}</span>
                 </div>
-                <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem', whiteSpace: 'nowrap' }}>
-                  {new Date(entry.timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                <div
+                  style={{ color: 'var(--text-muted)', fontSize: '0.7rem', whiteSpace: 'nowrap' }}
+                >
+                  {new Date(entry.timestamp).toLocaleTimeString('en-IN', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                  })}
                 </div>
               </div>
             ))}

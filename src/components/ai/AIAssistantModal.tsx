@@ -1,12 +1,5 @@
 import React, { useState } from 'react';
-import {
-  Sparkles,
-  Bot,
-  Key,
-  ShieldCheck,
-  Cpu,
-  Info,
-} from 'lucide-react';
+import { Sparkles, Bot, Key, ShieldCheck, Cpu, Info } from 'lucide-react';
 import type { EventPlan } from '../../types/event';
 import { Card, CardHeader, Button, Badge } from '../ui';
 
@@ -24,7 +17,10 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
   const [apiKey, setApiKey] = useState('');
   const hasEnvKey = !import.meta.env.PROD && Boolean(import.meta.env.VITE_GEMINI_API_KEY);
   const [offlineMode, setOfflineMode] = useState<boolean>(() => {
-    return typeof window !== 'undefined' && window.localStorage?.getItem('eventwise_ai_offline_mode') === 'true';
+    return (
+      typeof window !== 'undefined' &&
+      window.localStorage?.getItem('eventwise_ai_offline_mode') === 'true'
+    );
   });
   const [includeNotes, setIncludeNotes] = useState<boolean>(false);
 
@@ -74,7 +70,14 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
             borderBottom: '1px solid var(--border-light)',
           }}
         >
-          <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '0.25rem', color: 'var(--text-main)' }}>
+          <div
+            style={{
+              fontWeight: 700,
+              fontSize: '0.9rem',
+              marginBottom: '0.25rem',
+              color: 'var(--text-main)',
+            }}
+          >
             Plan Generation Rationale:
           </div>
           <p style={{ fontSize: '0.875rem', color: 'var(--text-main)', lineHeight: 1.55 }}>
@@ -113,7 +116,8 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
                 Rule 1: Budget Balance & Deficit Protection
               </div>
               <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                Monitors allocations against total funds and triggers automatic substitution recommendations if over-budget.
+                Monitors allocations against total funds and triggers automatic substitution
+                recommendations if over-budget.
               </div>
             </div>
             <Badge variant="success">ACTIVE</Badge>
@@ -137,7 +141,8 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
                 Rule 2: Dynamic Timeline & Short-Notice Triage
               </div>
               <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                Adjusts preparation intervals relative to event date; marks critical milestones urgent when under 21 days.
+                Adjusts preparation intervals relative to event date; marks critical milestones
+                urgent when under 21 days.
               </div>
             </div>
             <Badge variant="success">ACTIVE</Badge>
@@ -161,7 +166,8 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
                 Rule 3: Guest Capacity & Per-Person Cost Scaling
               </div>
               <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                Recalculates per-guest food and favor costs dynamically when headcount changes and audits venue capacity.
+                Recalculates per-guest food and favor costs dynamically when headcount changes and
+                audits venue capacity.
               </div>
             </div>
             <Badge variant="success">ACTIVE</Badge>
@@ -185,7 +191,8 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
                 Rule 4: Outdoor Weather Contingency
               </div>
               <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                Flags rain tent rentals, patio heater options, and indoor back-up room reservations for garden/beach/outdoor venues without claiming weather forecasts.
+                Flags rain tent rentals, patio heater options, and indoor back-up room reservations
+                for garden/beach/outdoor venues without claiming weather forecasts.
               </div>
             </div>
             <Badge variant="success">ACTIVE</Badge>
@@ -209,7 +216,8 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
                 Rule 5: Accessibility & Dietary Verification
               </div>
               <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                Injects mandatory step-free access checks and allergen-safe catering queries into vendor interview checklists.
+                Injects mandatory step-free access checks and allergen-safe catering queries into
+                vendor interview checklists.
               </div>
             </div>
             <Badge variant="success">ACTIVE</Badge>
@@ -234,12 +242,23 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
           }
         />
 
-        <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '1.25rem', lineHeight: 1.55 }}>
-          EventWise AI uses Google Gemini (3.8 Flash / 2.5 Flash Lite) to generate enriched descriptions. API keys are kept strictly in ephemeral browser memory, never logged, and never stored to disk or localStorage.
+        <p
+          style={{
+            fontSize: '0.875rem',
+            color: 'var(--text-muted)',
+            marginBottom: '1.25rem',
+            lineHeight: 1.55,
+          }}
+        >
+          EventWise AI uses Google Gemini (3.8 Flash / 2.5 Flash Lite) to generate enriched
+          descriptions. API keys are kept strictly in ephemeral browser memory, never logged, and
+          never stored to disk or localStorage.
         </p>
 
         <div className="form-group">
-          <label htmlFor="gemini-key" className="form-label">Google Gemini API Key (In-Memory Session Key)</label>
+          <label htmlFor="gemini-key" className="form-label">
+            Google Gemini API Key (In-Memory Session Key)
+          </label>
           <input
             id="gemini-key"
             type="password"
@@ -249,12 +268,16 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
             className="form-control"
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
-            placeholder={hasEnvKey ? "Local dev key active from .env (or enter custom key)" : "AIzaSy... (leave blank to use offline rule engine)"}
+            placeholder={
+              hasEnvKey
+                ? 'Local dev key active from .env (or enter custom key)'
+                : 'AIzaSy... (leave blank to use offline rule engine)'
+            }
           />
           <span className="form-hint">
             {hasEnvKey
-              ? "Dev Mode: Ambient key from local .env detected. Override with a temporary session key anytime."
-              : "Session key is held in volatile memory only and never written to storage or sent in URLs. Leave blank to run offline."}
+              ? 'Dev Mode: Ambient key from local .env detected. Override with a temporary session key anytime.'
+              : 'Session key is held in volatile memory only and never written to storage or sent in URLs. Leave blank to run offline.'}
           </span>
         </div>
 
@@ -268,33 +291,83 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
             marginBottom: '1.25rem',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, fontSize: '0.875rem', marginBottom: '0.5rem', color: 'var(--text-main)' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              fontWeight: 700,
+              fontSize: '0.875rem',
+              marginBottom: '0.5rem',
+              color: 'var(--text-main)',
+            }}
+          >
             <ShieldCheck size={18} color="#059669" />
             <span>AI Data Privacy & Transmission Notice</span>
           </div>
-          <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', lineHeight: 1.5, display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+          <div
+            style={{
+              fontSize: '0.8125rem',
+              color: 'var(--text-muted)',
+              lineHeight: 1.5,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.35rem',
+            }}
+          >
             <p style={{ margin: 0 }}>
-              <strong>What is sent to Google Gemini:</strong> Event parameters (City, Total Budget, Guest Count, Venue & Food Preferences, Theme, and Cultural Traditions).
+              <strong>What is sent to Google Gemini:</strong> Event parameters (City, Total Budget,
+              Guest Count, Venue & Food Preferences, Theme, and Cultural Traditions).
             </p>
             <p style={{ margin: 0 }}>
-              <strong>What is NEVER sent (Strict PII Isolation):</strong> Attendee guest names, phone numbers, email addresses, and vendor contact records remain strictly in local browser memory.
+              <strong>What is NEVER sent (Strict PII Isolation):</strong> Attendee guest names,
+              phone numbers, email addresses, and vendor contact records remain strictly in local
+              browser memory.
             </p>
             <p style={{ margin: 0 }}>
-              <strong>Offline Mode:</strong> Transmits <em>zero bytes</em> over the network, evaluating all recommendations using the built-in deterministic rule engine.
+              <strong>Offline Mode:</strong> Transmits <em>zero bytes</em> over the network,
+              evaluating all recommendations using the built-in deterministic rule engine.
             </p>
           </div>
 
-          <div style={{ marginTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8125rem', cursor: 'pointer', color: 'var(--text-main)' }}>
+          <div
+            style={{
+              marginTop: '0.75rem',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.5rem',
+            }}
+          >
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                fontSize: '0.8125rem',
+                cursor: 'pointer',
+                color: 'var(--text-main)',
+              }}
+            >
               <input
                 type="checkbox"
                 checked={offlineMode}
                 onChange={(e) => handleToggleOffline(e.target.checked)}
                 id="checkbox-offline-mode"
               />
-              <span><strong>Enforce Offline Mode</strong> (block all cloud AI network transmissions)</span>
+              <span>
+                <strong>Enforce Offline Mode</strong> (block all cloud AI network transmissions)
+              </span>
             </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8125rem', cursor: 'pointer', color: 'var(--text-main)' }}>
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                fontSize: '0.8125rem',
+                cursor: 'pointer',
+                color: 'var(--text-main)',
+              }}
+            >
               <input
                 type="checkbox"
                 checked={includeNotes}
@@ -302,7 +375,9 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
                 disabled={offlineMode}
                 id="checkbox-include-notes"
               />
-              <span>Include free-text special notes in AI prompt (keep unchecked to omit notes)</span>
+              <span>
+                Include free-text special notes in AI prompt (keep unchecked to omit notes)
+              </span>
             </label>
           </div>
         </div>
@@ -315,9 +390,17 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
             isLoading={isGenerating}
             id="btn-run-genai"
             leftIcon={<Sparkles size={16} />}
-            title={offlineMode ? "Cloud AI is disabled because Offline Mode is active" : "Generate using Google Gemini GenAI"}
+            title={
+              offlineMode
+                ? 'Cloud AI is disabled because Offline Mode is active'
+                : 'Generate using Google Gemini GenAI'
+            }
           >
-            {isGenerating ? 'Calling GenAI...' : offlineMode ? 'Cloud AI Disabled (Offline Mode)' : 'Generate with GenAI (Gemini)'}
+            {isGenerating
+              ? 'Calling GenAI...'
+              : offlineMode
+                ? 'Cloud AI Disabled (Offline Mode)'
+                : 'Generate with GenAI (Gemini)'}
           </Button>
 
           <Button
@@ -334,7 +417,9 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
         <div className="estimate-disclaimer">
           <Info size={14} />
           <span>
-            <strong>Safety Guardrail:</strong> Output JSON schema is strictly verified against unexpected formats, rate limits, or network failures. If an AI call fails, the deterministic engine automatically recovers without losing your progress.
+            <strong>Safety Guardrail:</strong> Output JSON schema is strictly verified against
+            unexpected formats, rate limits, or network failures. If an AI call fails, the
+            deterministic engine automatically recovers without losing your progress.
           </span>
         </div>
       </Card>

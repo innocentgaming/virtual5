@@ -297,7 +297,13 @@ describe('Serverless Auth & Cloud Events API', () => {
     await fetch(`${baseUrl}/api/auth/signup`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Origin: baseUrl },
-      body: JSON.stringify({ email: 'owner@eventwise.ai', password: 'MyPassword123!', name: 'Site Owner', role: 'planner', acceptTerms: true }),
+      body: JSON.stringify({
+        email: 'owner@eventwise.ai',
+        password: 'MyPassword123!',
+        name: 'Site Owner',
+        role: 'planner',
+        acceptTerms: true,
+      }),
     });
     const signupRes = await fetch(`${baseUrl}/api/auth/signup`, {
       method: 'POST',
@@ -427,7 +433,10 @@ describe('Serverless Auth & Cloud Events API', () => {
       }),
     });
     expect(conflictRes.status).toBe(409);
-    const conflictData = (await conflictRes.json()) as { code: string; serverCopy: { updatedAt: number } };
+    const conflictData = (await conflictRes.json()) as {
+      code: string;
+      serverCopy: { updatedAt: number };
+    };
     expect(conflictData.code).toBe('conflict');
     expect(conflictData.serverCopy.updatedAt).toBe(putData.updatedAt);
   });

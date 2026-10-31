@@ -10,7 +10,7 @@ describe('Legal & Marketing Pages', () => {
     render(
       <AuthProvider>
         <PrivacyPage />
-      </AuthProvider>
+      </AuthProvider>,
     );
 
     expect(screen.getByRole('heading', { level: 1, name: /Privacy Policy/i })).toBeInTheDocument();
@@ -22,10 +22,12 @@ describe('Legal & Marketing Pages', () => {
     render(
       <AuthProvider>
         <TermsPage />
-      </AuthProvider>
+      </AuthProvider>,
     );
 
-    expect(screen.getByRole('heading', { level: 1, name: /Terms of Service/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 1, name: /Terms of Service/i }),
+    ).toBeInTheDocument();
     expect(screen.getByText(/Acceptance of Terms/i)).toBeInTheDocument();
   });
 
@@ -35,7 +37,7 @@ describe('Legal & Marketing Pages', () => {
         <SiteLayout>
           <div>Main Content</div>
         </SiteLayout>
-      </AuthProvider>
+      </AuthProvider>,
     );
 
     expect(screen.getByText(/Main Content/i)).toBeInTheDocument();

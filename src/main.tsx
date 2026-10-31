@@ -1,13 +1,13 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import '@fontsource/inter/latin-400.css'
-import '@fontsource/inter/latin-600.css'
-import '@fontsource/plus-jakarta-sans/latin-600.css'
-import '@fontsource/plus-jakarta-sans/latin-700.css'
-import './index.css'
-import App from './App.tsx'
-import { ErrorBoundary } from './components/common/ErrorBoundary.tsx'
-import { reportClientError } from './utils/reportError'
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import '@fontsource/inter/latin-400.css';
+import '@fontsource/inter/latin-600.css';
+import '@fontsource/plus-jakarta-sans/latin-600.css';
+import '@fontsource/plus-jakarta-sans/latin-700.css';
+import './index.css';
+import App from './App.tsx';
+import { ErrorBoundary } from './components/common/ErrorBoundary.tsx';
+import { reportClientError } from './utils/reportError';
 
 // Synchronously initialize theme and colorMode to avoid flash of light mode
 try {
@@ -23,7 +23,9 @@ try {
 }
 
 window.addEventListener('error', (e) => reportClientError(e.error ?? e.message, 'window.onerror'));
-window.addEventListener('unhandledrejection', (e) => reportClientError(e.reason, 'unhandledrejection'));
+window.addEventListener('unhandledrejection', (e) =>
+  reportClientError(e.reason, 'unhandledrejection'),
+);
 
 const rootElement = document.getElementById('root');
 if (rootElement) {

@@ -88,141 +88,150 @@ interface GuestTableRowProps {
   onDeleteGuest: (id: string, name: string) => void;
 }
 
-const GuestTableRow = React.memo<GuestTableRowProps>(({
-  guest,
-  isSelected,
-  onToggleSelect,
-  onQuickRsvpChange,
-  onOpenEdit,
-  onDeleteGuest,
-}) => {
-  return (
-    <tr
-      key={guest.id}
-      style={{
-        borderBottom: '1px solid var(--border)',
-        background: isSelected ? 'var(--accent-subtle)' : 'transparent',
-        transition: 'background var(--transition-fast)',
-      }}
-    >
-      <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}>
-        <input
-          type="checkbox"
-          checked={isSelected}
-          onChange={() => onToggleSelect(guest.id)}
-          aria-label={`Select ${guest.name}`}
-          style={{ accentColor: 'var(--accent-primary)', cursor: 'pointer' }}
-        />
-      </td>
-      <th scope="row" style={{ padding: 'var(--space-3) var(--space-2)', fontWeight: 'normal', textAlign: 'left' }}>
-        <div style={{ fontWeight: 600, color: 'var(--text)' }}>{guest.name}</div>
-        {guest.email && (
-          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>{guest.email}</div>
-        )}
-        {guest.notes && (
-          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
-            {guest.notes}
-          </div>
-        )}
-      </th>
-      <td style={{ padding: 'var(--space-3) var(--space-2)' }}>
-        <select
-          className="form-control"
+const GuestTableRow = React.memo<GuestTableRowProps>(
+  ({ guest, isSelected, onToggleSelect, onQuickRsvpChange, onOpenEdit, onDeleteGuest }) => {
+    return (
+      <tr
+        key={guest.id}
+        style={{
+          borderBottom: '1px solid var(--border)',
+          background: isSelected ? 'var(--accent-subtle)' : 'transparent',
+          transition: 'background var(--transition-fast)',
+        }}
+      >
+        <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}>
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={() => onToggleSelect(guest.id)}
+            aria-label={`Select ${guest.name}`}
+            style={{ accentColor: 'var(--accent-primary)', cursor: 'pointer' }}
+          />
+        </td>
+        <th
+          scope="row"
           style={{
-            fontSize: 'var(--text-xs)',
-            height: '32px',
-            minHeight: '32px',
-            width: '125px',
-            fontWeight: 600,
-            color:
-              guest.rsvpStatus === 'attending'
-                ? 'var(--color-success)'
-                : guest.rsvpStatus === 'declined'
-                ? 'var(--color-danger)'
-                : 'var(--color-warning)',
+            padding: 'var(--space-3) var(--space-2)',
+            fontWeight: 'normal',
+            textAlign: 'left',
           }}
-          value={guest.rsvpStatus}
-          onChange={(e) => onQuickRsvpChange(guest, e.target.value as RsvpStatus)}
-          aria-label={`Change RSVP status for ${guest.name}`}
         >
-          <option value="attending">✓ Confirmed</option>
-          <option value="pending">⏳ Pending</option>
-          <option value="declined">✕ Declined</option>
-        </select>
-      </td>
-      <td style={{ padding: 'var(--space-3) var(--space-2)' }}>
-        {guest.dietary && guest.dietary !== 'none' ? (
-          <span role="note"
-            aria-label={`${DIETARY_LABELS[guest.dietary]}: ${DIETARY_TOOLTIPS[guest.dietary]}`}
-            title={DIETARY_TOOLTIPS[guest.dietary]}
+          <div style={{ fontWeight: 600, color: 'var(--text)' }}>{guest.name}</div>
+          {guest.email && (
+            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+              {guest.email}
+            </div>
+          )}
+          {guest.notes && (
+            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+              {guest.notes}
+            </div>
+          )}
+        </th>
+        <td style={{ padding: 'var(--space-3) var(--space-2)' }}>
+          <select
+            className="form-control"
             style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '4px',
-              padding: '2px 8px',
-              borderRadius: 'var(--radius-sm)',
               fontSize: 'var(--text-xs)',
-              fontWeight: 700,
-              backgroundColor: 'var(--surface-subtle)',
-              color: DIETARY_BADGE_COLORS[guest.dietary],
-              border: `1px solid ${DIETARY_BADGE_COLORS[guest.dietary]}60`,
-              cursor: 'help',
+              height: '32px',
+              minHeight: '32px',
+              width: '125px',
+              fontWeight: 600,
+              color:
+                guest.rsvpStatus === 'attending'
+                  ? 'var(--color-success)'
+                  : guest.rsvpStatus === 'declined'
+                    ? 'var(--color-danger)'
+                    : 'var(--color-warning)',
             }}
+            value={guest.rsvpStatus}
+            onChange={(e) => onQuickRsvpChange(guest, e.target.value as RsvpStatus)}
+            aria-label={`Change RSVP status for ${guest.name}`}
           >
-            <Utensils size={12} />
-            {DIETARY_LABELS[guest.dietary]}
-          </span>
-        ) : (
-          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>Standard</span>
-        )}
-      </td>
-      <td style={{ padding: 'var(--space-3) var(--space-2)' }}>
-        {guest.plusOne ? (
-          <Badge variant="info">
-            +1 {guest.plusOneName ? `(${guest.plusOneName})` : ''}
-          </Badge>
-        ) : (
-          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>Solo</span>
-        )}
-      </td>
-      <td style={{ padding: 'var(--space-3) var(--space-2)' }}>
-        {guest.tableNumber ? (
-          <span style={{ fontWeight: 600, color: 'var(--text)', fontSize: 'var(--text-xs)' }}>
-            {guest.tableNumber}
-          </span>
-        ) : (
-          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', fontStyle: 'italic' }}>
-            Unassigned
-          </span>
-        )}
-      </td>
-      <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}>
-        <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => onOpenEdit(guest)}
-            style={{ padding: '4px 8px' }}
-            title="Edit guest details"
-            aria-label={`Edit ${guest.name}`}
-          >
-            <Edit2 size={13} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onDeleteGuest(guest.id, guest.name)}
-            style={{ padding: '4px 8px', color: 'var(--color-danger)' }}
-            title="Delete guest"
-            aria-label={`Delete ${guest.name}`}
-          >
-            <Trash2 size={13} />
-          </Button>
-        </div>
-      </td>
-    </tr>
-  );
-});
+            <option value="attending">✓ Confirmed</option>
+            <option value="pending">⏳ Pending</option>
+            <option value="declined">✕ Declined</option>
+          </select>
+        </td>
+        <td style={{ padding: 'var(--space-3) var(--space-2)' }}>
+          {guest.dietary && guest.dietary !== 'none' ? (
+            <span
+              role="note"
+              aria-label={`${DIETARY_LABELS[guest.dietary]}: ${DIETARY_TOOLTIPS[guest.dietary]}`}
+              title={DIETARY_TOOLTIPS[guest.dietary]}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                padding: '2px 8px',
+                borderRadius: 'var(--radius-sm)',
+                fontSize: 'var(--text-xs)',
+                fontWeight: 700,
+                backgroundColor: 'var(--surface-subtle)',
+                color: DIETARY_BADGE_COLORS[guest.dietary],
+                border: `1px solid ${DIETARY_BADGE_COLORS[guest.dietary]}60`,
+                cursor: 'help',
+              }}
+            >
+              <Utensils size={12} />
+              {DIETARY_LABELS[guest.dietary]}
+            </span>
+          ) : (
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>Standard</span>
+          )}
+        </td>
+        <td style={{ padding: 'var(--space-3) var(--space-2)' }}>
+          {guest.plusOne ? (
+            <Badge variant="info">+1 {guest.plusOneName ? `(${guest.plusOneName})` : ''}</Badge>
+          ) : (
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>Solo</span>
+          )}
+        </td>
+        <td style={{ padding: 'var(--space-3) var(--space-2)' }}>
+          {guest.tableNumber ? (
+            <span style={{ fontWeight: 600, color: 'var(--text)', fontSize: 'var(--text-xs)' }}>
+              {guest.tableNumber}
+            </span>
+          ) : (
+            <span
+              style={{
+                fontSize: 'var(--text-xs)',
+                color: 'var(--text-muted)',
+                fontStyle: 'italic',
+              }}
+            >
+              Unassigned
+            </span>
+          )}
+        </td>
+        <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}>
+          <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => onOpenEdit(guest)}
+              style={{ padding: '4px 8px' }}
+              title="Edit guest details"
+              aria-label={`Edit ${guest.name}`}
+            >
+              <Edit2 size={13} />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onDeleteGuest(guest.id, guest.name)}
+              style={{ padding: '4px 8px', color: 'var(--color-danger)' }}
+              title="Delete guest"
+              aria-label={`Delete ${guest.name}`}
+            >
+              <Trash2 size={13} />
+            </Button>
+          </div>
+        </td>
+      </tr>
+    );
+  },
+);
 
 export const GuestManager: React.FC<GuestManagerProps> = ({
   plan,
@@ -337,7 +346,13 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
       if (deferredFilterChip === 'pending' && g.rsvpStatus !== 'pending') return false;
       if (deferredFilterChip === 'declined' && g.rsvpStatus !== 'declined') return false;
       if (deferredFilterChip === 'jain' && g.dietary !== 'jain') return false;
-      if (deferredFilterChip === 'pure_veg' && g.dietary !== 'pure_veg' && g.dietary !== 'vegetarian' && g.dietary !== 'jain') return false;
+      if (
+        deferredFilterChip === 'pure_veg' &&
+        g.dietary !== 'pure_veg' &&
+        g.dietary !== 'vegetarian' &&
+        g.dietary !== 'jain'
+      )
+        return false;
       if (deferredFilterChip === 'halal' && g.dietary !== 'halal') return false;
       if (deferredFilterChip === 'gluten_free' && g.dietary !== 'gluten_free') return false;
       if (deferredFilterChip === 'has_plus_one' && !g.plusOne) return false;
@@ -368,14 +383,8 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
   }, [guests, deferredFilterChip, deferredSearchQuery, sortBy]);
 
   // Windowing for large guest sets (>100 items)
-  const {
-    visibleItems,
-    isVirtual,
-    topSpacerHeight,
-    bottomSpacerHeight,
-    containerRef,
-    onScroll,
-  } = useVirtualList(filteredGuests, { itemHeight: 64, threshold: 100 });
+  const { visibleItems, isVirtual, topSpacerHeight, bottomSpacerHeight, containerRef, onScroll } =
+    useVirtualList(filteredGuests, { itemHeight: 64, threshold: 100 });
 
   // Bulk Selection Handlers
   const handleToggleSelect = useCallback((id: string) => {
@@ -490,21 +499,44 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
     handleModalClose();
   };
 
-  const handleQuickRsvpChange = useCallback((guest: GuestItem, newStatus: RsvpStatus) => {
-    onUpdateGuest(guest.id, { rsvpStatus: newStatus });
-    toast.showToast(`RSVP updated to ${newStatus === 'attending' ? 'Confirmed' : newStatus}`, 'info');
-  }, [onUpdateGuest, toast]);
+  const handleQuickRsvpChange = useCallback(
+    (guest: GuestItem, newStatus: RsvpStatus) => {
+      onUpdateGuest(guest.id, { rsvpStatus: newStatus });
+      toast.showToast(
+        `RSVP updated to ${newStatus === 'attending' ? 'Confirmed' : newStatus}`,
+        'info',
+      );
+    },
+    [onUpdateGuest, toast],
+  );
 
-  const handleDeleteGuest = useCallback((id: string, name: string) => {
-    onDeleteGuest(id);
-    toast.showToast(`Removed ${name}`, 'info');
-  }, [onDeleteGuest, toast]);
+  const handleDeleteGuest = useCallback(
+    (id: string, name: string) => {
+      onDeleteGuest(id);
+      toast.showToast(`Removed ${name}`, 'info');
+    },
+    [onDeleteGuest, toast],
+  );
 
   if (isLoading) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-        <div style={{ height: '90px', background: 'var(--surface-raised)', borderRadius: 'var(--radius-lg)' }} className="skeleton" />
-        <div style={{ height: '350px', background: 'var(--surface-raised)', borderRadius: 'var(--radius-lg)' }} className="skeleton" />
+        <div
+          style={{
+            height: '90px',
+            background: 'var(--surface-raised)',
+            borderRadius: 'var(--radius-lg)',
+          }}
+          className="skeleton"
+        />
+        <div
+          style={{
+            height: '350px',
+            background: 'var(--surface-raised)',
+            borderRadius: 'var(--radius-lg)',
+          }}
+          className="skeleton"
+        />
       </div>
     );
   }
@@ -525,15 +557,39 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
         {/* Target Invited */}
         <div
           className="stat-card"
-          style={{ background: 'var(--surface-raised)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: 'var(--space-4)' }}
+          style={{
+            background: 'var(--surface-raised)',
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-md)',
+            padding: 'var(--space-4)',
+          }}
         >
-          <span className="stat-label" style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+          <span
+            className="stat-label"
+            style={{
+              fontSize: 'var(--text-xs)',
+              fontWeight: 700,
+              color: 'var(--text-muted)',
+              textTransform: 'uppercase',
+            }}
+          >
             Target Headcount
           </span>
-          <div className="stat-value tabular-nums" style={{ fontSize: 'var(--text-2xl)', fontWeight: 800, color: 'var(--text)', margin: '4px 0' }}>
+          <div
+            className="stat-value tabular-nums"
+            style={{
+              fontSize: 'var(--text-2xl)',
+              fontWeight: 800,
+              color: 'var(--text)',
+              margin: '4px 0',
+            }}
+          >
             {stats.invited}
           </div>
-          <span className="stat-subtext" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+          <span
+            className="stat-subtext"
+            style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}
+          >
             Planned venue capacity
           </span>
         </div>
@@ -541,9 +597,22 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
         {/* Confirmed (+1s included) */}
         <div
           className="stat-card"
-          style={{ background: 'var(--surface-raised)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: 'var(--space-4)' }}
+          style={{
+            background: 'var(--surface-raised)',
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-md)',
+            padding: 'var(--space-4)',
+          }}
         >
-          <span className="stat-label" style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+          <span
+            className="stat-label"
+            style={{
+              fontSize: 'var(--text-xs)',
+              fontWeight: 700,
+              color: 'var(--text-muted)',
+              textTransform: 'uppercase',
+            }}
+          >
             Confirmed (+1s included)
           </span>
           <div
@@ -551,13 +620,20 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
             style={{
               fontSize: 'var(--text-2xl)',
               fontWeight: 800,
-              color: stats.isCapacityDanger ? 'var(--color-danger)' : stats.isCapacityWarning ? 'var(--color-warning)' : 'var(--color-success)',
+              color: stats.isCapacityDanger
+                ? 'var(--color-danger)'
+                : stats.isCapacityWarning
+                  ? 'var(--color-warning)'
+                  : 'var(--color-success)',
               margin: '4px 0',
             }}
           >
             {stats.confirmedHeads}
           </div>
-          <span className="stat-subtext" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+          <span
+            className="stat-subtext"
+            style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}
+          >
             {stats.capacityPct}% of venue target
           </span>
         </div>
@@ -565,15 +641,39 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
         {/* Pending */}
         <div
           className="stat-card"
-          style={{ background: 'var(--surface-raised)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: 'var(--space-4)' }}
+          style={{
+            background: 'var(--surface-raised)',
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-md)',
+            padding: 'var(--space-4)',
+          }}
         >
-          <span className="stat-label" style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+          <span
+            className="stat-label"
+            style={{
+              fontSize: 'var(--text-xs)',
+              fontWeight: 700,
+              color: 'var(--text-muted)',
+              textTransform: 'uppercase',
+            }}
+          >
             Pending Awaiting RSVP
           </span>
-          <div className="stat-value tabular-nums" style={{ fontSize: 'var(--text-2xl)', fontWeight: 800, color: 'var(--color-warning)', margin: '4px 0' }}>
+          <div
+            className="stat-value tabular-nums"
+            style={{
+              fontSize: 'var(--text-2xl)',
+              fontWeight: 800,
+              color: 'var(--color-warning)',
+              margin: '4px 0',
+            }}
+          >
             {stats.pendingCount}
           </div>
-          <span className="stat-subtext" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+          <span
+            className="stat-subtext"
+            style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}
+          >
             Follow-ups needed
           </span>
         </div>
@@ -581,15 +681,39 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
         {/* Declined */}
         <div
           className="stat-card"
-          style={{ background: 'var(--surface-raised)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: 'var(--space-4)' }}
+          style={{
+            background: 'var(--surface-raised)',
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-md)',
+            padding: 'var(--space-4)',
+          }}
         >
-          <span className="stat-label" style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+          <span
+            className="stat-label"
+            style={{
+              fontSize: 'var(--text-xs)',
+              fontWeight: 700,
+              color: 'var(--text-muted)',
+              textTransform: 'uppercase',
+            }}
+          >
             Declined / Regrets
           </span>
-          <div className="stat-value tabular-nums" style={{ fontSize: 'var(--text-2xl)', fontWeight: 800, color: 'var(--text-muted)', margin: '4px 0' }}>
+          <div
+            className="stat-value tabular-nums"
+            style={{
+              fontSize: 'var(--text-2xl)',
+              fontWeight: 800,
+              color: 'var(--text-muted)',
+              margin: '4px 0',
+            }}
+          >
             {stats.declinedCount}
           </div>
-          <span className="stat-subtext" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+          <span
+            className="stat-subtext"
+            style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}
+          >
             Released seating capacity
           </span>
         </div>
@@ -597,7 +721,14 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
 
       {/* Capacity Progress Bar with Thresholds */}
       <Card variant="subtle" style={{ padding: 'var(--space-4)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 'var(--space-2)',
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
             <Users size={16} color="var(--accent-primary)" />
             <span style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--text)' }}>
@@ -609,7 +740,11 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
             style={{
               fontSize: 'var(--text-sm)',
               fontWeight: 800,
-              color: stats.isCapacityDanger ? 'var(--color-danger)' : stats.isCapacityWarning ? 'var(--color-warning)' : 'var(--color-success)',
+              color: stats.isCapacityDanger
+                ? 'var(--color-danger)'
+                : stats.isCapacityWarning
+                  ? 'var(--color-warning)'
+                  : 'var(--color-success)',
             }}
           >
             {stats.confirmedHeads} / {stats.invited} ({stats.capacityPct}%)
@@ -617,7 +752,15 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
         </div>
 
         {/* Visual Progress Bar */}
-        <div style={{ width: '100%', height: '8px', background: 'var(--border)', borderRadius: 'var(--radius-pill)', overflow: 'hidden' }}>
+        <div
+          style={{
+            width: '100%',
+            height: '8px',
+            background: 'var(--border)',
+            borderRadius: 'var(--radius-pill)',
+            overflow: 'hidden',
+          }}
+        >
           <div
             style={{
               width: `${Math.min(100, stats.capacityPct)}%`,
@@ -625,20 +768,37 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
               background: stats.isCapacityDanger
                 ? 'var(--color-danger)'
                 : stats.isCapacityWarning
-                ? 'var(--color-warning)'
-                : 'var(--color-success)',
+                  ? 'var(--color-warning)'
+                  : 'var(--color-success)',
               transition: 'width var(--transition-normal)',
             }}
           />
         </div>
 
         {stats.isCapacityDanger ? (
-          <div style={{ marginTop: 'var(--space-2)', fontSize: 'var(--text-xs)', color: 'var(--color-danger)', fontWeight: 600 }}>
-            ⚠ Rule 6 Triggered: RSVP headcount exceeds planned venue capacity by {stats.confirmedHeads - stats.invited} attendees. Recalculate catering portions, table rentals, and fire safety limits.
+          <div
+            style={{
+              marginTop: 'var(--space-2)',
+              fontSize: 'var(--text-xs)',
+              color: 'var(--color-danger)',
+              fontWeight: 600,
+            }}
+          >
+            ⚠ Rule 6 Triggered: RSVP headcount exceeds planned venue capacity by{' '}
+            {stats.confirmedHeads - stats.invited} attendees. Recalculate catering portions, table
+            rentals, and fire safety limits.
           </div>
         ) : stats.isCapacityWarning ? (
-          <div style={{ marginTop: 'var(--space-2)', fontSize: 'var(--text-xs)', color: 'var(--color-warning)', fontWeight: 600 }}>
-            ⚠ Approaching planned capacity ({stats.capacityPct}%). Prepare to lock guest confirmations soon.
+          <div
+            style={{
+              marginTop: 'var(--space-2)',
+              fontSize: 'var(--text-xs)',
+              color: 'var(--color-warning)',
+              fontWeight: 600,
+            }}
+          >
+            ⚠ Approaching planned capacity ({stats.capacityPct}%). Prepare to lock guest
+            confirmations soon.
           </div>
         ) : null}
       </Card>
@@ -647,15 +807,34 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
           2. PERSISTENT JAIN / PURE VEG KITCHEN COUNTER BANNER (Rule 8)
           ===================================================================== */}
       {stats.jainOrPureVegCount > 0 && (
-        <Card variant="subtle" style={{ borderLeft: '4px solid #ea580c', background: 'rgba(234, 88, 12, 0.06)' }}>
+        <Card
+          variant="subtle"
+          style={{ borderLeft: '4px solid #ea580c', background: 'rgba(234, 88, 12, 0.06)' }}
+        >
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-3)' }}>
             <AlertTriangle size={20} color="#ea580c" style={{ flexShrink: 0, marginTop: '2px' }} />
             <div>
-              <h2 style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: '#ea580c', margin: '0 0 2px 0' }}>
+              <h2
+                style={{
+                  fontSize: 'var(--text-sm)',
+                  fontWeight: 700,
+                  color: '#ea580c',
+                  margin: '0 0 2px 0',
+                }}
+              >
                 Dedicated Pure Veg / Jain Kitchen Counter Required
               </h2>
-              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text)', margin: 0, lineHeight: 1.5 }}>
-                <strong>{stats.jainOrPureVegCount} guests</strong> require Jain (no onion/garlic/root veg) or Sattvic Pure Vegetarian preparation. Ensure your caterer sets up an isolated preparation counter, distinct serving ladles, and clear signage.
+              <p
+                style={{
+                  fontSize: 'var(--text-xs)',
+                  color: 'var(--text)',
+                  margin: 0,
+                  lineHeight: 1.5,
+                }}
+              >
+                <strong>{stats.jainOrPureVegCount} guests</strong> require Jain (no
+                onion/garlic/root veg) or Sattvic Pure Vegetarian preparation. Ensure your caterer
+                sets up an isolated preparation counter, distinct serving ladles, and clear signage.
               </p>
             </div>
           </div>
@@ -696,12 +875,26 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
         />
 
         {/* View Switcher: Directory vs Table Seating */}
-        <div style={{ display: 'flex', gap: 'var(--space-2)', marginBottom: 'var(--space-4)', borderBottom: '1px solid var(--border)', paddingBottom: 'var(--space-3)' }}>
+        <div
+          style={{
+            display: 'flex',
+            gap: 'var(--space-2)',
+            marginBottom: 'var(--space-4)',
+            borderBottom: '1px solid var(--border)',
+            paddingBottom: 'var(--space-3)',
+          }}
+        >
           <button
             type="button"
             className={`chip ${viewMode === 'directory' ? 'chip-active' : ''}`}
             onClick={() => setViewMode('directory')}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', cursor: 'pointer', padding: '6px 14px' }}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              cursor: 'pointer',
+              padding: '6px 14px',
+            }}
           >
             <List size={14} />
             <span>Guest Directory ({guests.length})</span>
@@ -710,7 +903,13 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
             type="button"
             className={`chip ${viewMode === 'seating' ? 'chip-active' : ''}`}
             onClick={() => setViewMode('seating')}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', cursor: 'pointer', padding: '6px 14px' }}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              cursor: 'pointer',
+              padding: '6px 14px',
+            }}
           >
             <LayoutGrid size={14} />
             <span>Table Seating Planner</span>
@@ -722,247 +921,355 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
         ) : (
           <>
             {/* Toolbar: Search, Filters, Sort */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', marginBottom: 'var(--space-4)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
-            {/* Search Box */}
-            <div style={{ position: 'relative', width: '280px', maxWidth: '100%' }}>
-              <label htmlFor="guest-search-input" className="sr-only">
-                Search guest list
-              </label>
-              <Search size={15} style={{ position: 'absolute', left: '10px', top: '10px', color: 'var(--text-muted)' }} />
-              <input
-                id="guest-search-input"
-                type="text"
-                placeholder="Search guest, table, or notes..."
-                className="form-control"
-                style={{ paddingLeft: '32px', height: '36px', minHeight: '36px', fontSize: 'var(--text-xs)' }}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                aria-label="Search guest list"
-              />
-            </div>
-
-            {/* Sort Select */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-              <label htmlFor="guest-sort" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', fontWeight: 600 }}>
-                Sort:
-              </label>
-              <select
-                id="guest-sort"
-                className="form-control"
-                style={{ height: '36px', minHeight: '36px', fontSize: 'var(--text-xs)', padding: '0 var(--space-2)' }}
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as SortOption)}
-                aria-label="Sort guest list"
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 'var(--space-3)',
+                marginBottom: 'var(--space-4)',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  gap: 'var(--space-3)',
+                  flexWrap: 'wrap',
+                }}
               >
-                <option value="name_asc">Name (A → Z)</option>
-                <option value="name_desc">Name (Z → A)</option>
-                <option value="status">RSVP Status</option>
-                <option value="table">Table Number</option>
-              </select>
-            </div>
-          </div>
+                {/* Search Box */}
+                <div style={{ position: 'relative', width: '280px', maxWidth: '100%' }}>
+                  <label htmlFor="guest-search-input" className="sr-only">
+                    Search guest list
+                  </label>
+                  <Search
+                    size={15}
+                    style={{
+                      position: 'absolute',
+                      left: '10px',
+                      top: '10px',
+                      color: 'var(--text-muted)',
+                    }}
+                  />
+                  <input
+                    id="guest-search-input"
+                    type="text"
+                    placeholder="Search guest, table, or notes..."
+                    className="form-control"
+                    style={{
+                      paddingLeft: '32px',
+                      height: '36px',
+                      minHeight: '36px',
+                      fontSize: 'var(--text-xs)',
+                    }}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    aria-label="Search guest list"
+                  />
+                </div>
 
-          {/* Filter Chips: All, Confirmed, Pending, Declined, Jain, Pure Veg, Halal, Gluten-free, Has +1 */}
-          <div style={{ display: 'flex', gap: 'var(--space-1)', flexWrap: 'wrap', alignItems: 'center' }}>
-            <Button
-              variant={filterChip === 'all' ? 'primary' : 'secondary'}
-              size="sm"
-              onClick={() => setFilterChip('all')}
-              aria-pressed={filterChip === 'all'}
-            >
-              All ({filterCounts.all})
-            </Button>
-            <Button
-              variant={filterChip === 'confirmed' ? 'primary' : 'secondary'}
-              size="sm"
-              onClick={() => setFilterChip('confirmed')}
-              leadingIcon={<UserCheck size={13} />}
-              aria-pressed={filterChip === 'confirmed'}
-            >
-              Confirmed ({filterCounts.confirmed})
-            </Button>
-            <Button
-              variant={filterChip === 'pending' ? 'primary' : 'secondary'}
-              size="sm"
-              onClick={() => setFilterChip('pending')}
-              leadingIcon={<Clock size={13} />}
-              aria-pressed={filterChip === 'pending'}
-            >
-              Pending ({filterCounts.pending})
-            </Button>
-            <Button
-              variant={filterChip === 'declined' ? 'primary' : 'secondary'}
-              size="sm"
-              onClick={() => setFilterChip('declined')}
-              leadingIcon={<UserX size={13} />}
-              aria-pressed={filterChip === 'declined'}
-            >
-              Declined ({filterCounts.declined})
-            </Button>
-            <Button
-              variant={filterChip === 'jain' ? 'primary' : 'secondary'}
-              size="sm"
-              onClick={() => setFilterChip('jain')}
-              style={filterChip === 'jain' ? {} : { borderColor: '#ea580c', color: '#ea580c' }}
-              aria-pressed={filterChip === 'jain'}
-            >
-              🥗 Jain ({filterCounts.jain})
-            </Button>
-            <Button
-              variant={filterChip === 'pure_veg' ? 'primary' : 'secondary'}
-              size="sm"
-              onClick={() => setFilterChip('pure_veg')}
-              style={filterChip === 'pure_veg' ? {} : { borderColor: '#16a34a', color: '#16a34a' }}
-              aria-pressed={filterChip === 'pure_veg'}
-            >
-              🌱 Pure Veg ({filterCounts.pure_veg})
-            </Button>
-            <Button
-              variant={filterChip === 'halal' ? 'primary' : 'secondary'}
-              size="sm"
-              onClick={() => setFilterChip('halal')}
-              aria-pressed={filterChip === 'halal'}
-            >
-              Halal ({filterCounts.halal})
-            </Button>
-            <Button
-              variant={filterChip === 'gluten_free' ? 'primary' : 'secondary'}
-              size="sm"
-              onClick={() => setFilterChip('gluten_free')}
-              aria-pressed={filterChip === 'gluten_free'}
-            >
-              Gluten-free ({filterCounts.gluten_free})
-            </Button>
-            <Button
-              variant={filterChip === 'has_plus_one' ? 'primary' : 'secondary'}
-              size="sm"
-              onClick={() => setFilterChip('has_plus_one')}
-              aria-pressed={filterChip === 'has_plus_one'}
-            >
-              Has +1 ({filterCounts.has_plus_one})
-            </Button>
-          </div>
-        </div>
+                {/* Sort Select */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                  <label
+                    htmlFor="guest-sort"
+                    style={{
+                      fontSize: 'var(--text-xs)',
+                      color: 'var(--text-muted)',
+                      fontWeight: 600,
+                    }}
+                  >
+                    Sort:
+                  </label>
+                  <select
+                    id="guest-sort"
+                    className="form-control"
+                    style={{
+                      height: '36px',
+                      minHeight: '36px',
+                      fontSize: 'var(--text-xs)',
+                      padding: '0 var(--space-2)',
+                    }}
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as SortOption)}
+                    aria-label="Sort guest list"
+                  >
+                    <option value="name_asc">Name (A → Z)</option>
+                    <option value="name_desc">Name (Z → A)</option>
+                    <option value="status">RSVP Status</option>
+                    <option value="table">Table Number</option>
+                  </select>
+                </div>
+              </div>
 
-        {/* Screen Reader Live Region announcing filter count */}
-        <div aria-live="polite" role="status" className="sr-only">
-          Showing {filteredGuests.length} of {guests.length} guests for {filterChip} filter
-        </div>
-
-        {/* Bulk Action Toolbar */}
-        {selectedIds.size > 0 && (
-          <div
-            style={{
-              padding: 'var(--space-3) var(--space-4)',
-              background: 'var(--accent-subtle)',
-              border: '1px solid var(--accent-primary)',
-              borderRadius: 'var(--radius-md)',
-              marginBottom: 'var(--space-4)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              flexWrap: 'wrap',
-              gap: 'var(--space-2)',
-            }}
-          >
-            <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--accent-text)' }}>
-              {selectedIds.size} {selectedIds.size === 1 ? 'guest' : 'guests'} selected
-            </span>
-            <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
-              <Button variant="primary" size="sm" onClick={handleBulkMarkConfirmed}>
-                Mark Confirmed
-              </Button>
-              <Button variant="secondary" size="sm" onClick={() => setShowAssignTableModal(true)}>
-                Assign Table
-              </Button>
-              <Button variant="danger" size="sm" onClick={handleBulkDelete}>
-                Delete
-              </Button>
-              <Button variant="ghost" size="sm" onClick={() => setSelectedIds(new Set())}>
-                Clear
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Main Table (Semantic HTML) */}
-        {filteredGuests.length === 0 ? (
-          <EmptyState
-            icon={<CheckCircle2 size={36} color="var(--color-success)" />}
-            title="No guests found"
-            description="No guests match your current search and filter settings. Clear filters or add a new guest."
-            action={
-              filterChip !== 'all' || searchQuery ? (
-                <Button variant="secondary" size="sm" onClick={() => { setFilterChip('all'); setSearchQuery(''); }}>
-                  Reset Filters
+              {/* Filter Chips: All, Confirmed, Pending, Declined, Jain, Pure Veg, Halal, Gluten-free, Has +1 */}
+              <div
+                style={{
+                  display: 'flex',
+                  gap: 'var(--space-1)',
+                  flexWrap: 'wrap',
+                  alignItems: 'center',
+                }}
+              >
+                <Button
+                  variant={filterChip === 'all' ? 'primary' : 'secondary'}
+                  size="sm"
+                  onClick={() => setFilterChip('all')}
+                  aria-pressed={filterChip === 'all'}
+                >
+                  All ({filterCounts.all})
                 </Button>
-              ) : undefined
-            }
-          />
-        ) : (
-          <div
-            ref={containerRef}
-            onScroll={onScroll}
-            style={{
-              overflowX: 'auto',
-              maxHeight: isVirtual ? '600px' : undefined,
-              overflowY: isVirtual ? 'auto' : undefined,
-            }}
-          >
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 'var(--text-sm)' }}>
-              <caption className="sr-only">Guest list with RSVP status, dietary preferences, and seating assignments</caption>
-              <thead>
-                <tr style={{ borderBottom: '2px solid var(--border)', color: 'var(--text-muted)' }}>
-                  <th scope="col" style={{ padding: 'var(--space-3) var(--space-2)', width: '40px', textAlign: 'center' }}>
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.size === filteredGuests.length && filteredGuests.length > 0}
-                      onChange={handleSelectAll}
-                      aria-label="Select all guests in view"
-                      style={{ accentColor: 'var(--accent-primary)', cursor: 'pointer' }}
-                    />
-                  </th>
-                  <th scope="col" style={{ padding: 'var(--space-3) var(--space-2)' }}>Guest Name</th>
-                  <th scope="col" style={{ padding: 'var(--space-3) var(--space-2)' }}>RSVP Status</th>
-                  <th scope="col" style={{ padding: 'var(--space-3) var(--space-2)' }}>Dietary Protocol</th>
-                  <th scope="col" style={{ padding: 'var(--space-3) var(--space-2)' }}>Plus-One (+1)</th>
-                  <th scope="col" style={{ padding: 'var(--space-3) var(--space-2)' }}>Table Number</th>
-                  <th scope="col" style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {isVirtual && topSpacerHeight > 0 && (
-                  <tr style={{ height: `${topSpacerHeight}px` }} aria-hidden="true">
-                    <td colSpan={7} aria-hidden="true" style={{ padding: 0, border: 'none' }}>Spacer</td>
-                  </tr>
-                )}
-                {visibleItems.map((guest) => {
-                  const isSelected = selectedIds.has(guest.id);
-                  return (
-                    <GuestTableRow
-                      key={guest.id}
-                      guest={guest}
-                      isSelected={isSelected}
-                      onToggleSelect={handleToggleSelect}
-                      onQuickRsvpChange={handleQuickRsvpChange}
-                      onOpenEdit={handleOpenEdit}
-                      onDeleteGuest={handleDeleteGuest}
-                    />
-                  );
-                })}
-                {isVirtual && bottomSpacerHeight > 0 && (
-                  <tr style={{ height: `${bottomSpacerHeight}px` }} aria-hidden="true">
-                    <td colSpan={7} aria-hidden="true" style={{ padding: 0, border: 'none' }}>Spacer</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                <Button
+                  variant={filterChip === 'confirmed' ? 'primary' : 'secondary'}
+                  size="sm"
+                  onClick={() => setFilterChip('confirmed')}
+                  leadingIcon={<UserCheck size={13} />}
+                  aria-pressed={filterChip === 'confirmed'}
+                >
+                  Confirmed ({filterCounts.confirmed})
+                </Button>
+                <Button
+                  variant={filterChip === 'pending' ? 'primary' : 'secondary'}
+                  size="sm"
+                  onClick={() => setFilterChip('pending')}
+                  leadingIcon={<Clock size={13} />}
+                  aria-pressed={filterChip === 'pending'}
+                >
+                  Pending ({filterCounts.pending})
+                </Button>
+                <Button
+                  variant={filterChip === 'declined' ? 'primary' : 'secondary'}
+                  size="sm"
+                  onClick={() => setFilterChip('declined')}
+                  leadingIcon={<UserX size={13} />}
+                  aria-pressed={filterChip === 'declined'}
+                >
+                  Declined ({filterCounts.declined})
+                </Button>
+                <Button
+                  variant={filterChip === 'jain' ? 'primary' : 'secondary'}
+                  size="sm"
+                  onClick={() => setFilterChip('jain')}
+                  style={filterChip === 'jain' ? {} : { borderColor: '#ea580c', color: '#ea580c' }}
+                  aria-pressed={filterChip === 'jain'}
+                >
+                  🥗 Jain ({filterCounts.jain})
+                </Button>
+                <Button
+                  variant={filterChip === 'pure_veg' ? 'primary' : 'secondary'}
+                  size="sm"
+                  onClick={() => setFilterChip('pure_veg')}
+                  style={
+                    filterChip === 'pure_veg' ? {} : { borderColor: '#16a34a', color: '#16a34a' }
+                  }
+                  aria-pressed={filterChip === 'pure_veg'}
+                >
+                  🌱 Pure Veg ({filterCounts.pure_veg})
+                </Button>
+                <Button
+                  variant={filterChip === 'halal' ? 'primary' : 'secondary'}
+                  size="sm"
+                  onClick={() => setFilterChip('halal')}
+                  aria-pressed={filterChip === 'halal'}
+                >
+                  Halal ({filterCounts.halal})
+                </Button>
+                <Button
+                  variant={filterChip === 'gluten_free' ? 'primary' : 'secondary'}
+                  size="sm"
+                  onClick={() => setFilterChip('gluten_free')}
+                  aria-pressed={filterChip === 'gluten_free'}
+                >
+                  Gluten-free ({filterCounts.gluten_free})
+                </Button>
+                <Button
+                  variant={filterChip === 'has_plus_one' ? 'primary' : 'secondary'}
+                  size="sm"
+                  onClick={() => setFilterChip('has_plus_one')}
+                  aria-pressed={filterChip === 'has_plus_one'}
+                >
+                  Has +1 ({filterCounts.has_plus_one})
+                </Button>
+              </div>
+            </div>
+
+            {/* Screen Reader Live Region announcing filter count */}
+            <div aria-live="polite" role="status" className="sr-only">
+              Showing {filteredGuests.length} of {guests.length} guests for {filterChip} filter
+            </div>
+
+            {/* Bulk Action Toolbar */}
+            {selectedIds.size > 0 && (
+              <div
+                style={{
+                  padding: 'var(--space-3) var(--space-4)',
+                  background: 'var(--accent-subtle)',
+                  border: '1px solid var(--accent-primary)',
+                  borderRadius: 'var(--radius-md)',
+                  marginBottom: 'var(--space-4)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: 'var(--space-2)',
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: 'var(--text-xs)',
+                    fontWeight: 700,
+                    color: 'var(--accent-text)',
+                  }}
+                >
+                  {selectedIds.size} {selectedIds.size === 1 ? 'guest' : 'guests'} selected
+                </span>
+                <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
+                  <Button variant="primary" size="sm" onClick={handleBulkMarkConfirmed}>
+                    Mark Confirmed
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setShowAssignTableModal(true)}
+                  >
+                    Assign Table
+                  </Button>
+                  <Button variant="danger" size="sm" onClick={handleBulkDelete}>
+                    Delete
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => setSelectedIds(new Set())}>
+                    Clear
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Main Table (Semantic HTML) */}
+            {filteredGuests.length === 0 ? (
+              <EmptyState
+                icon={<CheckCircle2 size={36} color="var(--color-success)" />}
+                title="No guests found"
+                description="No guests match your current search and filter settings. Clear filters or add a new guest."
+                action={
+                  filterChip !== 'all' || searchQuery ? (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => {
+                        setFilterChip('all');
+                        setSearchQuery('');
+                      }}
+                    >
+                      Reset Filters
+                    </Button>
+                  ) : undefined
+                }
+              />
+            ) : (
+              <div
+                ref={containerRef}
+                onScroll={onScroll}
+                style={{
+                  overflowX: 'auto',
+                  maxHeight: isVirtual ? '600px' : undefined,
+                  overflowY: isVirtual ? 'auto' : undefined,
+                }}
+              >
+                <table
+                  style={{
+                    width: '100%',
+                    borderCollapse: 'collapse',
+                    textAlign: 'left',
+                    fontSize: 'var(--text-sm)',
+                  }}
+                >
+                  <caption className="sr-only">
+                    Guest list with RSVP status, dietary preferences, and seating assignments
+                  </caption>
+                  <thead>
+                    <tr
+                      style={{
+                        borderBottom: '2px solid var(--border)',
+                        color: 'var(--text-muted)',
+                      }}
+                    >
+                      <th
+                        scope="col"
+                        style={{
+                          padding: 'var(--space-3) var(--space-2)',
+                          width: '40px',
+                          textAlign: 'center',
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={
+                            selectedIds.size === filteredGuests.length && filteredGuests.length > 0
+                          }
+                          onChange={handleSelectAll}
+                          aria-label="Select all guests in view"
+                          style={{ accentColor: 'var(--accent-primary)', cursor: 'pointer' }}
+                        />
+                      </th>
+                      <th scope="col" style={{ padding: 'var(--space-3) var(--space-2)' }}>
+                        Guest Name
+                      </th>
+                      <th scope="col" style={{ padding: 'var(--space-3) var(--space-2)' }}>
+                        RSVP Status
+                      </th>
+                      <th scope="col" style={{ padding: 'var(--space-3) var(--space-2)' }}>
+                        Dietary Protocol
+                      </th>
+                      <th scope="col" style={{ padding: 'var(--space-3) var(--space-2)' }}>
+                        Plus-One (+1)
+                      </th>
+                      <th scope="col" style={{ padding: 'var(--space-3) var(--space-2)' }}>
+                        Table Number
+                      </th>
+                      <th
+                        scope="col"
+                        style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}
+                      >
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {isVirtual && topSpacerHeight > 0 && (
+                      <tr style={{ height: `${topSpacerHeight}px` }} aria-hidden="true">
+                        <td colSpan={7} aria-hidden="true" style={{ padding: 0, border: 'none' }}>
+                          Spacer
+                        </td>
+                      </tr>
+                    )}
+                    {visibleItems.map((guest) => {
+                      const isSelected = selectedIds.has(guest.id);
+                      return (
+                        <GuestTableRow
+                          key={guest.id}
+                          guest={guest}
+                          isSelected={isSelected}
+                          onToggleSelect={handleToggleSelect}
+                          onQuickRsvpChange={handleQuickRsvpChange}
+                          onOpenEdit={handleOpenEdit}
+                          onDeleteGuest={handleDeleteGuest}
+                        />
+                      );
+                    })}
+                    {isVirtual && bottomSpacerHeight > 0 && (
+                      <tr style={{ height: `${bottomSpacerHeight}px` }} aria-hidden="true">
+                        <td colSpan={7} aria-hidden="true" style={{ padding: 0, border: 'none' }}>
+                          Spacer
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </>
         )}
-      </>
-    )}
-  </Card>
+      </Card>
 
       {/* =====================================================================
           4. ADD / EDIT GUEST MODAL (Stepper, Segmented Control, Chips)
@@ -991,7 +1298,11 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
                 required
               />
               {formTouched && !formName.trim() && (
-                <span id="gst-name-error" role="alert" style={{ color: 'var(--color-danger)', fontSize: '0.75rem', marginTop: '4px' }}>
+                <span
+                  id="gst-name-error"
+                  role="alert"
+                  style={{ color: 'var(--color-danger)', fontSize: '0.75rem', marginTop: '4px' }}
+                >
                   Guest name is required.
                 </span>
               )}
@@ -1017,7 +1328,13 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
               <span className="form-label">
                 <span>RSVP Response Status</span>
               </span>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 'var(--space-2)' }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr 1fr',
+                  gap: 'var(--space-2)',
+                }}
+              >
                 {(['attending', 'pending', 'declined'] as RsvpStatus[]).map((st) => (
                   <button
                     key={st}
@@ -1030,20 +1347,34 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
                       fontWeight: 700,
                       cursor: 'pointer',
                       border: `2px solid ${formRsvp === st ? 'var(--accent-primary)' : 'var(--border)'}`,
-                      background: formRsvp === st ? 'var(--accent-subtle)' : 'var(--surface-raised)',
+                      background:
+                        formRsvp === st ? 'var(--accent-subtle)' : 'var(--surface-raised)',
                       color: formRsvp === st ? 'var(--accent-text)' : 'var(--text)',
                       transition: 'all var(--transition-fast)',
                     }}
                   >
-                    {st === 'attending' ? '✓ Confirmed' : st === 'pending' ? '⏳ Pending' : '✕ Declined'}
+                    {st === 'attending'
+                      ? '✓ Confirmed'
+                      : st === 'pending'
+                        ? '⏳ Pending'
+                        : '✕ Declined'}
                   </button>
                 ))}
               </div>
             </div>
 
             {/* Plus-One Stepper & Name */}
-            <div style={{ padding: 'var(--space-3)', background: 'var(--surface-subtle)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div
+              style={{
+                padding: 'var(--space-3)',
+                background: 'var(--surface-subtle)',
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid var(--border)',
+              }}
+            >
+              <div
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+              >
                 <span style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--text)' }}>
                   Plus-One Companion (+1)
                 </span>
@@ -1090,31 +1421,40 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
                 <span>Dietary Requirement & Guardrails</span>
               </span>
               <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
-                {(['none', 'pure_veg', 'jain', 'halal', 'gluten_free', 'vegan', 'nut_allergy'] as DietaryRequirement[]).map(
-                  (d) => (
-                    <button
-                      key={d}
-                      type="button"
-                      onClick={() => setFormDietary(d)}
-                      title={DIETARY_TOOLTIPS[d]}
-                      style={{
-                        padding: 'var(--space-1) var(--space-3)',
-                        borderRadius: 'var(--radius-pill)',
-                        fontSize: 'var(--text-xs)',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        border: `1px solid ${formDietary === d ? 'var(--accent-primary)' : 'var(--border)'}`,
-                        background: formDietary === d ? 'var(--accent-subtle)' : 'var(--surface-raised)',
-                        color: formDietary === d ? 'var(--accent-text)' : 'var(--text)',
-                        transition: 'all var(--transition-fast)',
-                        minHeight: '36px',
-                      }}
-                    >
-                      {formDietary === d ? '✓ ' : '+ '}
-                      {DIETARY_LABELS[d]}
-                    </button>
-                  )
-                )}
+                {(
+                  [
+                    'none',
+                    'pure_veg',
+                    'jain',
+                    'halal',
+                    'gluten_free',
+                    'vegan',
+                    'nut_allergy',
+                  ] as DietaryRequirement[]
+                ).map((d) => (
+                  <button
+                    key={d}
+                    type="button"
+                    onClick={() => setFormDietary(d)}
+                    title={DIETARY_TOOLTIPS[d]}
+                    style={{
+                      padding: 'var(--space-1) var(--space-3)',
+                      borderRadius: 'var(--radius-pill)',
+                      fontSize: 'var(--text-xs)',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      border: `1px solid ${formDietary === d ? 'var(--accent-primary)' : 'var(--border)'}`,
+                      background:
+                        formDietary === d ? 'var(--accent-subtle)' : 'var(--surface-raised)',
+                      color: formDietary === d ? 'var(--accent-text)' : 'var(--text)',
+                      transition: 'all var(--transition-fast)',
+                      minHeight: '36px',
+                    }}
+                  >
+                    {formDietary === d ? '✓ ' : '+ '}
+                    {DIETARY_LABELS[d]}
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -1150,11 +1490,23 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
             </div>
 
             {/* Modal Actions */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                gap: 'var(--space-3)',
+                marginTop: 'var(--space-2)',
+              }}
+            >
               <Button type="button" variant="secondary" size="md" onClick={handleModalClose}>
                 Cancel
               </Button>
-              <Button type="submit" variant="primary" size="md" leadingIcon={<Sparkles size={16} />}>
+              <Button
+                type="submit"
+                variant="primary"
+                size="md"
+                leadingIcon={<Sparkles size={16} />}
+              >
                 {editingGuestId ? 'Save Changes' : 'Add Guest'}
               </Button>
             </div>
@@ -1191,7 +1543,11 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
             <Button variant="secondary" size="md" onClick={() => setShowAssignTableModal(false)}>
               Cancel
             </Button>
-            <Button variant="primary" size="md" onClick={() => handleBulkAssignTable(bulkTableValue)}>
+            <Button
+              variant="primary"
+              size="md"
+              onClick={() => handleBulkAssignTable(bulkTableValue)}
+            >
               Confirm Assignment
             </Button>
           </div>

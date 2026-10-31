@@ -1,9 +1,4 @@
-import type {
-  EventPlan,
-  BudgetSummary,
-  DecisionInsight,
-  TradeOffOption,
-} from '../types/event';
+import type { EventPlan, BudgetSummary, DecisionInsight, TradeOffOption } from '../types/event';
 import { formatCurrency } from '../utils/formatters';
 import { RULES_CONFIG } from '../constants/rulesConfig';
 import { detectBlockedTasks } from './decisionEngine';
@@ -40,7 +35,7 @@ export interface DecisionRuleDefinition {
     plan: DecisionEnginePlanInput,
     summary: BudgetSummary,
     now: Date,
-    currentDateStr?: string
+    currentDateStr?: string,
   ) => DecisionInsight[] | DecisionInsight | null;
 }
 
@@ -76,7 +71,10 @@ export const ruleBudgetOverrun: DecisionRuleDefinition = {
           impactRupees: Math.min(topDiscretionary.estimatedCost, overage),
           impactFormatted: `Saves ${formatCurrency(Math.min(topDiscretionary.estimatedCost, overage))}`,
           actionType: 'reduce_budget_item',
-          payload: { itemId: topDiscretionary.id, amount: Math.min(topDiscretionary.estimatedCost, overage) },
+          payload: {
+            itemId: topDiscretionary.id,
+            amount: Math.min(topDiscretionary.estimatedCost, overage),
+          },
         });
       }
 
@@ -113,12 +111,16 @@ export const ruleBudgetOverrun: DecisionRuleDefinition = {
         tradeOffs,
         ruleId: 'RULE_1_BUDGET_OVERRUN',
         ruleName: 'Budget Overrun & Expense Ceiling',
-        whyExplanation: 'Total projected expenses exceeded your allocated event budget. Overages require rebalancing across non-essential categories or guest headcount.',
+        whyExplanation:
+          'Total projected expenses exceeded your allocated event budget. Overages require rebalancing across non-essential categories or guest headcount.',
         thresholdMet: `Projected expenses (${formatCurrency(summary.totalEstimated)}) exceed budget (${formatCurrency(summary.totalBudget)}) by ${formatCurrency(overage)} (${summary.utilizationPercentage}% utilized).`,
       };
     }
 
-    if (summary.remainingBalance > summary.totalBudget * RULES_CONFIG.SURPLUS_BUDGET_RATIO && summary.totalBudget > 0) {
+    if (
+      summary.remainingBalance > summary.totalBudget * RULES_CONFIG.SURPLUS_BUDGET_RATIO &&
+      summary.totalBudget > 0
+    ) {
       return {
         id: 'rule-budget-surplus',
         type: 'positive',
@@ -127,7 +129,8 @@ export const ruleBudgetOverrun: DecisionRuleDefinition = {
         message: `You have ${formatCurrency(summary.remainingBalance)} (unallocated funds). You can upgrade photography packages, enhance guest transport, or keep this as an extra cushion.`,
         ruleId: 'RULE_1B_BUDGET_SURPLUS',
         ruleName: 'Budget Buffer & Unallocated Surplus',
-        whyExplanation: 'Unallocated funds provide financial protection against last-minute vendor price increases and emergency spot contracting.',
+        whyExplanation:
+          'Unallocated funds provide financial protection against last-minute vendor price increases and emergency spot contracting.',
         thresholdMet: `Remaining surplus (${formatCurrency(summary.remainingBalance)}) is > 25% of total budget (${formatCurrency(summary.totalBudget)}).`,
       };
     }
@@ -147,17 +150,19 @@ export const ruleVendorCostSpike: DecisionRuleDefinition = {
   severity: 'warning',
   evaluate: (plan, summary) => {
     const costSpikeItems = plan.budgetItems.filter(
-      (item) => item.actualCost !== undefined && item.actualCost > item.estimatedCost
+      (item) => item.actualCost !== undefined && item.actualCost > item.estimatedCost,
     );
     if (costSpikeItems.length === 0) return null;
 
     const totalSpike = costSpikeItems.reduce(
       (sum, item) => sum + ((item.actualCost || 0) - item.estimatedCost),
-      0
+      0,
     );
     const itemNames = costSpikeItems.map((i) => i.name).join(', ');
     const decorItem = plan.budgetItems.find((b) => b.category === 'decor' && b.estimatedCost > 0);
-    const decorCut = decorItem ? Math.min(decorItem.estimatedCost, Math.round(totalSpike)) : Math.round(totalSpike * 0.5);
+    const decorCut = decorItem
+      ? Math.min(decorItem.estimatedCost, Math.round(totalSpike))
+      : Math.round(totalSpike * 0.5);
     const guestCut = Math.max(3, Math.ceil(totalSpike / Math.max(500, summary.perGuestCost)));
 
     const spikeTradeOffs: TradeOffOption[] = [];
@@ -205,7 +210,8 @@ export const ruleVendorCostSpike: DecisionRuleDefinition = {
       tradeOffs: spikeTradeOffs,
       ruleId: 'RULE_2_VENDOR_SPIKE',
       ruleName: 'Vendor Quote Escalation & Price Spike',
-      whyExplanation: 'Contracted vendor actuals exceeded initial budgetary estimates, threatening overall cost discipline unless counterbalanced.',
+      whyExplanation:
+        'Contracted vendor actuals exceeded initial budgetary estimates, threatening overall cost discipline unless counterbalanced.',
       thresholdMet: `Vendor quotes (${itemNames}) escalated by ${formatCurrency(totalSpike)} over original allocation.`,
     };
   },
@@ -257,7 +263,8 @@ export const ruleVendorCancellation: DecisionRuleDefinition = {
         tradeOffs: cancelTradeOffs,
         ruleId: 'RULE_3_VENDOR_CANCELLED',
         ruleName: 'Emergency Vendor Drop-out & Reallocation',
-        whyExplanation: 'A contracted vendor became unavailable, creating an immediate service vacuum and risk of spot-rate surge.',
+        whyExplanation:
+          'A contracted vendor became unavailable, creating an immediate service vacuum and risk of spot-rate surge.',
         thresholdMet: `Vendor status for ${v.role} marked as 'cancelled'.`,
       };
     });
@@ -288,7 +295,8 @@ export const ruleTimelineUrgency: DecisionRuleDefinition = {
         message: `The selected event date (${plan.eventDate}) is in the past. Update the date to generate an active upcoming preparation timeline.`,
         ruleId: 'RULE_4_DATE_PAST',
         ruleName: 'Past Date Anomaly',
-        whyExplanation: 'Milestones cannot be scheduled chronologically for events whose target calendar date has already elapsed.',
+        whyExplanation:
+          'Milestones cannot be scheduled chronologically for events whose target calendar date has already elapsed.',
         thresholdMet: `Target date (${plan.eventDate}) is ${Math.abs(diffDays)} days in the past.`,
       };
     }
@@ -298,7 +306,8 @@ export const ruleTimelineUrgency: DecisionRuleDefinition = {
         {
           id: 'to-repace-urgent',
           label: `Re-pace Milestones for ${diffDays}-Day Fast Track`,
-          description: 'Compress remaining tasks into 24–72 hour sprint blocks with realistic deadlines',
+          description:
+            'Compress remaining tasks into 24–72 hour sprint blocks with realistic deadlines',
           impactRupees: 0,
           impactFormatted: `Re-paces ${plan.tasks.length} tasks`,
           actionType: 'repace_timeline',
@@ -307,7 +316,8 @@ export const ruleTimelineUrgency: DecisionRuleDefinition = {
         {
           id: 'to-critical-path-lock',
           label: 'Lock Essential Tasks Only (Waive Low-Priority)',
-          description: 'Add coordinator milestone to waive custom fabrication and prioritize venue/catering lock-in',
+          description:
+            'Add coordinator milestone to waive custom fabrication and prioritize venue/catering lock-in',
           impactRupees: 0,
           impactFormatted: 'Focuses critical path',
           actionType: 'add_task',
@@ -331,7 +341,8 @@ export const ruleTimelineUrgency: DecisionRuleDefinition = {
         tradeOffs: urgentTradeOffs,
         ruleId: 'RULE_4_DATE_TRIAGE',
         ruleName: 'Short-Notice Fast Track Triage (< 14 Days)',
-        whyExplanation: 'Standard fabrication and vendor booking lead times are exhausted under short notice. Only the critical path must be prioritized.',
+        whyExplanation:
+          'Standard fabrication and vendor booking lead times are exhausted under short notice. Only the critical path must be prioritized.',
         thresholdMet: `Only ${diffDays} days remaining to event (${plan.eventDate}), entering the < 14 days emergency window.`,
       };
     }
@@ -345,7 +356,8 @@ export const ruleTimelineUrgency: DecisionRuleDefinition = {
         message: `Only ${diffDays} days remaining. Focus on seating charts, final vendor confirmations, and collecting outstanding RSVPs.`,
         ruleId: 'RULE_4B_DATE_APPROACHING',
         ruleName: 'Approaching Event Milestone (< 30 Days)',
-        whyExplanation: 'The 30-day window triggers final RSVP collections, priest puja samagri checks, and vendor balance schedules.',
+        whyExplanation:
+          'The 30-day window triggers final RSVP collections, priest puja samagri checks, and vendor balance schedules.',
         thresholdMet: `${diffDays} days remaining (< 30 days window).`,
       };
     }
@@ -364,7 +376,14 @@ export const ruleOutdoorWeatherRisk: DecisionRuleDefinition = {
   category: 'weather',
   severity: 'suggestion',
   evaluate: (plan) => {
-    const outdoorVenues = ['outdoor', 'garden_park', 'beach', 'rooftop', 'farmhouse_lawn', 'resort_lawn'];
+    const outdoorVenues = [
+      'outdoor',
+      'garden_park',
+      'beach',
+      'rooftop',
+      'farmhouse_lawn',
+      'resort_lawn',
+    ];
     if (!outdoorVenues.includes(plan.venuePreference)) return null;
 
     const weatherCost = Math.max(25000, Math.round(plan.totalBudget * 0.03));
@@ -372,7 +391,8 @@ export const ruleOutdoorWeatherRisk: DecisionRuleDefinition = {
       {
         id: 'to-add-canopy',
         label: `Add Waterproof Pandal & Canopy (${formatCurrency(weatherCost)})`,
-        description: 'Reserve waterproof monsoon pandal, rain sidewalls, and misting fans from contingency',
+        description:
+          'Reserve waterproof monsoon pandal, rain sidewalls, and misting fans from contingency',
         impactRupees: -weatherCost,
         impactFormatted: `Adds ${formatCurrency(weatherCost)} item`,
         actionType: 'add_budget_item',
@@ -381,13 +401,15 @@ export const ruleOutdoorWeatherRisk: DecisionRuleDefinition = {
           category: 'decor',
           estimatedCost: weatherCost,
           priority: 'essential',
-          notes: 'Guarantees outdoor ceremony continues uninterrupted under sudden rains or intense sun.',
+          notes:
+            'Guarantees outdoor ceremony continues uninterrupted under sudden rains or intense sun.',
         },
       },
       {
         id: 'to-switch-indoor',
         label: 'Switch Layout to Indoor Banquet Hall',
-        description: 'Eliminate outdoor weather vulnerability entirely by transitioning venue to banquet hall',
+        description:
+          'Eliminate outdoor weather vulnerability entirely by transitioning venue to banquet hall',
         impactRupees: 0,
         impactFormatted: 'Zero weather risk',
         actionType: 'update_venue',
@@ -405,7 +427,8 @@ export const ruleOutdoorWeatherRisk: DecisionRuleDefinition = {
       tradeOffs: weatherTradeOffs,
       ruleId: 'RULE_5_OUTDOOR_WEATHER',
       ruleName: 'Outdoor Venue Weather Vulnerability & Monsoon Pandal',
-      whyExplanation: 'Open-air Indian celebrations are highly susceptible to sudden unseasonal showers, humidity, or extreme heat that can halt ceremonies.',
+      whyExplanation:
+        'Open-air Indian celebrations are highly susceptible to sudden unseasonal showers, humidity, or extreme heat that can halt ceremonies.',
       thresholdMet: `Venue preference set to outdoor environment ("${plan.venuePreference}").`,
     };
   },
@@ -429,7 +452,8 @@ export const ruleLargeCapacityAndPerGuest: DecisionRuleDefinition = {
         {
           id: 'to-add-sound-noc',
           label: 'Add Municipal Sound NOC & Police Permission Task',
-          description: 'Schedule legal clearance filing with local municipal corporation (check city guidelines)',
+          description:
+            'Schedule legal clearance filing with local municipal corporation (check city guidelines)',
           impactRupees: 0,
           impactFormatted: 'Legal clearance',
           actionType: 'add_task',
@@ -437,13 +461,15 @@ export const ruleLargeCapacityAndPerGuest: DecisionRuleDefinition = {
             title: 'Apply for Municipal Loudspeaker & Police Sound NOC (Check Local Rules)',
             category: 'logistics',
             priority: 'urgent',
-            notes: 'Required for outdoor sound and large gatherings. Rules vary by municipal corporation.',
+            notes:
+              'Required for outdoor sound and large gatherings. Rules vary by municipal corporation.',
           },
         },
         {
           id: 'to-add-dg-backup',
           label: `Add Super-Silent DG Power Backup (${formatCurrency(dgCost)})`,
-          description: 'Reserve 125 kVA diesel generator backup with auto-changeover for continuous AC/lighting',
+          description:
+            'Reserve 125 kVA diesel generator backup with auto-changeover for continuous AC/lighting',
           impactRupees: -dgCost,
           impactFormatted: `Adds ${formatCurrency(dgCost)} item`,
           actionType: 'add_budget_item',
@@ -466,7 +492,8 @@ export const ruleLargeCapacityAndPerGuest: DecisionRuleDefinition = {
         tradeOffs: permitTradeOffs,
         ruleId: 'RULE_6_CAPACITY_LOGISTICS',
         ruleName: 'High Capacity Gathering Logistics (> 250 Attendees)',
-        whyExplanation: 'Large crowds require formal municipal noise clearances, dedicated parking marshals, and auxiliary diesel generator power.',
+        whyExplanation:
+          'Large crowds require formal municipal noise clearances, dedicated parking marshals, and auxiliary diesel generator power.',
         thresholdMet: `Target headcount of ${plan.guestCount} exceeds the 250-guest infrastructure threshold.`,
       });
     }
@@ -480,7 +507,8 @@ export const ruleLargeCapacityAndPerGuest: DecisionRuleDefinition = {
           {
             id: 'to-tight-buffet',
             label: 'Streamline to Regional Community Buffet',
-            description: 'Focus on high-volume, authentic local vegetarian specialties to maintain quality',
+            description:
+              'Focus on high-volume, authentic local vegetarian specialties to maintain quality',
             impactRupees: 0,
             impactFormatted: 'Controls cost',
             actionType: 'add_task',
@@ -510,7 +538,8 @@ export const ruleLargeCapacityAndPerGuest: DecisionRuleDefinition = {
           tradeOffs: tightTradeOffs,
           ruleId: 'RULE_6B_TIGHT_BUDGET',
           ruleName: 'Per-Guest Spend Floor (< ₹500/guest)',
-          whyExplanation: 'Catering and basic logistics in Tier 1 & Tier 2 Indian cities require a minimum operational floor to ensure safety and quality.',
+          whyExplanation:
+            'Catering and basic logistics in Tier 1 & Tier 2 Indian cities require a minimum operational floor to ensure safety and quality.',
           thresholdMet: `Per-guest budget (${formatCurrency(Math.round(perGuestBudget))}) is below the ₹${tightThreshold} floor.`,
         });
       }
@@ -537,21 +566,25 @@ export const ruleSoundCurfewAndPermit: DecisionRuleDefinition = {
       {
         id: 'to-curfew-shift',
         label: 'Schedule 10:00 PM Indoor Sangeet Transition',
-        description: 'Add formal execution task to transition dhol and DJ speakers into soundproof hall before 10 PM',
+        description:
+          'Add formal execution task to transition dhol and DJ speakers into soundproof hall before 10 PM',
         impactRupees: 0,
         impactFormatted: 'Prevents police fines',
         actionType: 'add_task',
         payload: {
-          title: 'Coordinate 10:00 PM Sharp Sound Migration to Indoor Hall (Check Local Curfew Rules)',
+          title:
+            'Coordinate 10:00 PM Sharp Sound Migration to Indoor Hall (Check Local Curfew Rules)',
           category: 'logistics',
           priority: 'urgent',
-          notes: 'Indian municipal guidelines enforce outdoor noise limits. Verify exact timing with local station.',
+          notes:
+            'Indian municipal guidelines enforce outdoor noise limits. Verify exact timing with local station.',
         },
       },
       {
         id: 'to-curfew-advance-baraat',
         label: 'Advance Baraat Procession by 45 Minutes',
-        description: 'Start Baraat at 3:15 PM instead of 4:00 PM to ensure leisurely celebration before the sound cutoff',
+        description:
+          'Start Baraat at 3:15 PM instead of 4:00 PM to ensure leisurely celebration before the sound cutoff',
         impactRupees: 0,
         impactFormatted: 'Optimal pacing',
         actionType: 'add_task',
@@ -568,11 +601,13 @@ export const ruleSoundCurfewAndPermit: DecisionRuleDefinition = {
       type: 'suggestion',
       category: 'timeline',
       title: 'Baraat & Outdoor Sound Curfew (10:00 PM — Guidance)',
-      message: 'Indian municipal guidelines generally enforce a 10:00 PM cutoff for outdoor amplified sound, dhol processions, and brass bands. Transition the dance floor indoors for late-night Sangeet or post-Pheras festivities. (Estimates only; check local police/municipal corporation rules as enforcement varies by city).',
+      message:
+        'Indian municipal guidelines generally enforce a 10:00 PM cutoff for outdoor amplified sound, dhol processions, and brass bands. Transition the dance floor indoors for late-night Sangeet or post-Pheras festivities. (Estimates only; check local police/municipal corporation rules as enforcement varies by city).',
       tradeOffs: curfewTradeOffs,
       ruleId: 'RULE_7_SOUND_CURFEW',
       ruleName: 'Baraat & Outdoor 10:00 PM Sound Curfew Protocol',
-      whyExplanation: 'Indian Supreme Court and state municipal noise guidelines mandate shutting down outdoor loudspeakers and brass bands at 10:00 PM sharp.',
+      whyExplanation:
+        'Indian Supreme Court and state municipal noise guidelines mandate shutting down outdoor loudspeakers and brass bands at 10:00 PM sharp.',
       thresholdMet: `Event type is "${plan.eventType}" with outdoor entertainment and dhol brass band processions.`,
     });
 
@@ -580,7 +615,7 @@ export const ruleSoundCurfewAndPermit: DecisionRuleDefinition = {
       (t) =>
         t.title.toLowerCase().includes('noc') ||
         t.title.toLowerCase().includes('sound permit') ||
-        t.title.toLowerCase().includes('loudspeaker')
+        t.title.toLowerCase().includes('loudspeaker'),
     );
     const targetDate = new Date(plan.eventDate);
     const diffTime = targetDate.getTime() - now.getTime();
@@ -599,7 +634,8 @@ export const ruleSoundCurfewAndPermit: DecisionRuleDefinition = {
           {
             id: 'to-permit-fast-track',
             label: 'Fast-Track Municipal Sound NOC Filing',
-            description: 'Schedule urgent task to file loudspeaker permission with local police division',
+            description:
+              'Schedule urgent task to file loudspeaker permission with local police division',
             impactRupees: 0,
             impactFormatted: 'Legal clearance',
             actionType: 'add_task',
@@ -607,13 +643,15 @@ export const ruleSoundCurfewAndPermit: DecisionRuleDefinition = {
               title: 'Apply for Municipal Loudspeaker & Police Sound NOC (Check Local Rules)',
               category: 'logistics',
               priority: 'urgent',
-              notes: 'Required for outdoor sound and large gatherings. Police/corporation permits take 7-14 days.',
+              notes:
+                'Required for outdoor sound and large gatherings. Police/corporation permits take 7-14 days.',
             },
           },
         ],
         ruleId: 'RULE_7B_PERMIT_DEADLINE',
         ruleName: 'Police Sound NOC & Municipal Filing Lead Time',
-        whyExplanation: 'Police sound permits typically take 7 to 14 business days to process. Missing the 25-day deadline risks last-minute shutdown.',
+        whyExplanation:
+          'Police sound permits typically take 7 to 14 business days to process. Missing the 25-day deadline risks last-minute shutdown.',
         thresholdMet: `${diffDays} days to event (< 25 days lead time) without an active sound permit task.`,
       });
     }
@@ -672,7 +710,8 @@ export const ruleTaskDependencyBottlenecks: DecisionRuleDefinition = {
       tradeOffs: depTradeOffs,
       ruleId: 'RULE_8_DEPENDENCY_BOTTLENECK',
       ruleName: 'Critical Task Dependency Chain Blocker',
-      whyExplanation: 'Downstream milestones cannot safely proceed until their prerequisite tasks are marked completed.',
+      whyExplanation:
+        'Downstream milestones cannot safely proceed until their prerequisite tasks are marked completed.',
       thresholdMet: `${blockedTasks.length} dependent tasks currently blocked by overdue prerequisites.`,
     };
   },
@@ -696,11 +735,12 @@ export const ruleAccessibilityNeeds: DecisionRuleDefinition = {
       category: 'accessibility',
       title: 'Accessibility Considerations Active',
       message: `Configured accessibility needs (${plan.accessibilityNeeds.join(
-        ', '
+        ', ',
       )}): Ensure step-free entrance, wheelchair-accessible restrooms, designated companion seating, and clear dietary signage at all food stations.`,
       ruleId: 'RULE_9_ACCESSIBILITY',
       ruleName: 'Accessibility & Barrier-Free Hospitality',
-      whyExplanation: 'Elderly grandparents and guests with mobility needs require step-free mandap access and dedicated transit shuttles.',
+      whyExplanation:
+        'Elderly grandparents and guests with mobility needs require step-free mandap access and dedicated transit shuttles.',
       thresholdMet: `Active accommodations: ${plan.accessibilityNeeds.join(', ')}.`,
     };
   },
@@ -743,7 +783,8 @@ export const ruleRsvpCapacityExceeded: DecisionRuleDefinition = {
       {
         id: 'to-cap-invites',
         label: 'Lock Physical Seating & Offer Digital Stream Pass',
-        description: 'Keep current venue capacity limit and offer a high-definition live stream broadcast for overflow guests',
+        description:
+          'Keep current venue capacity limit and offer a high-definition live stream broadcast for overflow guests',
         impactRupees: extraCost,
         impactFormatted: `Avoids ${formatCurrency(extraCost)} expansion`,
         actionType: 'add_task',
@@ -766,7 +807,8 @@ export const ruleRsvpCapacityExceeded: DecisionRuleDefinition = {
       tradeOffs: rsvpTradeOffs,
       ruleId: 'RULE_10_RSVP_CAPACITY',
       ruleName: 'Confirmed RSVPs Exceeding Venue Target',
-      whyExplanation: 'Confirmed RSVPs (with plus-ones) exceed the planned guest count, threatening food shortages and seating overflow.',
+      whyExplanation:
+        'Confirmed RSVPs (with plus-ones) exceed the planned guest count, threatening food shortages and seating overflow.',
       thresholdMet: `${confirmedCount} confirmed attendees > ${plan.guestCount} planned target (+${extraGuests} delta).`,
     };
   },
@@ -785,7 +827,7 @@ export const ruleDietaryAlert: DecisionRuleDefinition = {
     if (!plan.guests || plan.guests.length === 0) return null;
 
     const dietaryCount = plan.guests.filter(
-      (g) => g.rsvpStatus === 'attending' && g.dietary && g.dietary !== 'none'
+      (g) => g.rsvpStatus === 'attending' && g.dietary && g.dietary !== 'none',
     ).length;
 
     if (dietaryCount === 0) return null;
@@ -794,7 +836,8 @@ export const ruleDietaryAlert: DecisionRuleDefinition = {
       {
         id: 'to-dietary-tags',
         label: 'Add Caterer Dietary Plate Tags Milestone',
-        description: 'Schedule finalization of personalized plate tags with kitchen lead 14 days prior',
+        description:
+          'Schedule finalization of personalized plate tags with kitchen lead 14 days prior',
         impactRupees: 0,
         impactFormatted: 'Prevents food errors',
         actionType: 'add_task',
@@ -815,7 +858,8 @@ export const ruleDietaryAlert: DecisionRuleDefinition = {
       tradeOffs: dietaryTradeOffs,
       ruleId: 'RULE_11_DIETARY_ALERT',
       ruleName: 'Personalized Dietary Tags & Kitchen Audit',
-      whyExplanation: 'Dietary preferences must be shared with the banquet captain well in advance to prevent allergen mix-ups.',
+      whyExplanation:
+        'Dietary preferences must be shared with the banquet captain well in advance to prevent allergen mix-ups.',
       thresholdMet: `${dietaryCount} guests have indicated custom dietary requirements.`,
     };
   },
@@ -834,7 +878,7 @@ export const ruleJainDietarySeparation: DecisionRuleDefinition = {
     if (!plan.guests || plan.guests.length === 0) return null;
 
     const jainOrPureVegCount = plan.guests.filter(
-      (g) => g.rsvpStatus === 'attending' && (g.dietary === 'jain' || g.dietary === 'pure_veg')
+      (g) => g.rsvpStatus === 'attending' && (g.dietary === 'jain' || g.dietary === 'pure_veg'),
     ).length;
 
     if (jainOrPureVegCount === 0) return null;
@@ -844,7 +888,8 @@ export const ruleJainDietarySeparation: DecisionRuleDefinition = {
       {
         id: 'to-add-jain-counter',
         label: `Add Isolated Jain & Sattvic Counter (${formatCurrency(jainCounterCost)})`,
-        description: 'Add dedicated prep table, copper serving chafers, and isolated ladles to catering budget',
+        description:
+          'Add dedicated prep table, copper serving chafers, and isolated ladles to catering budget',
         impactRupees: -jainCounterCost,
         impactFormatted: `Adds ${formatCurrency(jainCounterCost)} item`,
         actionType: 'apply_dietary_counter',
@@ -858,7 +903,8 @@ export const ruleJainDietarySeparation: DecisionRuleDefinition = {
       {
         id: 'to-ladle-protocol-task',
         label: 'Add Kitchen Ladle & Utensil Separation Task',
-        description: 'Assign catering supervisor to audit distinct serving ladles and clear dietary signage',
+        description:
+          'Assign catering supervisor to audit distinct serving ladles and clear dietary signage',
         impactRupees: 0,
         impactFormatted: 'Ensures ritual purity',
         actionType: 'add_task',
@@ -879,7 +925,8 @@ export const ruleJainDietarySeparation: DecisionRuleDefinition = {
       tradeOffs: jainTradeOffs,
       ruleId: 'RULE_11B_JAIN_SEPARATION',
       ruleName: 'Dedicated Pure Veg & Jain Kitchen Isolation',
-      whyExplanation: 'Jain dietary practice forbids root vegetables, onions, and garlic. Traditional families expect zero cross-contact with other buffet lines.',
+      whyExplanation:
+        'Jain dietary practice forbids root vegetables, onions, and garlic. Traditional families expect zero cross-contact with other buffet lines.',
       thresholdMet: `${jainOrPureVegCount} confirmed attendees require strict Jain or Sattvic pure vegetarian meal service.`,
     };
   },

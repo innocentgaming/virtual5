@@ -50,7 +50,7 @@ export function buildPlanSnapshot(plan: EventPlan): string {
   const totalBudget = plan.totalBudget || 0;
   const allocated = (plan.budgetItems || []).reduce(
     (sum, item) => sum + (item.actualCost ?? item.estimatedCost ?? 0),
-    0
+    0,
   );
   const contingencyBuffer = Math.round(totalBudget * (plan.contingencyRate || 0.1));
   const perGuest = plan.guestCount > 0 ? Math.round(totalBudget / plan.guestCount) : 0;
@@ -65,7 +65,10 @@ export function buildPlanSnapshot(plan: EventPlan): string {
   const openTasks = tasks.filter((t) => !t.completed);
   const todayStr = new Date().toISOString().split('T')[0];
   const overdueCount = openTasks.filter((t) => t.dueDate && t.dueDate < todayStr).length;
-  const upcomingUrgent = openTasks.slice(0, 3).map((t) => `${t.title} (due ${t.dueDate})`).join('; ');
+  const upcomingUrgent = openTasks
+    .slice(0, 3)
+    .map((t) => `${t.title} (due ${t.dueDate})`)
+    .join('; ');
 
   const vendors = plan.vendors || [];
   const bookedCount = vendors.filter((v) => v.status === 'booked').length;
@@ -117,10 +120,7 @@ export function buildPlanSnapshot(plan: EventPlan): string {
  * Validates structured actions proposed by AI to guarantee type safety and sanity.
  * Drops invalid or dangerous suggestions.
  */
-export function validateStructuredAction(
-  raw: unknown,
-  plan: EventPlan
-): TradeOffOption | null {
+export function validateStructuredAction(raw: unknown, plan: EventPlan): TradeOffOption | null {
   if (!raw || typeof raw !== 'object') return null;
   const action = raw as Record<string, unknown>;
 
@@ -149,12 +149,12 @@ export function validateStructuredAction(
   const sanitizedDescription = sanitizeString(
     typeof action.description === 'string' ? action.description : rawLabel,
     200,
-    'Action description'
+    'Action description',
   );
   const sanitizedImpact = sanitizeString(
     typeof action.impactFormatted === 'string' ? action.impactFormatted : 'Adjustment',
     50,
-    'Impact format'
+    'Impact format',
   );
 
   const payload: Record<string, unknown> =
@@ -168,8 +168,8 @@ export function validateStructuredAction(
     typeof action.deltaAmount === 'number'
       ? action.deltaAmount
       : typeof payload.amount === 'number'
-      ? payload.amount
-      : 0;
+        ? payload.amount
+        : 0;
 
   switch (actionType) {
     case 'reduce_budget_item': {
@@ -196,20 +196,22 @@ export function validateStructuredAction(
         typeof action.newGuestCount === 'number'
           ? action.newGuestCount
           : typeof payload.newGuestCount === 'number'
-          ? payload.newGuestCount
-          : null;
+            ? payload.newGuestCount
+            : null;
       if (!rawCount || rawCount <= 0 || rawCount > 50000) return null;
       payload.newGuestCount = Math.round(rawCount);
       break;
     }
     case 'update_venue': {
-      const v = typeof action.targetVenue === 'string' ? action.targetVenue : payload.venuePreference;
+      const v =
+        typeof action.targetVenue === 'string' ? action.targetVenue : payload.venuePreference;
       if (v !== 'indoor' && v !== 'outdoor' && v !== 'hybrid') return null;
       payload.venuePreference = v;
       break;
     }
     case 'update_vendor_status': {
-      const cat = typeof action.targetCategory === 'string' ? action.targetCategory : payload.category;
+      const cat =
+        typeof action.targetCategory === 'string' ? action.targetCategory : payload.category;
       if (typeof cat !== 'string') return null;
       const catExists = plan.vendors.some((v) => v.category.toLowerCase() === cat.toLowerCase());
       if (!catExists) return null;
@@ -245,7 +247,7 @@ export function validateStructuredAction(
  */
 export function extractCopilotActions(
   rawText: string,
-  plan: EventPlan
+  plan: EventPlan,
 ): { cleanText: string; actions: TradeOffOption[] } {
   const actions: TradeOffOption[] = [];
   let cleanText = rawText;
@@ -298,7 +300,13 @@ export function generateCopilotAnswer(question: string, plan: EventPlan): string
   const cateringCost = cateringItem?.estimatedCost || Math.round(total * 0.35);
 
   // 1. Budget Trimming & Cost Savings
-  if (q.includes('budget') || q.includes('trim') || q.includes('save') || q.includes('cut') || q.includes('cost')) {
+  if (
+    q.includes('budget') ||
+    q.includes('trim') ||
+    q.includes('save') ||
+    q.includes('cut') ||
+    q.includes('cost')
+  ) {
     const trimAmount = Math.round(cateringCost * 0.15);
 
     return (
@@ -312,7 +320,13 @@ export function generateCopilotAnswer(question: string, plan: EventPlan): string
   }
 
   // 2. Caterer & Dietary Questions
-  if (q.includes('cater') || q.includes('allerg') || q.includes('food') || q.includes('diet') || q.includes('jain')) {
+  if (
+    q.includes('cater') ||
+    q.includes('allerg') ||
+    q.includes('food') ||
+    q.includes('diet') ||
+    q.includes('jain')
+  ) {
     const guests = plan.guests || [];
     const jainCount = guests.filter((g) => g.dietary === 'jain').length;
     const pureVegCount = guests.filter((g) => g.dietary === 'pure_veg').length;
@@ -328,7 +342,12 @@ export function generateCopilotAnswer(question: string, plan: EventPlan): string
   }
 
   // 3. Run of Show / Day-of Itinerary
-  if (q.includes('run of show') || q.includes('day of') || q.includes('day-of') || q.includes('itinerary')) {
+  if (
+    q.includes('run of show') ||
+    q.includes('day of') ||
+    q.includes('day-of') ||
+    q.includes('itinerary')
+  ) {
     return (
       `Day-of Run of Show structure for ${plan.title}:\n\n` +
       `1. **Vendor Load-in Buffer**: Schedule decorators, AV, and florists at least 2.5–3 hours prior to guest arrival.\n` +
@@ -339,7 +358,14 @@ export function generateCopilotAnswer(question: string, plan: EventPlan): string
   }
 
   // 4. Sound Curfew & Municipal Permits
-  if (q.includes('curfew') || q.includes('permit') || q.includes('sound') || q.includes('police') || q.includes('10 pm') || q.includes('loudspeaker')) {
+  if (
+    q.includes('curfew') ||
+    q.includes('permit') ||
+    q.includes('sound') ||
+    q.includes('police') ||
+    q.includes('10 pm') ||
+    q.includes('loudspeaker')
+  ) {
     return (
       `Guidance on 10 PM Sound Curfew & Municipal Permits in ${plan.city}:\n\n` +
       `• **10:00 PM Sound Curfew**: Under central Noise Pollution Rules, outdoor loudspeakers and brass bands must cease promptly by 10:00 PM. Transition Baraat processions and dance floors indoors to soundproof halls prior to 10 PM.\n` +
@@ -350,7 +376,13 @@ export function generateCopilotAnswer(question: string, plan: EventPlan): string
   }
 
   // 5. Guest Count Surge & Capacity
-  if (q.includes('guest') || q.includes('rsvp') || q.includes('surge') || q.includes('capacity') || q.includes('attend')) {
+  if (
+    q.includes('guest') ||
+    q.includes('rsvp') ||
+    q.includes('surge') ||
+    q.includes('capacity') ||
+    q.includes('attend')
+  ) {
     const guests = plan.guests || [];
     const confirmedCount = guests.filter((g) => g.rsvpStatus === 'attending').length;
 
@@ -364,7 +396,14 @@ export function generateCopilotAnswer(question: string, plan: EventPlan): string
   }
 
   // 6. Critical Path & Timeline
-  if (q.includes('time') || q.includes('path') || q.includes('schedul') || q.includes('week') || q.includes('urgent') || q.includes('task')) {
+  if (
+    q.includes('time') ||
+    q.includes('path') ||
+    q.includes('schedul') ||
+    q.includes('week') ||
+    q.includes('urgent') ||
+    q.includes('task')
+  ) {
     const uncompletedTasks = (plan.tasks || []).filter((t) => !t.completed);
     const topUrgent = uncompletedTasks.slice(0, 4);
     const daysInfo = getDaysRemaining(plan.eventDate);
@@ -375,7 +414,7 @@ export function generateCopilotAnswer(question: string, plan: EventPlan): string
         ? topUrgent
             .map(
               (t, idx) =>
-                `${idx + 1}. **${t.title}** (Due: ${t.dueDate}, Category: ${t.category.toUpperCase()})`
+                `${idx + 1}. **${t.title}** (Due: ${t.dueDate}, Category: ${t.category.toUpperCase()})`,
             )
             .join('\n')
         : 'All immediate milestone tasks are currently marked complete!') +
@@ -384,7 +423,13 @@ export function generateCopilotAnswer(question: string, plan: EventPlan): string
   }
 
   // 7. Ungrounded / External Information Fallback
-  if (q.includes('weather') || q.includes('stock') || q.includes('phone') || q.includes('hotel') || q.includes('flight')) {
+  if (
+    q.includes('weather') ||
+    q.includes('stock') ||
+    q.includes('phone') ||
+    q.includes('hotel') ||
+    q.includes('flight')
+  ) {
     return (
       `I am EventWise Copilot, grounded specifically in your active event plan for "${plan.title}".\n\n` +
       `I do not have access to live external weather forecasts, personal contact numbers, or unverified commercial portals. For verified vendor phone numbers or municipal clearances in ${plan.city}, please consult your official vendor agreements and local municipal offices.`
@@ -422,7 +467,7 @@ export function clearCopilotCache(): void {
 export async function generateCopilotAnswerAsync(
   question: string,
   plan: EventPlan,
-  customApiKey?: string
+  customApiKey?: string,
 ): Promise<string> {
   const isOfflineMode =
     typeof window !== 'undefined' &&
@@ -478,7 +523,10 @@ Valid actionType values: 'reduce_budget_item', 'increase_budget', 'adjust_guest_
     }
 
     if (result.error) {
-      reportClientError(new Error(redactSecrets(result.error, apiKey)), 'GenAI Copilot request failed');
+      reportClientError(
+        new Error(redactSecrets(result.error, apiKey)),
+        'GenAI Copilot request failed',
+      );
     }
   } catch (err: unknown) {
     const errMsg = err instanceof Error ? err.message : String(err);

@@ -61,7 +61,12 @@ describe('Frontend Routing, Auth UI, and Safe Paths', () => {
 
     render(<App />);
 
-    expect(await screen.findByRole('heading', { level: 1, name: /Plan the whole celebration, down to the muhurat/i })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', {
+        level: 1,
+        name: /Plan the whole celebration, down to the muhurat/i,
+      }),
+    ).toBeInTheDocument();
     expect(screen.getAllByText(/Explore the demo/i)[0]).toBeInTheDocument();
     expect(screen.getByText(/Destination wedding/i)).toBeInTheDocument();
     expect(screen.getByText(/Questions people ask first/i)).toBeInTheDocument();
@@ -101,7 +106,9 @@ describe('Frontend Routing, Auth UI, and Safe Paths', () => {
 
     render(<App />);
 
-    expect(await screen.findByText(/You are exploring a demo with sample events/i)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/You are exploring a demo with sample events/i),
+    ).toBeInTheDocument();
     expect(screen.getByText(/Create an account to save/i)).toBeInTheDocument();
     expect(screen.getByText(/Personalized Event Planning & Decision Engine/i)).toBeInTheDocument();
   });
@@ -119,7 +126,9 @@ describe('Frontend Routing, Auth UI, and Safe Paths', () => {
 
     render(<App />);
 
-    expect(await screen.findByRole('heading', { level: 1, name: /404 — Page not found/i })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { level: 1, name: /404 — Page not found/i }),
+    ).toBeInTheDocument();
     expect(screen.getByText(/Return home/i)).toBeInTheDocument();
   });
 
@@ -132,7 +141,9 @@ describe('Frontend Routing, Auth UI, and Safe Paths', () => {
         return new Response(JSON.stringify({ user: null }), { status: 200 });
       }
       if (url.includes('/api/auth/login')) {
-        return new Response(JSON.stringify({ ok: false, error: 'Incorrect email or password.' }), { status: 401 });
+        return new Response(JSON.stringify({ ok: false, error: 'Incorrect email or password.' }), {
+          status: 401,
+        });
       }
       return new Response('{}', { status: 200 });
     });
@@ -162,14 +173,19 @@ describe('Frontend Routing, Auth UI, and Safe Paths', () => {
         return new Response(JSON.stringify({ user: null }), { status: 200 });
       }
       if (url.includes('/api/auth/signup')) {
-        return new Response(JSON.stringify({ ok: false, error: 'An account with this email already exists.' }), { status: 409 });
+        return new Response(
+          JSON.stringify({ ok: false, error: 'An account with this email already exists.' }),
+          { status: 409 },
+        );
       }
       return new Response('{}', { status: 200 });
     });
 
     render(<App />);
 
-    expect(await screen.findByRole('heading', { level: 1, name: /Create your account/i })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { level: 1, name: /Create your account/i }),
+    ).toBeInTheDocument();
 
     const nameInput = screen.getByLabelText(/Full name/i);
     const emailInput = screen.getByLabelText(/Email/i);
@@ -187,7 +203,11 @@ describe('Frontend Routing, Auth UI, and Safe Paths', () => {
     expect(alert).toHaveTextContent(/An account with this email already exists/i);
   });
 
-  async function signInWithEventsDoc(eventsDoc: { events: unknown[]; activeId: string | null; updatedAt: number }) {
+  async function signInWithEventsDoc(eventsDoc: {
+    events: unknown[];
+    activeId: string | null;
+    updatedAt: number;
+  }) {
     window.history.pushState({}, '', '/login');
 
     vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
@@ -209,7 +229,9 @@ describe('Frontend Routing, Auth UI, and Safe Paths', () => {
     expect(await screen.findByRole('heading', { level: 1, name: /Sign in/i })).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText(/Email/i), { target: { value: 'devika@example.com' } });
-    fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: 'CorrectPassword123!' } });
+    fireEvent.change(screen.getByLabelText(/^Password$/i), {
+      target: { value: 'CorrectPassword123!' },
+    });
     fireEvent.click(screen.getByRole('button', { name: /Sign in/i }));
 
     await waitFor(() => {
@@ -219,18 +241,25 @@ describe('Frontend Routing, Auth UI, and Safe Paths', () => {
 
   it('shows a brand-new account an empty "create your first plan" screen, never sample or device data', async () => {
     // Simulate leftovers from a previous visitor / the demo on this same browser.
-    localStorage.setItem('eventwise_ai_events_v2', JSON.stringify([{ id: 'someone-else', title: 'Previous Visitor Wedding' }]));
+    localStorage.setItem(
+      'eventwise_ai_events_v2',
+      JSON.stringify([{ id: 'someone-else', title: 'Previous Visitor Wedding' }]),
+    );
 
     await signInWithEventsDoc({ events: [], activeId: null, updatedAt: 0 });
 
-    expect(await screen.findByRole('heading', { level: 1, name: /Welcome, Devika!/i })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { level: 1, name: /Welcome, Devika!/i }),
+    ).toBeInTheDocument();
     // The planner workspace (header with the account avatar, dashboard of a sample plan) is not rendered yet.
     expect(screen.queryByText('DP')).not.toBeInTheDocument();
     expect(screen.queryByText(/Previous Visitor Wedding/i)).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /Mobile Bottom Overview/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /Mobile Bottom Overview/i }),
+    ).not.toBeInTheDocument();
   });
 
-  it('loads the signed-in account\'s own saved plans into the workspace', async () => {
+  it("loads the signed-in account's own saved plans into the workspace", async () => {
     const plan = generateFallbackPlan({
       title: 'Devika & Rahul Pune Wedding',
       eventType: 'wedding',

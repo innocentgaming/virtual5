@@ -16,7 +16,11 @@ expect.extend(matchers);
 
 describe('WCAG 2.1 AA Automated Axe Audit - EventWise AI', () => {
   const event = INITIAL_EVENTS[0];
-  const budgetSummary = calculateBudgetSummary(event.totalBudget, event.budgetItems, event.contingencyRate);
+  const budgetSummary = calculateBudgetSummary(
+    event.totalBudget,
+    event.budgetItems,
+    event.contingencyRate,
+  );
   const timelineAudit = auditTimelineTasks(event.tasks);
 
   it('reports zero accessibility violations for the Dashboard Overview page', async () => {
@@ -35,7 +39,7 @@ describe('WCAG 2.1 AA Automated Axe Audit - EventWise AI', () => {
             onExportCalendar={() => {}}
           />
         </div>
-      </main>
+      </main>,
     );
 
     const results = await axe(container);
@@ -56,7 +60,7 @@ describe('WCAG 2.1 AA Automated Axe Audit - EventWise AI', () => {
             onUpdateContingency={() => {}}
           />
         </div>
-      </main>
+      </main>,
     );
 
     const results = await axe(container);
@@ -75,7 +79,7 @@ describe('WCAG 2.1 AA Automated Axe Audit - EventWise AI', () => {
             onDeleteGuest={() => {}}
           />
         </div>
-      </main>
+      </main>,
     );
 
     const results = await axe(container);
@@ -101,7 +105,7 @@ describe('WCAG 2.1 AA Automated Axe Audit - EventWise AI', () => {
             onDeleteScheduleItem={() => {}}
           />
         </div>
-      </main>
+      </main>,
     );
 
     const results = await axe(container);
@@ -113,13 +117,9 @@ describe('WCAG 2.1 AA Automated Axe Audit - EventWise AI', () => {
       <main id="main">
         <h1 className="sr-only">EventWise AI</h1>
         <div data-theme="wedding" data-color-mode="light">
-          <VendorChecklist
-            plan={event}
-            onUpdateVendor={() => {}}
-            onAddVendor={() => {}}
-          />
+          <VendorChecklist plan={event} onUpdateVendor={() => {}} onAddVendor={() => {}} />
         </div>
-      </main>
+      </main>,
     );
 
     const results = await axe(container);
@@ -130,12 +130,8 @@ describe('WCAG 2.1 AA Automated Axe Audit - EventWise AI', () => {
     const { container } = render(
       <div data-theme="wedding" data-color-mode="light">
         <h1 className="sr-only">EventWise AI</h1>
-        <AICopilotDrawer
-          plan={event}
-          isOpen={true}
-          onClose={() => {}}
-        />
-      </div>
+        <AICopilotDrawer plan={event} isOpen={true} onClose={() => {}} />
+      </div>,
     );
 
     const results = await axe(container);

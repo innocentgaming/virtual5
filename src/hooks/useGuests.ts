@@ -3,7 +3,7 @@ import type { EventPlan, GuestItem } from '../types/event';
 
 export function useGuests(
   activeEvent: EventPlan | undefined,
-  updateEvent: (updated: EventPlan) => void
+  updateEvent: (updated: EventPlan) => void,
 ) {
   const addGuest = useCallback(
     (guest: Omit<GuestItem, 'id'>) => {
@@ -17,7 +17,7 @@ export function useGuests(
         guests: [...(activeEvent.guests || []), newGuest],
       });
     },
-    [activeEvent, updateEvent]
+    [activeEvent, updateEvent],
   );
 
   const updateGuest = useCallback(
@@ -28,7 +28,7 @@ export function useGuests(
         guests: (activeEvent.guests || []).map((g) => (g.id === guest.id ? guest : g)),
       });
     },
-    [activeEvent, updateEvent]
+    [activeEvent, updateEvent],
   );
 
   const deleteGuest = useCallback(
@@ -39,7 +39,7 @@ export function useGuests(
         guests: (activeEvent.guests || []).filter((g) => g.id !== id),
       });
     },
-    [activeEvent, updateEvent]
+    [activeEvent, updateEvent],
   );
 
   return {
@@ -48,4 +48,3 @@ export function useGuests(
     deleteGuest,
   };
 }
-

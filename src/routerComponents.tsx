@@ -23,9 +23,12 @@ export const Link: React.FC<LinkProps> = ({ to, replace, onClick, target, childr
     }
   };
 
-  const safeRel = target === '_blank'
-    ? (rest.rel ? `${rest.rel} noopener noreferrer` : 'noopener noreferrer')
-    : rest.rel;
+  const safeRel =
+    target === '_blank'
+      ? rest.rel
+        ? `${rest.rel} noopener noreferrer`
+        : 'noopener noreferrer'
+      : rest.rel;
 
   return (
     <a href={to} onClick={handleClick} target={target} rel={safeRel} {...rest}>

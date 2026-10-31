@@ -5,7 +5,12 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import authHandler from '../../api/auth/[action].js';
-import { FileStore, MemoryStore, setStoreForTesting, type UserRecord } from '../../api/_lib/store.js';
+import {
+  FileStore,
+  MemoryStore,
+  setStoreForTesting,
+  type UserRecord,
+} from '../../api/_lib/store.js';
 import { createSessionToken } from '../../api/_lib/crypto.js';
 
 /**
@@ -32,7 +37,9 @@ beforeAll(async () => {
 
 afterAll(async () => {
   setStoreForTesting(null);
-  await new Promise<void>((resolve, reject) => server.close((err) => (err ? reject(err) : resolve())));
+  await new Promise<void>((resolve, reject) =>
+    server.close((err) => (err ? reject(err) : resolve())),
+  );
 });
 
 afterEach(() => {
@@ -45,13 +52,24 @@ afterEach(() => {
 const post = (action: string, body: unknown, cookie?: string) =>
   fetch(`${baseUrl}/api/auth/${action}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Origin: baseUrl, ...(cookie ? { Cookie: cookie } : {}) },
+    headers: {
+      'Content-Type': 'application/json',
+      Origin: baseUrl,
+      ...(cookie ? { Cookie: cookie } : {}),
+    },
     body: JSON.stringify(body),
   });
 
-const sessionOf = (res: Response) => /ew_session=([^;]+)/.exec(res.headers.get('set-cookie') ?? '')?.[1];
+const sessionOf = (res: Response) =>
+  /ew_session=([^;]+)/.exec(res.headers.get('set-cookie') ?? '')?.[1];
 
-const SIGNUP = { email: 'asha@example.com', password: 'Sunrise#2026x', name: 'Asha Rao', role: 'host', acceptTerms: true };
+const SIGNUP = {
+  email: 'asha@example.com',
+  password: 'Sunrise#2026x',
+  name: 'Asha Rao',
+  role: 'host',
+  acceptTerms: true,
+};
 
 function tmpDir() {
   dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ew-store-'));
@@ -69,7 +87,11 @@ describe('FileStore', () => {
     // "Restart": brand-new store instance, nothing carried over in memory.
     setStoreForTesting(new FileStore(d));
 
-    const login = await post('login', { email: SIGNUP.email, password: SIGNUP.password, remember: true });
+    const login = await post('login', {
+      email: SIGNUP.email,
+      password: SIGNUP.password,
+      remember: true,
+    });
     expect(login.status).toBe(200);
 
     const me = await fetch(`${baseUrl}/api/auth/me`, { headers: { Cookie: cookie } });
@@ -109,12 +131,19 @@ describe('FileStore', () => {
     const d = tmpDir();
     const store = new FileStore(d);
     const user: UserRecord = {
-      id: 'usr_1', email: 'a@b.co', name: 'A B', role: 'host', passwordHash: 'x', tokenVersion: 1,
-      createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+      id: 'usr_1',
+      email: 'a@b.co',
+      name: 'A B',
+      role: 'host',
+      passwordHash: 'x',
+      tokenVersion: 1,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
     await store.createUser(user);
     expect(fs.readdirSync(d)).toEqual(['eventwise-store.json']);
-    if (process.platform !== 'win32') expect(fs.statSync(path.join(d, 'eventwise-store.json')).mode & 0o077).toBe(0);
+    if (process.platform !== 'win32')
+      expect(fs.statSync(path.join(d, 'eventwise-store.json')).mode & 0o077).toBe(0);
   });
 });
 
@@ -145,14 +174,18 @@ describe('keep me signed in', () => {
   it('does not re-issue a brand-new session, nor stretch a browser-session one', async () => {
     const uid = await setup();
     const fresh = createSessionToken(uid, 1, 30 * DAY);
-    const r1 = await fetch(`${baseUrl}/api/auth/me`, { headers: { Cookie: `ew_session=${fresh}` } });
+    const r1 = await fetch(`${baseUrl}/api/auth/me`, {
+      headers: { Cookie: `ew_session=${fresh}` },
+    });
     expect(r1.headers.get('set-cookie')).toBeNull();
 
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(Date.now() - 2 * 3600 * 1000);
     const shortLived = createSessionToken(uid, 1, DAY); // not "remembered"
     vi.useRealTimers();
-    const r2 = await fetch(`${baseUrl}/api/auth/me`, { headers: { Cookie: `ew_session=${shortLived}` } });
+    const r2 = await fetch(`${baseUrl}/api/auth/me`, {
+      headers: { Cookie: `ew_session=${shortLived}` },
+    });
     expect(r2.headers.get('set-cookie')).toBeNull();
   });
 
@@ -162,7 +195,11 @@ describe('keep me signed in', () => {
     expect(signup.headers.get('set-cookie')).toContain(`Max-Age=${30 * DAY}`);
     const login = await post('login', { email: SIGNUP.email, password: SIGNUP.password });
     expect(login.headers.get('set-cookie')).toContain(`Max-Age=${30 * DAY}`);
-    const noRemember = await post('login', { email: SIGNUP.email, password: SIGNUP.password, remember: false });
+    const noRemember = await post('login', {
+      email: SIGNUP.email,
+      password: SIGNUP.password,
+      remember: false,
+    });
     expect(noRemember.headers.get('set-cookie')).not.toContain('Max-Age');
   });
 });
@@ -197,4 +234,3 @@ describe('session signing secret', () => {
     expect(a).not.toContain('redis-token-abc');
   });
 });
-

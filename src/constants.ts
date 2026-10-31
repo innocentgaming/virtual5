@@ -19,7 +19,7 @@ export const SHORT_NOTICE_DAYS_WARNING = 21;
 export const URGENT_DAYS_WINDOW = 7;
 
 /** Contingency reserve percentage limits */
-export const DEFAULT_CONTINGENCY_RATE = 0.10;
+export const DEFAULT_CONTINGENCY_RATE = 0.1;
 export const MIN_SAFE_CONTINGENCY_RATE = 0.08;
 export const MAX_CONTINGENCY_RATE = 0.25;
 export const SURPLUS_BUDGET_RATIO = 0.25;

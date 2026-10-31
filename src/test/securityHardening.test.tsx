@@ -47,7 +47,7 @@ describe('Security Hardening & Assurance Suite', () => {
                   },
                 },
               ],
-            })
+            }),
           ),
       });
     });
@@ -75,9 +75,13 @@ describe('Security Hardening & Assurance Suite', () => {
   it('redacts API keys from console error and warning logs', async () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-    global.fetch = vi.fn().mockRejectedValue(
-      new Error(`Upstream rejected key ${secretKey} at https://generativelanguage.googleapis.com?key=${secretKey}`)
-    );
+    global.fetch = vi
+      .fn()
+      .mockRejectedValue(
+        new Error(
+          `Upstream rejected key ${secretKey} at https://generativelanguage.googleapis.com?key=${secretKey}`,
+        ),
+      );
 
     await generateAIEventPlan({
       eventType: 'birthday',
@@ -147,20 +151,54 @@ describe('Security Hardening & Assurance Suite', () => {
       totalBudget: Infinity,
       guestCount: -500,
       budgetItems: [
-        { id: 'dup-id', name: 'Stage', category: 'unknown_cat', estimatedCost: Infinity, priority: 'critical' },
-        { id: 'dup-id', name: 'Catering', category: 'catering', estimatedCost: NaN, priority: 'recommended' },
-        { id: 'dup-id', name: 'Fireworks', category: 'entertainment', estimatedCost: -5000, priority: 'optional' },
+        {
+          id: 'dup-id',
+          name: 'Stage',
+          category: 'unknown_cat',
+          estimatedCost: Infinity,
+          priority: 'critical',
+        },
+        {
+          id: 'dup-id',
+          name: 'Catering',
+          category: 'catering',
+          estimatedCost: NaN,
+          priority: 'recommended',
+        },
+        {
+          id: 'dup-id',
+          name: 'Fireworks',
+          category: 'entertainment',
+          estimatedCost: -5000,
+          priority: 'optional',
+        },
       ],
       tasks: [
-        { id: 'dup-id', title: 'Task 1', category: 'invalid_task_cat', priority: 'super_urgent', dueDate: 'invalid-date' },
-        { id: 'dup-id', title: 'Task 2', category: 'final', priority: 'high', dueDate: '2026-11-20' },
+        {
+          id: 'dup-id',
+          title: 'Task 1',
+          category: 'invalid_task_cat',
+          priority: 'super_urgent',
+          dueDate: 'invalid-date',
+        },
+        {
+          id: 'dup-id',
+          title: 'Task 2',
+          category: 'final',
+          priority: 'high',
+          dueDate: '2026-11-20',
+        },
       ],
       vendors: [
-        { id: 'dup-id', category: 'fake_vendor', status: 'bribed', role: 'DJ', estimatedCost: 10000000000 },
+        {
+          id: 'dup-id',
+          category: 'fake_vendor',
+          status: 'bribed',
+          role: 'DJ',
+          estimatedCost: 10000000000,
+        },
       ],
-      ideas: [
-        { id: 'dup-id', category: 'fake_idea_cat', tier: 'ultra_deluxe', title: 'Idea 1' },
-      ],
+      ideas: [{ id: 'dup-id', category: 'fake_idea_cat', tier: 'ultra_deluxe', title: 'Idea 1' }],
     };
 
     const { valid, plan } = validateAndSanitizeEventPlan(untrustedPayload, '2026-11-20');
@@ -219,7 +257,10 @@ describe('Security Hardening & Assurance Suite', () => {
   // 4. LocalStorage Tampering Recovery
   it('recovers gracefully from corrupted localStorage structures and rejects oversized payloads', () => {
     // 1. Corrupted nested types
-    localStorage.setItem('eventwise_ai_events_v2', JSON.stringify([{ id: 'test', budgetItems: 'not-an-array' }]));
+    localStorage.setItem(
+      'eventwise_ai_events_v2',
+      JSON.stringify([{ id: 'test', budgetItems: 'not-an-array' }]),
+    );
     const loaded = loadSavedEvents();
     expect(loaded).toBeDefined();
     expect(loaded.length).toBeGreaterThan(0);
@@ -286,7 +327,12 @@ describe('Security Hardening & Assurance Suite', () => {
       const entries = fs.readdirSync(dir, { withFileTypes: true });
       for (const entry of entries) {
         const fullPath = path.join(dir, entry.name);
-        if (entry.isDirectory() && entry.name !== 'node_modules' && entry.name !== 'dist' && entry.name !== 'test') {
+        if (
+          entry.isDirectory() &&
+          entry.name !== 'node_modules' &&
+          entry.name !== 'dist' &&
+          entry.name !== 'test'
+        ) {
           collectFiles(fullPath);
         } else if (/\.(tsx?|jsx?|html)$/.test(entry.name) && !entry.name.includes('.test.')) {
           filesToScan.push(fullPath);
@@ -324,7 +370,7 @@ describe('Security Hardening & Assurance Suite', () => {
                   },
                 },
               ],
-            })
+            }),
           ),
       });
     });
@@ -358,7 +404,11 @@ describe('Security Hardening & Assurance Suite', () => {
       ],
     };
 
-    await generateCopilotAnswerAsync('What should we review this week?', planWithGuestPii, secretKey);
+    await generateCopilotAnswerAsync(
+      'What should we review this week?',
+      planWithGuestPii,
+      secretKey,
+    );
 
     // Verify PII exclusion in outbound request
     expect(capturedBodyText).not.toContain('Shah Rukh Khan');

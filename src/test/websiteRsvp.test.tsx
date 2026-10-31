@@ -18,7 +18,7 @@ describe('EventWebsiteModal Component', () => {
           plan={SAMPLE_WEDDING}
           onToast={onToast}
         />
-      </AuthProvider>
+      </AuthProvider>,
     );
 
     // Header and navigation
@@ -54,12 +54,8 @@ describe('EventWebsiteModal Component', () => {
   it('handles null plan gracefully', () => {
     const { container } = render(
       <AuthProvider>
-        <EventWebsiteModal
-          isOpen={true}
-          onClose={vi.fn()}
-          plan={null}
-        />
-      </AuthProvider>
+        <EventWebsiteModal isOpen={true} onClose={vi.fn()} plan={null} />
+      </AuthProvider>,
     );
     expect(container).toBeInTheDocument();
   });
@@ -74,13 +70,15 @@ describe('EventWebsiteModal Component', () => {
           plan={SAMPLE_WEDDING}
           onToast={onToast}
         />
-      </AuthProvider>
+      </AuthProvider>,
     );
 
     const shareTab = screen.getByRole('tab', { name: /Publish & Share/i });
     fireEvent.click(shareTab);
 
     expect(screen.getByText(/Create a free account/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Download Standalone \.html Website/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /Download Standalone \.html Website/i }),
+    ).toBeInTheDocument();
   });
 });

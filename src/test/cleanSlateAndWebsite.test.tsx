@@ -42,7 +42,9 @@ describe('Clean Slate for Logged-In Users & Event Website Builder', () => {
       }
       if (url.includes('/api/events')) {
         // Return 0 events for a brand new user
-        return new Response(JSON.stringify({ events: [], activeId: null, updatedAt: 0 }), { status: 200 });
+        return new Response(JSON.stringify({ events: [], activeId: null, updatedAt: 0 }), {
+          status: 200,
+        });
       }
       return new Response('{}', { status: 200 });
     });
@@ -63,11 +65,19 @@ describe('Clean Slate for Logged-In Users & Event Website Builder', () => {
     });
 
     // 1. Verify user's greeting appears on the clean slate screen
-    expect(await screen.findByRole('heading', { level: 1, name: /Welcome, Aarohi!/i })).toBeInTheDocument();
-    expect(screen.getByText(/Your account starts empty. Tell us about your event and we’ll build a personalised plan/i)).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { level: 1, name: /Welcome, Aarohi!/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /Your account starts empty. Tell us about your event and we’ll build a personalised plan/i,
+      ),
+    ).toBeInTheDocument();
 
     // 2. Verify that workspace dashboard and user avatar are NOT shown yet
-    expect(screen.queryByRole('button', { name: /Mobile Bottom Overview/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /Mobile Bottom Overview/i }),
+    ).not.toBeInTheDocument();
     expect(screen.queryByText('AM')).not.toBeInTheDocument(); // Full planner header with avatar is not shown until first plan is made
 
     // 3. Verify event setup form is ready for creating their first celebration
@@ -93,7 +103,9 @@ describe('Clean Slate for Logged-In Users & Event Website Builder', () => {
     fireEvent.click(websiteBtn);
 
     // Verify modal elements render
-    expect(await screen.findByRole('heading', { level: 2, name: /Event Website & Invitation Builder/i })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { level: 2, name: /Event Website & Invitation Builder/i }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /Live Preview/i })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /Design & Themes/i })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /Publish & Share/i })).toBeInTheDocument();

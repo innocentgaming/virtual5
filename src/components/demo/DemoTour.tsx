@@ -150,7 +150,10 @@ interface DemoTourProps {
 }
 
 function reducedMotion(): boolean {
-  return typeof window !== 'undefined' && Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
+  return (
+    typeof window !== 'undefined' &&
+    Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)
+  );
 }
 
 export const DemoTour: React.FC<DemoTourProps> = ({
@@ -190,7 +193,15 @@ export const DemoTour: React.FC<DemoTourProps> = ({
       if (el) el.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'center' });
     }, 150);
     return () => window.clearTimeout(t);
-  }, [isOpen, currentStepIdx, step.tab, step.targetSelector, onNavigateTab, onOpenCopilot, onCloseCopilot]);
+  }, [
+    isOpen,
+    currentStepIdx,
+    step.tab,
+    step.targetSelector,
+    onNavigateTab,
+    onOpenCopilot,
+    onCloseCopilot,
+  ]);
 
   // Track the highlighted element so the spotlight follows scroll, resize and re-render
   const measure = useCallback(() => {
@@ -206,8 +217,19 @@ export const DemoTour: React.FC<DemoTourProps> = ({
     }
     const pad = 8;
     setRect((prev) => {
-      const next = { top: r.top - pad, left: r.left - pad, width: r.width + pad * 2, height: r.height + pad * 2 };
-      if (prev && prev.top === next.top && prev.left === next.left && prev.width === next.width && prev.height === next.height) {
+      const next = {
+        top: r.top - pad,
+        left: r.left - pad,
+        width: r.width + pad * 2,
+        height: r.height + pad * 2,
+      };
+      if (
+        prev &&
+        prev.top === next.top &&
+        prev.left === next.left &&
+        prev.width === next.width &&
+        prev.height === next.height
+      ) {
         return prev;
       }
       return next;
@@ -243,7 +265,10 @@ export const DemoTour: React.FC<DemoTourProps> = ({
   // Optional auto-play (never when the visitor prefers reduced motion)
   useEffect(() => {
     if (!isOpen || !autoplay || paused || isLast || reducedMotion()) return;
-    const t = window.setTimeout(() => setCurrentStepIdx((i) => Math.min(i + 1, total - 1)), AUTOPLAY_MS);
+    const t = window.setTimeout(
+      () => setCurrentStepIdx((i) => Math.min(i + 1, total - 1)),
+      AUTOPLAY_MS,
+    );
     return () => window.clearTimeout(t);
   }, [isOpen, autoplay, paused, currentStepIdx, isLast, total]);
 
@@ -267,7 +292,7 @@ export const DemoTour: React.FC<DemoTourProps> = ({
         handlePrev();
       } else if (e.key === 'Tab' && cardRef.current) {
         const focusable = cardRef.current.querySelectorAll<HTMLElement>(
-          'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
         );
         if (focusable.length === 0) return;
         const first = focusable[0];
@@ -341,7 +366,12 @@ export const DemoTour: React.FC<DemoTourProps> = ({
             <span className="tour-card__icon">{step.icon}</span>
             <span>{`${currentStepIdx + 1} of ${total} · ${step.label}`}</span>
           </div>
-          <button type="button" className="tour-card__x" onClick={onClose} aria-label="Skip guided tour">
+          <button
+            type="button"
+            className="tour-card__x"
+            onClick={onClose}
+            aria-label="Skip guided tour"
+          >
             <X size={18} />
           </button>
         </div>
@@ -406,7 +436,12 @@ export const DemoTour: React.FC<DemoTourProps> = ({
                 Back
               </button>
             )}
-            <button ref={nextBtnRef} type="button" className="tour-btn tour-btn--primary" onClick={handleNext}>
+            <button
+              ref={nextBtnRef}
+              type="button"
+              className="tour-btn tour-btn--primary"
+              onClick={handleNext}
+            >
               {isLast ? (
                 <>
                   <span>Finish Tour</span>

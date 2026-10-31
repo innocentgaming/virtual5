@@ -43,7 +43,8 @@ export interface AuditRow {
   detail?: string;
 }
 
-const post = <T>(path: string, body: unknown) => apiRequest<T>(path, { method: 'POST', body: JSON.stringify(body) });
+const post = <T>(path: string, body: unknown) =>
+  apiRequest<T>(path, { method: 'POST', body: JSON.stringify(body) });
 
 export const adminApi = {
   stats: () => apiRequest<AdminStats>('/api/admin/stats'),
@@ -52,13 +53,19 @@ export const adminApi = {
     if (p.q) qs.set('q', p.q);
     if (p.page) qs.set('page', String(p.page));
     if (p.filter) qs.set('filter', p.filter);
-    return apiRequest<{ users: AdminUserRow[]; total: number; page: number; pageSize: number }>(`/api/admin/users?${qs}`);
+    return apiRequest<{ users: AdminUserRow[]; total: number; page: number; pageSize: number }>(
+      `/api/admin/users?${qs}`,
+    );
   },
-  activity: (type?: string) => apiRequest<{ entries: AuditRow[] }>(`/api/admin/activity?limit=200${type ? `&type=${encodeURIComponent(type)}` : ''}`),
+  activity: (type?: string) =>
+    apiRequest<{ entries: AuditRow[] }>(
+      `/api/admin/activity?limit=200${type ? `&type=${encodeURIComponent(type)}` : ''}`,
+    ),
   updateUser: (id: string, patch: { role?: UserRole; isAdmin?: boolean; disabled?: boolean }) =>
     post<{ user: AdminUserRow }>('/api/admin/user-update', { id, ...patch }),
   revokeSessions: (id: string) => post<{ ok: boolean }>('/api/admin/user-revoke', { id }),
-  deleteUser: (id: string, confirmEmail: string) => post<{ ok: boolean }>('/api/admin/user-delete', { id, confirmEmail }),
+  deleteUser: (id: string, confirmEmail: string) =>
+    post<{ ok: boolean }>('/api/admin/user-delete', { id, confirmEmail }),
   /** Downloads the full backup as a JSON file in the browser. */
   async downloadBackup(): Promise<{ ok: true } | { ok: false; error: string }> {
     try {
@@ -71,7 +78,9 @@ export const adminApi = {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = /filename="([^"]+)"/.exec(res.headers.get('Content-Disposition') ?? '')?.[1] ?? 'eventwise-backup.json';
+      a.download =
+        /filename="([^"]+)"/.exec(res.headers.get('Content-Disposition') ?? '')?.[1] ??
+        'eventwise-backup.json';
       document.body.appendChild(a);
       a.click();
       a.remove();

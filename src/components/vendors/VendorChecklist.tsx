@@ -26,7 +26,11 @@ interface VendorChecklistProps {
   isLoading?: boolean;
 }
 
-const STAGES: { id: VendorStatus | 'all'; label: string; variant: 'neutral' | 'warning' | 'info' | 'success' | 'danger' }[] = [
+const STAGES: {
+  id: VendorStatus | 'all';
+  label: string;
+  variant: 'neutral' | 'warning' | 'info' | 'success' | 'danger';
+}[] = [
   { id: 'all', label: 'All Vendors', variant: 'neutral' },
   { id: 'shortlisted', label: 'Shortlisted', variant: 'warning' },
   { id: 'contacted', label: 'Contacted', variant: 'info' },
@@ -61,13 +65,21 @@ const STANDARD_INTERVIEW_QUESTIONS: Record<string, string[]> = {
   ],
 };
 
-function getTailoredQuestions(role: string, category: string, existingQuestions: string[]): string[] {
+function getTailoredQuestions(
+  role: string,
+  category: string,
+  existingQuestions: string[],
+): string[] {
   if (existingQuestions && existingQuestions.length > 0) return existingQuestions;
 
   const roleLower = role.toLowerCase();
   const catLower = category.toLowerCase();
 
-  if (roleLower.includes('pandit') || roleLower.includes('priest') || catLower.includes('officiant')) {
+  if (
+    roleLower.includes('pandit') ||
+    roleLower.includes('priest') ||
+    catLower.includes('officiant')
+  ) {
     return STANDARD_INTERVIEW_QUESTIONS.pandit;
   }
   if (roleLower.includes('mehendi') || roleLower.includes('henna')) {
@@ -76,7 +88,12 @@ function getTailoredQuestions(role: string, category: string, existingQuestions:
   if (roleLower.includes('dhol') || roleLower.includes('band') || roleLower.includes('brass')) {
     return STANDARD_INTERVIEW_QUESTIONS.dhol;
   }
-  if (catLower.includes('cater') || roleLower.includes('cater') || roleLower.includes('halwai') || roleLower.includes('food')) {
+  if (
+    catLower.includes('cater') ||
+    roleLower.includes('cater') ||
+    roleLower.includes('halwai') ||
+    roleLower.includes('food')
+  ) {
     return STANDARD_INTERVIEW_QUESTIONS.caterer;
   }
 
@@ -178,9 +195,7 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
       status: 'shortlisted',
       estimatedCost: Math.max(0, isNaN(newCost) ? 0 : newCost),
       questionsToAsk:
-        questionsList.length > 0
-          ? questionsList
-          : getTailoredQuestions(newRole, newCategory, []),
+        questionsList.length > 0 ? questionsList : getTailoredQuestions(newRole, newCategory, []),
     });
 
     setNewRole('');
@@ -194,8 +209,22 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
   if (isLoading) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-        <div style={{ height: '80px', background: 'var(--surface-raised)', borderRadius: 'var(--radius-lg)' }} className="ui-skeleton" />
-        <div style={{ height: '320px', background: 'var(--surface-raised)', borderRadius: 'var(--radius-lg)' }} className="ui-skeleton" />
+        <div
+          style={{
+            height: '80px',
+            background: 'var(--surface-raised)',
+            borderRadius: 'var(--radius-lg)',
+          }}
+          className="ui-skeleton"
+        />
+        <div
+          style={{
+            height: '320px',
+            background: 'var(--surface-raised)',
+            borderRadius: 'var(--radius-lg)',
+          }}
+          className="ui-skeleton"
+        />
       </div>
     );
   }
@@ -212,7 +241,10 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
             Vendor Sourcing Guidelines & Ethical Guardrails
           </div>
           <p style={{ fontSize: 'var(--text-sm)', marginTop: '2px', lineHeight: 1.5 }}>
-            EventWise AI organizes recommended vendor roles and estimated market budgets for {plan.city}. We do not fabricate fake reviews or biased sponsor rankings. Use the tailored interview questions below when vetting local professionals for your celebration.
+            EventWise AI organizes recommended vendor roles and estimated market budgets for{' '}
+            {plan.city}. We do not fabricate fake reviews or biased sponsor rankings. Use the
+            tailored interview questions below when vetting local professionals for your
+            celebration.
           </p>
         </div>
       </div>
@@ -252,7 +284,9 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
         />
 
         {/* Stage Filter Chips */}
-        <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap', alignItems: 'center' }}>
+        <div
+          style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap', alignItems: 'center' }}
+        >
           {STAGES.map((stage) => {
             const count = stage.id === 'all' ? stageCounts.all : stageCounts[stage.id] || 0;
             return (
@@ -289,7 +323,11 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
           {filteredVendors.map((vendor) => {
             const isExpanded = expandedVendorId === vendor.id;
-            const questions = getTailoredQuestions(vendor.role, vendor.category, vendor.questionsToAsk);
+            const questions = getTailoredQuestions(
+              vendor.role,
+              vendor.category,
+              vendor.questionsToAsk,
+            );
 
             return (
               <div
@@ -314,8 +352,22 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
                   }}
                 >
                   <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
-                      <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 700, color: 'var(--text)', margin: 0 }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 'var(--space-2)',
+                        flexWrap: 'wrap',
+                      }}
+                    >
+                      <h3
+                        style={{
+                          fontSize: 'var(--text-base)',
+                          fontWeight: 700,
+                          color: 'var(--text)',
+                          margin: 0,
+                        }}
+                      >
                         {vendor.role}
                       </h3>
                       <Badge
@@ -323,33 +375,52 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
                           vendor.status === 'booked'
                             ? 'success'
                             : vendor.status === 'shortlisted'
-                            ? 'warning'
-                            : vendor.status === 'contacted'
-                            ? 'info'
-                            : 'neutral'
+                              ? 'warning'
+                              : vendor.status === 'contacted'
+                                ? 'info'
+                                : 'neutral'
                         }
                       >
                         {vendor.status.replace('_', ' ')}
                       </Badge>
                     </div>
 
-                    <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginTop: '4px' }}>
-                      Category: {vendor.category} · Target Quote: <strong className="tabular-nums" style={{ color: 'var(--text)' }}>{formatCurrency(vendor.estimatedCost)}</strong> ({formatIndianShort(vendor.estimatedCost)})
+                    <div
+                      style={{
+                        fontSize: 'var(--text-xs)',
+                        color: 'var(--text-muted)',
+                        marginTop: '4px',
+                      }}
+                    >
+                      Category: {vendor.category} · Target Quote:{' '}
+                      <strong className="tabular-nums" style={{ color: 'var(--text)' }}>
+                        {formatCurrency(vendor.estimatedCost)}
+                      </strong>{' '}
+                      ({formatIndianShort(vendor.estimatedCost)})
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 'var(--space-2)',
+                      flexWrap: 'wrap',
+                    }}
+                  >
                     {/* Stage Dropdown */}
-                    <label
-                      htmlFor={`vendor-status-${vendor.id}`}
-                      className="sr-only"
-                    >
+                    <label htmlFor={`vendor-status-${vendor.id}`} className="sr-only">
                       Change Status
                     </label>
                     <select
                       id={`vendor-status-${vendor.id}`}
                       className="form-control"
-                      style={{ padding: '4px 8px', fontSize: 'var(--text-xs)', width: '130px', height: '36px' }}
+                      style={{
+                        padding: '4px 8px',
+                        fontSize: 'var(--text-xs)',
+                        width: '130px',
+                        height: '36px',
+                      }}
                       value={vendor.status}
                       onChange={(e) => handleStatusChange(vendor, e.target.value as VendorStatus)}
                     >
@@ -396,21 +467,53 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
                         border: '1px solid var(--border)',
                       }}
                     >
-                      <div style={{ fontWeight: 700, fontSize: 'var(--text-xs)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', color: 'var(--text)' }}>
+                      <div
+                        style={{
+                          fontWeight: 700,
+                          fontSize: 'var(--text-xs)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          marginBottom: '8px',
+                          color: 'var(--text)',
+                        }}
+                      >
                         <HelpCircle size={15} color="var(--accent-primary)" />
                         Vetting & Interview Questions for {vendor.role}:
                       </div>
-                      <ul style={{ paddingLeft: '1.25rem', margin: 0, fontSize: 'var(--text-xs)', display: 'flex', flexDirection: 'column', gap: '6px', color: 'var(--text)' }}>
+                      <ul
+                        style={{
+                          paddingLeft: '1.25rem',
+                          margin: 0,
+                          fontSize: 'var(--text-xs)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '6px',
+                          color: 'var(--text)',
+                        }}
+                      >
                         {questions.map((q, idx) => (
-                          <li key={idx} style={{ lineHeight: 1.5 }}>{q}</li>
+                          <li key={idx} style={{ lineHeight: 1.5 }}>
+                            {q}
+                          </li>
                         ))}
                       </ul>
                     </div>
 
                     {/* Contact Info & Notes Form */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-3)' }}>
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                        gap: 'var(--space-3)',
+                      }}
+                    >
                       <div className="form-group">
-                        <label htmlFor={`vendor-contact-${vendor.id}`} className="form-label" style={{ fontSize: 'var(--text-xs)' }}>
+                        <label
+                          htmlFor={`vendor-contact-${vendor.id}`}
+                          className="form-label"
+                          style={{ fontSize: 'var(--text-xs)' }}
+                        >
                           <User size={12} style={{ marginRight: '4px' }} /> Contact Person
                         </label>
                         <input
@@ -418,13 +521,19 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
                           type="text"
                           className="form-control"
                           value={vendor.contactName || ''}
-                          onChange={(e) => onUpdateVendor(vendor.id, { contactName: e.target.value })}
+                          onChange={(e) =>
+                            onUpdateVendor(vendor.id, { contactName: e.target.value })
+                          }
                           placeholder="e.g. Ramesh Chandra (Lead)"
                         />
                       </div>
 
                       <div className="form-group">
-                        <label htmlFor={`vendor-phone-${vendor.id}`} className="form-label" style={{ fontSize: 'var(--text-xs)' }}>
+                        <label
+                          htmlFor={`vendor-phone-${vendor.id}`}
+                          className="form-label"
+                          style={{ fontSize: 'var(--text-xs)' }}
+                        >
                           <Phone size={12} style={{ marginRight: '4px' }} /> Phone Number
                         </label>
                         <input
@@ -432,13 +541,19 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
                           type="text"
                           className="form-control"
                           value={vendor.contactPhone || ''}
-                          onChange={(e) => onUpdateVendor(vendor.id, { contactPhone: e.target.value })}
+                          onChange={(e) =>
+                            onUpdateVendor(vendor.id, { contactPhone: e.target.value })
+                          }
                           placeholder="e.g. +91 98765 43210"
                         />
                       </div>
 
                       <div className="form-group">
-                        <label htmlFor={`vendor-email-${vendor.id}`} className="form-label" style={{ fontSize: 'var(--text-xs)' }}>
+                        <label
+                          htmlFor={`vendor-email-${vendor.id}`}
+                          className="form-label"
+                          style={{ fontSize: 'var(--text-xs)' }}
+                        >
                           <Mail size={12} style={{ marginRight: '4px' }} /> Email Address
                         </label>
                         <input
@@ -446,14 +561,22 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
                           type="email"
                           className="form-control"
                           value={vendor.contactEmail || ''}
-                          onChange={(e) => onUpdateVendor(vendor.id, { contactEmail: e.target.value })}
+                          onChange={(e) =>
+                            onUpdateVendor(vendor.id, { contactEmail: e.target.value })
+                          }
                           placeholder="e.g. info@vendor.com"
                         />
                       </div>
                     </div>
 
                     <div className="form-group">
-                      <label htmlFor={`vendor-notes-${vendor.id}`} className="form-label" style={{ fontSize: 'var(--text-xs)' }}>Negotiation & Interview Notes</label>
+                      <label
+                        htmlFor={`vendor-notes-${vendor.id}`}
+                        className="form-label"
+                        style={{ fontSize: 'var(--text-xs)' }}
+                      >
+                        Negotiation & Interview Notes
+                      </label>
                       <textarea
                         id={`vendor-notes-${vendor.id}`}
                         rows={2}
@@ -475,14 +598,40 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
           4B. CURATED VENUES & VERIFIED SUPPLIERS DIRECTORY
           ===================================================================== */}
       <div style={{ marginTop: 'var(--space-8)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 'var(--space-4)',
+            flexWrap: 'wrap',
+            gap: 'var(--space-2)',
+          }}
+        >
           <div>
-            <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, color: 'var(--text)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <h3
+              style={{
+                fontSize: 'var(--text-lg)',
+                fontWeight: 700,
+                color: 'var(--text)',
+                margin: 0,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+              }}
+            >
               <Building2 size={20} color="var(--accent-primary)" />
               <span>Curated Venues & Verified Partners</span>
             </h3>
-            <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', margin: '4px 0 0 0' }}>
-              Verified Indian heritage venues, decor artisans, and banquet specialists for {plan.city}
+            <p
+              style={{
+                fontSize: 'var(--text-xs)',
+                color: 'var(--text-muted)',
+                margin: '4px 0 0 0',
+              }}
+            >
+              Verified Indian heritage venues, decor artisans, and banquet specialists for{' '}
+              {plan.city}
             </p>
           </div>
           <Badge variant="neutral">Hand-picked for {plan.city}</Badge>
@@ -508,25 +657,70 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
             </div>
             <div className="venue-card-body">
               <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                  <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text)', margin: 0 }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'baseline',
+                  }}
+                >
+                  <h4
+                    style={{
+                      fontSize: '1.05rem',
+                      fontWeight: 700,
+                      color: 'var(--text)',
+                      margin: 0,
+                    }}
+                  >
                     The Rajvilas Palace & Gardens
                   </h4>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--accent-primary)' }}>
+                  <span
+                    style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--accent-primary)' }}
+                  >
                     ₹₹₹
                   </span>
                 </div>
-                <div style={{ display: 'flex', gap: '8px', color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '4px' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: '8px',
+                    color: 'var(--text-muted)',
+                    fontSize: '0.75rem',
+                    marginTop: '4px',
+                  }}
+                >
                   <span>📍 {plan.city}, India</span>
                   <span>•</span>
                   <span>👥 Up to 800 Guests</span>
                 </div>
-                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '8px 0 0 0', lineHeight: 1.4 }}>
-                  Palatial courtyard with illuminated reflection pool, royal mandap pavilion, and dedicated pure-veg banquet kitchen.
+                <p
+                  style={{
+                    fontSize: '0.8rem',
+                    color: 'var(--text-muted)',
+                    margin: '8px 0 0 0',
+                    lineHeight: 1.4,
+                  }}
+                >
+                  Palatial courtyard with illuminated reflection pool, royal mandap pavilion, and
+                  dedicated pure-veg banquet kitchen.
                 </p>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: '1px solid var(--border)' }}>
-                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--color-success-text)' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  paddingTop: '8px',
+                  borderTop: '1px solid var(--border)',
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: '0.7rem',
+                    fontWeight: 700,
+                    color: 'var(--color-success-text)',
+                  }}
+                >
                   ✓ Dedicated Jain Kitchen
                 </span>
                 <Badge variant="neutral">Heritage Grade</Badge>
@@ -553,25 +747,70 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
             </div>
             <div className="venue-card-body">
               <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                  <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text)', margin: 0 }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'baseline',
+                  }}
+                >
+                  <h4
+                    style={{
+                      fontSize: '1.05rem',
+                      fontWeight: 700,
+                      color: 'var(--text)',
+                      margin: 0,
+                    }}
+                  >
                     ShadiSquad Floral & Mandap Arts
                   </h4>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--accent-primary)' }}>
+                  <span
+                    style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--accent-primary)' }}
+                  >
                     ₹₹₹
                   </span>
                 </div>
-                <div style={{ display: 'flex', gap: '8px', color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '4px' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: '8px',
+                    color: 'var(--text-muted)',
+                    fontSize: '0.75rem',
+                    marginTop: '4px',
+                  }}
+                >
                   <span>📍 Pan-India Service</span>
                   <span>•</span>
                   <span>🌸 Marigold & Jasmine</span>
                 </div>
-                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '8px 0 0 0', lineHeight: 1.4 }}>
-                  Carved wooden mandap with fresh marigold hangings, hanging brass diyas, and weather-guarded waterproof canopies.
+                <p
+                  style={{
+                    fontSize: '0.8rem',
+                    color: 'var(--text-muted)',
+                    margin: '8px 0 0 0',
+                    lineHeight: 1.4,
+                  }}
+                >
+                  Carved wooden mandap with fresh marigold hangings, hanging brass diyas, and
+                  weather-guarded waterproof canopies.
                 </p>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: '1px solid var(--border)' }}>
-                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--color-success-text)' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  paddingTop: '8px',
+                  borderTop: '1px solid var(--border)',
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: '0.7rem',
+                    fontWeight: 700,
+                    color: 'var(--color-success-text)',
+                  }}
+                >
                   ✓ Rainproof Canopy Setup
                 </span>
                 <Badge variant="neutral">Artisan Decor</Badge>
@@ -598,25 +837,70 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
             </div>
             <div className="venue-card-body">
               <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                  <h4 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text)', margin: 0 }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'baseline',
+                  }}
+                >
+                  <h4
+                    style={{
+                      fontSize: '1.05rem',
+                      fontWeight: 700,
+                      color: 'var(--text)',
+                      margin: 0,
+                    }}
+                  >
                     Royal Rasoi Gourmet & Satvik
                   </h4>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--accent-primary)' }}>
+                  <span
+                    style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--accent-primary)' }}
+                  >
                     ₹₹
                   </span>
                 </div>
-                <div style={{ display: 'flex', gap: '8px', color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '4px' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: '8px',
+                    color: 'var(--text-muted)',
+                    fontSize: '0.75rem',
+                    marginTop: '4px',
+                  }}
+                >
                   <span>📍 Specialized Banquets</span>
                   <span>•</span>
                   <span>🍲 Live Tandoor & Chaat</span>
                 </div>
-                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '8px 0 0 0', lineHeight: 1.4 }}>
-                  Authentic copper handi feast with live Dal Baati Churma counters, zero cross-contamination Jain quarantine, and artisanal mithai.
+                <p
+                  style={{
+                    fontSize: '0.8rem',
+                    color: 'var(--text-muted)',
+                    margin: '8px 0 0 0',
+                    lineHeight: 1.4,
+                  }}
+                >
+                  Authentic copper handi feast with live Dal Baati Churma counters, zero
+                  cross-contamination Jain quarantine, and artisanal mithai.
                 </p>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: '1px solid var(--border)' }}>
-                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--color-success-text)' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  paddingTop: '8px',
+                  borderTop: '1px solid var(--border)',
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: '0.7rem',
+                    fontWeight: 700,
+                    color: 'var(--color-success-text)',
+                  }}
+                >
                   ✓ Satvik Certified
                 </span>
                 <Badge variant="neutral">Gourmet Feast</Badge>
@@ -635,8 +919,17 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
         title="Add Vendor Requirement"
         subtitle="Specify vendor roles and estimated market budgets for your celebration."
       >
-        <form onSubmit={handleCreateVendor} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-3)' }}>
+        <form
+          onSubmit={handleCreateVendor}
+          style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}
+        >
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gap: 'var(--space-3)',
+            }}
+          >
             <div className="form-group">
               <label htmlFor="vnd-role" className="form-label">
                 <span>Vendor Role / Title *</span>
@@ -706,7 +999,14 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
             />
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', marginTop: 'var(--space-2)' }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              gap: 'var(--space-2)',
+              marginTop: 'var(--space-2)',
+            }}
+          >
             <Button
               variant="secondary"
               size="md"
@@ -735,7 +1035,10 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
           <div className="alert-box alert-info" role="status">
             <ShieldCheck size={20} style={{ flexShrink: 0 }} />
             <div style={{ fontSize: 'var(--text-xs)', lineHeight: 1.5 }}>
-              Standard statutory taxation for events: Standalone catering attracts <strong>5% GST</strong> (without ITC). Photography, decor, venue, and sound equipment attract <strong>18% GST</strong>. Section 194C TDS applies when paying contractors via commercial accounts.
+              Standard statutory taxation for events: Standalone catering attracts{' '}
+              <strong>5% GST</strong> (without ITC). Photography, decor, venue, and sound equipment
+              attract <strong>18% GST</strong>. Section 194C TDS applies when paying contractors via
+              commercial accounts.
             </div>
           </div>
 
@@ -784,51 +1087,112 @@ export const VendorChecklist: React.FC<VendorChecklistProps> = ({
               value={tdsRate}
               onChange={(e) => setTdsRate(parseInt(e.target.value, 10))}
             >
-              <option value={0}>0% — Private Individual / Personal Family Booking (No TDS required)</option>
-              <option value={1}>1% — Individual Contractor / Sole Proprietorship (Section 194C)</option>
-              <option value={2}>2% — Corporate Company / Partnership Firm / LLP (Section 194C)</option>
+              <option value={0}>
+                0% — Private Individual / Personal Family Booking (No TDS required)
+              </option>
+              <option value={1}>
+                1% — Individual Contractor / Sole Proprietorship (Section 194C)
+              </option>
+              <option value={2}>
+                2% — Corporate Company / Partnership Firm / LLP (Section 194C)
+              </option>
             </select>
           </div>
 
           {/* Real-time Calculation Cards */}
-          <div style={{ background: 'var(--surface-subtle)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-4)', border: '1px solid var(--border)' }}>
+          <div
+            style={{
+              background: 'var(--surface-subtle)',
+              borderRadius: 'var(--radius-lg)',
+              padding: 'var(--space-4)',
+              border: '1px solid var(--border)',
+            }}
+          >
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-sm)' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  fontSize: 'var(--text-sm)',
+                }}
+              >
                 <span style={{ color: 'var(--text-muted)' }}>Contractor Base Service Value:</span>
-                <span className="tabular-nums" style={{ fontWeight: 600 }}>{formatCurrency(gstBreakdown.base)}</span>
+                <span className="tabular-nums" style={{ fontWeight: 600 }}>
+                  {formatCurrency(gstBreakdown.base)}
+                </span>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-sm)' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  fontSize: 'var(--text-sm)',
+                }}
+              >
                 <span style={{ color: 'var(--text-muted)' }}>
-                  GST Added ({gstRate}% — {gstRate > 0 ? `${gstRate / 2}% CGST + ${gstRate / 2}% SGST` : 'Exempt'}):
+                  GST Added ({gstRate}% —{' '}
+                  {gstRate > 0 ? `${gstRate / 2}% CGST + ${gstRate / 2}% SGST` : 'Exempt'}):
                 </span>
-                <span className="tabular-nums" style={{ fontWeight: 600, color: 'var(--color-warning-text)' }}>
+                <span
+                  className="tabular-nums"
+                  style={{ fontWeight: 600, color: 'var(--color-warning-text)' }}
+                >
                   +{formatCurrency(gstBreakdown.gstAmount)}
                 </span>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-sm)', borderTop: '1px solid var(--border)', paddingTop: 'var(--space-2)', fontWeight: 700 }}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  fontSize: 'var(--text-sm)',
+                  borderTop: '1px solid var(--border)',
+                  paddingTop: 'var(--space-2)',
+                  fontWeight: 700,
+                }}
+              >
                 <span>Gross Tax Invoice Total:</span>
                 <span className="tabular-nums">{formatCurrency(gstBreakdown.invoiceTotal)}</span>
               </div>
 
               {gstBreakdown.tdsAmount > 0 && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-sm)', color: 'var(--color-danger)' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    fontSize: 'var(--text-sm)',
+                    color: 'var(--color-danger)',
+                  }}
+                >
                   <span>Less TDS Deducted ({tdsRate}% under Sec 194C):</span>
                   <span className="tabular-nums">-{formatCurrency(gstBreakdown.tdsAmount)}</span>
                 </div>
               )}
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', borderTop: '2px solid var(--border)', paddingTop: 'var(--space-2)', marginTop: 'var(--space-1)' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'baseline',
+                  borderTop: '2px solid var(--border)',
+                  paddingTop: 'var(--space-2)',
+                  marginTop: 'var(--space-1)',
+                }}
+              >
                 <div>
-                  <span style={{ fontSize: 'var(--text-base)', fontWeight: 800, color: 'var(--text)' }}>
+                  <span
+                    style={{ fontSize: 'var(--text-base)', fontWeight: 800, color: 'var(--text)' }}
+                  >
                     Net Bank Transfer / Cheque Payable:
                   </span>
                   <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
                     Amount credited to vendor's verified bank account
                   </div>
                 </div>
-                <span className="tabular-nums" style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--accent-primary)' }}>
+                <span
+                  className="tabular-nums"
+                  style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--accent-primary)' }}
+                >
                   {formatCurrency(gstBreakdown.netPayable)}
                 </span>
               </div>

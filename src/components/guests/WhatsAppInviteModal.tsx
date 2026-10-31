@@ -1,10 +1,5 @@
 import React, { useState } from 'react';
-import {
-  Copy,
-  Check,
-  Sparkles,
-  MessageCircle,
-} from 'lucide-react';
+import { Copy, Check, Sparkles, MessageCircle } from 'lucide-react';
 import type { EventPlan } from '../../types/event';
 import { Modal, Button, Badge } from '../ui';
 import { generateWhatsAppInvite, type InviteStyle } from '../../services/shareExportService';
@@ -70,7 +65,12 @@ export const WhatsAppInviteModal: React.FC<WhatsAppInviteModalProps> = ({
               type="button"
               className={`chip ${style === 'royal' ? 'chip-active' : ''}`}
               onClick={() => setStyle('royal')}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                cursor: 'pointer',
+              }}
             >
               <span>🕉️</span>
               <span>Royal Traditional (Vedic)</span>
@@ -79,7 +79,12 @@ export const WhatsAppInviteModal: React.FC<WhatsAppInviteModalProps> = ({
               type="button"
               className={`chip ${style === 'modern' ? 'chip-active' : ''}`}
               onClick={() => setStyle('modern')}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                cursor: 'pointer',
+              }}
             >
               <span>🎉</span>
               <span>Modern Celebration (Party)</span>
@@ -88,7 +93,12 @@ export const WhatsAppInviteModal: React.FC<WhatsAppInviteModalProps> = ({
               type="button"
               className={`chip ${style === 'reminder' ? 'chip-active' : ''}`}
               onClick={() => setStyle('reminder')}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                cursor: 'pointer',
+              }}
             >
               <span>🔔</span>
               <span>Gentle RSVP Reminder</span>
@@ -98,8 +108,23 @@ export const WhatsAppInviteModal: React.FC<WhatsAppInviteModalProps> = ({
 
         {/* WhatsApp Preview Bubble */}
         <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
-            <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: 'var(--space-2)',
+            }}
+          >
+            <span
+              style={{
+                fontSize: 'var(--text-xs)',
+                fontWeight: 700,
+                color: 'var(--text-muted)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+              }}
+            >
               WhatsApp Message Preview
             </span>
             <Badge variant="success" dot>
@@ -156,12 +181,22 @@ export const WhatsAppInviteModal: React.FC<WhatsAppInviteModalProps> = ({
         >
           <Sparkles size={16} color="#25d366" style={{ flexShrink: 0 }} />
           <span>
-            Includes tailored Indian dietary reassurance (Jain/Pure Veg segregation) and ceremony Muhurats from your active plan.
+            Includes tailored Indian dietary reassurance (Jain/Pure Veg segregation) and ceremony
+            Muhurats from your active plan.
           </span>
         </div>
 
         {/* Action Buttons */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-2)', marginTop: 'var(--space-2)' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: 'var(--space-2)',
+            marginTop: 'var(--space-2)',
+          }}
+        >
           <Button variant="ghost" size="md" onClick={onClose}>
             Close
           </Button>
@@ -171,7 +206,9 @@ export const WhatsAppInviteModal: React.FC<WhatsAppInviteModalProps> = ({
               variant="outline"
               size="md"
               onClick={handleCopy}
-              leadingIcon={copied ? <Check size={16} color="var(--color-success)" /> : <Copy size={16} />}
+              leadingIcon={
+                copied ? <Check size={16} color="var(--color-success)" /> : <Copy size={16} />
+              }
             >
               {copied ? 'Copied to Clipboard! ✓' : 'Copy Message Text'}
             </Button>

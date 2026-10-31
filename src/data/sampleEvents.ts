@@ -19,8 +19,10 @@ export const SAMPLE_WEDDING: EventPlan = generateFallbackPlan({
   theme: 'Royal Marigold & Antique Gold',
   priorities: ['venue', 'catering', 'photography'],
   accessibilityNeeds: ['Wheelchair ramp to Mandap stage', 'Senior citizen buggy cart shuttle'],
-  culturalTraditions: 'Vedic Pheras at Lagna Muhurat, Sangeet family dance face-off, Baraat with traditional Dhol & Brass band',
-  specialNotes: 'Dedicated Pure Vegetarian and Jain counters; live Rajasthani folk musicians and floral shower entry.',
+  culturalTraditions:
+    'Vedic Pheras at Lagna Muhurat, Sangeet family dance face-off, Baraat with traditional Dhol & Brass band',
+  specialNotes:
+    'Dedicated Pure Vegetarian and Jain counters; live Rajasthani folk musicians and floral shower entry.',
   contingencyRate: 0.12,
 });
 
@@ -37,8 +39,9 @@ export const SAMPLE_BIRTHDAY: EventPlan = generateFallbackPlan({
   priorities: ['entertainment', 'guest_experience'],
   accessibilityNeeds: ['Elevator access to rooftop terrace'],
   culturalTraditions: 'Bollywood dance playlist with live Dhol jugalbandi',
-  specialNotes: 'Signature Mumbai street chaat counters, custom Bollywood cutout photobooth, and craft mocktails.',
-  contingencyRate: 0.10,
+  specialNotes:
+    'Signature Mumbai street chaat counters, custom Bollywood cutout photobooth, and craft mocktails.',
+  contingencyRate: 0.1,
 });
 
 export const SAMPLE_COMMUNITY: EventPlan = generateFallbackPlan({
@@ -52,18 +55,20 @@ export const SAMPLE_COMMUNITY: EventPlan = generateFallbackPlan({
   foodPreference: 'buffet',
   theme: 'Rangoli, Diyas & Dandiya Raas',
   priorities: ['guest_experience', 'budget_savings'],
-  accessibilityNeeds: ['Braille food labels', 'Dedicated elder seating arena', 'Emergency first aid booth'],
-  culturalTraditions: 'Maha Aarti at dusk, traditional Garba & Dandiya circles, and eco-friendly fireworks display',
-  specialNotes: 'Free community entry, artisan craft stalls, and zero-plastic eco-friendly food service.',
-  contingencyRate: 0.10,
+  accessibilityNeeds: [
+    'Braille food labels',
+    'Dedicated elder seating arena',
+    'Emergency first aid booth',
+  ],
+  culturalTraditions:
+    'Maha Aarti at dusk, traditional Garba & Dandiya circles, and eco-friendly fireworks display',
+  specialNotes:
+    'Free community entry, artisan craft stalls, and zero-plastic eco-friendly food service.',
+  contingencyRate: 0.1,
 });
 
 SAMPLE_WEDDING.id = 'evt-sample-wedding';
 SAMPLE_BIRTHDAY.id = 'evt-sample-birthday';
 SAMPLE_COMMUNITY.id = 'evt-sample-community';
 
-export const INITIAL_EVENTS: EventPlan[] = [
-  SAMPLE_WEDDING,
-  SAMPLE_BIRTHDAY,
-  SAMPLE_COMMUNITY,
-];
+export const INITIAL_EVENTS: EventPlan[] = [SAMPLE_WEDDING, SAMPLE_BIRTHDAY, SAMPLE_COMMUNITY];

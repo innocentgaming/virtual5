@@ -6,10 +6,22 @@ describe('Decision Engine Business Rules', () => {
     eventType: 'wedding' as const,
     totalBudget: 10000,
     budgetItems: [
-      { id: '1', name: 'Venue Rental', category: 'venue' as const, estimatedCost: 4000, priority: 'essential' as const },
-      { id: '2', name: 'Catering Buffet', category: 'catering' as const, estimatedCost: 3500, priority: 'essential' as const },
+      {
+        id: '1',
+        name: 'Venue Rental',
+        category: 'venue' as const,
+        estimatedCost: 4000,
+        priority: 'essential' as const,
+      },
+      {
+        id: '2',
+        name: 'Catering Buffet',
+        category: 'catering' as const,
+        estimatedCost: 3500,
+        priority: 'essential' as const,
+      },
     ],
-    contingencyRate: 0.10,
+    contingencyRate: 0.1,
     eventDate: '2026-12-01',
     guestCount: 80,
     venuePreference: 'banquet_hall' as const,
@@ -42,8 +54,20 @@ describe('Decision Engine Business Rules', () => {
       ...basePlan,
       totalBudget: 5000,
       budgetItems: [
-        { id: '1', name: 'Pricey Venue', category: 'venue' as const, estimatedCost: 4000, priority: 'essential' as const },
-        { id: '2', name: 'Dinner', category: 'catering' as const, estimatedCost: 2500, priority: 'essential' as const },
+        {
+          id: '1',
+          name: 'Pricey Venue',
+          category: 'venue' as const,
+          estimatedCost: 4000,
+          priority: 'essential' as const,
+        },
+        {
+          id: '2',
+          name: 'Dinner',
+          category: 'catering' as const,
+          estimatedCost: 2500,
+          priority: 'essential' as const,
+        },
       ], // total = 6500 + 500 (contingency) = 7000 vs 5000 budget
     };
 

@@ -71,7 +71,10 @@ export const Modal: React.FC<ModalProps> = ({
         const lastElement = focusableElements[focusableElements.length - 1];
 
         if (e.shiftKey) {
-          if (document.activeElement === firstElement || document.activeElement === modalRef.current) {
+          if (
+            document.activeElement === firstElement ||
+            document.activeElement === modalRef.current
+          ) {
             e.preventDefault();
             lastElement.focus();
           }
@@ -92,7 +95,10 @@ export const Modal: React.FC<ModalProps> = ({
       document.body.style.paddingRight = originalPaddingRight;
       window.removeEventListener('keydown', handleKeyDown);
       // Restore focus on close
-      if (previousActiveElement.current && typeof previousActiveElement.current.focus === 'function') {
+      if (
+        previousActiveElement.current &&
+        typeof previousActiveElement.current.focus === 'function'
+      ) {
         previousActiveElement.current.focus();
       }
     };
@@ -105,7 +111,14 @@ export const Modal: React.FC<ModalProps> = ({
 
   return (
     <div
-      style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 1000,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
     >
       <button
         type="button"
@@ -113,7 +126,14 @@ export const Modal: React.FC<ModalProps> = ({
         onClick={onClose}
         data-testid="modal-backdrop"
         aria-label="Dismiss backdrop"
-        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none', cursor: 'default' }}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          border: 'none',
+          cursor: 'default',
+        }}
       />
       <div
         ref={modalRef}
@@ -128,9 +148,17 @@ export const Modal: React.FC<ModalProps> = ({
       >
         <div className="ui-modal-header modal-header">
           <div className="ui-modal-header-text">
-            {title && <h2 id={titleId} className="ui-modal-title modal-title">{title}</h2>}
+            {title && (
+              <h2 id={titleId} className="ui-modal-title modal-title">
+                {title}
+              </h2>
+            )}
             {subtitle && <p className="ui-modal-subtitle modal-subtitle">{subtitle}</p>}
-            {description && !subtitle && <p id={descId} className="ui-modal-description">{description}</p>}
+            {description && !subtitle && (
+              <p id={descId} className="ui-modal-description">
+                {description}
+              </p>
+            )}
           </div>
           <button
             type="button"
@@ -138,15 +166,21 @@ export const Modal: React.FC<ModalProps> = ({
             onClick={onClose}
             aria-label="Close dialog"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="ui-icon" width="20" height="20">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              className="ui-icon"
+              width="20"
+              height="20"
+            >
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
-        <div className="ui-modal-body modal-body">
-          {children}
-        </div>
+        <div className="ui-modal-body modal-body">{children}</div>
 
         {footer && <div className="ui-modal-footer modal-footer">{footer}</div>}
       </div>

@@ -1,9 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import {
-  Users,
-  Plus,
-  Search,
-} from 'lucide-react';
+import { Users, Plus, Search } from 'lucide-react';
 import type { GuestItem, DietaryRequirement } from '../../types/event';
 import { Card, Button, Badge } from '../ui';
 
@@ -90,21 +86,37 @@ export const TableSeatingPlanner: React.FC<TableSeatingPlannerProps> = ({
   const filteredUnassigned = useMemo(() => {
     if (!searchTerm.trim()) return unassigned;
     const q = searchTerm.toLowerCase();
-    return unassigned.filter((g) => g.name.toLowerCase().includes(q) || g.notes?.toLowerCase().includes(q));
+    return unassigned.filter(
+      (g) => g.name.toLowerCase().includes(q) || g.notes?.toLowerCase().includes(q),
+    );
   }, [unassigned, searchTerm]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
       {/* Top Controls: Add Table & Summary Metrics */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-3)' }}>
-        <div style={{ display: 'flex', gap: 'var(--space-4)', flexWrap: 'wrap', alignItems: 'center' }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 'var(--space-3)',
+        }}
+      >
+        <div
+          style={{ display: 'flex', gap: 'var(--space-4)', flexWrap: 'wrap', alignItems: 'center' }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
             <span style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--text)' }}>
               Total Tables: {tableNames.length}
             </span>
             <span style={{ color: 'var(--text-muted)' }}>•</span>
             <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)' }}>
-              Seated: <strong style={{ color: 'var(--color-success)' }}>{guests.length - unassigned.length}</strong> / {guests.length}
+              Seated:{' '}
+              <strong style={{ color: 'var(--color-success)' }}>
+                {guests.length - unassigned.length}
+              </strong>{' '}
+              / {guests.length}
             </span>
           </div>
 
@@ -126,19 +138,32 @@ export const TableSeatingPlanner: React.FC<TableSeatingPlannerProps> = ({
               Add Table
             </Button>
           ) : (
-            <form onSubmit={handleAddTable} style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
+            <form
+              onSubmit={handleAddTable}
+              style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}
+            >
               <input
                 type="text"
                 className="form-control"
                 placeholder="e.g. Table 4, VIP Mandap"
                 value={newTableName}
                 onChange={(e) => setNewTableName(e.target.value)}
-                style={{ height: '32px', minHeight: '32px', fontSize: 'var(--text-xs)', width: '160px' }}
+                style={{
+                  height: '32px',
+                  minHeight: '32px',
+                  fontSize: 'var(--text-xs)',
+                  width: '160px',
+                }}
               />
               <Button variant="primary" size="sm" type="submit">
                 Save
               </Button>
-              <Button variant="ghost" size="sm" type="button" onClick={() => setShowAddTable(false)}>
+              <Button
+                variant="ghost"
+                size="sm"
+                type="button"
+                onClick={() => setShowAddTable(false)}
+              >
                 Cancel
               </Button>
             </form>
@@ -163,7 +188,10 @@ export const TableSeatingPlanner: React.FC<TableSeatingPlannerProps> = ({
           // Dietary breakdown at this table
           const jain = tableGuests.filter((g) => g.dietary === 'jain').length;
           const pureVeg = tableGuests.filter((g) => g.dietary === 'pure_veg').length;
-          const specialDiet = tableGuests.filter((g) => g.dietary && g.dietary !== 'none' && g.dietary !== 'jain' && g.dietary !== 'pure_veg').length;
+          const specialDiet = tableGuests.filter(
+            (g) =>
+              g.dietary && g.dietary !== 'none' && g.dietary !== 'jain' && g.dietary !== 'pure_veg',
+          ).length;
 
           return (
             <Card
@@ -180,9 +208,18 @@ export const TableSeatingPlanner: React.FC<TableSeatingPlannerProps> = ({
             >
               <div>
                 {/* Table Header */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 'var(--space-2)' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'baseline',
+                    marginBottom: 'var(--space-2)',
+                  }}
+                >
                   <div>
-                    <h4 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text)', margin: 0 }}>
+                    <h4
+                      style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text)', margin: 0 }}
+                    >
                       {tableName}
                     </h4>
                     <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
@@ -217,19 +254,53 @@ export const TableSeatingPlanner: React.FC<TableSeatingPlannerProps> = ({
 
                 {/* Dietary Isolation Badges */}
                 {(jain > 0 || pureVeg > 0 || specialDiet > 0) && (
-                  <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: 'var(--space-3)' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: '4px',
+                      flexWrap: 'wrap',
+                      marginBottom: 'var(--space-3)',
+                    }}
+                  >
                     {jain > 0 && (
-                      <span style={{ fontSize: '0.68rem', fontWeight: 700, padding: '1px 6px', borderRadius: '4px', background: 'rgba(234, 88, 12, 0.12)', color: '#ea580c' }}>
+                      <span
+                        style={{
+                          fontSize: '0.68rem',
+                          fontWeight: 700,
+                          padding: '1px 6px',
+                          borderRadius: '4px',
+                          background: 'rgba(234, 88, 12, 0.12)',
+                          color: '#ea580c',
+                        }}
+                      >
                         🌱 {jain} Jain
                       </span>
                     )}
                     {pureVeg > 0 && (
-                      <span style={{ fontSize: '0.68rem', fontWeight: 700, padding: '1px 6px', borderRadius: '4px', background: 'rgba(22, 163, 74, 0.12)', color: '#16a34a' }}>
+                      <span
+                        style={{
+                          fontSize: '0.68rem',
+                          fontWeight: 700,
+                          padding: '1px 6px',
+                          borderRadius: '4px',
+                          background: 'rgba(22, 163, 74, 0.12)',
+                          color: '#16a34a',
+                        }}
+                      >
                         🥗 {pureVeg} Pure Veg
                       </span>
                     )}
                     {specialDiet > 0 && (
-                      <span style={{ fontSize: '0.68rem', fontWeight: 700, padding: '1px 6px', borderRadius: '4px', background: 'var(--surface-subtle)', color: 'var(--text-muted)' }}>
+                      <span
+                        style={{
+                          fontSize: '0.68rem',
+                          fontWeight: 700,
+                          padding: '1px 6px',
+                          borderRadius: '4px',
+                          background: 'var(--surface-subtle)',
+                          color: 'var(--text-muted)',
+                        }}
+                      >
                         ⚠️ {specialDiet} Special Diet
                       </span>
                     )}
@@ -237,9 +308,25 @@ export const TableSeatingPlanner: React.FC<TableSeatingPlannerProps> = ({
                 )}
 
                 {/* Guest Chips inside Table */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '220px', overflowY: 'auto' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '6px',
+                    maxHeight: '220px',
+                    overflowY: 'auto',
+                  }}
+                >
                   {tableGuests.length === 0 ? (
-                    <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', fontStyle: 'italic', padding: 'var(--space-3) 0', textAlign: 'center' }}>
+                    <div
+                      style={{
+                        fontSize: 'var(--text-xs)',
+                        color: 'var(--text-muted)',
+                        fontStyle: 'italic',
+                        padding: 'var(--space-3) 0',
+                        textAlign: 'center',
+                      }}
+                    >
                       No guests assigned yet. Assign from tray below.
                     </div>
                   ) : (
@@ -257,11 +344,31 @@ export const TableSeatingPlanner: React.FC<TableSeatingPlannerProps> = ({
                           fontSize: 'var(--text-xs)',
                         }}
                       >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden' }}>
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            overflow: 'hidden',
+                          }}
+                        >
                           <span>{DIETARY_ICONS[guest.dietary] || '👤'}</span>
-                          <span style={{ fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
+                          <span
+                            style={{
+                              fontWeight: 600,
+                              color: 'var(--text)',
+                              whiteSpace: 'nowrap',
+                              textOverflow: 'ellipsis',
+                              overflow: 'hidden',
+                            }}
+                          >
                             {guest.name}
-                            {guest.plusOne && <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}> (+1)</span>}
+                            {guest.plusOne && (
+                              <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>
+                                {' '}
+                                (+1)
+                              </span>
+                            )}
                           </span>
                         </div>
 
@@ -302,9 +409,28 @@ export const TableSeatingPlanner: React.FC<TableSeatingPlannerProps> = ({
 
       {/* Unassigned Guests Tray */}
       <Card>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-3)', marginBottom: 'var(--space-3)' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: 'var(--space-3)',
+            marginBottom: 'var(--space-3)',
+          }}
+        >
           <div>
-            <h4 style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--text)', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <h4
+              style={{
+                fontSize: 'var(--text-sm)',
+                fontWeight: 700,
+                color: 'var(--text)',
+                margin: 0,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+              }}
+            >
               <Users size={16} color="var(--accent-primary)" />
               <span>Unassigned Guests Tray ({unassigned.length})</span>
             </h4>
@@ -314,24 +440,51 @@ export const TableSeatingPlanner: React.FC<TableSeatingPlannerProps> = ({
           </div>
 
           <div style={{ position: 'relative', width: '220px' }}>
-            <Search size={14} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+            <Search
+              size={14}
+              style={{
+                position: 'absolute',
+                left: '10px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: 'var(--text-muted)',
+              }}
+            />
             <input
               type="text"
               className="form-control"
               placeholder="Search unassigned..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ paddingLeft: '30px', height: '32px', minHeight: '32px', fontSize: 'var(--text-xs)' }}
+              style={{
+                paddingLeft: '30px',
+                height: '32px',
+                minHeight: '32px',
+                fontSize: 'var(--text-xs)',
+              }}
             />
           </div>
         </div>
 
         {filteredUnassigned.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: 'var(--space-4)', color: 'var(--text-muted)', fontSize: 'var(--text-sm)' }}>
+          <div
+            style={{
+              textAlign: 'center',
+              padding: 'var(--space-4)',
+              color: 'var(--text-muted)',
+              fontSize: 'var(--text-sm)',
+            }}
+          >
             🎉 All guests have been assigned to tables! Seating chart is 100% complete.
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 'var(--space-2)' }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+              gap: 'var(--space-2)',
+            }}
+          >
             {filteredUnassigned.map((guest) => (
               <div
                 key={guest.id}
@@ -349,7 +502,16 @@ export const TableSeatingPlanner: React.FC<TableSeatingPlannerProps> = ({
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
                   <span>{DIETARY_ICONS[guest.dietary] || '👤'}</span>
                   <div style={{ overflow: 'hidden' }}>
-                    <div style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
+                    <div
+                      style={{
+                        fontSize: 'var(--text-xs)',
+                        fontWeight: 600,
+                        color: 'var(--text)',
+                        whiteSpace: 'nowrap',
+                        textOverflow: 'ellipsis',
+                        overflow: 'hidden',
+                      }}
+                    >
                       {guest.name}
                     </div>
                     {guest.dietary && guest.dietary !== 'none' && (

@@ -32,11 +32,7 @@ export interface GeminiClientResult {
   statusCode?: number;
 }
 
-const DEFAULT_MODELS = [
-  'gemini-2.5-flash',
-  'gemini-2.5-flash-lite',
-  'gemini-2.0-flash',
-];
+const DEFAULT_MODELS = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash'];
 
 const DEFAULT_TIMEOUT_MS = 10000;
 const DEFAULT_MAX_RESPONSE_BYTES = 512 * 1024; // 512 KB cap
@@ -96,7 +92,7 @@ export function canCallGemini(customApiKey?: string): boolean {
  * Executes a hardened call to the Gemini API or a configured proxy.
  */
 export async function requestGeminiContent(
-  options: GeminiRequestOptions
+  options: GeminiRequestOptions,
 ): Promise<GeminiClientResult> {
   const {
     prompt,
@@ -310,7 +306,8 @@ export async function requestGeminiContent(
         } catch {
           json = {};
         }
-        const candidates = json.candidates as Array<{ content?: { parts?: Array<{ text?: string }> } }> | undefined;
+        const candidates = json.candidates as
+          Array<{ content?: { parts?: Array<{ text?: string }> } }> | undefined;
         const text = candidates?.[0]?.content?.parts?.[0]?.text;
 
         if (text) {

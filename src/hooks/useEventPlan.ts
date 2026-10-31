@@ -73,8 +73,18 @@ export interface UseEventPlanOptions {
 
 export function computePlanChangeDiff(prev: EventPlan, updated: EventPlan): PlanChangeDiff | null {
   const details: string[] = [];
-  const prevSummary = calculateBudgetSummary(prev.totalBudget, prev.budgetItems, prev.contingencyRate, prev.guestCount);
-  const updatedSummary = calculateBudgetSummary(updated.totalBudget, updated.budgetItems, updated.contingencyRate, updated.guestCount);
+  const prevSummary = calculateBudgetSummary(
+    prev.totalBudget,
+    prev.budgetItems,
+    prev.contingencyRate,
+    prev.guestCount,
+  );
+  const updatedSummary = calculateBudgetSummary(
+    updated.totalBudget,
+    updated.budgetItems,
+    updated.contingencyRate,
+    updated.guestCount,
+  );
 
   let utilizationChange: PlanChangeDiff['utilizationChange'] | undefined;
   if (Math.abs(prevSummary.utilizationPercentage - updatedSummary.utilizationPercentage) >= 0.1) {
@@ -82,7 +92,9 @@ export function computePlanChangeDiff(prev: EventPlan, updated: EventPlan): Plan
       from: prevSummary.utilizationPercentage,
       to: updatedSummary.utilizationPercentage,
     };
-    details.push(`Utilization ${prevSummary.utilizationPercentage}% → ${updatedSummary.utilizationPercentage}%`);
+    details.push(
+      `Utilization ${prevSummary.utilizationPercentage}% → ${updatedSummary.utilizationPercentage}%`,
+    );
   }
 
   let budgetChange: PlanChangeDiff['budgetChange'] | undefined;
@@ -92,7 +104,9 @@ export function computePlanChangeDiff(prev: EventPlan, updated: EventPlan): Plan
       to: updated.totalBudget,
       diff: updated.totalBudget - prev.totalBudget,
     };
-    details.push(`Budget ${formatCurrency(prev.totalBudget)} → ${formatCurrency(updated.totalBudget)}`);
+    details.push(
+      `Budget ${formatCurrency(prev.totalBudget)} → ${formatCurrency(updated.totalBudget)}`,
+    );
   }
 
   let guestChange: PlanChangeDiff['guestChange'] | undefined;
@@ -102,7 +116,9 @@ export function computePlanChangeDiff(prev: EventPlan, updated: EventPlan): Plan
       to: updated.guestCount,
       diff: updated.guestCount - prev.guestCount,
     };
-    details.push(`Guests ${prev.guestCount} → ${updated.guestCount} (${updated.guestCount > prev.guestCount ? '+' : ''}${updated.guestCount - prev.guestCount})`);
+    details.push(
+      `Guests ${prev.guestCount} → ${updated.guestCount} (${updated.guestCount > prev.guestCount ? '+' : ''}${updated.guestCount - prev.guestCount})`,
+    );
   }
 
   if (prev.eventDate !== updated.eventDate) {
@@ -120,10 +136,12 @@ export function computePlanChangeDiff(prev: EventPlan, updated: EventPlan): Plan
 
   const prevInsightIds = new Set((prev.decisionInsights || []).map((i) => i.id));
   const newInsights = (updated.decisionInsights || []).filter(
-    (i) => !prevInsightIds.has(i.id) && (i.type === 'warning' || i.type === 'action_required')
+    (i) => !prevInsightIds.has(i.id) && (i.type === 'warning' || i.type === 'action_required'),
   );
   if (newInsights.length > 0) {
-    details.push(`${newInsights.length} new alert${newInsights.length > 1 ? 's' : ''}: ${newInsights.map((i) => i.title).join(', ')}`);
+    details.push(
+      `${newInsights.length} new alert${newInsights.length > 1 ? 's' : ''}: ${newInsights.map((i) => i.title).join(', ')}`,
+    );
   }
 
   if (details.length === 0) return null;
@@ -220,7 +238,9 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
   // ---------------------------------------------------------------------------
   const [syncStatus, setSyncStatus] = useState<SyncStatus>(cloudSync ? 'loading' : 'off');
   // 'idle' for guests; for accounts: loading the plans -> ready (may be empty for a brand-new account) or error.
-  const [accountLoad, setAccountLoad] = useState<'idle' | 'loading' | 'ready' | 'error'>(cloudSync ? 'loading' : 'idle');
+  const [accountLoad, setAccountLoad] = useState<'idle' | 'loading' | 'ready' | 'error'>(
+    cloudSync ? 'loading' : 'idle',
+  );
   const [loadAttempt, setLoadAttempt] = useState(0);
   const remoteVersionRef = useRef<number | null>(null);
   const hydratedRef = useRef(false);
@@ -240,36 +260,41 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
       return false;
     }
     setEvents(valid);
-    setActiveEventId(doc.activeId && valid.some((e) => e.id === doc.activeId) ? doc.activeId : valid[0].id);
+    setActiveEventId(
+      doc.activeId && valid.some((e) => e.id === doc.activeId) ? doc.activeId : valid[0].id,
+    );
     return true;
   }, []);
 
-  const pushToCloud = useCallback(
-    async (force = false) => {
-      const payload = eventsRef.current.filter((e) => isValidEventPlan(e)).map(sanitizeEventForStorage);
-      if (payload.length === 0 && !force) return;
-      setSyncStatus('saving');
-      const res = await eventsApi.save({
-        events: payload,
-        activeId: activeIdRef.current || (payload[0]?.id ?? null),
-        baseUpdatedAt: remoteVersionRef.current,
-        force,
-      });
-      if (res.ok) {
-        remoteVersionRef.current = res.updatedAt;
-        setSyncStatus('saved');
-      } else if (res.status === 401) {
-        expiredRef.current?.();
-      } else if (res.status === 409) {
-        const doc = res as unknown as RemoteEventsDoc;
-        conflictDocRef.current = { events: doc.events ?? [], activeId: doc.activeId ?? null, updatedAt: doc.updatedAt ?? 0 };
-        setSyncStatus('conflict');
-      } else {
-        setSyncStatus(res.code === 'network' ? 'offline' : 'error');
-      }
-    },
-    []
-  );
+  const pushToCloud = useCallback(async (force = false) => {
+    const payload = eventsRef.current
+      .filter((e) => isValidEventPlan(e))
+      .map(sanitizeEventForStorage);
+    if (payload.length === 0 && !force) return;
+    setSyncStatus('saving');
+    const res = await eventsApi.save({
+      events: payload,
+      activeId: activeIdRef.current || (payload[0]?.id ?? null),
+      baseUpdatedAt: remoteVersionRef.current,
+      force,
+    });
+    if (res.ok) {
+      remoteVersionRef.current = res.updatedAt;
+      setSyncStatus('saved');
+    } else if (res.status === 401) {
+      expiredRef.current?.();
+    } else if (res.status === 409) {
+      const doc = res as unknown as RemoteEventsDoc;
+      conflictDocRef.current = {
+        events: doc.events ?? [],
+        activeId: doc.activeId ?? null,
+        updatedAt: doc.updatedAt ?? 0,
+      };
+      setSyncStatus('conflict');
+    } else {
+      setSyncStatus(res.code === 'network' ? 'offline' : 'error');
+    }
+  }, []);
 
   // Initial load: pull the account's plans. A brand-new account is simply empty: it is NOT seeded with
   // sample events or whatever happens to be stored on this device.
@@ -338,7 +363,7 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
         await pushToCloud(true);
       }
     },
-    [applyRemote, pushToCloud]
+    [applyRemote, pushToCloud],
   );
 
   const retrySync = useCallback(() => {
@@ -357,10 +382,12 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
     const summary = calculateBudgetSummary(
       activeEvent?.totalBudget ?? 0,
       activeEvent?.budgetItems ?? [],
-      activeEvent?.contingencyRate ?? 0.1
+      activeEvent?.contingencyRate ?? 0.1,
     );
     summary.perGuestCost =
-      activeEvent && activeEvent.guestCount > 0 ? Math.round(summary.totalEstimated / activeEvent.guestCount) : 0;
+      activeEvent && activeEvent.guestCount > 0
+        ? Math.round(summary.totalEstimated / activeEvent.guestCount)
+        : 0;
     return summary;
   }, [activeEvent]);
 
@@ -403,10 +430,10 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
             return fullyUpdated;
           }
           return evt;
-        })
+        }),
       );
     },
-    [activeEvent]
+    [activeEvent],
   );
 
   // Event Switcher
@@ -435,7 +462,7 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
         contingencyRate?: number;
       },
       useAI = false,
-      apiKey?: string
+      apiKey?: string,
     ) => {
       setIsGenerating(true);
       setGenerationError(null);
@@ -463,7 +490,7 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
         setIsGenerating(false);
       }
     },
-    []
+    [],
   );
 
   // Update Event Details (triggers recalculation of per-guest costs, etc.)
@@ -490,7 +517,7 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
         return next;
       });
     },
-    [updateActiveEvent]
+    [updateActiveEvent],
   );
 
   // Budget Actions
@@ -506,7 +533,7 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
         budgetItems: [...prev.budgetItems, newItem],
       }));
     },
-    [updateActiveEvent]
+    [updateActiveEvent],
   );
 
   const updateBudgetItem = useCallback(
@@ -523,11 +550,11 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
                     ? Math.max(0, isNaN(updates.estimatedCost) ? 0 : updates.estimatedCost)
                     : item.estimatedCost,
               }
-            : item
+            : item,
         ),
       }));
     },
-    [updateActiveEvent]
+    [updateActiveEvent],
   );
 
   const deleteBudgetItem = useCallback(
@@ -537,18 +564,18 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
         budgetItems: prev.budgetItems.filter((item) => item.id !== id),
       }));
     },
-    [updateActiveEvent]
+    [updateActiveEvent],
   );
 
   const updateContingencyRate = useCallback(
     (rate: number) => {
-      const safeRate = Math.max(0, Math.min(0.5, isNaN(rate) ? 0.10 : rate));
+      const safeRate = Math.max(0, Math.min(0.5, isNaN(rate) ? 0.1 : rate));
       updateActiveEvent((prev) => ({
         ...prev,
         contingencyRate: safeRate,
       }));
     },
-    [updateActiveEvent]
+    [updateActiveEvent],
   );
 
   // Timeline / Task Actions
@@ -557,11 +584,11 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
       updateActiveEvent((prev) => ({
         ...prev,
         tasks: prev.tasks.map((task) =>
-          task.id === id ? { ...task, completed: !task.completed } : task
+          task.id === id ? { ...task, completed: !task.completed } : task,
         ),
       }));
     },
-    [updateActiveEvent]
+    [updateActiveEvent],
   );
 
   const addTask = useCallback(
@@ -575,7 +602,7 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
         tasks: [...prev.tasks, newTask],
       }));
     },
-    [updateActiveEvent]
+    [updateActiveEvent],
   );
 
   const updateTask = useCallback(
@@ -585,7 +612,7 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
         tasks: prev.tasks.map((t) => (t.id === id ? { ...t, ...updates } : t)),
       }));
     },
-    [updateActiveEvent]
+    [updateActiveEvent],
   );
 
   const deleteTask = useCallback(
@@ -595,7 +622,7 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
         tasks: prev.tasks.filter((t) => t.id !== id),
       }));
     },
-    [updateActiveEvent]
+    [updateActiveEvent],
   );
 
   // Vendor Actions
@@ -613,11 +640,11 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
                     ? Math.max(0, isNaN(updates.estimatedCost) ? 0 : updates.estimatedCost)
                     : v.estimatedCost,
               }
-            : v
+            : v,
         ),
       }));
     },
-    [updateActiveEvent]
+    [updateActiveEvent],
   );
 
   const addVendor = useCallback(
@@ -631,7 +658,7 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
         vendors: [...prev.vendors, newVendor],
       }));
     },
-    [updateActiveEvent]
+    [updateActiveEvent],
   );
 
   // Guest Actions
@@ -646,7 +673,7 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
         guests: [...(prev.guests || []), newGuest],
       }));
     },
-    [updateActiveEvent]
+    [updateActiveEvent],
   );
 
   const updateGuest = useCallback(
@@ -656,7 +683,7 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
         guests: (prev.guests || []).map((g) => (g.id === id ? { ...g, ...updates } : g)),
       }));
     },
-    [updateActiveEvent]
+    [updateActiveEvent],
   );
 
   const deleteGuest = useCallback(
@@ -666,7 +693,7 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
         guests: (prev.guests || []).filter((g) => g.id !== id),
       }));
     },
-    [updateActiveEvent]
+    [updateActiveEvent],
   );
 
   // Schedule Actions
@@ -681,7 +708,7 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
         schedule: [...(prev.schedule || []), newItem],
       }));
     },
-    [updateActiveEvent]
+    [updateActiveEvent],
   );
 
   const updateScheduleItem = useCallback(
@@ -691,7 +718,7 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
         schedule: (prev.schedule || []).map((s) => (s.id === id ? { ...s, ...updates } : s)),
       }));
     },
-    [updateActiveEvent]
+    [updateActiveEvent],
   );
 
   const deleteScheduleItem = useCallback(
@@ -701,7 +728,7 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
         schedule: (prev.schedule || []).filter((s) => s.id !== id),
       }));
     },
-    [updateActiveEvent]
+    [updateActiveEvent],
   );
 
   // -------------------------------------------------------------------------
@@ -797,7 +824,9 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
           case 'update_vendor_status': {
             if (p.vendorId) {
               updatedVendors = updatedVendors.map((v) =>
-                v.id === p.vendorId ? { ...v, status: (p.status as VendorItem['status']) || 'shortlisted' } : v
+                v.id === p.vendorId
+                  ? { ...v, status: (p.status as VendorItem['status']) || 'shortlisted' }
+                  : v,
               );
             }
             break;
@@ -893,7 +922,7 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
         };
       });
     },
-    [updateActiveEvent]
+    [updateActiveEvent],
   );
 
   const undoLastChange = useCallback(() => {
@@ -944,11 +973,16 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
             ? prev.vendors.find((v) => v.id === scenario.vendorId)?.category
             : 'catering';
           updatedBudgetItems = updatedBudgetItems.map((item) => {
-            if (item.category === targetCategory || (!targetCategory && item.category === 'catering')) {
-              const spikeAmount = Math.round(item.estimatedCost * ((scenario.vendorPriceSpikePercent ?? 0) / 100));
+            if (
+              item.category === targetCategory ||
+              (!targetCategory && item.category === 'catering')
+            ) {
+              const spikeAmount = Math.round(
+                item.estimatedCost * ((scenario.vendorPriceSpikePercent ?? 0) / 100),
+              );
               const newActual = (item.actualCost || item.estimatedCost) + spikeAmount;
               changeDescriptions.push(
-                `${item.name} quote spiked by ${scenario.vendorPriceSpikePercent}% (+${formatCurrency(spikeAmount)})`
+                `${item.name} quote spiked by ${scenario.vendorPriceSpikePercent}% (+${formatCurrency(spikeAmount)})`,
               );
               return {
                 ...item,
@@ -966,7 +1000,7 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
           const ratio = nextGuests / Math.max(1, prev.guestCount);
           updatedGuests = nextGuests;
           changeDescriptions.push(
-            `Guest count adjusted by ${scenario.guestDelta > 0 ? '+' : ''}${scenario.guestDelta} (now ${nextGuests})`
+            `Guest count adjusted by ${scenario.guestDelta > 0 ? '+' : ''}${scenario.guestDelta} (now ${nextGuests})`,
           );
           updatedBudgetItems = updatedBudgetItems.map((item) => {
             if (item.isPerGuest) {
@@ -991,14 +1025,16 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
           updatedTasks = repaceTimelineTasks(updatedTasks, prev.eventDate, newDateStr);
           updatedDate = newDateStr;
           changeDescriptions.push(
-            `Event date shifted by ${scenario.dateShiftDays > 0 ? '+' : ''}${scenario.dateShiftDays} days (now ${newDateStr}); timeline re-paced`
+            `Event date shifted by ${scenario.dateShiftDays > 0 ? '+' : ''}${scenario.dateShiftDays} days (now ${newDateStr}); timeline re-paced`,
           );
         }
 
         // 4. Venue change
         if (scenario.newVenuePreference && scenario.newVenuePreference !== prev.venuePreference) {
           updatedVenue = scenario.newVenuePreference;
-          changeDescriptions.push(`Venue layout changed from ${prev.venuePreference} to ${scenario.newVenuePreference}`);
+          changeDescriptions.push(
+            `Venue layout changed from ${prev.venuePreference} to ${scenario.newVenuePreference}`,
+          );
         }
 
         // 5. Budget delta percent
@@ -1006,7 +1042,7 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
           const delta = Math.round(prev.totalBudget * (scenario.budgetDeltaPercent / 100));
           updatedBudget = Math.max(10000, prev.totalBudget + delta);
           changeDescriptions.push(
-            `Budget adjusted by ${scenario.budgetDeltaPercent > 0 ? '+' : ''}${scenario.budgetDeltaPercent}% (${formatCurrency(delta)})`
+            `Budget adjusted by ${scenario.budgetDeltaPercent > 0 ? '+' : ''}${scenario.budgetDeltaPercent}% (${formatCurrency(delta)})`,
           );
         }
 
@@ -1015,7 +1051,7 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
           const targetV = updatedVendors.find((v) => v.id === scenario.cancelVendorId);
           if (targetV) {
             updatedVendors = updatedVendors.map((v) =>
-              v.id === scenario.cancelVendorId ? { ...v, status: 'cancelled' as const } : v
+              v.id === scenario.cancelVendorId ? { ...v, status: 'cancelled' as const } : v,
             );
             changeDescriptions.push(`Vendor ${targetV.role} cancelled / marked unavailable`);
           }
@@ -1055,7 +1091,7 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
         };
       });
     },
-    [updateActiveEvent]
+    [updateActiveEvent],
   );
 
   const repaceTimeline = useCallback(
@@ -1069,7 +1105,7 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
         };
       });
     },
-    [updateActiveEvent]
+    [updateActiveEvent],
   );
 
   // Regeneration without losing plan ID
@@ -1102,7 +1138,7 @@ export function useEventPlan(options: UseEventPlanOptions = {}) {
         setIsGenerating(false);
       }
     },
-    [activeEvent, updateActiveEvent]
+    [activeEvent, updateActiveEvent],
   );
 
   // Delete event

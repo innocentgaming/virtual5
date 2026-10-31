@@ -102,8 +102,8 @@ export const PersonaSwitcher: React.FC<PersonaSwitcherProps> = ({
             p.id === SAMPLE_WEDDING.id
               ? SAMPLE_WEDDING
               : p.id === SAMPLE_BIRTHDAY.id
-              ? SAMPLE_BIRTHDAY
-              : SAMPLE_COMMUNITY;
+                ? SAMPLE_BIRTHDAY
+                : SAMPLE_COMMUNITY;
 
           return (
             <button
@@ -122,12 +122,8 @@ export const PersonaSwitcher: React.FC<PersonaSwitcherProps> = ({
                 gap: '0.45rem',
                 padding: '0.3rem 0.65rem',
                 borderRadius: '999px',
-                border: isActive
-                  ? '1.5px solid var(--accent-primary)'
-                  : '1px solid var(--border)',
-                background: isActive
-                  ? 'var(--surface-raised)'
-                  : 'var(--surface-subtle)',
+                border: isActive ? '1.5px solid var(--accent-primary)' : '1px solid var(--border)',
+                background: isActive ? 'var(--surface-raised)' : 'var(--surface-subtle)',
                 color: isActive ? 'var(--text)' : 'var(--text-muted)',
                 fontWeight: isActive ? 700 : 500,
                 fontSize: '0.78rem',

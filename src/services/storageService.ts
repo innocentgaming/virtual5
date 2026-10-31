@@ -11,10 +11,7 @@ export const STORAGE_KEY_ACCOUNT_EVENTS = 'eventwise_ai_account_events_v2';
 export const STORAGE_KEY_ACCOUNT_ACTIVE_ID = 'eventwise_ai_account_active_id_v2';
 export const STORAGE_KEY_VERSION = 'eventwise_ai_schema_version';
 
-const LEGACY_STORAGE_KEYS = [
-  'eventwise_ai_events_v1',
-  'eventwise_ai_events_india_v1',
-];
+const LEGACY_STORAGE_KEYS = ['eventwise_ai_events_v1', 'eventwise_ai_events_india_v1'];
 
 export const MAX_STORAGE_BYTES = 2 * 1024 * 1024; // 2 MB cap
 
@@ -127,7 +124,10 @@ export function sanitizeEventForStorage(event: EventPlan): EventPlan {
  * Performs automatic schema migration from v1 to v2, deep-validates all records,
  * and recovers gracefully from corrupted or oversized storage payloads.
  */
-export function loadSavedEvents(fallbackToSample: boolean = true, storageKey: string = STORAGE_KEY_EVENTS): EventPlan[] {
+export function loadSavedEvents(
+  fallbackToSample: boolean = true,
+  storageKey: string = STORAGE_KEY_EVENTS,
+): EventPlan[] {
   try {
     let raw = localStorage.getItem(storageKey);
     let isMigration = false;
@@ -190,9 +190,7 @@ export function loadSavedEvents(fallbackToSample: boolean = true, storageKey: st
  */
 export function saveEvents(events: EventPlan[], storageKey: string = STORAGE_KEY_EVENTS): boolean {
   try {
-    const validEvents = events
-      .filter((e) => isValidEventPlan(e))
-      .map(sanitizeEventForStorage);
+    const validEvents = events.filter((e) => isValidEventPlan(e)).map(sanitizeEventForStorage);
 
     const serialized = JSON.stringify(validEvents);
 
@@ -202,7 +200,10 @@ export function saveEvents(events: EventPlan[], storageKey: string = STORAGE_KEY
     }
 
     if (serialized.length > MAX_STORAGE_BYTES) {
-      reportClientError(new Error(`Storage payload exceeded limit of ${MAX_STORAGE_BYTES} bytes`), 'saveEvents');
+      reportClientError(
+        new Error(`Storage payload exceeded limit of ${MAX_STORAGE_BYTES} bytes`),
+        'saveEvents',
+      );
       return false;
     }
 
@@ -219,7 +220,9 @@ export function saveEvents(events: EventPlan[], storageKey: string = STORAGE_KEY
         err.name === 'NS_ERROR_DOM_QUOTA_REACHED' ||
         err.message?.toLowerCase().includes('quota'))
     ) {
-      notifyStorageError('Browser storage quota exceeded. Please export or remove older plans to save new changes.');
+      notifyStorageError(
+        'Browser storage quota exceeded. Please export or remove older plans to save new changes.',
+      );
     }
     return false;
   }
@@ -265,7 +268,12 @@ export function clearAccountStorageData(): void {
  */
 export function loadActiveEventId(storageKey: string = STORAGE_KEY_ACTIVE_ID): string | null {
   try {
-    return localStorage.getItem(storageKey) || (storageKey === STORAGE_KEY_ACTIVE_ID ? localStorage.getItem('eventwise_ai_active_id_india_v1') : null);
+    return (
+      localStorage.getItem(storageKey) ||
+      (storageKey === STORAGE_KEY_ACTIVE_ID
+        ? localStorage.getItem('eventwise_ai_active_id_india_v1')
+        : null)
+    );
   } catch {
     return null;
   }

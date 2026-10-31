@@ -52,7 +52,10 @@ describe('Guest List & RSVP Management Tests', () => {
 
   it('correctly tallies RSVP counts including confirmed plus-ones', () => {
     const attendingGuests = sampleGuests.filter((g) => g.rsvpStatus === 'attending');
-    const totalAttendingHeads = attendingGuests.reduce((sum, g) => sum + 1 + (g.plusOne ? 1 : 0), 0);
+    const totalAttendingHeads = attendingGuests.reduce(
+      (sum, g) => sum + 1 + (g.plusOne ? 1 : 0),
+      0,
+    );
     const declinedCount = sampleGuests.filter((g) => g.rsvpStatus === 'declined').length;
     const pendingCount = sampleGuests.filter((g) => g.rsvpStatus === 'pending').length;
 

@@ -71,16 +71,26 @@ export default function LandingPage(): React.ReactElement {
           <div>
             <h1>Plan the whole celebration, down to the muhurat.</h1>
             <p className="s-hero__lede">
-              One place for the budget, the guest list, the vendors and the day-of schedule of an Indian wedding, birthday or community mela, with numbers in rupees and rules that understand how these events actually run.
+              One place for the budget, the guest list, the vendors and the day-of schedule of an
+              Indian wedding, birthday or community mela, with numbers in rupees and rules that
+              understand how these events actually run.
             </p>
             <div className="s-hero__cta">
-              <Link to="/signup" className="s-btn s-btn--primary">Create a free account</Link>
-              <Link to="/demo" className="s-btn s-btn--ghost">Explore the demo</Link>
+              <Link to="/signup" className="s-btn s-btn--primary">
+                Create a free account
+              </Link>
+              <Link to="/demo" className="s-btn s-btn--ghost">
+                Explore the demo
+              </Link>
             </div>
             <p className="s-hero__note">No card needed. The demo needs no sign-up at all.</p>
           </div>
 
-          <figure className="s-sheet" aria-label="Example run of show and budget from a sample wedding plan" style={{ margin: 0 }}>
+          <figure
+            className="s-sheet"
+            aria-label="Example run of show and budget from a sample wedding plan"
+            style={{ margin: 0 }}
+          >
             <div className="s-sheet__top" aria-hidden="true" />
             <div className="s-sheet__head">
               <div>
@@ -89,16 +99,52 @@ export default function LandingPage(): React.ReactElement {
               </div>
             </div>
             <ol className="s-sheet__rows">
-              <li><span className="s-sheet__time">10:00 am</span><span className="s-sheet__what">Haldi<small>Family courtyard, 90 minutes</small></span></li>
-              <li><span className="s-sheet__time">6:30 pm</span><span className="s-sheet__what">Baraat arrives<small>Dhol group and safa station ready</small></span></li>
-              <li><span className="s-sheet__time">8:15 pm</span><span className="s-sheet__what">Varmala and milni</span></li>
-              <li><span className="s-sheet__time">9:40 pm</span><span className="s-sheet__what">Pheras<small>Muhurat window, pandit ji confirmed</small></span></li>
+              <li>
+                <span className="s-sheet__time">10:00 am</span>
+                <span className="s-sheet__what">
+                  Haldi<small>Family courtyard, 90 minutes</small>
+                </span>
+              </li>
+              <li>
+                <span className="s-sheet__time">6:30 pm</span>
+                <span className="s-sheet__what">
+                  Baraat arrives<small>Dhol group and safa station ready</small>
+                </span>
+              </li>
+              <li>
+                <span className="s-sheet__time">8:15 pm</span>
+                <span className="s-sheet__what">Varmala and milni</span>
+              </li>
+              <li>
+                <span className="s-sheet__time">9:40 pm</span>
+                <span className="s-sheet__what">
+                  Pheras<small>Muhurat window, pandit ji confirmed</small>
+                </span>
+              </li>
             </ol>
-            <p className="s-sheet__flag"><strong>Check:</strong> outdoor loudspeakers must stop at 10:00 pm. Move the band indoors after the baraat.</p>
+            <p className="s-sheet__flag">
+              <strong>Check:</strong> outdoor loudspeakers must stop at 10:00 pm. Move the band
+              indoors after the baraat.
+            </p>
             <div className="s-sheet__budget">
-              <div className="s-sheet__budget-row"><span>₹35,00,000 budget</span><span>₹28.7 lakh committed</span></div>
-              <div className="s-bar" role="img" aria-label="Budget: 62 percent paid, 20 percent contracted, 18 percent open"><span style={{ width: '62%' }} /><span style={{ width: '20%' }} /><span style={{ width: '18%' }} /></div>
-              <div className="s-sheet__legend"><span>Paid</span><span>Contracted</span><span>Open</span></div>
+              <div className="s-sheet__budget-row">
+                <span>₹35,00,000 budget</span>
+                <span>₹28.7 lakh committed</span>
+              </div>
+              <div
+                className="s-bar"
+                role="img"
+                aria-label="Budget: 62 percent paid, 20 percent contracted, 18 percent open"
+              >
+                <span style={{ width: '62%' }} />
+                <span style={{ width: '20%' }} />
+                <span style={{ width: '18%' }} />
+              </div>
+              <div className="s-sheet__legend">
+                <span>Paid</span>
+                <span>Contracted</span>
+                <span>Open</span>
+              </div>
             </div>
           </figure>
         </div>
@@ -108,7 +154,10 @@ export default function LandingPage(): React.ReactElement {
         <div className="s-wrap">
           <div className="s-section__head">
             <h2>Try it right here</h2>
-            <p>This is a real sample plan running on the same budget and rules engine as the app. Pick a celebration, then throw a problem at it.</p>
+            <p>
+              This is a real sample plan running on the same budget and rules engine as the app.
+              Pick a celebration, then throw a problem at it.
+            </p>
           </div>
           <LiveDemoWindow />
         </div>
@@ -118,7 +167,10 @@ export default function LandingPage(): React.ReactElement {
         <div className="s-wrap">
           <div className="s-section__head">
             <h2>Built for three kinds of celebration</h2>
-            <p>Each starts from a plan shaped by what that event needs, then adapts to your date, city, guest count and budget.</p>
+            <p>
+              Each starts from a plan shaped by what that event needs, then adapts to your date,
+              city, guest count and budget.
+            </p>
           </div>
           <div className="s-celebrate">
             <article className="s-panel s-panel--wedding">
@@ -127,7 +179,11 @@ export default function LandingPage(): React.ReactElement {
                 <h3>Destination wedding</h3>
               </div>
               <div>
-                <div className="s-panel__facts"><span>Jaipur</span><span>₹35 lakh</span><span>350 guests</span></div>
+                <div className="s-panel__facts">
+                  <span>Jaipur</span>
+                  <span>₹35 lakh</span>
+                  <span>350 guests</span>
+                </div>
                 <ul style={{ marginTop: '1rem' }}>
                   <li>Haldi, Sangeet, baraat and pheras in one schedule</li>
                   <li>Pandit ji, mehendi and dhol vendors tracked</li>
@@ -140,7 +196,11 @@ export default function LandingPage(): React.ReactElement {
                 <p className="s-panel__tag">Sample plan</p>
                 <h3>Milestone birthday</h3>
               </div>
-              <div className="s-panel__facts"><span>Mumbai</span><span>₹3.5 lakh</span><span>80 guests</span></div>
+              <div className="s-panel__facts">
+                <span>Mumbai</span>
+                <span>₹3.5 lakh</span>
+                <span>80 guests</span>
+              </div>
               <p>A rooftop Bollywood night with a tight budget and a short guest list.</p>
             </article>
             <article className="s-panel s-panel--mela">
@@ -148,8 +208,14 @@ export default function LandingPage(): React.ReactElement {
                 <p className="s-panel__tag">Sample plan</p>
                 <h3>Community mela</h3>
               </div>
-              <div className="s-panel__facts"><span>Bengaluru</span><span>₹6.5 lakh</span><span>600 guests</span></div>
-              <p>Diwali and Dandiya for a housing society, with volunteers, stalls and mahaprasad.</p>
+              <div className="s-panel__facts">
+                <span>Bengaluru</span>
+                <span>₹6.5 lakh</span>
+                <span>600 guests</span>
+              </div>
+              <p>
+                Diwali and Dandiya for a housing society, with volunteers, stalls and mahaprasad.
+              </p>
             </article>
           </div>
         </div>
@@ -179,15 +245,24 @@ export default function LandingPage(): React.ReactElement {
           <ol className="s-steps">
             <li>
               <h3>Describe the event</h3>
-              <p>Pick wedding, birthday or mela, then add the city, date, guest count, budget and any dietary needs.</p>
+              <p>
+                Pick wedding, birthday or mela, then add the city, date, guest count, budget and any
+                dietary needs.
+              </p>
             </li>
             <li>
               <h3>Edit the plan you get back</h3>
-              <p>You start with a budget split, a timeline of tasks, a vendor checklist and a draft schedule. Change anything.</p>
+              <p>
+                You start with a budget split, a timeline of tasks, a vendor checklist and a draft
+                schedule. Change anything.
+              </p>
             </li>
             <li>
               <h3>Change something and see what moves</h3>
-              <p>Add guests, shift the date or accept a higher quote. Budget, tasks and warnings update together.</p>
+              <p>
+                Add guests, shift the date or accept a higher quote. Budget, tasks and warnings
+                update together.
+              </p>
             </li>
           </ol>
         </div>
@@ -200,9 +275,22 @@ export default function LandingPage(): React.ReactElement {
             <p>Event plans hold guest names and family details. We treat them that way.</p>
           </div>
           <ul>
-            <li><strong>Passwords are never stored</strong><span>Only a salted hash is kept, so nobody at EventWise AI can read your password.</span></li>
-            <li><strong>Sessions you control</strong><span>Sign out on every device at once, and changing your password signs out the rest.</span></li>
-            <li><strong>Export or delete at any time</strong><span>Download your plans, or delete the account and everything saved with it.</span></li>
+            <li>
+              <strong>Passwords are never stored</strong>
+              <span>
+                Only a salted hash is kept, so nobody at EventWise AI can read your password.
+              </span>
+            </li>
+            <li>
+              <strong>Sessions you control</strong>
+              <span>
+                Sign out on every device at once, and changing your password signs out the rest.
+              </span>
+            </li>
+            <li>
+              <strong>Export or delete at any time</strong>
+              <span>Download your plans, or delete the account and everything saved with it.</span>
+            </li>
           </ul>
         </div>
       </section>
@@ -227,8 +315,12 @@ export default function LandingPage(): React.ReactElement {
         <div className="s-wrap s-cta__row">
           <h2>Set up your first event and see the full plan.</h2>
           <div className="s-cta__actions">
-            <Link to="/signup" className="s-btn s-btn--primary">Create a free account</Link>
-            <Link to="/demo" className="s-btn s-btn--ghost">Explore the demo</Link>
+            <Link to="/signup" className="s-btn s-btn--primary">
+              Create a free account
+            </Link>
+            <Link to="/demo" className="s-btn s-btn--ghost">
+              Explore the demo
+            </Link>
           </div>
         </div>
       </section>
@@ -237,4 +329,3 @@ export default function LandingPage(): React.ReactElement {
 }
 
 export { LandingPage };
-

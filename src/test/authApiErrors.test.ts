@@ -8,7 +8,7 @@ describe('authApi Error Handling', () => {
 
   it('returns friendly rate limit message on 429 status', async () => {
     vi.spyOn(global, 'fetch').mockResolvedValueOnce(
-      new Response(JSON.stringify({}), { status: 429, statusText: 'Too Many Requests' })
+      new Response(JSON.stringify({}), { status: 429, statusText: 'Too Many Requests' }),
     );
 
     const res = await authApi.login({ email: 'test@example.com', password: 'password123' });
@@ -21,7 +21,7 @@ describe('authApi Error Handling', () => {
 
   it('returns friendly server error message on 5xx status codes', async () => {
     vi.spyOn(global, 'fetch').mockResolvedValueOnce(
-      new Response('<html>Bad Gateway</html>', { status: 502, statusText: 'Bad Gateway' })
+      new Response('<html>Bad Gateway</html>', { status: 502, statusText: 'Bad Gateway' }),
     );
 
     const res = await authApi.me();
@@ -34,7 +34,7 @@ describe('authApi Error Handling', () => {
 
   it('treats non-JSON 200 response as a failure', async () => {
     vi.spyOn(global, 'fetch').mockResolvedValueOnce(
-      new Response('<!DOCTYPE html><html><body>Login page</body></html>', { status: 200 })
+      new Response('<!DOCTYPE html><html><body>Login page</body></html>', { status: 200 }),
     );
 
     const res = await authApi.me();
@@ -47,9 +47,12 @@ describe('authApi Error Handling', () => {
 
   it('preserves structured error message from upstream JSON responses', async () => {
     vi.spyOn(global, 'fetch').mockResolvedValueOnce(
-      new Response(JSON.stringify({ error: 'Incorrect email or password.', code: 'invalid_credentials' }), {
-        status: 401,
-      })
+      new Response(
+        JSON.stringify({ error: 'Incorrect email or password.', code: 'invalid_credentials' }),
+        {
+          status: 401,
+        },
+      ),
     );
 
     const res = await authApi.login({ email: 'user@example.com', password: 'wrong' });

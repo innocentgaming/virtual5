@@ -18,7 +18,11 @@ export interface AuthContextType {
   logout: (everywhere?: boolean) => Promise<void>;
   forgotPassword: (email: string) => Promise<AuthResult & { devResetLink?: string }>;
   resetPassword: (token: string, password: string) => Promise<AuthResult>;
-  updateProfile: (data: { name?: string; organization?: string; role?: UserRole }) => Promise<AuthResult>;
+  updateProfile: (data: {
+    name?: string;
+    organization?: string;
+    role?: UserRole;
+  }) => Promise<AuthResult>;
   changePassword: (current: string, next: string) => Promise<AuthResult>;
   deleteAccount: (password: string) => Promise<AuthResult>;
   /** Re-check the session (e.g. after the server reports 401). */

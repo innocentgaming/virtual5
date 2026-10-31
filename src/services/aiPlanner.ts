@@ -162,14 +162,25 @@ const EVENT_PLAN_RESPONSE_SCHEMA: Record<string, unknown> = {
   required: ['budgetItems', 'tasks', 'vendors', 'ideas'],
 };
 
-async function executeGenerateAIEventPlan(request: AIPlanningRequest, cacheKey: string): Promise<EventPlan> {
+async function executeGenerateAIEventPlan(
+  request: AIPlanningRequest,
+  cacheKey: string,
+): Promise<EventPlan> {
   const apiKey = getActiveApiKey(request.customApiKey);
 
   // Sanitize and cap untrusted user inputs before prompt construction
-  const safeTitle = sanitizeString(request.title, LIMITS.MAX_TITLE_LENGTH, 'Personalized ' + request.eventType);
+  const safeTitle = sanitizeString(
+    request.title,
+    LIMITS.MAX_TITLE_LENGTH,
+    'Personalized ' + request.eventType,
+  );
   const safeCity = sanitizeString(request.city, LIMITS.MAX_CITY_LENGTH, 'City');
   const safeTheme = sanitizeString(request.theme, LIMITS.MAX_THEME_LENGTH, 'modern elegant');
-  const safeTraditions = sanitizeString(request.culturalTraditions, LIMITS.MAX_TRADITIONS_LENGTH, 'standard');
+  const safeTraditions = sanitizeString(
+    request.culturalTraditions,
+    LIMITS.MAX_TRADITIONS_LENGTH,
+    'standard',
+  );
   const safeNotes = request.omitNotes
     ? 'none (omitted by user for privacy)'
     : sanitizeString(request.specialNotes, LIMITS.MAX_NOTES_LENGTH, 'none');
@@ -212,25 +223,35 @@ Directives:
 
     if (!result.success || !result.text) {
       console.warn(
-        'AI API returned status ' + (result.statusCode || 'timeout') + ', falling back to rule engine: ' +
-          redactSecrets(result.error || 'Unknown error', apiKey)
+        'AI API returned status ' +
+          (result.statusCode || 'timeout') +
+          ', falling back to rule engine: ' +
+          redactSecrets(result.error || 'Unknown error', apiKey),
       );
       reportClientError(
         new Error(
-          'AI API returned status ' + (result.statusCode || 'timeout') + ', falling back to rule engine: ' +
-            redactSecrets(result.error || 'Unknown error', apiKey)
+          'AI API returned status ' +
+            (result.statusCode || 'timeout') +
+            ', falling back to rule engine: ' +
+            redactSecrets(result.error || 'Unknown error', apiKey),
         ),
-        'aiPlanner'
+        'aiPlanner',
       );
       return generateFallbackPlan(request);
     }
 
     const rawText = result.text;
-    const cleanedJson = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+    const cleanedJson = rawText
+      .replace(/```json/g, '')
+      .replace(/```/g, '')
+      .trim();
     const parsed = JSON.parse(cleanedJson);
 
     if (!validateAIPlanResponse(parsed)) {
-      reportClientError(new Error('AI returned schema mismatch, using fallback planner.'), 'aiPlanner');
+      reportClientError(
+        new Error('AI returned schema mismatch, using fallback planner.'),
+        'aiPlanner',
+      );
       return generateFallbackPlan(request);
     }
 
@@ -244,27 +265,37 @@ Directives:
     };
 
     // Deep sanitize AI output: enforce enum allowlists, finite positive bounds, array caps, and safe unique IDs
-    const mergedBudget = parsed.budgetItems && parsed.budgetItems.length > 0
-      ? parsed.budgetItems.slice(0, LIMITS.MAX_BUDGET_ITEMS).map((item, idx) => sanitizeBudgetItem(item, idx))
-      : getFallback().budgetItems;
+    const mergedBudget =
+      parsed.budgetItems && parsed.budgetItems.length > 0
+        ? parsed.budgetItems
+            .slice(0, LIMITS.MAX_BUDGET_ITEMS)
+            .map((item, idx) => sanitizeBudgetItem(item, idx))
+        : getFallback().budgetItems;
 
-    const mergedTasks = parsed.tasks && parsed.tasks.length > 0
-      ? parsed.tasks.slice(0, LIMITS.MAX_TASKS).map((task, idx) => sanitizeTaskItem(task, idx, request.eventDate))
-      : getFallback().tasks;
+    const mergedTasks =
+      parsed.tasks && parsed.tasks.length > 0
+        ? parsed.tasks
+            .slice(0, LIMITS.MAX_TASKS)
+            .map((task, idx) => sanitizeTaskItem(task, idx, request.eventDate))
+        : getFallback().tasks;
 
-    const mergedVendors: VendorItem[] = parsed.vendors && parsed.vendors.length > 0
-      ? parsed.vendors.slice(0, LIMITS.MAX_VENDORS).map((vendor, idx) => sanitizeVendorItem(vendor, idx))
-      : getFallback().vendors;
+    const mergedVendors: VendorItem[] =
+      parsed.vendors && parsed.vendors.length > 0
+        ? parsed.vendors
+            .slice(0, LIMITS.MAX_VENDORS)
+            .map((vendor, idx) => sanitizeVendorItem(vendor, idx))
+        : getFallback().vendors;
 
-    const mergedIdeas = parsed.ideas && parsed.ideas.length > 0
-      ? parsed.ideas.slice(0, LIMITS.MAX_IDEAS).map((idea, idx) => sanitizeIdeaItem(idea, idx))
-      : getFallback().ideas;
+    const mergedIdeas =
+      parsed.ideas && parsed.ideas.length > 0
+        ? parsed.ideas.slice(0, LIMITS.MAX_IDEAS).map((idea, idx) => sanitizeIdeaItem(idea, idx))
+        : getFallback().ideas;
 
     const { insights, missingPrompts } = evaluateDecisionRules({
       eventType: request.eventType,
       totalBudget: request.totalBudget,
       budgetItems: mergedBudget,
-      contingencyRate: request.contingencyRate || 0.10,
+      contingencyRate: request.contingencyRate || 0.1,
       eventDate: request.eventDate,
       guestCount: request.guestCount,
       venuePreference: request.venuePreference || 'banquet_hall',
@@ -277,14 +308,17 @@ Directives:
 
     const plan: EventPlan = {
       id: 'evt-ai-' + Date.now(),
-      title: request.title?.trim() || (typeof parsed.title === 'string' && parsed.title.trim()) || `${request.theme || 'Custom'} ${request.eventType.charAt(0).toUpperCase() + request.eventType.slice(1)}`,
+      title:
+        request.title?.trim() ||
+        (typeof parsed.title === 'string' && parsed.title.trim()) ||
+        `${request.theme || 'Custom'} ${request.eventType.charAt(0).toUpperCase() + request.eventType.slice(1)}`,
       eventType: request.eventType,
       eventDate: request.eventDate,
       city: request.city,
       guestCount: request.guestCount,
       totalBudget: request.totalBudget,
       currency: '₹',
-      contingencyRate: request.contingencyRate ?? 0.10,
+      contingencyRate: request.contingencyRate ?? 0.1,
       venuePreference: request.venuePreference || 'banquet_hall',
       foodPreference: request.foodPreference || 'buffet',
       theme: request.theme || 'Custom',
@@ -300,7 +334,9 @@ Directives:
       ideas: mergedIdeas,
       decisionInsights: insights,
       missingInfoPrompts: missingPrompts,
-      generationExplanation: parsed.generationExplanation || `AI-optimized event plan structured for ${request.guestCount} guests in ${request.city}.`,
+      generationExplanation:
+        parsed.generationExplanation ||
+        `AI-optimized event plan structured for ${request.guestCount} guests in ${request.city}.`,
     };
 
     // Store successful AI generation in memory cache
@@ -311,7 +347,7 @@ Directives:
     const errMsg = err instanceof Error ? err.message : String(err);
     console.warn(
       'AI request failed or timed out. Gracefully switching to deterministic fallback engine.',
-      redactSecrets(errMsg, apiKey)
+      redactSecrets(errMsg, apiKey),
     );
     reportClientError(err, 'aiPlanner fallback');
     return generateFallbackPlan(request);
@@ -327,7 +363,8 @@ Directives:
  */
 export async function generateAIEventPlan(request: AIPlanningRequest): Promise<EventPlan> {
   // Check persistent offline mode preference
-  const isOfflineMode = typeof window !== 'undefined' &&
+  const isOfflineMode =
+    typeof window !== 'undefined' &&
     window.localStorage &&
     window.localStorage.getItem('eventwise_ai_offline_mode') === 'true';
 

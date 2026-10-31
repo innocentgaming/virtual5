@@ -96,7 +96,7 @@ describe('Pro Features Upgrade Suite', () => {
       expect(windowOpenSpy).toHaveBeenCalledWith(
         expect.stringContaining('api.whatsapp.com/send?text='),
         '_blank',
-        'noopener,noreferrer'
+        'noopener,noreferrer',
       );
 
       windowOpenSpy.mockRestore();
@@ -111,7 +111,7 @@ describe('Pro Features Upgrade Suite', () => {
           guests={sampleGuests}
           onUpdateGuest={onUpdateGuest}
           defaultTableCapacity={10}
-        />
+        />,
       );
 
       expect(screen.getByRole('heading', { name: 'Table 1', level: 4 })).toBeInTheDocument();
@@ -127,7 +127,7 @@ describe('Pro Features Upgrade Suite', () => {
           guests={sampleGuests}
           onUpdateGuest={onUpdateGuest}
           defaultTableCapacity={10}
-        />
+        />,
       );
 
       expect(screen.getByText(/Unassigned Guests Tray/i)).toBeInTheDocument();
@@ -150,7 +150,7 @@ describe('Pro Features Upgrade Suite', () => {
           onUpdateExpense={vi.fn()}
           onDeleteExpense={vi.fn()}
           onUpdateContingency={vi.fn()}
-        />
+        />,
       );
 
       expect(screen.getByText(/Vendor Payment Milestones & Settlement/i)).toBeInTheDocument();
@@ -168,7 +168,7 @@ describe('Pro Features Upgrade Suite', () => {
           onAddScheduleItem={vi.fn()}
           onUpdateScheduleItem={onUpdateScheduleItem}
           onDeleteScheduleItem={vi.fn()}
-        />
+        />,
       );
 
       // Verify timing ripple controller is present
@@ -195,7 +195,7 @@ describe('Pro Features Upgrade Suite', () => {
           onAddScheduleItem={vi.fn()}
           onUpdateScheduleItem={vi.fn()}
           onDeleteScheduleItem={vi.fn()}
-        />
+        />,
       );
 
       // Verify role filter chips are present
@@ -211,14 +211,18 @@ describe('Pro Features Upgrade Suite', () => {
           onAddScheduleItem={vi.fn()}
           onUpdateScheduleItem={vi.fn()}
           onDeleteScheduleItem={vi.fn()}
-        />
+        />,
       );
 
-      const nocGuideBtn = screen.getByRole('button', { name: /Police Loudspeaker NOC Guide & Letter/i });
+      const nocGuideBtn = screen.getByRole('button', {
+        name: /Police Loudspeaker NOC Guide & Letter/i,
+      });
       fireEvent.click(nocGuideBtn);
 
       // Check modal content
-      expect(screen.getAllByText(/Noise Pollution \(Regulation and Control\) Rules, 2000/i).length).toBeGreaterThanOrEqual(1);
+      expect(
+        screen.getAllByText(/Noise Pollution \(Regulation and Control\) Rules, 2000/i).length,
+      ).toBeGreaterThanOrEqual(1);
       expect(screen.getByText(/Sound Vendor Decibel Undertaking:/i)).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /Copy Letter Draft/i })).toBeInTheDocument();
     });
@@ -232,7 +236,7 @@ describe('Pro Features Upgrade Suite', () => {
           onToggleTask={vi.fn()}
           onAddTask={vi.fn()}
           onDeleteTask={vi.fn()}
-        />
+        />,
       );
 
       const samagriBtn = screen.getByRole('button', { name: /Puja Samagri Kit/i });
@@ -248,11 +252,7 @@ describe('Pro Features Upgrade Suite', () => {
   describe('VendorChecklist GST & TDS Estimator', () => {
     it('opens GST & TDS Estimator modal and computes tax breakdowns accurately', () => {
       render(
-        <VendorChecklist
-          plan={SAMPLE_WEDDING}
-          onUpdateVendor={vi.fn()}
-          onAddVendor={vi.fn()}
-        />
+        <VendorChecklist plan={SAMPLE_WEDDING} onUpdateVendor={vi.fn()} onAddVendor={vi.fn()} />,
       );
 
       const gstBtn = screen.getByRole('button', { name: /GST & TDS Estimator/i });
@@ -285,12 +285,18 @@ describe('Pro Features Upgrade Suite', () => {
           events={INITIAL_EVENTS}
           onSelectEvent={onSelectEvent}
           onNavigateTab={onNavigateTab}
-        />
+        />,
       );
 
       // Hero content
-      expect(screen.getByRole('heading', { name: /Every Indian Celebration Deserves Flawless Execution/i })).toBeInTheDocument();
-      expect(screen.getByText(/India’s #1 Cultural & Vedic Celebration Planning Suite/i)).toBeInTheDocument();
+      expect(
+        screen.getByRole('heading', {
+          name: /Every Indian Celebration Deserves Flawless Execution/i,
+        }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(/India’s #1 Cultural & Vedic Celebration Planning Suite/i),
+      ).toBeInTheDocument();
 
       // Launch planner CTA (Hero & Footer)
       const launchBtns = screen.getAllByRole('button', { name: /Launch EventWise Planner/i });

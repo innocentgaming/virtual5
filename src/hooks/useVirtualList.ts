@@ -25,7 +25,7 @@ export interface UseVirtualListResult<T> {
  */
 export function useVirtualList<T>(
   items: T[],
-  options: UseVirtualListOptions
+  options: UseVirtualListOptions,
 ): UseVirtualListResult<T> {
   const { itemHeight, overscan = 5, threshold = 100 } = options;
   const containerRef = useRef<HTMLDivElement | null>(null);

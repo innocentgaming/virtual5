@@ -1,6 +1,4 @@
-import type {
-  DecisionInsight,
-} from '../types/event';
+import type { DecisionInsight } from '../types/event';
 import { RULES_CONFIG } from '../constants/rulesConfig';
 import { DECISION_RULES_REGISTRY, type DecisionEnginePlanInput } from './rulesRegistry';
 import { calculateBudgetSummary } from './budgetCalculator';
@@ -27,7 +25,7 @@ export { DECISION_RULES_REGISTRY };
  */
 export function evaluateDecisionRules(
   plan: DecisionEnginePlanInput,
-  currentDateStr?: string
+  currentDateStr?: string,
 ): {
   insights: DecisionInsight[];
   missingPrompts: string[];
@@ -37,7 +35,7 @@ export function evaluateDecisionRules(
     plan.totalBudget,
     plan.budgetItems,
     plan.contingencyRate,
-    plan.guestCount
+    plan.guestCount,
   );
   const now = new Date(currentDate);
   const insights: DecisionInsight[] = [];
@@ -72,7 +70,9 @@ export function evaluateDecisionRules(
   }
 
   if (!plan.eventDate || plan.eventDate.trim() === '') {
-    missingPrompts.push('When is your target event date? This is required for timeline milestones.');
+    missingPrompts.push(
+      'When is your target event date? This is required for timeline milestones.',
+    );
   }
 
   return { insights, missingPrompts };

@@ -18,7 +18,7 @@ export async function preloadAllTabs(): Promise<void> {
  */
 // eslint-disable-next-line typescript/no-explicit-any
 export function lazyWithPreload<T extends React.ComponentType<any>>(
-  factory: () => Promise<{ default: T }>
+  factory: () => Promise<{ default: T }>,
 ): PreloadableComponent<T> {
   let loadedComponent: T | null = null;
   let loadPromise: Promise<{ default: T }> | null = null;

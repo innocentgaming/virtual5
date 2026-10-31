@@ -41,7 +41,7 @@ import { ChaosBar } from '../demo/ChaosBar';
 import '../../dashboard.css';
 
 const ScenarioChangePanel = lazyWithPreload(() =>
-  import('../scenarios/ScenarioChangePanel').then((m) => ({ default: m.ScenarioChangePanel }))
+  import('../scenarios/ScenarioChangePanel').then((m) => ({ default: m.ScenarioChangePanel })),
 );
 
 interface TimelineAudit {
@@ -163,7 +163,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   // Vendor calculations
   const bookedVendors = useMemo(
     () => plan.vendors.filter((v) => v.status === 'booked' || v.status === 'completed').length,
-    [plan.vendors]
+    [plan.vendors],
   );
   const totalVendors = plan.vendors.length;
 
@@ -196,7 +196,11 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
     }
     if (!budgetSummary.totalBudget || budgetSummary.totalBudget <= 0) return 0;
     return Math.round((budgetSummary.totalEstimated / budgetSummary.totalBudget) * 100);
-  }, [budgetSummary.utilizationPercentage, budgetSummary.totalEstimated, budgetSummary.totalBudget]);
+  }, [
+    budgetSummary.utilizationPercentage,
+    budgetSummary.totalEstimated,
+    budgetSummary.totalBudget,
+  ]);
 
   const ringColor = useMemo(() => {
     if (utilizationPercent >= 100) return 'var(--color-danger)';
@@ -216,7 +220,9 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
 
   // Budget split by category (largest first, zero-value categories hidden)
   const categoryBreakdown = useMemo(() => {
-    const entries = (Object.entries(budgetSummary.categoryTotals || {}) as [BudgetCategory, number][])
+    const entries = (
+      Object.entries(budgetSummary.categoryTotals || {}) as [BudgetCategory, number][]
+    )
       .filter(([, amount]) => typeof amount === 'number' && amount > 0)
       .sort((a, b) => b[1] - a[1]);
     const sum = entries.reduce((acc, [, amount]) => acc + amount, 0);
@@ -232,7 +238,10 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
 
   // Decision engine insights sorted by severity
   const sortedInsights = useMemo(() => {
-    const raw = (decisionInsights && decisionInsights.length > 0) ? decisionInsights : (plan.decisionInsights || []);
+    const raw =
+      decisionInsights && decisionInsights.length > 0
+        ? decisionInsights
+        : plan.decisionInsights || [];
     const severityScore: Record<string, number> = {
       action_required: 3,
       warning: 2,
@@ -329,12 +338,12 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
     diffDays === 0
       ? 'Event Day 🎉'
       : diffDays < 0
-      ? Math.abs(diffDays) === 1
-        ? 'Day since event'
-        : 'Days since event'
-      : diffDays === 1
-      ? 'Day to go'
-      : 'Days to go';
+        ? Math.abs(diffDays) === 1
+          ? 'Day since event'
+          : 'Days since event'
+        : diffDays === 1
+          ? 'Day to go'
+          : 'Days to go';
 
   const eventDateLabel = parseLocalDate(plan.eventDate)?.toLocaleDateString('en-IN', {
     weekday: 'long',
@@ -349,11 +358,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   return (
     <div className="dash">
       {toastMessage && (
-        <Toast
-          message={toastMessage}
-          type="success"
-          onClose={() => setToastMessage(null)}
-        />
+        <Toast message={toastMessage} type="success" onClose={() => setToastMessage(null)} />
       )}
 
       {/* =========================================================================
@@ -412,7 +417,10 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
               aria-valuemax={100}
               aria-valuenow={Math.round(taskPct)}
             >
-              <span className="dash-track__fill" style={{ '--pct': `${taskPct}%` } as React.CSSProperties} />
+              <span
+                className="dash-track__fill"
+                style={{ '--pct': `${taskPct}%` } as React.CSSProperties}
+              />
             </div>
           </div>
         </div>
@@ -430,7 +438,14 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
           <div className="dash-seal">
             <div className="dash-ring">
               <svg width="88" height="88" viewBox="0 0 84 84" aria-hidden="true">
-                <circle cx="42" cy="42" r={ringRadius} fill="transparent" stroke="var(--border)" strokeWidth="6" />
+                <circle
+                  cx="42"
+                  cy="42"
+                  r={ringRadius}
+                  fill="transparent"
+                  stroke="var(--border)"
+                  strokeWidth="6"
+                />
                 <circle
                   className="budget-ring-circle"
                   cx="42"
@@ -584,10 +599,15 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
           </span>
           <span className="dash-kpi__sub">
             <span>Task Completion: </span>
-            <strong className="tabular-nums">{formatPercent(timelineAudit.progressPercentage)}</strong>
+            <strong className="tabular-nums">
+              {formatPercent(timelineAudit.progressPercentage)}
+            </strong>
           </span>
           <span className="dash-track" aria-hidden="true">
-            <span className="dash-track__fill" style={{ '--pct': `${taskPct}%` } as React.CSSProperties} />
+            <span
+              className="dash-track__fill"
+              style={{ '--pct': `${taskPct}%` } as React.CSSProperties}
+            />
           </span>
           <ArrowUpRight className="dash-kpi__go" size={16} aria-hidden="true" />
           <span className="sr-only">Go to timeline</span>
@@ -603,10 +623,15 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
           </span>
           <span className="dash-kpi__sub">
             <span>Estimated Spend: </span>
-            <strong className="tabular-nums">{formatIndianShort(budgetSummary.totalEstimated)}</strong>
+            <strong className="tabular-nums">
+              {formatIndianShort(budgetSummary.totalEstimated)}
+            </strong>
           </span>
           <span className="dash-track" aria-hidden="true">
-            <span className="dash-track__fill" style={{ '--pct': `${vendorPct}%` } as React.CSSProperties} />
+            <span
+              className="dash-track__fill"
+              style={{ '--pct': `${vendorPct}%` } as React.CSSProperties}
+            />
           </span>
           <ArrowUpRight className="dash-kpi__go" size={16} aria-hidden="true" />
           <span className="sr-only">Go to vendors</span>
@@ -627,7 +652,10 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
             </strong>
           </span>
           <span className="dash-track" aria-hidden="true">
-            <span className="dash-track__fill" style={{ '--pct': `${rsvpPct}%` } as React.CSSProperties} />
+            <span
+              className="dash-track__fill"
+              style={{ '--pct': `${rsvpPct}%` } as React.CSSProperties}
+            />
           </span>
           <ArrowUpRight className="dash-kpi__go" size={16} aria-hidden="true" />
           <span className="sr-only">Go to guests</span>
@@ -664,7 +692,10 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
               {nextUpTasks.map(({ task, diff }) => {
                 const isOverdue = diff !== null && diff < 0;
                 return (
-                  <li key={task.id} className={`dash-task ${isOverdue ? 'dash-task--overdue' : ''}`}>
+                  <li
+                    key={task.id}
+                    className={`dash-task ${isOverdue ? 'dash-task--overdue' : ''}`}
+                  >
                     <input
                       type="checkbox"
                       className="dash-check"
@@ -746,7 +777,11 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
               </button>
             )}
             {onOpenCopilot && (
-              <button type="button" className="dash-action dash-action--primary" onClick={onOpenCopilot}>
+              <button
+                type="button"
+                className="dash-action dash-action--primary"
+                onClick={onOpenCopilot}
+              >
                 <span className="dash-chip" aria-hidden="true">
                   <Sparkles size={15} />
                 </span>
@@ -778,7 +813,11 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                   {sortedInsights.length}/{TOTAL_DECISION_RULES_COUNT} Fired
                 </Badge>
                 {sortedInsights.length > 3 && (
-                  <Button variant="ghost" size="sm" onClick={() => setShowAllAlerts((prev) => !prev)}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowAllAlerts((prev) => !prev)}
+                  >
                     {showAllAlerts ? (
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                         Less <ChevronUp size={14} />
@@ -797,7 +836,9 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
           {sortedInsights.length === 0 ? (
             <div className="dash-empty" role="status">
               <strong>All clear 🎉</strong>
-              <p>Your event preparation is running on schedule with zero high-priority conflicts.</p>
+              <p>
+                Your event preparation is running on schedule with zero high-priority conflicts.
+              </p>
             </div>
           ) : (
             <div className="dash-list">
@@ -866,22 +907,23 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                       </div>
                     )}
 
-                    {insight.actionLabel && (!insight.tradeOffs || insight.tradeOffs.length === 0) && (
-                      <div style={{ marginTop: 'var(--space-3)' }}>
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          onClick={() => {
-                            if (insight.category === 'budget') onNavigateTab('budget');
-                            else if (insight.category === 'timeline') onNavigateTab('timeline');
-                            else if (insight.category === 'vendors') onNavigateTab('vendors');
-                            else onNavigateTab('guests');
-                          }}
-                        >
-                          {insight.actionLabel}
-                        </Button>
-                      </div>
-                    )}
+                    {insight.actionLabel &&
+                      (!insight.tradeOffs || insight.tradeOffs.length === 0) && (
+                        <div style={{ marginTop: 'var(--space-3)' }}>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => {
+                              if (insight.category === 'budget') onNavigateTab('budget');
+                              else if (insight.category === 'timeline') onNavigateTab('timeline');
+                              else if (insight.category === 'vendors') onNavigateTab('vendors');
+                              else onNavigateTab('guests');
+                            }}
+                          >
+                            {insight.actionLabel}
+                          </Button>
+                        </div>
+                      )}
                   </div>
                 </article>
               ))}

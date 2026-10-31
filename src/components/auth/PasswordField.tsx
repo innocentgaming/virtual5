@@ -13,12 +13,23 @@ interface PasswordFieldProps {
   className?: string;
 }
 
-export const PasswordField: React.FC<PasswordFieldProps> = ({ id, label, value, onChange, autoComplete, showStrength, hint, className }) => {
+export const PasswordField: React.FC<PasswordFieldProps> = ({
+  id,
+  label,
+  value,
+  onChange,
+  autoComplete,
+  showStrength,
+  hint,
+  className,
+}) => {
   const [visible, setVisible] = useState(false);
   const strength = passwordStrength(value);
   return (
     <div className={`form-group ${className ?? ''}`} style={{ marginBottom: 0 }}>
-      <label htmlFor={id} className="form-label">{label}</label>
+      <label htmlFor={id} className="form-label">
+        {label}
+      </label>
       <div style={{ position: 'relative' }}>
         <input
           id={id}
@@ -37,7 +48,18 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({ id, label, value, 
           onClick={() => setVisible((v) => !v)}
           aria-label={visible ? 'Hide password' : 'Show password'}
           aria-pressed={visible}
-          style={{ position: 'absolute', right: 6, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 0, cursor: 'pointer', color: 'var(--text-muted)', padding: 8, display: 'flex' }}
+          style={{
+            position: 'absolute',
+            right: 6,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            background: 'none',
+            border: 0,
+            cursor: 'pointer',
+            color: 'var(--text-muted)',
+            padding: 8,
+            display: 'flex',
+          }}
         >
           {visible ? <EyeOff size={17} /> : <Eye size={17} />}
         </button>
@@ -52,7 +74,14 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({ id, label, value, 
                   flex: 1,
                   height: 4,
                   borderRadius: 2,
-                  background: i <= strength.level ? (strength.level >= 3 ? 'var(--color-success)' : strength.level === 2 ? 'var(--color-warning)' : 'var(--color-danger)') : 'var(--border)',
+                  background:
+                    i <= strength.level
+                      ? strength.level >= 3
+                        ? 'var(--color-success)'
+                        : strength.level === 2
+                          ? 'var(--color-warning)'
+                          : 'var(--color-danger)'
+                      : 'var(--border)',
                 }}
               />
             ))}

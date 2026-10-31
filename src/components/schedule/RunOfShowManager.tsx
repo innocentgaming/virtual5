@@ -55,14 +55,7 @@ interface RunOfShowManagerProps {
 }
 
 type RitualType =
-  | 'haldi'
-  | 'baraat'
-  | 'milni_varmala'
-  | 'pheras'
-  | 'feast'
-  | 'sangeet'
-  | 'bidaai'
-  | 'ceremony';
+  'haldi' | 'baraat' | 'milni_varmala' | 'pheras' | 'feast' | 'sangeet' | 'bidaai' | 'ceremony';
 
 interface RitualMeta {
   type: RitualType;
@@ -77,7 +70,11 @@ function formatRitualLabelWithLang(label: string): React.ReactNode {
   const parts = label.split(/(Haldi|Baraat|Milni|Varmala|Pheras|Sangeet|Vidaai|Muhurat|Mandap)/gi);
   return parts.map((part, i) => {
     if (/^(Haldi|Baraat|Milni|Varmala|Pheras|Sangeet|Vidaai|Muhurat|Mandap)$/i.test(part)) {
-      return <span key={i} lang="hi">{part}</span>;
+      return (
+        <span key={i} lang="hi">
+          {part}
+        </span>
+      );
     }
     return part;
   });
@@ -86,7 +83,12 @@ function formatRitualLabelWithLang(label: string): React.ReactNode {
 function getRitualMeta(activity: string, notes?: string): RitualMeta {
   const text = `${activity} ${notes || ''}`.toLowerCase();
 
-  if (text.includes('haldi') || text.includes('ubtan') || text.includes('turmeric') || text.includes('tel')) {
+  if (
+    text.includes('haldi') ||
+    text.includes('ubtan') ||
+    text.includes('turmeric') ||
+    text.includes('tel')
+  ) {
     return {
       type: 'haldi',
       label: 'Haldi Ritual',
@@ -96,7 +98,12 @@ function getRitualMeta(activity: string, notes?: string): RitualMeta {
       badgeVariant: 'warning',
     };
   }
-  if (text.includes('baraat') || text.includes('ghodi') || text.includes('dhol procession') || text.includes('groom entry')) {
+  if (
+    text.includes('baraat') ||
+    text.includes('ghodi') ||
+    text.includes('dhol procession') ||
+    text.includes('groom entry')
+  ) {
     return {
       type: 'baraat',
       label: 'Baraat Procession',
@@ -106,7 +113,12 @@ function getRitualMeta(activity: string, notes?: string): RitualMeta {
       badgeVariant: 'danger',
     };
   }
-  if (text.includes('milni') || text.includes('varmala') || text.includes('jaimala') || text.includes('swagat')) {
+  if (
+    text.includes('milni') ||
+    text.includes('varmala') ||
+    text.includes('jaimala') ||
+    text.includes('swagat')
+  ) {
     return {
       type: 'milni_varmala',
       label: 'Milni / Varmala',
@@ -116,7 +128,14 @@ function getRitualMeta(activity: string, notes?: string): RitualMeta {
       badgeVariant: 'warning',
     };
   }
-  if (text.includes('phera') || text.includes('muhurat') || text.includes('mandap') || text.includes('havan') || text.includes('kanyadaan') || text.includes('sindoor')) {
+  if (
+    text.includes('phera') ||
+    text.includes('muhurat') ||
+    text.includes('mandap') ||
+    text.includes('havan') ||
+    text.includes('kanyadaan') ||
+    text.includes('sindoor')
+  ) {
     return {
       type: 'pheras',
       label: 'Pheras & Vedic Vows',
@@ -126,7 +145,17 @@ function getRitualMeta(activity: string, notes?: string): RitualMeta {
       badgeVariant: 'danger',
     };
   }
-  if (text.includes('feast') || text.includes('dinner') || text.includes('lunch') || text.includes('breakfast') || text.includes('buffet') || text.includes('dining') || text.includes('chaat') || text.includes('thali') || text.includes('cater')) {
+  if (
+    text.includes('feast') ||
+    text.includes('dinner') ||
+    text.includes('lunch') ||
+    text.includes('breakfast') ||
+    text.includes('buffet') ||
+    text.includes('dining') ||
+    text.includes('chaat') ||
+    text.includes('thali') ||
+    text.includes('cater')
+  ) {
     return {
       type: 'feast',
       label: 'Feast & Dining',
@@ -136,7 +165,14 @@ function getRitualMeta(activity: string, notes?: string): RitualMeta {
       badgeVariant: 'success',
     };
   }
-  if (text.includes('sangeet') || text.includes('dj') || text.includes('dance') || text.includes('cocktail') || text.includes('music') || text.includes('performance')) {
+  if (
+    text.includes('sangeet') ||
+    text.includes('dj') ||
+    text.includes('dance') ||
+    text.includes('cocktail') ||
+    text.includes('music') ||
+    text.includes('performance')
+  ) {
     return {
       type: 'sangeet',
       label: 'Sangeet & DJ',
@@ -146,7 +182,12 @@ function getRitualMeta(activity: string, notes?: string): RitualMeta {
       badgeVariant: 'info',
     };
   }
-  if (text.includes('bidaai') || text.includes('vidai') || text.includes('farewell') || text.includes('doli')) {
+  if (
+    text.includes('bidaai') ||
+    text.includes('vidai') ||
+    text.includes('farewell') ||
+    text.includes('doli')
+  ) {
     return {
       type: 'bidaai',
       label: 'Bidaai Farewell',
@@ -204,7 +245,9 @@ function parseTimeToMinutes(timeStr: string): number {
 
 function formatDateTimeAttr(timeStr: string): string {
   const mins = parseTimeToMinutes(timeStr);
-  const h = Math.floor(mins / 60).toString().padStart(2, '0');
+  const h = Math.floor(mins / 60)
+    .toString()
+    .padStart(2, '0');
   const m = (mins % 60).toString().padStart(2, '0');
   return `${h}:${m}`;
 }
@@ -254,7 +297,8 @@ export const RunOfShowManager: React.FC<RunOfShowManagerProps> = ({
   const sortedItems = useMemo(() => {
     return [...schedule]
       .map((item) => {
-        const shiftedTime = timeShiftDelta !== 0 ? shiftTimeByMinutes(item.time, timeShiftDelta) : item.time;
+        const shiftedTime =
+          timeShiftDelta !== 0 ? shiftTimeByMinutes(item.time, timeShiftDelta) : item.time;
         return {
           ...item,
           time: shiftedTime,
@@ -277,7 +321,10 @@ export const RunOfShowManager: React.FC<RunOfShowManagerProps> = ({
     sortedItems.forEach((item) => {
       onUpdateScheduleItem(item.id, { time: item.time });
     });
-    toast.showToast(`✓ Applied ${timeShiftDelta > 0 ? `+${timeShiftDelta}` : timeShiftDelta} min timing shift to all milestones`, 'success');
+    toast.showToast(
+      `✓ Applied ${timeShiftDelta > 0 ? `+${timeShiftDelta}` : timeShiftDelta} min timing shift to all milestones`,
+      'success',
+    );
     setTimeShiftDelta(0);
   };
 
@@ -392,8 +439,22 @@ Enclosed: Venue Confirmation Copy, Applicant ID Proof`;
   if (isLoading) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-        <div style={{ height: '90px', background: 'var(--surface-raised)', borderRadius: 'var(--radius-lg)' }} className="ui-skeleton" />
-        <div style={{ height: '360px', background: 'var(--surface-raised)', borderRadius: 'var(--radius-lg)' }} className="ui-skeleton" />
+        <div
+          style={{
+            height: '90px',
+            background: 'var(--surface-raised)',
+            borderRadius: 'var(--radius-lg)',
+          }}
+          className="ui-skeleton"
+        />
+        <div
+          style={{
+            height: '360px',
+            background: 'var(--surface-raised)',
+            borderRadius: 'var(--radius-lg)',
+          }}
+          className="ui-skeleton"
+        />
       </div>
     );
   }
@@ -403,7 +464,10 @@ Enclosed: Venue Confirmation Copy, Applicant ID Proof`;
   const curfewIndex = displayedItems.findIndex((item) => item.timeMins >= CURFEW_MINUTES);
 
   return (
-    <div id="tour-run-of-show" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+    <div
+      id="tour-run-of-show"
+      style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}
+    >
       {/* =====================================================================
           1. PRINT-ONLY HEADER (Hidden on screen, visible in @media print)
           ===================================================================== */}
@@ -412,7 +476,9 @@ Enclosed: Venue Confirmation Copy, Applicant ID Proof`;
           {plan.title || 'EventWise AI — Run of Show'}
         </h2>
         <p style={{ fontSize: '11pt', margin: 0 }}>
-          <strong>Date:</strong> {plan.eventDate} | <strong>City:</strong> {plan.city} | <strong>Venue:</strong> {plan.venuePreference.replace(/_/g, ' ')} | <strong>Headcount:</strong> {plan.guestCount} guests
+          <strong>Date:</strong> {plan.eventDate} | <strong>City:</strong> {plan.city} |{' '}
+          <strong>Venue:</strong> {plan.venuePreference.replace(/_/g, ' ')} |{' '}
+          <strong>Headcount:</strong> {plan.guestCount} guests
         </p>
       </div>
 
@@ -428,8 +494,12 @@ Enclosed: Venue Confirmation Copy, Applicant ID Proof`;
 
         <div className="stat-card">
           <span className="stat-label">Event Horizon Date</span>
-          <span className="stat-value tabular-nums" style={{ fontSize: '1.4rem' }}>{plan.eventDate}</span>
-          <span className="stat-subtext">{plan.city} ({plan.venuePreference.replace(/_/g, ' ')})</span>
+          <span className="stat-value tabular-nums" style={{ fontSize: '1.4rem' }}>
+            {plan.eventDate}
+          </span>
+          <span className="stat-subtext">
+            {plan.city} ({plan.venuePreference.replace(/_/g, ' ')})
+          </span>
         </div>
 
         <div className="stat-card">
@@ -445,7 +515,17 @@ Enclosed: Venue Confirmation Copy, Applicant ID Proof`;
       <div className="alert-box alert-warning no-print" role="status">
         <Volume2 size={24} style={{ flexShrink: 0, marginTop: '2px' }} />
         <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 700, fontSize: '0.95rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
+          <div
+            style={{
+              fontWeight: 700,
+              fontSize: '0.95rem',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: 'var(--space-2)',
+            }}
+          >
             <span>Baraat & Sound Curfew Protocol (10:00 PM Municipal Regulation — Guidance)</span>
             <Button
               variant="outline"
@@ -458,9 +538,20 @@ Enclosed: Venue Confirmation Copy, Applicant ID Proof`;
             </Button>
           </div>
           <p style={{ fontSize: '0.85rem', marginTop: '2px', lineHeight: 1.5 }}>
-            Under central Noise Pollution Rules, outdoor amplified music, Dhol processions, and Baraats are guided to transition indoors by 10:00 PM. EventWise AI pre-calibrates indoor banquet switches to avoid disruptions.
-            <span style={{ display: 'block', marginTop: '4px', fontStyle: 'italic', color: 'var(--text-muted)' }}>
-              *Guidance note: Municipal rules and police permissions vary across city wards in {plan.city}. Always verify local sound permissions and loudspeaker NOCs with your local police station.*
+            Under central Noise Pollution Rules, outdoor amplified music, Dhol processions, and
+            Baraats are guided to transition indoors by 10:00 PM. EventWise AI pre-calibrates indoor
+            banquet switches to avoid disruptions.
+            <span
+              style={{
+                display: 'block',
+                marginTop: '4px',
+                fontStyle: 'italic',
+                color: 'var(--text-muted)',
+              }}
+            >
+              *Guidance note: Municipal rules and police permissions vary across city wards in{' '}
+              {plan.city}. Always verify local sound permissions and loudspeaker NOCs with your
+              local police station.*
             </span>
           </p>
         </div>
@@ -476,7 +567,10 @@ Enclosed: Venue Confirmation Copy, Applicant ID Proof`;
           icon={<Clock size={20} color="var(--accent-primary)" />}
           subtitle="Minute-by-minute execution schedule for vendors, coordinators, and hosts."
           action={
-            <div className="no-print" style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+            <div
+              className="no-print"
+              style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}
+            >
               <Button
                 variant="secondary"
                 size="sm"
@@ -521,14 +615,28 @@ Enclosed: Venue Confirmation Copy, Applicant ID Proof`;
             padding: 'var(--space-3) var(--space-4)',
             background: timeShiftDelta !== 0 ? 'rgba(217, 119, 6, 0.08)' : 'var(--surface-subtle)',
             borderRadius: 'var(--radius-lg)',
-            border: timeShiftDelta !== 0 ? '1px solid var(--color-warning-border)' : '1px solid var(--border)',
+            border:
+              timeShiftDelta !== 0
+                ? '1px solid var(--color-warning-border)'
+                : '1px solid var(--border)',
             marginTop: 'var(--space-3)',
             marginBottom: 'var(--space-2)',
           }}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-2)' }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: 'var(--space-2)',
+            }}
+          >
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-              <FastForward size={16} color={timeShiftDelta !== 0 ? 'var(--color-warning)' : 'var(--accent-primary)'} />
+              <FastForward
+                size={16}
+                color={timeShiftDelta !== 0 ? 'var(--color-warning)' : 'var(--accent-primary)'}
+              />
               <span style={{ fontWeight: 700, fontSize: 'var(--text-sm)' }}>
                 Muhurat & Baraat Timing Shift Ripple:
               </span>
@@ -567,8 +675,17 @@ Enclosed: Venue Confirmation Copy, Applicant ID Proof`;
             )}
           </div>
 
-          <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>Quick Delay / Advance:</span>
+          <div
+            style={{
+              display: 'flex',
+              gap: 'var(--space-2)',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+            }}
+          >
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+              Quick Delay / Advance:
+            </span>
             <button
               type="button"
               onClick={() => setTimeShiftDelta((d) => d - 15)}
@@ -643,7 +760,9 @@ Enclosed: Venue Confirmation Copy, Applicant ID Proof`;
               marginBottom: 'var(--space-3)',
             }}
           >
-            <span style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--text-muted)' }}>
+            <span
+              style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--text-muted)' }}
+            >
               Call-Sheet Filter:
             </span>
             <button
@@ -653,8 +772,12 @@ Enclosed: Venue Confirmation Copy, Applicant ID Proof`;
                 padding: '4px 12px',
                 fontSize: 'var(--text-xs)',
                 borderRadius: 'var(--radius-full)',
-                border: selectedRole === 'all' ? '1px solid var(--accent-primary)' : '1px solid var(--border)',
-                background: selectedRole === 'all' ? 'var(--accent-primary)' : 'var(--surface-subtle)',
+                border:
+                  selectedRole === 'all'
+                    ? '1px solid var(--accent-primary)'
+                    : '1px solid var(--border)',
+                background:
+                  selectedRole === 'all' ? 'var(--accent-primary)' : 'var(--surface-subtle)',
                 color: selectedRole === 'all' ? '#FFFFFF' : 'var(--text)',
                 fontWeight: selectedRole === 'all' ? 700 : 500,
                 cursor: 'pointer',
@@ -664,7 +787,9 @@ Enclosed: Venue Confirmation Copy, Applicant ID Proof`;
             </button>
             {uniqueRoles.map((role) => {
               const isSelected = selectedRole.toLowerCase() === role.toLowerCase();
-              const count = schedule.filter((i) => i.responsibleRole?.toLowerCase() === role.toLowerCase()).length;
+              const count = schedule.filter(
+                (i) => i.responsibleRole?.toLowerCase() === role.toLowerCase(),
+              ).length;
               return (
                 <button
                   key={role}
@@ -674,7 +799,9 @@ Enclosed: Venue Confirmation Copy, Applicant ID Proof`;
                     padding: '4px 12px',
                     fontSize: 'var(--text-xs)',
                     borderRadius: 'var(--radius-full)',
-                    border: isSelected ? '1px solid var(--accent-primary)' : '1px solid var(--border)',
+                    border: isSelected
+                      ? '1px solid var(--accent-primary)'
+                      : '1px solid var(--border)',
                     background: isSelected ? 'var(--accent-primary)' : 'var(--surface-subtle)',
                     color: isSelected ? '#FFFFFF' : 'var(--text)',
                     fontWeight: isSelected ? 700 : 500,
@@ -692,7 +819,11 @@ Enclosed: Venue Confirmation Copy, Applicant ID Proof`;
         {displayedItems.length === 0 ? (
           <EmptyState
             icon={<Clock size={38} color="var(--text-muted)" />}
-            title={selectedRole === 'all' ? 'No Day-of Milestones Created' : `No Milestones for "${selectedRole}"`}
+            title={
+              selectedRole === 'all'
+                ? 'No Day-of Milestones Created'
+                : `No Milestones for "${selectedRole}"`
+            }
             description={
               selectedRole === 'all'
                 ? "Outline your timeline from morning muhurats to evening reception by clicking '+ Add Milestone'."
@@ -704,7 +835,12 @@ Enclosed: Venue Confirmation Copy, Applicant ID Proof`;
                   Show All Crews
                 </Button>
               ) : (
-                <Button variant="primary" size="sm" onClick={handleOpenAdd} leadingIcon={<Plus size={14} />}>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={handleOpenAdd}
+                  leadingIcon={<Plus size={14} />}
+                >
                   Add Milestone
                 </Button>
               )
@@ -728,8 +864,7 @@ Enclosed: Venue Confirmation Copy, Applicant ID Proof`;
               const isPastCurfew = item.timeMins >= CURFEW_MINUTES;
 
               // Check if we should render the curfew divider right before this item
-              const shouldRenderCurfewBefore =
-                curfewIndex !== -1 && idx === curfewIndex;
+              const shouldRenderCurfewBefore = curfewIndex !== -1 && idx === curfewIndex;
 
               return (
                 <React.Fragment key={item.id || idx}>
@@ -752,7 +887,16 @@ Enclosed: Venue Confirmation Copy, Applicant ID Proof`;
                           color: 'var(--color-warning-text)',
                         }}
                       >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontWeight: 800, fontSize: 'var(--text-sm)', whiteSpace: 'nowrap' }}>
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 'var(--space-2)',
+                            fontWeight: 800,
+                            fontSize: 'var(--text-sm)',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
                           <Volume2 size={18} color="var(--color-warning)" />
                           <span>Curfew: Move Indoors (10:00 PM)</span>
                         </div>
@@ -766,7 +910,8 @@ Enclosed: Venue Confirmation Copy, Applicant ID Proof`;
                           }}
                           title="Rule 9 Protocol: Outdoor amplified music, Dhol processions, and Baraats must transition indoors by 10:00 PM."
                         >
-                          <strong>Rule 9 Protocol:</strong> Transition all outdoor music, Dhol, and Baraat activities into soundproofed banquet halls.
+                          <strong>Rule 9 Protocol:</strong> Transition all outdoor music, Dhol, and
+                          Baraat activities into soundproofed banquet halls.
                         </div>
                       </div>
                     </li>
@@ -780,8 +925,12 @@ Enclosed: Venue Confirmation Copy, Applicant ID Proof`;
                         style={{
                           padding: '6px 12px',
                           borderRadius: 'var(--radius-md)',
-                          backgroundColor: isPastCurfew ? 'var(--color-warning-bg)' : 'var(--surface-subtle)',
-                          border: isPastCurfew ? '1px solid var(--color-warning-border)' : '1px solid var(--border)',
+                          backgroundColor: isPastCurfew
+                            ? 'var(--color-warning-bg)'
+                            : 'var(--surface-subtle)',
+                          border: isPastCurfew
+                            ? '1px solid var(--color-warning-border)'
+                            : '1px solid var(--border)',
                           color: isPastCurfew ? 'var(--color-warning-text)' : 'var(--text)',
                           fontWeight: 800,
                           fontSize: 'var(--text-sm)',
@@ -812,10 +961,30 @@ Enclosed: Venue Confirmation Copy, Applicant ID Proof`;
                       >
                         <div style={{ flex: 1, minWidth: 0 }}>
                           {/* Title & Badges */}
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                          <div
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 'var(--space-2)',
+                              flexWrap: 'wrap',
+                            }}
+                          >
+                            <div
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 'var(--space-2)',
+                              }}
+                            >
                               {renderRitualIcon(ritual.type)}
-                              <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 700, color: 'var(--text)', margin: 0 }}>
+                              <h3
+                                style={{
+                                  fontSize: 'var(--text-base)',
+                                  fontWeight: 700,
+                                  color: 'var(--text)',
+                                  margin: 0,
+                                }}
+                              >
                                 {item.activity}
                               </h3>
                             </div>
@@ -843,17 +1012,23 @@ Enclosed: Venue Confirmation Copy, Applicant ID Proof`;
                               flexWrap: 'wrap',
                             }}
                           >
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <span
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                            >
                               <MapPin size={13} color="var(--accent-primary)" />
                               {item.location}
                             </span>
 
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <span
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                            >
                               <UserCheck size={13} color="var(--accent-primary)" />
                               Lead: {item.responsibleRole}
                             </span>
 
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <span
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                            >
                               <Clock size={13} />
                               Est. Duration: {duration}
                             </span>
@@ -880,7 +1055,10 @@ Enclosed: Venue Confirmation Copy, Applicant ID Proof`;
                         </div>
 
                         {/* Action buttons (Hidden in print) */}
-                        <div className="no-print" style={{ display: 'flex', gap: 'var(--space-1)', flexShrink: 0 }}>
+                        <div
+                          className="no-print"
+                          style={{ display: 'flex', gap: 'var(--space-1)', flexShrink: 0 }}
+                        >
                           <Button
                             variant="secondary"
                             size="sm"
@@ -930,7 +1108,16 @@ Enclosed: Venue Confirmation Copy, Applicant ID Proof`;
                   color: 'var(--color-warning-text)',
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontWeight: 800, fontSize: 'var(--text-sm)', whiteSpace: 'nowrap' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 'var(--space-2)',
+                    fontWeight: 800,
+                    fontSize: 'var(--text-sm)',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
                   <Volume2 size={18} color="var(--color-warning)" />
                   <span>Curfew: Move Indoors (10:00 PM)</span>
                 </div>
@@ -944,7 +1131,8 @@ Enclosed: Venue Confirmation Copy, Applicant ID Proof`;
                   }}
                   title="Rule 9 Protocol: Outdoor amplified music, Dhol processions, and Baraats must transition indoors by 10:00 PM."
                 >
-                  <strong>Rule 9 Protocol:</strong> Any extended festivities, after-parties, or Dhol after 10:00 PM must transition indoors.
+                  <strong>Rule 9 Protocol:</strong> Any extended festivities, after-parties, or Dhol
+                  after 10:00 PM must transition indoors.
                 </div>
               </div>
             )}
@@ -961,7 +1149,10 @@ Enclosed: Venue Confirmation Copy, Applicant ID Proof`;
         title={editingId ? 'Edit Day-of Milestone' : 'Add Day-of Schedule Milestone'}
         subtitle="Coordinate vendor cues, sound equipment switches, and ritual timings."
       >
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+        <form
+          onSubmit={handleSubmit}
+          style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}
+        >
           <div className="grid-cols-2">
             <div className="form-group">
               <label htmlFor="sch-time" className="form-label">
@@ -1038,7 +1229,14 @@ Enclosed: Venue Confirmation Copy, Applicant ID Proof`;
             />
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              gap: 'var(--space-3)',
+              marginTop: 'var(--space-2)',
+            }}
+          >
             <Button
               variant="secondary"
               size="md"
@@ -1067,25 +1265,72 @@ Enclosed: Venue Confirmation Copy, Applicant ID Proof`;
           <div className="alert-box alert-info" role="status">
             <ShieldCheck size={20} style={{ flexShrink: 0 }} />
             <div style={{ fontSize: 'var(--text-xs)', lineHeight: 1.5 }}>
-              In accordance with the <strong>Noise Pollution (Regulation and Control) Rules, 2000</strong>, obtaining a police No-Objection Certificate (NOC) is standard practice for outdoor Baraat processions, Brass Bands, and outdoor sound setups in <strong>{plan.city}</strong>.
+              In accordance with the{' '}
+              <strong>Noise Pollution (Regulation and Control) Rules, 2000</strong>, obtaining a
+              police No-Objection Certificate (NOC) is standard practice for outdoor Baraat
+              processions, Brass Bands, and outdoor sound setups in <strong>{plan.city}</strong>.
             </div>
           </div>
 
           <div>
-            <h4 style={{ margin: '0 0 var(--space-2) 0', fontSize: 'var(--text-sm)', fontWeight: 700 }}>
+            <h4
+              style={{
+                margin: '0 0 var(--space-2) 0',
+                fontSize: 'var(--text-sm)',
+                fontWeight: 700,
+              }}
+            >
               Mandatory Checklist for Submission (Local Police Station):
             </h4>
-            <ul style={{ margin: 0, paddingLeft: 'var(--space-4)', fontSize: 'var(--text-xs)', display: 'flex', flexDirection: 'column', gap: 'var(--space-1)', color: 'var(--text-secondary)' }}>
-              <li><strong>1. Venue Booking Confirmation:</strong> Written clearance from {plan.venuePreference.replace(/_/g, ' ')}.</li>
-              <li><strong>2. Sound Vendor Decibel Undertaking:</strong> Written pledge from DJ/Sound vendor to keep decibels &lt; 75 dB(A) outdoor and terminate by 10:00 PM.</li>
-              <li><strong>3. Route Map:</strong> Baraat assembly point and procession route (if traversing public roadways).</li>
-              <li><strong>4. Government ID:</strong> Aadhaar / PAN card copy of the applicant (Bride/Groom family representative).</li>
+            <ul
+              style={{
+                margin: 0,
+                paddingLeft: 'var(--space-4)',
+                fontSize: 'var(--text-xs)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 'var(--space-1)',
+                color: 'var(--text-secondary)',
+              }}
+            >
+              <li>
+                <strong>1. Venue Booking Confirmation:</strong> Written clearance from{' '}
+                {plan.venuePreference.replace(/_/g, ' ')}.
+              </li>
+              <li>
+                <strong>2. Sound Vendor Decibel Undertaking:</strong> Written pledge from DJ/Sound
+                vendor to keep decibels &lt; 75 dB(A) outdoor and terminate by 10:00 PM.
+              </li>
+              <li>
+                <strong>3. Route Map:</strong> Baraat assembly point and procession route (if
+                traversing public roadways).
+              </li>
+              <li>
+                <strong>4. Government ID:</strong> Aadhaar / PAN card copy of the applicant
+                (Bride/Groom family representative).
+              </li>
             </ul>
           </div>
 
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
-              <h4 style={{ margin: 0, fontSize: 'var(--text-sm)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: 'var(--space-2)',
+              }}
+            >
+              <h4
+                style={{
+                  margin: 0,
+                  fontSize: 'var(--text-sm)',
+                  fontWeight: 700,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 'var(--space-1)',
+                }}
+              >
                 <FileText size={15} color="var(--accent-primary)" />
                 Formal Application Letter Draft:
               </h4>
@@ -1093,7 +1338,9 @@ Enclosed: Venue Confirmation Copy, Applicant ID Proof`;
                 variant="outline"
                 size="sm"
                 onClick={handleCopyNocLetter}
-                leadingIcon={copiedNoc ? <Check size={14} color="var(--color-success)" /> : <Copy size={14} />}
+                leadingIcon={
+                  copiedNoc ? <Check size={14} color="var(--color-success)" /> : <Copy size={14} />
+                }
                 id="btn-copy-noc-letter"
               >
                 {copiedNoc ? 'Copied Letter!' : 'Copy Letter Draft'}
@@ -1144,13 +1391,31 @@ Enclosed: Venue Confirmation Copy, Applicant ID Proof`;
               borderRadius: 'var(--radius-md)',
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 'var(--space-2)', marginBottom: 'var(--space-3)' }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start',
+                flexWrap: 'wrap',
+                gap: 'var(--space-2)',
+                marginBottom: 'var(--space-3)',
+              }}
+            >
               <div>
-                <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: 'var(--text)' }}>
+                <h3
+                  style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: 'var(--text)' }}
+                >
                   {plan.title}
                 </h3>
-                <p style={{ margin: '4px 0 0', fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
-                  {plan.eventDate} • {plan.city} • {plan.venuePreference.replace(/_/g, ' ')} • {plan.guestCount} Guests
+                <p
+                  style={{
+                    margin: '4px 0 0',
+                    fontSize: 'var(--text-xs)',
+                    color: 'var(--text-muted)',
+                  }}
+                >
+                  {plan.eventDate} • {plan.city} • {plan.venuePreference.replace(/_/g, ' ')} •{' '}
+                  {plan.guestCount} Guests
                 </p>
               </div>
               <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
@@ -1167,9 +1432,17 @@ Enclosed: Venue Confirmation Copy, Applicant ID Proof`;
             </div>
 
             <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--text-xs)' }}>
+              <table
+                style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--text-xs)' }}
+              >
                 <thead>
-                  <tr style={{ background: 'var(--surface)', borderBottom: '2px solid var(--border)', textAlign: 'left' }}>
+                  <tr
+                    style={{
+                      background: 'var(--surface)',
+                      borderBottom: '2px solid var(--border)',
+                      textAlign: 'left',
+                    }}
+                  >
                     <th style={{ padding: '8px 10px', width: '100px' }}>Time</th>
                     <th style={{ padding: '8px 10px' }}>Ritual / Milestone</th>
                     <th style={{ padding: '8px 10px' }}>Location</th>
@@ -1183,23 +1456,48 @@ Enclosed: Venue Confirmation Copy, Applicant ID Proof`;
                       key={item.id}
                       style={{
                         borderBottom: '1px solid var(--border)',
-                        background: item.timeMins >= CURFEW_MINUTES ? 'rgba(239, 68, 68, 0.05)' : (idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)'),
+                        background:
+                          item.timeMins >= CURFEW_MINUTES
+                            ? 'rgba(239, 68, 68, 0.05)'
+                            : idx % 2 === 0
+                              ? 'transparent'
+                              : 'rgba(255,255,255,0.02)',
                       }}
                     >
-                      <td style={{ padding: '8px 10px', fontWeight: 700, color: 'var(--accent-primary)', whiteSpace: 'nowrap' }}>
+                      <td
+                        style={{
+                          padding: '8px 10px',
+                          fontWeight: 700,
+                          color: 'var(--accent-primary)',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
                         {item.time}
                       </td>
                       <td style={{ padding: '8px 10px', fontWeight: 600 }}>
                         {item.activity}
                         {item.timeMins >= CURFEW_MINUTES && (
-                          <span style={{ marginLeft: '6px', fontSize: '10px', color: 'var(--color-danger)', fontWeight: 700 }}>
+                          <span
+                            style={{
+                              marginLeft: '6px',
+                              fontSize: '10px',
+                              color: 'var(--color-danger)',
+                              fontWeight: 700,
+                            }}
+                          >
                             (INDOOR CURFEW)
                           </span>
                         )}
                       </td>
-                      <td style={{ padding: '8px 10px', color: 'var(--text-muted)' }}>{item.location}</td>
-                      <td style={{ padding: '8px 10px', fontWeight: 600 }}>{item.responsibleRole || 'Coordinator'}</td>
-                      <td style={{ padding: '8px 10px', color: 'var(--text-secondary)' }}>{item.notes || '—'}</td>
+                      <td style={{ padding: '8px 10px', color: 'var(--text-muted)' }}>
+                        {item.location}
+                      </td>
+                      <td style={{ padding: '8px 10px', fontWeight: 600 }}>
+                        {item.responsibleRole || 'Coordinator'}
+                      </td>
+                      <td style={{ padding: '8px 10px', color: 'var(--text-secondary)' }}>
+                        {item.notes || '—'}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

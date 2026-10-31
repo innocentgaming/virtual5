@@ -154,7 +154,9 @@ describe('EventWise AI UI & Workflow Integration Tests', () => {
     // Switch to Rohan's Birthday
     fireEvent.change(select, { target: { value: 'evt-sample-birthday' } });
 
-    expect(screen.getByRole('heading', { name: /Rohan's 30th Bollywood Rooftop Bash/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: /Rohan's 30th Bollywood Rooftop Bash/i }),
+    ).toBeInTheDocument();
   });
 
   it('meets accessibility basics with semantic landmarks and ARIA labels', () => {
@@ -170,4 +172,3 @@ describe('EventWise AI UI & Workflow Integration Tests', () => {
     expect(screen.getByRole('main')).toBeInTheDocument();
   });
 });
-

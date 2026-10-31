@@ -14,7 +14,7 @@ describe('Deterministic Fallback Planning Engine', () => {
       foodPreference: 'buffet',
       theme: 'Botanical Warm Glow',
       priorities: ['venue', 'catering', 'photography'],
-      contingencyRate: 0.10,
+      contingencyRate: 0.1,
     });
 
     expect(plan.eventType).toBe('wedding');
@@ -65,7 +65,11 @@ describe('Deterministic Fallback Planning Engine', () => {
     });
 
     expect(communityPlan.eventType).toBe('community');
-    expect(communityPlan.budgetItems.some((b) => b.name.toLowerCase().includes('permit') || b.name.toLowerCase().includes('facility'))).toBe(true);
+    expect(
+      communityPlan.budgetItems.some(
+        (b) => b.name.toLowerCase().includes('permit') || b.name.toLowerCase().includes('facility'),
+      ),
+    ).toBe(true);
   });
 
   it('adjusts task lead times for short-notice events (< 21 days)', () => {

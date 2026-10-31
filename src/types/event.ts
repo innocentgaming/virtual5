@@ -56,13 +56,7 @@ export interface BudgetItem {
 }
 
 export type TaskCategory =
-  | 'venue'
-  | 'catering'
-  | 'vendors'
-  | 'guests'
-  | 'decor'
-  | 'logistics'
-  | 'final';
+  'venue' | 'catering' | 'vendors' | 'guests' | 'decor' | 'logistics' | 'final';
 
 export type TaskPriority = 'urgent' | 'high' | 'medium' | 'low';
 
@@ -93,7 +87,8 @@ export type VendorCategory =
   | 'mithai_favors'
   | 'other';
 
-export type VendorStatus = 'not_started' | 'contacted' | 'shortlisted' | 'booked' | 'completed' | 'cancelled';
+export type VendorStatus =
+  'not_started' | 'contacted' | 'shortlisted' | 'booked' | 'completed' | 'cancelled';
 
 export interface VendorItem {
   id: string;
@@ -284,6 +279,3 @@ export interface PlanChangeDiff {
   newAlertsCount?: number;
   newAlertTitles?: string[];
 }
-
-
-

@@ -47,7 +47,7 @@ interface EventSetupFormProps {
       contingencyRate: number;
       venueName?: string;
     },
-    useAI: boolean
+    useAI: boolean,
   ) => void;
   onCancel?: () => void;
   isGenerating?: boolean;
@@ -83,14 +83,46 @@ const ROTATING_STATUS_MESSAGES = [
 ];
 
 const CEREMONY_STRUCTURES = [
-  { id: 'hindu_vedic', label: 'Vedic Hindu (Pheras, Mandap, Muhurat)', note: 'Vedic Pheras at auspicious Muhurat, Mandap havan kund, Baraat and Sangeet' },
-  { id: 'sikh_anand_karaj', label: 'Sikh (Anand Karaj & Laavan)', note: 'Morning Anand Karaj at Gurdwara, 4 Laavan hymns, followed by Langar and evening reception' },
-  { id: 'muslim_nikah', label: 'Muslim (Nikah & Walima)', note: 'Nikah ceremony with Ijab-e-Qubool and Mehr, followed by lavish Walima feast' },
-  { id: 'christian_ceremony', label: 'Christian (Church Vows)', note: 'Church wedding vows, ring exchange, choir processional, followed by banquet dinner' },
-  { id: 'jain_vivah', label: 'Jain (Hastamelap & Lagan Lekhan)', note: 'Strictly Satvik & Jain kitchen, Granthi blessings, Hastamelap, daytime pheras' },
-  { id: 'bengali_biye', label: 'Bengali (Saat Paak & Shubho Drishti)', note: 'Saat Paak, Shubho Drishti, Sindoor Daan, and traditional feast' },
-  { id: 'south_indian', label: 'South Indian (Muhurtham & Kalyanam)', note: 'Early morning auspicious Muhurtham, Kanyadaanam, traditional banana leaf feast' },
-  { id: 'contemporary', label: 'Contemporary / Custom Fusion', note: 'Fusion celebration blending multicultural rituals with modern reception' },
+  {
+    id: 'hindu_vedic',
+    label: 'Vedic Hindu (Pheras, Mandap, Muhurat)',
+    note: 'Vedic Pheras at auspicious Muhurat, Mandap havan kund, Baraat and Sangeet',
+  },
+  {
+    id: 'sikh_anand_karaj',
+    label: 'Sikh (Anand Karaj & Laavan)',
+    note: 'Morning Anand Karaj at Gurdwara, 4 Laavan hymns, followed by Langar and evening reception',
+  },
+  {
+    id: 'muslim_nikah',
+    label: 'Muslim (Nikah & Walima)',
+    note: 'Nikah ceremony with Ijab-e-Qubool and Mehr, followed by lavish Walima feast',
+  },
+  {
+    id: 'christian_ceremony',
+    label: 'Christian (Church Vows)',
+    note: 'Church wedding vows, ring exchange, choir processional, followed by banquet dinner',
+  },
+  {
+    id: 'jain_vivah',
+    label: 'Jain (Hastamelap & Lagan Lekhan)',
+    note: 'Strictly Satvik & Jain kitchen, Granthi blessings, Hastamelap, daytime pheras',
+  },
+  {
+    id: 'bengali_biye',
+    label: 'Bengali (Saat Paak & Shubho Drishti)',
+    note: 'Saat Paak, Shubho Drishti, Sindoor Daan, and traditional feast',
+  },
+  {
+    id: 'south_indian',
+    label: 'South Indian (Muhurtham & Kalyanam)',
+    note: 'Early morning auspicious Muhurtham, Kanyadaanam, traditional banana leaf feast',
+  },
+  {
+    id: 'contemporary',
+    label: 'Contemporary / Custom Fusion',
+    note: 'Fusion celebration blending multicultural rituals with modern reception',
+  },
 ];
 
 function formatToIndianDate(isoStr: string): string {
@@ -109,14 +141,18 @@ function getEventDateDescription(isoStr: string): string {
     const date = new Date(y, m - 1, d);
     if (isNaN(date.getTime())) return '';
     const day = date.toLocaleDateString('en-IN', { weekday: 'long' });
-    const formatted = date.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+    const formatted = date.toLocaleDateString('en-IN', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
     const month = date.getMonth() + 1;
     const season =
       month >= 11 || month <= 2
         ? 'Auspicious Winter Wedding Season'
         : month >= 3 && month <= 6
-        ? 'Summer Auspicious Window'
-        : 'Festive Autumn / Post-Monsoon Season';
+          ? 'Summer Auspicious Window'
+          : 'Festive Autumn / Post-Monsoon Season';
     return `${formatted} (${day}) • ${season}`;
   } catch {
     return '';
@@ -147,31 +183,50 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
   }, [initialPlan, isEditing]);
 
   // Form Fields
-  const [eventType, setEventType] = useState<EventType>(() => initialPlan?.eventType || initialDraft?.eventType || 'wedding');
+  const [eventType, setEventType] = useState<EventType>(
+    () => initialPlan?.eventType || initialDraft?.eventType || 'wedding',
+  );
   const [title, setTitle] = useState(() => initialPlan?.title || initialDraft?.title || '');
-  const [eventDate, setEventDate] = useState(() =>
-    initialPlan?.eventDate || initialDraft?.eventDate || new Date(Date.now() + 90 * 86400000).toISOString().split('T')[0]
+  const [eventDate, setEventDate] = useState(
+    () =>
+      initialPlan?.eventDate ||
+      initialDraft?.eventDate ||
+      new Date(Date.now() + 90 * 86400000).toISOString().split('T')[0],
   );
-  const [city, setCity] = useState(() => initialPlan?.city || initialDraft?.city || 'Jaipur, Rajasthan');
-  const [guestCount, setGuestCount] = useState<number>(() => initialPlan?.guestCount || initialDraft?.guestCount || 250);
-  const [totalBudget, setTotalBudget] = useState<number>(() => initialPlan?.totalBudget || initialDraft?.totalBudget || 1500000);
+  const [city, setCity] = useState(
+    () => initialPlan?.city || initialDraft?.city || 'Jaipur, Rajasthan',
+  );
+  const [guestCount, setGuestCount] = useState<number>(
+    () => initialPlan?.guestCount || initialDraft?.guestCount || 250,
+  );
+  const [totalBudget, setTotalBudget] = useState<number>(
+    () => initialPlan?.totalBudget || initialDraft?.totalBudget || 1500000,
+  );
   const [contingencyRate, setContingencyRate] = useState<number>(() =>
-    initialPlan?.contingencyRate !== undefined ? Math.round(initialPlan.contingencyRate * 100) : (initialDraft?.contingencyRate || 10)
+    initialPlan?.contingencyRate !== undefined
+      ? Math.round(initialPlan.contingencyRate * 100)
+      : initialDraft?.contingencyRate || 10,
   );
-  const [venuePreference, setVenuePreference] = useState<VenuePreference>(() =>
-    initialPlan?.venuePreference || initialDraft?.venuePreference || 'heritage_haveli'
+  const [venuePreference, setVenuePreference] = useState<VenuePreference>(
+    () => initialPlan?.venuePreference || initialDraft?.venuePreference || 'heritage_haveli',
   );
-  const [customVenueName, setCustomVenueName] = useState(() => initialPlan?.venueName || initialDraft?.customVenueName || '');
-  const [foodPreference, setFoodPreference] = useState<FoodPreference>(() =>
-    initialPlan?.foodPreference || initialDraft?.foodPreference || 'royal_thali'
+  const [customVenueName, setCustomVenueName] = useState(
+    () => initialPlan?.venueName || initialDraft?.customVenueName || '',
   );
-  const [theme, setTheme] = useState(() => initialPlan?.theme || initialDraft?.theme || 'Royal Marigold & Antique Gold');
+  const [foodPreference, setFoodPreference] = useState<FoodPreference>(
+    () => initialPlan?.foodPreference || initialDraft?.foodPreference || 'royal_thali',
+  );
+  const [theme, setTheme] = useState(
+    () => initialPlan?.theme || initialDraft?.theme || 'Royal Marigold & Antique Gold',
+  );
   const [dietaryRequirements, setDietaryRequirements] = useState<string[]>(['Pure Veg', 'Jain']);
   const [accessibilityNeeds, setAccessibilityNeeds] = useState<string[]>(
-    initialPlan?.accessibilityNeeds || ['Wheelchair step-free access']
+    initialPlan?.accessibilityNeeds || ['Wheelchair step-free access'],
   );
   const [specialNotes, setSpecialNotes] = useState(initialPlan?.specialNotes || '');
-  const [culturalTraditions, setCulturalTraditions] = useState(initialPlan?.culturalTraditions || '');
+  const [culturalTraditions, setCulturalTraditions] = useState(
+    initialPlan?.culturalTraditions || '',
+  );
   const [priorities] = useState<PriorityArea[]>(initialPlan?.priorities || ['venue', 'catering']);
   const [useAI, setUseAI] = useState(false);
 
@@ -206,7 +261,20 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
         // Ignore localStorage error
       }
     }
-  }, [eventType, title, eventDate, city, guestCount, totalBudget, contingencyRate, venuePreference, customVenueName, foodPreference, theme, isEditing]);
+  }, [
+    eventType,
+    title,
+    eventDate,
+    city,
+    guestCount,
+    totalBudget,
+    contingencyRate,
+    venuePreference,
+    customVenueName,
+    foodPreference,
+    theme,
+    isEditing,
+  ]);
 
   // Rotating status message during generation
   useEffect(() => {
@@ -342,11 +410,13 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
         specialNotes: [
           customVenueName.trim() ? `Venue: ${customVenueName.trim()}` : null,
           specialNotes.trim() || null,
-        ].filter(Boolean).join('\n'),
+        ]
+          .filter(Boolean)
+          .join('\n'),
         contingencyRate: contingencyRate / 100,
         venueName: customVenueName.trim() || undefined,
       },
-      useAI
+      useAI,
     );
   };
 
@@ -440,7 +510,11 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
                     background: 'transparent',
                     border: 'none',
                     borderBottom: `3px solid ${
-                      isActive ? 'var(--accent-primary)' : isCompleted ? 'var(--color-success)' : 'var(--border)'
+                      isActive
+                        ? 'var(--accent-primary)'
+                        : isCompleted
+                          ? 'var(--color-success)'
+                          : 'var(--border)'
                     }`,
                     padding: 'var(--space-2) 0',
                     textAlign: 'left',
@@ -448,10 +522,24 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
                     transition: 'all var(--transition-fast)',
                   }}
                 >
-                  <div style={{ fontSize: '0.7rem', fontWeight: 700, color: isActive ? 'var(--accent-primary)' : 'var(--text-muted)', textTransform: 'uppercase' }}>
+                  <div
+                    style={{
+                      fontSize: '0.7rem',
+                      fontWeight: 700,
+                      color: isActive ? 'var(--accent-primary)' : 'var(--text-muted)',
+                      textTransform: 'uppercase',
+                    }}
+                  >
                     Step {s.num}
                   </div>
-                  <div style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap' }}>
+                  <div
+                    style={{
+                      fontSize: 'var(--text-xs)',
+                      fontWeight: 600,
+                      color: 'var(--text)',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
                     {s.label}
                   </div>
                 </button>
@@ -477,7 +565,13 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
           <fieldset style={{ border: 'none', padding: 0, margin: 0 }}>
             <legend className="sr-only">Select Event Celebration Type</legend>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 'var(--space-4)' }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+                gap: 'var(--space-4)',
+              }}
+            >
               {/* Wedding Card */}
               <button
                 type="button"
@@ -490,7 +584,8 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
                 }}
                 style={{
                   border: `2px solid ${eventType === 'wedding' ? '#9E2A2B' : 'var(--border)'}`,
-                  background: eventType === 'wedding' ? 'rgba(158, 42, 43, 0.05)' : 'var(--surface-raised)',
+                  background:
+                    eventType === 'wedding' ? 'rgba(158, 42, 43, 0.05)' : 'var(--surface-raised)',
                   borderRadius: 'var(--radius-lg)',
                   padding: 'var(--space-5)',
                   cursor: 'pointer',
@@ -501,17 +596,39 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
                   transition: 'all var(--transition-fast)',
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-2)' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: 'var(--space-2)',
+                  }}
+                >
                   <Badge variant="wedding">
                     <Heart size={14} style={{ marginRight: '4px' }} /> Royal Wedding
                   </Badge>
                   {eventType === 'wedding' && <Check size={18} color="#9E2A2B" />}
                 </div>
-                <h4 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, color: 'var(--text)', marginBottom: 'var(--space-1)' }}>
+                <h4
+                  style={{
+                    fontSize: 'var(--text-lg)',
+                    fontWeight: 700,
+                    color: 'var(--text)',
+                    marginBottom: 'var(--space-1)',
+                  }}
+                >
                   Traditional Vivah / Wedding
                 </h4>
-                <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>
-                  Theme: Crimson & Antique Gold. Includes Haldi, Mehendi, Sangeet, Baraat, Pheras, and sound curfew guardrails.
+                <p
+                  style={{
+                    fontSize: 'var(--text-xs)',
+                    color: 'var(--text-muted)',
+                    lineHeight: 1.5,
+                    margin: 0,
+                  }}
+                >
+                  Theme: Crimson & Antique Gold. Includes Haldi, Mehendi, Sangeet, Baraat, Pheras,
+                  and sound curfew guardrails.
                 </p>
               </button>
 
@@ -527,7 +644,8 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
                 }}
                 style={{
                   border: `2px solid ${eventType === 'birthday' ? '#E76F51' : 'var(--border)'}`,
-                  background: eventType === 'birthday' ? 'rgba(231, 111, 81, 0.05)' : 'var(--surface-raised)',
+                  background:
+                    eventType === 'birthday' ? 'rgba(231, 111, 81, 0.05)' : 'var(--surface-raised)',
                   borderRadius: 'var(--radius-lg)',
                   padding: 'var(--space-5)',
                   cursor: 'pointer',
@@ -538,17 +656,39 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
                   transition: 'all var(--transition-fast)',
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-2)' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: 'var(--space-2)',
+                  }}
+                >
                   <Badge variant="birthday">
                     <Cake size={14} style={{ marginRight: '4px' }} /> Milestone Bash
                   </Badge>
                   {eventType === 'birthday' && <Check size={18} color="#E76F51" />}
                 </div>
-                <h4 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, color: 'var(--text)', marginBottom: 'var(--space-1)' }}>
+                <h4
+                  style={{
+                    fontSize: 'var(--text-lg)',
+                    fontWeight: 700,
+                    color: 'var(--text)',
+                    marginBottom: 'var(--space-1)',
+                  }}
+                >
                   Milestone Birthday
                 </h4>
-                <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>
-                  Theme: Sunset Orange & Amber. High energy, rooftop/club venues, live chaat, cocktails, DJ and cake cutting ceremony.
+                <p
+                  style={{
+                    fontSize: 'var(--text-xs)',
+                    color: 'var(--text-muted)',
+                    lineHeight: 1.5,
+                    margin: 0,
+                  }}
+                >
+                  Theme: Sunset Orange & Amber. High energy, rooftop/club venues, live chaat,
+                  cocktails, DJ and cake cutting ceremony.
                 </p>
               </button>
 
@@ -564,7 +704,10 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
                 }}
                 style={{
                   border: `2px solid ${eventType === 'community' ? '#2A9D8F' : 'var(--border)'}`,
-                  background: eventType === 'community' ? 'rgba(42, 157, 143, 0.05)' : 'var(--surface-raised)',
+                  background:
+                    eventType === 'community'
+                      ? 'rgba(42, 157, 143, 0.05)'
+                      : 'var(--surface-raised)',
                   borderRadius: 'var(--radius-lg)',
                   padding: 'var(--space-5)',
                   cursor: 'pointer',
@@ -575,17 +718,39 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
                   transition: 'all var(--transition-fast)',
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-2)' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: 'var(--space-2)',
+                  }}
+                >
                   <Badge variant="community">
                     <Users size={14} style={{ marginRight: '4px' }} /> Community Mela
                   </Badge>
                   {eventType === 'community' && <Check size={18} color="#2A9D8F" />}
                 </div>
-                <h4 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, color: 'var(--text)', marginBottom: 'var(--space-1)' }}>
+                <h4
+                  style={{
+                    fontSize: 'var(--text-lg)',
+                    fontWeight: 700,
+                    color: 'var(--text)',
+                    marginBottom: 'var(--space-1)',
+                  }}
+                >
                   Community & Cultural Mela
                 </h4>
-                <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>
-                  Theme: Marigold & Emerald. Diwali, Dandiya, Holi, or society celebrations with crowd safety, bhog, and performances.
+                <p
+                  style={{
+                    fontSize: 'var(--text-xs)',
+                    color: 'var(--text-muted)',
+                    lineHeight: 1.5,
+                    margin: 0,
+                  }}
+                >
+                  Theme: Marigold & Emerald. Diwali, Dandiya, Holi, or society celebrations with
+                  crowd safety, bhog, and performances.
                 </p>
               </button>
             </div>
@@ -600,12 +765,17 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
             <h3
               ref={currentStep === 2 ? stepHeadingRef : undefined}
               tabIndex={-1}
-              style={{ fontSize: 'var(--text-xl)', marginBottom: 'var(--space-1)', outline: 'none' }}
+              style={{
+                fontSize: 'var(--text-xl)',
+                marginBottom: 'var(--space-1)',
+                outline: 'none',
+              }}
             >
               Step 2: Event Basics & Venue
             </h3>
             <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', margin: 0 }}>
-              Specify your celebration title, city, date, and preferred venue style, or use 1-click sample presets.
+              Specify your celebration title, city, date, and preferred venue style, or use 1-click
+              sample presets.
             </p>
           </div>
 
@@ -702,12 +872,26 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
               required
             />
             {touched.title && !title.trim() && (
-              <span id="title-error" role="alert" style={{ color: 'var(--color-danger)', fontSize: '0.75rem', marginTop: '4px' }}>
+              <span
+                id="title-error"
+                role="alert"
+                style={{ color: 'var(--color-danger)', fontSize: '0.75rem', marginTop: '4px' }}
+              >
                 Event title cannot be empty.
               </span>
             )}
-            <div style={{ marginTop: 'var(--space-2)', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-              <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600 }}>Quick Suggestions:</span>
+            <div
+              style={{
+                marginTop: 'var(--space-2)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                flexWrap: 'wrap',
+              }}
+            >
+              <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+                Quick Suggestions:
+              </span>
               {[
                 "Aarav & Ananya's Royal Rajasthan Wedding",
                 "Meera & Kabir's Sangeet & Vivah",
@@ -721,7 +905,10 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
                     setTouched((prev) => ({ ...prev, title: true }));
                   }}
                   style={{
-                    background: title === suggested ? 'var(--surface-selected, rgba(158, 42, 43, 0.1))' : 'var(--surface-raised)',
+                    background:
+                      title === suggested
+                        ? 'var(--surface-selected, rgba(158, 42, 43, 0.1))'
+                        : 'var(--surface-raised)',
                     border: `1px solid ${title === suggested ? 'var(--accent-primary)' : 'var(--border)'}`,
                     color: title === suggested ? 'var(--accent-primary)' : 'var(--text)',
                     borderRadius: 'var(--radius-pill)',
@@ -737,7 +924,13 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 'var(--space-4)' }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+              gap: 'var(--space-4)',
+            }}
+          >
             <div className="form-group">
               <label htmlFor="setup-city" className="form-label">
                 <span>City / Location *</span>
@@ -757,18 +950,40 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
                 />
                 <datalist id={cityDatalistId}>
                   {INDIAN_CITIES.map((c) => (
-                    <option key={c} value={c}>{c}</option>
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
                   ))}
                 </datalist>
               </div>
               {touched.city && !city.trim() && (
-                <span id="city-error" role="alert" style={{ color: 'var(--color-danger)', fontSize: '0.75rem', marginTop: '4px' }}>
+                <span
+                  id="city-error"
+                  role="alert"
+                  style={{ color: 'var(--color-danger)', fontSize: '0.75rem', marginTop: '4px' }}
+                >
                   City / location is required.
                 </span>
               )}
-              <div style={{ marginTop: 'var(--space-2)', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600 }}>Popular Hubs:</span>
-                {['Jaipur, Rajasthan', 'Udaipur, Rajasthan', 'Mumbai, Maharashtra', 'Delhi NCR', 'Goa'].map((c) => (
+              <div
+                style={{
+                  marginTop: 'var(--space-2)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  flexWrap: 'wrap',
+                }}
+              >
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+                  Popular Hubs:
+                </span>
+                {[
+                  'Jaipur, Rajasthan',
+                  'Udaipur, Rajasthan',
+                  'Mumbai, Maharashtra',
+                  'Delhi NCR',
+                  'Goa',
+                ].map((c) => (
                   <button
                     key={c}
                     type="button"
@@ -777,7 +992,10 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
                       setTouched((prev) => ({ ...prev, city: true }));
                     }}
                     style={{
-                      background: city === c ? 'var(--surface-selected, rgba(158, 42, 43, 0.1))' : 'var(--surface-raised)',
+                      background:
+                        city === c
+                          ? 'var(--surface-selected, rgba(158, 42, 43, 0.1))'
+                          : 'var(--surface-raised)',
                       border: `1px solid ${city === c ? 'var(--accent-primary)' : 'var(--border)'}`,
                       color: city === c ? 'var(--accent-primary)' : 'var(--text)',
                       borderRadius: 'var(--radius-pill)',
@@ -807,15 +1025,26 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
                 required
               />
               <div style={{ marginTop: 'var(--space-2)' }}>
-                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '4px' }}>
-                  <strong>Indian Format:</strong> <span style={{ color: 'var(--accent-primary)', fontWeight: 700 }}>{formatToIndianDate(eventDate)}</span> {getEventDateDescription(eventDate) ? `• ${getEventDateDescription(eventDate)}` : ''}
+                <div
+                  style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '4px' }}
+                >
+                  <strong>Indian Format:</strong>{' '}
+                  <span style={{ color: 'var(--accent-primary)', fontWeight: 700 }}>
+                    {formatToIndianDate(eventDate)}
+                  </span>{' '}
+                  {getEventDateDescription(eventDate)
+                    ? `• ${getEventDateDescription(eventDate)}`
+                    : ''}
                 </div>
                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                   <button
                     type="button"
                     onClick={() => setEventDate('2027-02-22')}
                     style={{
-                      background: eventDate === '2027-02-22' ? 'var(--surface-selected, rgba(158, 42, 43, 0.1))' : 'var(--surface-raised)',
+                      background:
+                        eventDate === '2027-02-22'
+                          ? 'var(--surface-selected, rgba(158, 42, 43, 0.1))'
+                          : 'var(--surface-raised)',
                       border: `1px solid ${eventDate === '2027-02-22' ? 'var(--accent-primary)' : 'var(--border)'}`,
                       color: eventDate === '2027-02-22' ? 'var(--accent-primary)' : 'var(--text)',
                       borderRadius: 'var(--radius-pill)',
@@ -869,7 +1098,13 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 'var(--space-4)' }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+              gap: 'var(--space-4)',
+            }}
+          >
             <div className="form-group">
               <label htmlFor="setup-venue" className="form-label">
                 <span>Preferred Venue Style</span>
@@ -906,15 +1141,33 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
                 onChange={(e) => setCustomVenueName(e.target.value)}
                 placeholder="e.g. The Oberoi Rajvilas, Rambagh Palace"
               />
-              <div style={{ marginTop: 'var(--space-2)', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600 }}>Jaipur Landmarks:</span>
-                {['Rambagh Palace', 'The Oberoi Rajvilas', 'Jai Mahal Palace', 'Fairmont Jaipur'].map((landmark) => (
+              <div
+                style={{
+                  marginTop: 'var(--space-2)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  flexWrap: 'wrap',
+                }}
+              >
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+                  Jaipur Landmarks:
+                </span>
+                {[
+                  'Rambagh Palace',
+                  'The Oberoi Rajvilas',
+                  'Jai Mahal Palace',
+                  'Fairmont Jaipur',
+                ].map((landmark) => (
                   <button
                     key={landmark}
                     type="button"
                     onClick={() => setCustomVenueName(landmark)}
                     style={{
-                      background: customVenueName === landmark ? 'var(--surface-selected, rgba(158, 42, 43, 0.1))' : 'var(--surface-raised)',
+                      background:
+                        customVenueName === landmark
+                          ? 'var(--surface-selected, rgba(158, 42, 43, 0.1))'
+                          : 'var(--surface-raised)',
                       border: `1px solid ${customVenueName === landmark ? 'var(--accent-primary)' : 'var(--border)'}`,
                       color: customVenueName === landmark ? 'var(--accent-primary)' : 'var(--text)',
                       borderRadius: 'var(--radius-pill)',
@@ -942,8 +1195,18 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
               onChange={(e) => setTheme(e.target.value)}
               placeholder="e.g. Royal Marigold & Antique Gold"
             />
-            <div style={{ marginTop: 'var(--space-2)', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-              <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600 }}>Theme Suggestions:</span>
+            <div
+              style={{
+                marginTop: 'var(--space-2)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                flexWrap: 'wrap',
+              }}
+            >
+              <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+                Theme Suggestions:
+              </span>
               {[
                 'Royal Marigold & Antique Gold',
                 'Pastel Floral & Minimalist Mandap',
@@ -956,7 +1219,10 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
                   type="button"
                   onClick={() => setTheme(preset)}
                   style={{
-                    background: theme === preset ? 'var(--surface-selected, rgba(158, 42, 43, 0.1))' : 'var(--surface-raised)',
+                    background:
+                      theme === preset
+                        ? 'var(--surface-selected, rgba(158, 42, 43, 0.1))'
+                        : 'var(--surface-raised)',
                     border: `1px solid ${theme === preset ? 'var(--accent-primary)' : 'var(--border)'}`,
                     color: theme === preset ? 'var(--accent-primary)' : 'var(--text)',
                     borderRadius: 'var(--radius-pill)',
@@ -984,14 +1250,29 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
             Step 3: Budget, Scale & Contingency
           </h3>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 'var(--space-5)' }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+              gap: 'var(--space-5)',
+            }}
+          >
             {/* Total Budget Input */}
             <div className="form-group">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+              >
                 <label htmlFor="setup-budget" className="form-label">
                   <span>Total Budget (₹) *</span>
                 </label>
-                <span className="tabular-nums" style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--accent-primary)' }}>
+                <span
+                  className="tabular-nums"
+                  style={{
+                    fontSize: 'var(--text-xs)',
+                    fontWeight: 700,
+                    color: 'var(--accent-primary)',
+                  }}
+                >
                   {formatIndianShort(totalBudget)}
                 </span>
               </div>
@@ -1008,10 +1289,16 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
                 required
               />
               <div className="form-hint">
-                Live Preview: <strong className="tabular-nums">{formatCurrency(totalBudget)} ({formatIndianShort(totalBudget)})</strong>
+                Live Preview:{' '}
+                <strong className="tabular-nums">
+                  {formatCurrency(totalBudget)} ({formatIndianShort(totalBudget)})
+                </strong>
               </div>
               {touched.totalBudget && totalBudget <= 0 && (
-                <span role="alert" style={{ color: 'var(--color-danger)', fontSize: '0.75rem', marginTop: '4px' }}>
+                <span
+                  role="alert"
+                  style={{ color: 'var(--color-danger)', fontSize: '0.75rem', marginTop: '4px' }}
+                >
                   Total budget must be greater than ₹0.
                 </span>
               )}
@@ -1019,12 +1306,23 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
 
             {/* Guest Count Input */}
             <div className="form-group">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+              >
                 <label htmlFor="setup-guests" className="form-label">
                   <span>Invited Guest Count *</span>
                 </label>
-                <span className="tabular-nums" style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text-muted)' }}>
-                  {calculatedPerGuest ? `₹${calculatedPerGuest.toLocaleString('en-IN')} / guest` : ''}
+                <span
+                  className="tabular-nums"
+                  style={{
+                    fontSize: 'var(--text-xs)',
+                    fontWeight: 700,
+                    color: 'var(--text-muted)',
+                  }}
+                >
+                  {calculatedPerGuest
+                    ? `₹${calculatedPerGuest.toLocaleString('en-IN')} / guest`
+                    : ''}
                 </span>
               </div>
               <input
@@ -1040,10 +1338,14 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
                 required
               />
               <div className="form-hint">
-                Estimated Per-Guest Allocation: <strong className="tabular-nums">{formatCurrency(calculatedPerGuest)}</strong>
+                Estimated Per-Guest Allocation:{' '}
+                <strong className="tabular-nums">{formatCurrency(calculatedPerGuest)}</strong>
               </div>
               {touched.guestCount && guestCount <= 0 && (
-                <span role="alert" style={{ color: 'var(--color-danger)', fontSize: '0.75rem', marginTop: '4px' }}>
+                <span
+                  role="alert"
+                  style={{ color: 'var(--color-danger)', fontSize: '0.75rem', marginTop: '4px' }}
+                >
                   Guest count must be at least 1.
                 </span>
               )}
@@ -1051,12 +1353,37 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
           </div>
 
           {/* Contingency Slider */}
-          <div style={{ marginTop: 'var(--space-4)', padding: 'var(--space-4)', background: 'var(--surface-subtle)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
-              <label htmlFor="setup-contingency" style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--text)' }}>
+          <div
+            style={{
+              marginTop: 'var(--space-4)',
+              padding: 'var(--space-4)',
+              background: 'var(--surface-subtle)',
+              borderRadius: 'var(--radius-md)',
+              border: '1px solid var(--border)',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: 'var(--space-2)',
+              }}
+            >
+              <label
+                htmlFor="setup-contingency"
+                style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--text)' }}
+              >
                 Contingency Reserve Buffer ({contingencyRate}%)
               </label>
-              <span className="tabular-nums" style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--color-warning-text)' }}>
+              <span
+                className="tabular-nums"
+                style={{
+                  fontSize: 'var(--text-sm)',
+                  fontWeight: 700,
+                  color: 'var(--color-warning-text)',
+                }}
+              >
                 {formatIndianShort(contingencyRupees)} ({formatCurrency(contingencyRupees)})
               </span>
             </div>
@@ -1070,8 +1397,15 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
               onChange={(e) => setContingencyRate(parseInt(e.target.value, 10))}
               style={{ width: '100%', cursor: 'pointer', accentColor: 'var(--accent-primary)' }}
             />
-            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginTop: 'var(--space-1)' }}>
-              Standard Indian event safeguard: 10%–15% buffer for last-minute guest additions, overtime DJ curfews, and logistics.
+            <div
+              style={{
+                fontSize: 'var(--text-xs)',
+                color: 'var(--text-muted)',
+                marginTop: 'var(--space-1)',
+              }}
+            >
+              Standard Indian event safeguard: 10%–15% buffer for last-minute guest additions,
+              overtime DJ curfews, and logistics.
             </div>
           </div>
         </div>
@@ -1090,7 +1424,14 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
 
           {/* Dietary Requirements Chips */}
           <fieldset style={{ border: 'none', padding: 0, margin: '0 0 var(--space-5) 0' }}>
-            <legend style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--text)', marginBottom: 'var(--space-2)' }}>
+            <legend
+              style={{
+                fontSize: 'var(--text-sm)',
+                fontWeight: 700,
+                color: 'var(--text)',
+                marginBottom: 'var(--space-2)',
+              }}
+            >
               Dietary Counters & Kitchen Separation
             </legend>
             <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
@@ -1125,7 +1466,14 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
 
           {/* Accessibility Needs Chips */}
           <fieldset style={{ border: 'none', padding: 0, margin: '0 0 var(--space-5) 0' }}>
-            <legend style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--text)', marginBottom: 'var(--space-2)' }}>
+            <legend
+              style={{
+                fontSize: 'var(--text-sm)',
+                fontWeight: 700,
+                color: 'var(--text)',
+                marginBottom: 'var(--space-2)',
+              }}
+            >
               Accessibility & Elder Care Needs
             </legend>
             <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
@@ -1166,10 +1514,23 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
 
           {/* Ceremony Tradition Selection */}
           <div className="form-group" style={{ marginBottom: 'var(--space-4)' }}>
-            <label htmlFor="setup-ceremony-tradition" className="form-label" style={{ marginBottom: 'var(--space-2)' }}>
+            <label
+              htmlFor="setup-ceremony-tradition"
+              className="form-label"
+              style={{ marginBottom: 'var(--space-2)' }}
+            >
               <span>Ceremony Tradition & Cultural Structure</span>
-              <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', fontWeight: 400, display: 'block', marginTop: '2px' }}>
-                Select a ceremony structure to tailor rituals, muhurat timings, and vendor questions (or customize below):
+              <span
+                style={{
+                  fontSize: 'var(--text-xs)',
+                  color: 'var(--text-muted)',
+                  fontWeight: 400,
+                  display: 'block',
+                  marginTop: '2px',
+                }}
+              >
+                Select a ceremony structure to tailor rituals, muhurat timings, and vendor questions
+                (or customize below):
               </span>
             </label>
             <select
@@ -1226,68 +1587,192 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
             Step 5: Review & Confirm Plan
           </h3>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', marginBottom: 'var(--space-6)' }}>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 'var(--space-4)',
+              marginBottom: 'var(--space-6)',
+            }}
+          >
             {/* Section 1: Event Type */}
-            <div style={{ padding: 'var(--space-4)', background: 'var(--surface-subtle)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--text)' }}>1. Celebration Type</span>
-                <Button variant="ghost" size="sm" onClick={() => setCurrentStep(1)} leadingIcon={<Edit2 size={12} />}>
+            <div
+              style={{
+                padding: 'var(--space-4)',
+                background: 'var(--surface-subtle)',
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid var(--border)',
+              }}
+            >
+              <div
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+              >
+                <span style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--text)' }}>
+                  1. Celebration Type
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setCurrentStep(1)}
+                  leadingIcon={<Edit2 size={12} />}
+                >
                   Edit
                 </Button>
               </div>
-              <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', marginTop: '4px' }}>
+              <div
+                style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', marginTop: '4px' }}
+              >
                 <strong>{eventType.toUpperCase()}</strong> • Theme: {theme}
               </div>
             </div>
 
             {/* Section 2: Basics */}
-            <div style={{ padding: 'var(--space-4)', background: 'var(--surface-subtle)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--text)' }}>2. Basics & Venue</span>
-                <Button variant="ghost" size="sm" onClick={() => setCurrentStep(2)} leadingIcon={<Edit2 size={12} />}>
+            <div
+              style={{
+                padding: 'var(--space-4)',
+                background: 'var(--surface-subtle)',
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid var(--border)',
+              }}
+            >
+              <div
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+              >
+                <span style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--text)' }}>
+                  2. Basics & Venue
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setCurrentStep(2)}
+                  leadingIcon={<Edit2 size={12} />}
+                >
                   Edit
                 </Button>
               </div>
-              <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', marginTop: '4px' }}>
-                <strong>{title}</strong> in <strong>{city}</strong> on <strong>{formatToIndianDate(eventDate)}</strong> • Style: {venuePreference.replace('_', ' ')}{customVenueName ? ` (${customVenueName})` : ''} • Theme: {theme}
+              <div
+                style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', marginTop: '4px' }}
+              >
+                <strong>{title}</strong> in <strong>{city}</strong> on{' '}
+                <strong>{formatToIndianDate(eventDate)}</strong> • Style:{' '}
+                {venuePreference.replace('_', ' ')}
+                {customVenueName ? ` (${customVenueName})` : ''} • Theme: {theme}
               </div>
             </div>
 
             {/* Section 3: Budget & Guests */}
-            <div style={{ padding: 'var(--space-4)', background: 'var(--surface-subtle)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--text)' }}>3. Budget & Scale</span>
-                <Button variant="ghost" size="sm" onClick={() => setCurrentStep(3)} leadingIcon={<Edit2 size={12} />}>
+            <div
+              style={{
+                padding: 'var(--space-4)',
+                background: 'var(--surface-subtle)',
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid var(--border)',
+              }}
+            >
+              <div
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+              >
+                <span style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--text)' }}>
+                  3. Budget & Scale
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setCurrentStep(3)}
+                  leadingIcon={<Edit2 size={12} />}
+                >
                   Edit
                 </Button>
               </div>
-              <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', marginTop: '4px' }}>
-                Budget: <strong className="tabular-nums">{formatCurrency(totalBudget)} ({formatIndianShort(totalBudget)})</strong> • Guests: <strong>{guestCount}</strong> ({formatCurrency(calculatedPerGuest)}/guest) • Contingency: <strong>{contingencyRate}%</strong> ({formatIndianShort(contingencyRupees)})
+              <div
+                style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', marginTop: '4px' }}
+              >
+                Budget:{' '}
+                <strong className="tabular-nums">
+                  {formatCurrency(totalBudget)} ({formatIndianShort(totalBudget)})
+                </strong>{' '}
+                • Guests: <strong>{guestCount}</strong> ({formatCurrency(calculatedPerGuest)}/guest)
+                • Contingency: <strong>{contingencyRate}%</strong> (
+                {formatIndianShort(contingencyRupees)})
               </div>
             </div>
 
             {/* Section 4: Preferences */}
-            <div style={{ padding: 'var(--space-4)', background: 'var(--surface-subtle)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--text)' }}>4. Guardrails & Dietary</span>
-                <Button variant="ghost" size="sm" onClick={() => setCurrentStep(4)} leadingIcon={<Edit2 size={12} />}>
+            <div
+              style={{
+                padding: 'var(--space-4)',
+                background: 'var(--surface-subtle)',
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid var(--border)',
+              }}
+            >
+              <div
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+              >
+                <span style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--text)' }}>
+                  4. Guardrails & Dietary
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setCurrentStep(4)}
+                  leadingIcon={<Edit2 size={12} />}
+                >
                   Edit
                 </Button>
               </div>
-              <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', marginTop: '4px' }}>
-                Dietary: <strong>{dietaryRequirements.join(', ') || 'Standard'}</strong> • Accessibility: {accessibilityNeeds.join(', ') || 'None specified'}
+              <div
+                style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', marginTop: '4px' }}
+              >
+                Dietary: <strong>{dietaryRequirements.join(', ') || 'Standard'}</strong> •
+                Accessibility: {accessibilityNeeds.join(', ') || 'None specified'}
               </div>
             </div>
           </div>
 
           {/* AI vs Deterministic toggle notice */}
-          <div style={{ padding: 'var(--space-3) var(--space-4)', background: 'var(--color-info-bg)', border: '1px solid var(--color-info-border)', borderRadius: 'var(--radius-md)', marginBottom: 'var(--space-5)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', color: 'var(--color-info-text)', fontSize: 'var(--text-xs)', fontWeight: 600 }}>
+          <div
+            style={{
+              padding: 'var(--space-3) var(--space-4)',
+              background: 'var(--color-info-bg)',
+              border: '1px solid var(--color-info-border)',
+              borderRadius: 'var(--radius-md)',
+              marginBottom: 'var(--space-5)',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 'var(--space-3)',
+                flexWrap: 'wrap',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 'var(--space-2)',
+                  color: 'var(--color-info-text)',
+                  fontSize: 'var(--text-xs)',
+                  fontWeight: 600,
+                }}
+              >
                 <ShieldCheck size={16} />
                 <span>Offline Deterministic Rule Engine is active as fallback.</span>
               </div>
-              <label style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--color-info-text)', cursor: 'pointer' }}>
+              <label
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 'var(--space-2)',
+                  fontSize: 'var(--text-xs)',
+                  fontWeight: 600,
+                  color: 'var(--color-info-text)',
+                  cursor: 'pointer',
+                }}
+              >
                 <input
                   type="checkbox"
                   checked={useAI}
@@ -1357,7 +1842,15 @@ export const EventSetupForm: React.FC<EventSetupFormProps> = ({
 
         {/* Loading status rotating indicator */}
         {isGenerating && (
-          <div style={{ textAlign: 'center', marginTop: 'var(--space-4)', color: 'var(--accent-primary)', fontSize: 'var(--text-sm)', fontWeight: 600 }}>
+          <div
+            style={{
+              textAlign: 'center',
+              marginTop: 'var(--space-4)',
+              color: 'var(--accent-primary)',
+              fontSize: 'var(--text-sm)',
+              fontWeight: 600,
+            }}
+          >
             {ROTATING_STATUS_MESSAGES[statusIndex]}
           </div>
         )}

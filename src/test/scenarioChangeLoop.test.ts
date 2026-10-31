@@ -30,23 +30,116 @@ describe('Comprehensive Core Loop & Change Scenarios (Step 5)', () => {
     missingInfoPrompts: [],
     generationExplanation: '',
     budgetItems: [
-      { id: 'b-cat', category: 'catering', name: 'Royal Catering', estimatedCost: 1000000, actualCost: 1000000, priority: 'essential' },
-      { id: 'b-dec', category: 'decor', name: 'Palace Mandap Decor', estimatedCost: 500000, actualCost: 500000, priority: 'recommended' },
-      { id: 'b-ven', category: 'venue', name: 'Courtyard Venue', estimatedCost: 800000, actualCost: 800000, priority: 'essential' },
-      { id: 'b-ent', category: 'entertainment', name: 'Dhol & DJ', estimatedCost: 300000, actualCost: 300000, priority: 'optional' },
-      { id: 'b-pho', category: 'photography', name: 'Candid Photography', estimatedCost: 400000, actualCost: 400000, priority: 'recommended' },
+      {
+        id: 'b-cat',
+        category: 'catering',
+        name: 'Royal Catering',
+        estimatedCost: 1000000,
+        actualCost: 1000000,
+        priority: 'essential',
+      },
+      {
+        id: 'b-dec',
+        category: 'decor',
+        name: 'Palace Mandap Decor',
+        estimatedCost: 500000,
+        actualCost: 500000,
+        priority: 'recommended',
+      },
+      {
+        id: 'b-ven',
+        category: 'venue',
+        name: 'Courtyard Venue',
+        estimatedCost: 800000,
+        actualCost: 800000,
+        priority: 'essential',
+      },
+      {
+        id: 'b-ent',
+        category: 'entertainment',
+        name: 'Dhol & DJ',
+        estimatedCost: 300000,
+        actualCost: 300000,
+        priority: 'optional',
+      },
+      {
+        id: 'b-pho',
+        category: 'photography',
+        name: 'Candid Photography',
+        estimatedCost: 400000,
+        actualCost: 400000,
+        priority: 'recommended',
+      },
     ] as BudgetItem[],
     tasks: [
-      { id: 't-venue', title: 'Confirm Venue Booking', category: 'venue', dueDate: '2026-12-01', completed: true, priority: 'urgent' },
-      { id: 't-caterer', title: 'Lock Caterer Contract & Menu', category: 'catering', dueDate: '2026-12-15', completed: false, dependencies: ['t-venue'], priority: 'high' },
-      { id: 't-tasting', title: 'Conduct Food Tasting Session', category: 'catering', dueDate: '2027-01-05', completed: false, dependencies: ['t-caterer'], priority: 'medium' },
-      { id: 't-permit', title: 'Procure Police Loudspeaker & Sound Permit', category: 'logistics', dueDate: '2027-01-20', completed: false, priority: 'urgent' },
-      { id: 't-baraat', title: 'Coordinate Baraat Procession Route & Dhol Pacing', category: 'final', dueDate: '2027-02-10', completed: false, priority: 'high' },
+      {
+        id: 't-venue',
+        title: 'Confirm Venue Booking',
+        category: 'venue',
+        dueDate: '2026-12-01',
+        completed: true,
+        priority: 'urgent',
+      },
+      {
+        id: 't-caterer',
+        title: 'Lock Caterer Contract & Menu',
+        category: 'catering',
+        dueDate: '2026-12-15',
+        completed: false,
+        dependencies: ['t-venue'],
+        priority: 'high',
+      },
+      {
+        id: 't-tasting',
+        title: 'Conduct Food Tasting Session',
+        category: 'catering',
+        dueDate: '2027-01-05',
+        completed: false,
+        dependencies: ['t-caterer'],
+        priority: 'medium',
+      },
+      {
+        id: 't-permit',
+        title: 'Procure Police Loudspeaker & Sound Permit',
+        category: 'logistics',
+        dueDate: '2027-01-20',
+        completed: false,
+        priority: 'urgent',
+      },
+      {
+        id: 't-baraat',
+        title: 'Coordinate Baraat Procession Route & Dhol Pacing',
+        category: 'final',
+        dueDate: '2027-02-10',
+        completed: false,
+        priority: 'high',
+      },
     ] as TaskItem[],
     vendors: [
-      { id: 'v-caterer', category: 'caterer', role: 'Royal Halwai', status: 'booked', estimatedCost: 1000000, questionsToAsk: [] },
-      { id: 'v-decor', category: 'decorator', role: 'Palace Decorators', status: 'shortlisted', estimatedCost: 500000, questionsToAsk: [] },
-      { id: 'v-dhol', category: 'dhol_band', role: 'Nashik Dhol & Brass Band', status: 'contacted', estimatedCost: 300000, questionsToAsk: [] },
+      {
+        id: 'v-caterer',
+        category: 'caterer',
+        role: 'Royal Halwai',
+        status: 'booked',
+        estimatedCost: 1000000,
+        questionsToAsk: [],
+      },
+      {
+        id: 'v-decor',
+        category: 'decorator',
+        role: 'Palace Decorators',
+        status: 'shortlisted',
+        estimatedCost: 500000,
+        questionsToAsk: [],
+      },
+      {
+        id: 'v-dhol',
+        category: 'dhol_band',
+        role: 'Nashik Dhol & Brass Band',
+        status: 'contacted',
+        estimatedCost: 300000,
+        questionsToAsk: [],
+      },
     ] as VendorItem[],
     guests: [
       { id: 'g-1', name: 'Guest 1', rsvpStatus: 'attending', dietary: 'pure_veg', plusOne: false },
@@ -55,9 +148,27 @@ describe('Comprehensive Core Loop & Change Scenarios (Step 5)', () => {
     ],
     ideas: [],
     schedule: [
-      { id: 's-1', time: '04:00 PM', activity: 'High Tea & Welcome Drinks', location: 'Courtyard', responsibleRole: 'Catering Lead' },
-      { id: 's-2', time: '07:00 PM', activity: 'Baraat Procession & Dhol Beats', location: 'Palace Gate', responsibleRole: 'Dhol Band' },
-      { id: 's-3', time: '10:00 PM', activity: 'Transition Indoors & Sangeet Dance Floor', location: 'Grand Ballroom', responsibleRole: 'DJ' },
+      {
+        id: 's-1',
+        time: '04:00 PM',
+        activity: 'High Tea & Welcome Drinks',
+        location: 'Courtyard',
+        responsibleRole: 'Catering Lead',
+      },
+      {
+        id: 's-2',
+        time: '07:00 PM',
+        activity: 'Baraat Procession & Dhol Beats',
+        location: 'Palace Gate',
+        responsibleRole: 'Dhol Band',
+      },
+      {
+        id: 's-3',
+        time: '10:00 PM',
+        activity: 'Transition Indoors & Sangeet Dance Floor',
+        location: 'Grand Ballroom',
+        responsibleRole: 'DJ',
+      },
     ],
   };
 
@@ -66,15 +177,17 @@ describe('Comprehensive Core Loop & Change Scenarios (Step 5)', () => {
     const spikePlan: EventPlan = {
       ...basePlan,
       budgetItems: basePlan.budgetItems.map((b) =>
-        b.id === 'b-cat' ? { ...b, actualCost: 1200000 } : b
+        b.id === 'b-cat' ? { ...b, actualCost: 1200000 } : b,
       ),
       vendors: basePlan.vendors.map((v) =>
-        v.id === 'v-caterer' ? { ...v, finalCost: 1200000 } : v
+        v.id === 'v-caterer' ? { ...v, finalCost: 1200000 } : v,
       ),
     };
 
     const { insights } = evaluateDecisionRules(spikePlan);
-    const spikeInsight = insights.find((i) => i.id === 'rule-vendor-cost-spike' || i.id === 'rule-budget-overrun');
+    const spikeInsight = insights.find(
+      (i) => i.id === 'rule-vendor-cost-spike' || i.id === 'rule-budget-overrun',
+    );
     expect(spikeInsight).toBeDefined();
     expect(spikeInsight?.tradeOffs).toBeDefined();
     expect(spikeInsight?.tradeOffs?.length).toBeGreaterThanOrEqual(2);
@@ -90,7 +203,7 @@ describe('Comprehensive Core Loop & Change Scenarios (Step 5)', () => {
     const cancelPlan: EventPlan = {
       ...basePlan,
       vendors: basePlan.vendors.map((v) =>
-        v.id === 'v-caterer' ? { ...v, status: 'cancelled' } : v
+        v.id === 'v-caterer' ? { ...v, status: 'cancelled' } : v,
       ),
     };
 
@@ -100,7 +213,9 @@ describe('Comprehensive Core Loop & Change Scenarios (Step 5)', () => {
     expect(cancelInsight?.tradeOffs).toBeDefined();
     expect(cancelInsight?.tradeOffs?.length).toBeGreaterThanOrEqual(2);
 
-    const replaceTradeOff = cancelInsight?.tradeOffs?.find((t) => t.actionType === 'update_vendor_status');
+    const replaceTradeOff = cancelInsight?.tradeOffs?.find(
+      (t) => t.actionType === 'update_vendor_status',
+    );
     expect(replaceTradeOff).toBeDefined();
     expect(replaceTradeOff?.payload.vendorId).toBe('v-caterer');
   });
@@ -136,7 +251,9 @@ describe('Comprehensive Core Loop & Change Scenarios (Step 5)', () => {
     expect(capacityInsight).toBeDefined();
     expect(capacityInsight?.tradeOffs).toBeDefined();
 
-    const capTradeOff = capacityInsight?.tradeOffs?.find((t) => t.actionType === 'adjust_guest_count');
+    const capTradeOff = capacityInsight?.tradeOffs?.find(
+      (t) => t.actionType === 'adjust_guest_count',
+    );
     expect(capTradeOff).toBeDefined();
     expect(capTradeOff?.payload.newGuestCount).toBe(220);
   });
@@ -144,7 +261,12 @@ describe('Comprehensive Core Loop & Change Scenarios (Step 5)', () => {
   // 5. Date Moves Earlier (Timeline Compression / Rush Triage)
   it('re-paces timeline when date moves earlier, flags compressed schedule, and triages tasks', () => {
     const rushDate = '2026-11-05'; // Only ~10 days away
-    const repacedTasks = repaceTimelineTasks(basePlan.tasks, basePlan.eventDate, rushDate, '2026-10-26');
+    const repacedTasks = repaceTimelineTasks(
+      basePlan.tasks,
+      basePlan.eventDate,
+      rushDate,
+      '2026-10-26',
+    );
 
     // Uncompleted tasks should be compressed within the remaining 10 days
     const pendingTasks = repacedTasks.filter((t) => !t.completed);
@@ -160,7 +282,9 @@ describe('Comprehensive Core Loop & Change Scenarios (Step 5)', () => {
     };
 
     const { insights } = evaluateDecisionRules(rushPlan, '2026-10-26');
-    const urgentInsight = insights.find((i) => i.id === 'rule-date-urgent' || i.id === 'rule-date-approaching');
+    const urgentInsight = insights.find(
+      (i) => i.id === 'rule-date-urgent' || i.id === 'rule-date-approaching',
+    );
     expect(urgentInsight).toBeDefined();
     expect(urgentInsight?.tradeOffs?.length).toBeGreaterThanOrEqual(1);
   });
@@ -194,9 +318,7 @@ describe('Comprehensive Core Loop & Change Scenarios (Step 5)', () => {
     expect(overBudgetInsight).toBeDefined();
     expect(overBudgetInsight?.tradeOffs?.length).toBeGreaterThanOrEqual(2);
 
-    const cateringTradeOff = overBudgetInsight?.tradeOffs?.find(
-      (t) => t.id === 'to-switch-buffet'
-    );
+    const cateringTradeOff = overBudgetInsight?.tradeOffs?.find((t) => t.id === 'to-switch-buffet');
     expect(cateringTradeOff).toBeDefined();
     expect(cateringTradeOff?.payload.amount).toBeGreaterThan(0);
   });
@@ -206,8 +328,23 @@ describe('Comprehensive Core Loop & Change Scenarios (Step 5)', () => {
     const blockedPlan: EventPlan = {
       ...basePlan,
       tasks: [
-        { id: 't-1', title: 'Prerequisite Overdue Task', category: 'venue', dueDate: '2026-10-01', completed: false, priority: 'urgent' },
-        { id: 't-2', title: 'Dependent Task', category: 'catering', dueDate: '2026-10-15', completed: false, dependencies: ['t-1'], priority: 'high' },
+        {
+          id: 't-1',
+          title: 'Prerequisite Overdue Task',
+          category: 'venue',
+          dueDate: '2026-10-01',
+          completed: false,
+          priority: 'urgent',
+        },
+        {
+          id: 't-2',
+          title: 'Dependent Task',
+          category: 'catering',
+          dueDate: '2026-10-15',
+          completed: false,
+          dependencies: ['t-1'],
+          priority: 'high',
+        },
       ],
     };
 
@@ -226,9 +363,27 @@ describe('Comprehensive Core Loop & Change Scenarios (Step 5)', () => {
     const dietaryPlan: EventPlan = {
       ...basePlan,
       guests: [
-        { id: 'g-j1', name: 'Jain Guest 1', rsvpStatus: 'attending', dietary: 'jain', plusOne: false },
-        { id: 'g-j2', name: 'Jain Guest 2', rsvpStatus: 'attending', dietary: 'jain', plusOne: false },
-        { id: 'g-pv1', name: 'Pure Veg Guest', rsvpStatus: 'attending', dietary: 'pure_veg', plusOne: false },
+        {
+          id: 'g-j1',
+          name: 'Jain Guest 1',
+          rsvpStatus: 'attending',
+          dietary: 'jain',
+          plusOne: false,
+        },
+        {
+          id: 'g-j2',
+          name: 'Jain Guest 2',
+          rsvpStatus: 'attending',
+          dietary: 'jain',
+          plusOne: false,
+        },
+        {
+          id: 'g-pv1',
+          name: 'Pure Veg Guest',
+          rsvpStatus: 'attending',
+          dietary: 'pure_veg',
+          plusOne: false,
+        },
       ],
       budgetItems: basePlan.budgetItems.filter((b) => !b.name.toLowerCase().includes('jain')),
     };
@@ -238,7 +393,9 @@ describe('Comprehensive Core Loop & Change Scenarios (Step 5)', () => {
     expect(jainInsight).toBeDefined();
     expect(jainInsight?.tradeOffs).toBeDefined();
 
-    const jainTradeOff = jainInsight?.tradeOffs?.find((t) => t.actionType === 'apply_dietary_counter');
+    const jainTradeOff = jainInsight?.tradeOffs?.find(
+      (t) => t.actionType === 'apply_dietary_counter',
+    );
     expect(jainTradeOff).toBeDefined();
     expect(jainTradeOff?.payload.name).toContain('Jain');
   });

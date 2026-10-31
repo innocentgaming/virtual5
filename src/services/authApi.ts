@@ -18,7 +18,10 @@ export type ApiResult<T> =
  * @param options - Standard fetch options including HTTP method and request body
  * @returns Parsed JSON response wrapped in a typed ApiResult
  */
-export async function apiRequest<T>(path: string, options: RequestInit = {}): Promise<ApiResult<T>> {
+export async function apiRequest<T>(
+  path: string,
+  options: RequestInit = {},
+): Promise<ApiResult<T>> {
   const headers = new Headers(options.headers);
   if (options.body && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json');
@@ -74,32 +77,72 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}): Pr
 
     return { ok: true, ...(data as unknown as T) };
   } catch {
-    return { ok: false, error: 'Network connection issue. Please check your internet.', code: 'network' };
+    return {
+      ok: false,
+      error: 'Network connection issue. Please check your internet.',
+      code: 'network',
+    };
   }
 }
 
 export const authApi = {
   me: () => apiRequest<{ user: AuthUser | null; storage?: StorageKind }>('/api/auth/me'),
   login: (data: { email: string; password: string; remember?: boolean }) =>
-    apiRequest<{ user: AuthUser }>('/api/auth/login', { method: 'POST', body: JSON.stringify(data) }),
-  signup: (data: { name: string; email: string; password: string; role: UserRole; organization?: string; acceptTerms: boolean }) =>
-    apiRequest<{ user: AuthUser }>('/api/auth/signup', { method: 'POST', body: JSON.stringify(data) }),
+    apiRequest<{ user: AuthUser }>('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  signup: (data: {
+    name: string;
+    email: string;
+    password: string;
+    role: UserRole;
+    organization?: string;
+    acceptTerms: boolean;
+  }) =>
+    apiRequest<{ user: AuthUser }>('/api/auth/signup', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
   logout: (everywhere = false) =>
-    apiRequest<{ ok: boolean }>('/api/auth/logout', { method: 'POST', body: JSON.stringify({ everywhere }) }),
+    apiRequest<{ ok: boolean }>('/api/auth/logout', {
+      method: 'POST',
+      body: JSON.stringify({ everywhere }),
+    }),
   forgotPassword: (email: string) =>
-    apiRequest<{ ok: boolean; devResetLink?: string }>('/api/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) }),
+    apiRequest<{ ok: boolean; devResetLink?: string }>('/api/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    }),
   resetPassword: (token: string, password: string) =>
-    apiRequest<{ ok: boolean }>('/api/auth/reset-password', { method: 'POST', body: JSON.stringify({ token, password }) }),
+    apiRequest<{ ok: boolean }>('/api/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ token, password }),
+    }),
   updateProfile: (data: { name?: string; organization?: string; role?: UserRole }) =>
-    apiRequest<{ user: AuthUser }>('/api/auth/update-profile', { method: 'POST', body: JSON.stringify(data) }),
+    apiRequest<{ user: AuthUser }>('/api/auth/update-profile', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
   changePassword: (currentPassword: string, newPassword: string) =>
-    apiRequest<{ ok: boolean }>('/api/auth/change-password', { method: 'POST', body: JSON.stringify({ currentPassword, newPassword }) }),
+    apiRequest<{ ok: boolean }>('/api/auth/change-password', {
+      method: 'POST',
+      body: JSON.stringify({ currentPassword, newPassword }),
+    }),
   deleteAccount: (password: string) =>
-    apiRequest<{ ok: boolean }>('/api/auth/delete-account', { method: 'POST', body: JSON.stringify({ password }) }),
+    apiRequest<{ ok: boolean }>('/api/auth/delete-account', {
+      method: 'POST',
+      body: JSON.stringify({ password }),
+    }),
 };
 
 export const eventsApi = {
   load: () => apiRequest<RemoteEventsDoc>('/api/events'),
-  save: (data: { events: EventPlan[]; activeId: string | null; baseUpdatedAt: number | null; force?: boolean }) =>
+  save: (data: {
+    events: EventPlan[];
+    activeId: string | null;
+    baseUpdatedAt: number | null;
+    force?: boolean;
+  }) =>
     apiRequest<{ updatedAt: number }>('/api/events', { method: 'PUT', body: JSON.stringify(data) }),
 };

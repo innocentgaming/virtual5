@@ -17,7 +17,13 @@ import {
   Globe,
 } from 'lucide-react';
 import type { BudgetItem, BudgetCategory, BudgetSummary, EventPlan } from '../../types/event';
-import { formatCurrency, formatIndianShort, formatWithCurrency, CURRENCY_CONFIGS, type CurrencyCode } from '../../utils/formatters';
+import {
+  formatCurrency,
+  formatIndianShort,
+  formatWithCurrency,
+  CURRENCY_CONFIGS,
+  type CurrencyCode,
+} from '../../utils/formatters';
 import { InteractiveBudgetChart } from './InteractiveBudgetChart';
 import { Card, CardHeader, Button, Badge, EmptyState, Modal, useToast } from '../ui';
 import { useVirtualList } from '../../hooks/useVirtualList';
@@ -67,119 +73,151 @@ interface BudgetItemRowProps {
   onDeleteExpense: (id: string, name: string) => void;
 }
 
-const BudgetItemRow = React.memo<BudgetItemRowProps>(({
-  item,
-  onStartEdit,
-  onTogglePaid,
-  onDeleteExpense,
-}) => {
-  const hasActual = item.actualCost !== undefined;
-  const diff = hasActual && item.actualCost !== undefined ? item.actualCost - item.estimatedCost : 0;
-  const diffPct = item.estimatedCost > 0 ? (diff / item.estimatedCost) * 100 : 0;
-  const isSpike = diffPct >= 20;
+const BudgetItemRow = React.memo<BudgetItemRowProps>(
+  ({ item, onStartEdit, onTogglePaid, onDeleteExpense }) => {
+    const hasActual = item.actualCost !== undefined;
+    const diff =
+      hasActual && item.actualCost !== undefined ? item.actualCost - item.estimatedCost : 0;
+    const diffPct = item.estimatedCost > 0 ? (diff / item.estimatedCost) * 100 : 0;
+    const isSpike = diffPct >= 20;
 
-  return (
-    <tr
-      key={item.id}
-      style={{
-        borderBottom: '1px solid var(--border)',
-        backgroundColor: isSpike ? 'var(--color-danger-bg)' : 'transparent',
-        transition: 'background-color var(--transition-fast)',
-      }}
-    >
-      <th scope="row" style={{ padding: 'var(--space-3) var(--space-2)', fontWeight: 'normal', textAlign: 'left' }}>
-        <div style={{ fontWeight: 600, color: 'var(--text)' }}>{item.name}</div>
-        {item.notes && (
-          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>{item.notes}</div>
-        )}
-      </th>
-      <td style={{ padding: 'var(--space-3) var(--space-2)' }}>
-        <span
+    return (
+      <tr
+        key={item.id}
+        style={{
+          borderBottom: '1px solid var(--border)',
+          backgroundColor: isSpike ? 'var(--color-danger-bg)' : 'transparent',
+          transition: 'background-color var(--transition-fast)',
+        }}
+      >
+        <th
+          scope="row"
           style={{
-            display: 'inline-block',
-            padding: '2px 8px',
-            borderRadius: 'var(--radius-sm)',
-            fontSize: 'var(--text-xs)',
-            fontWeight: 700,
-            backgroundColor: 'var(--surface-subtle)',
-            color: CATEGORY_COLORS[item.category] || 'inherit',
-            border: '1px solid var(--border)',
+            padding: 'var(--space-3) var(--space-2)',
+            fontWeight: 'normal',
+            textAlign: 'left',
           }}
         >
-          {CATEGORY_LABELS[item.category] || item.category}
-        </span>
-      </td>
-      <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'right', fontWeight: 700, color: 'var(--text)' }} className="tabular-nums">
-        {formatCurrency(item.estimatedCost)}
-        {item.isPerGuest && (
-          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>per-guest scale</div>
-        )}
-      </td>
-      <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'right' }} className="tabular-nums">
-        {hasActual ? (
-          <strong style={{ color: diff > 0 ? 'var(--color-danger)' : 'var(--text)' }}>
-            {formatCurrency(item.actualCost ?? 0)}
-          </strong>
-        ) : (
-          <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>Pending quote</span>
-        )}
-      </td>
-      <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}>
-        {!hasActual ? (
-          <Badge variant="neutral">Estimated</Badge>
-        ) : diff <= 0 ? (
-          <Badge variant="success">✓ On budget</Badge>
-        ) : diffPct <= 10 ? (
-          <Badge variant="warning">+{formatIndianShort(diff)} (+{Math.round(diffPct)}%)</Badge>
-        ) : (
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap', justifyContent: 'center' }}>
-            <Badge variant="danger">+{formatIndianShort(diff)} (+{Math.round(diffPct)}%)</Badge>
-            {isSpike && (
-              <Badge variant="danger" title="Quote escalated >= 20% above estimate">
-                ↑ Spike
-              </Badge>
-            )}
-          </div>
-        )}
-      </td>
-      <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}>
-        <button
-          type="button"
-          onClick={() => onTogglePaid(item)}
-          className={`badge ${item.isPaid ? 'badge-success' : 'badge-neutral'}`}
-          style={{ cursor: 'pointer', border: 'none' }}
-          title="Click to toggle paid status"
+          <div style={{ fontWeight: 600, color: 'var(--text)' }}>{item.name}</div>
+          {item.notes && (
+            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+              {item.notes}
+            </div>
+          )}
+        </th>
+        <td style={{ padding: 'var(--space-3) var(--space-2)' }}>
+          <span
+            style={{
+              display: 'inline-block',
+              padding: '2px 8px',
+              borderRadius: 'var(--radius-sm)',
+              fontSize: 'var(--text-xs)',
+              fontWeight: 700,
+              backgroundColor: 'var(--surface-subtle)',
+              color: CATEGORY_COLORS[item.category] || 'inherit',
+              border: '1px solid var(--border)',
+            }}
+          >
+            {CATEGORY_LABELS[item.category] || item.category}
+          </span>
+        </td>
+        <td
+          style={{
+            padding: 'var(--space-3) var(--space-2)',
+            textAlign: 'right',
+            fontWeight: 700,
+            color: 'var(--text)',
+          }}
+          className="tabular-nums"
         >
-          {item.isPaid ? '✓ Paid' : '⏳ Invoiced'}
-        </button>
-      </td>
-      <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}>
-        <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => onStartEdit(item)}
-            style={{ padding: '4px 8px' }}
-            title="Edit this item"
-            aria-label={`Edit ${item.name}`}
+          {formatCurrency(item.estimatedCost)}
+          {item.isPerGuest && (
+            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>per-guest scale</div>
+          )}
+        </td>
+        <td
+          style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'right' }}
+          className="tabular-nums"
+        >
+          {hasActual ? (
+            <strong style={{ color: diff > 0 ? 'var(--color-danger)' : 'var(--text)' }}>
+              {formatCurrency(item.actualCost ?? 0)}
+            </strong>
+          ) : (
+            <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>
+              Pending quote
+            </span>
+          )}
+        </td>
+        <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}>
+          {!hasActual ? (
+            <Badge variant="neutral">Estimated</Badge>
+          ) : diff <= 0 ? (
+            <Badge variant="success">✓ On budget</Badge>
+          ) : diffPct <= 10 ? (
+            <Badge variant="warning">
+              +{formatIndianShort(diff)} (+{Math.round(diffPct)}%)
+            </Badge>
+          ) : (
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                flexWrap: 'wrap',
+                justifyContent: 'center',
+              }}
+            >
+              <Badge variant="danger">
+                +{formatIndianShort(diff)} (+{Math.round(diffPct)}%)
+              </Badge>
+              {isSpike && (
+                <Badge variant="danger" title="Quote escalated >= 20% above estimate">
+                  ↑ Spike
+                </Badge>
+              )}
+            </div>
+          )}
+        </td>
+        <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}>
+          <button
+            type="button"
+            onClick={() => onTogglePaid(item)}
+            className={`badge ${item.isPaid ? 'badge-success' : 'badge-neutral'}`}
+            style={{ cursor: 'pointer', border: 'none' }}
+            title="Click to toggle paid status"
           >
-            <Edit2 size={13} />
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => onDeleteExpense(item.id, item.name)}
-            style={{ padding: '4px 8px', color: 'var(--color-danger)' }}
-            title="Delete this item"
-            aria-label={`Delete ${item.name}`}
-          >
-            <Trash2 size={13} />
-          </Button>
-        </div>
-      </td>
-    </tr>
-  );
-});
+            {item.isPaid ? '✓ Paid' : '⏳ Invoiced'}
+          </button>
+        </td>
+        <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}>
+          <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => onStartEdit(item)}
+              style={{ padding: '4px 8px' }}
+              title="Edit this item"
+              aria-label={`Edit ${item.name}`}
+            >
+              <Edit2 size={13} />
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => onDeleteExpense(item.id, item.name)}
+              style={{ padding: '4px 8px', color: 'var(--color-danger)' }}
+              title="Delete this item"
+              aria-label={`Delete ${item.name}`}
+            >
+              <Trash2 size={13} />
+            </Button>
+          </div>
+        </td>
+      </tr>
+    );
+  },
+);
 
 export const BudgetManager: React.FC<BudgetManagerProps> = ({
   plan,
@@ -197,7 +235,9 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
   const [newName, setNewName] = useState('');
   const [newCategory, setNewCategory] = useState<BudgetCategory>('venue');
   const [newCost, setNewCost] = useState<number>(50000);
-  const [newPriority, setNewPriority] = useState<'essential' | 'recommended' | 'optional'>('recommended');
+  const [newPriority, setNewPriority] = useState<'essential' | 'recommended' | 'optional'>(
+    'recommended',
+  );
   const [newNotes, setNewNotes] = useState('');
   const [newIsPerGuest, setNewIsPerGuest] = useState(false);
 
@@ -212,7 +252,9 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
 
   // Filter & search & sort
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<'all' | BudgetCategory>('all');
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<'all' | BudgetCategory>(
+    'all',
+  );
   const [sortField, setSortField] = useState<SortField>('estimatedCost');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [selectedCurrency, setSelectedCurrency] = useState<CurrencyCode>('INR');
@@ -240,15 +282,21 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
     startEdit(item);
   }, []);
 
-  const handleTogglePaid = useCallback((item: BudgetItem) => {
-    onUpdateExpense(item.id, { isPaid: !item.isPaid });
-    toast.showToast(item.isPaid ? 'Marked as unpaid' : 'Marked as paid', 'info');
-  }, [onUpdateExpense, toast]);
+  const handleTogglePaid = useCallback(
+    (item: BudgetItem) => {
+      onUpdateExpense(item.id, { isPaid: !item.isPaid });
+      toast.showToast(item.isPaid ? 'Marked as unpaid' : 'Marked as paid', 'info');
+    },
+    [onUpdateExpense, toast],
+  );
 
-  const handleDeleteExpense = useCallback((id: string, name: string) => {
-    onDeleteExpense(id);
-    toast.showToast(`Deleted ${name}`, 'info');
-  }, [onDeleteExpense, toast]);
+  const handleDeleteExpense = useCallback(
+    (id: string, name: string) => {
+      onDeleteExpense(id);
+      toast.showToast(`Deleted ${name}`, 'info');
+    },
+    [onDeleteExpense, toast],
+  );
 
   const cancelEdit = () => {
     setEditingId(null);
@@ -308,14 +356,14 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
   // Check if cost spike exists for trade-off callout
   const costSpikeItems = useMemo(() => {
     return plan.budgetItems.filter(
-      (item) => item.actualCost !== undefined && item.actualCost > item.estimatedCost
+      (item) => item.actualCost !== undefined && item.actualCost > item.estimatedCost,
     );
   }, [plan.budgetItems]);
 
   const totalSpike = useMemo(() => {
     return costSpikeItems.reduce(
       (sum, item) => sum + ((item.actualCost || 0) - item.estimatedCost),
-      0
+      0,
     );
   }, [costSpikeItems]);
 
@@ -368,10 +416,14 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
   // Filter and sort items
   const filteredAndSortedItems = useMemo(() => {
     const list = plan.budgetItems.filter((item) => {
-      if (deferredCategoryFilter !== 'all' && item.category !== deferredCategoryFilter) return false;
+      if (deferredCategoryFilter !== 'all' && item.category !== deferredCategoryFilter)
+        return false;
       if (deferredSearchQuery.trim()) {
         const q = deferredSearchQuery.toLowerCase();
-        if (!item.name.toLowerCase().includes(q) && !(item.notes && item.notes.toLowerCase().includes(q))) {
+        if (
+          !item.name.toLowerCase().includes(q) &&
+          !(item.notes && item.notes.toLowerCase().includes(q))
+        ) {
           return false;
         }
       }
@@ -402,14 +454,8 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
   }, [plan.budgetItems, deferredCategoryFilter, deferredSearchQuery, sortField, sortDirection]);
 
   // Windowing for large expense sets (>100 items)
-  const {
-    visibleItems,
-    isVirtual,
-    topSpacerHeight,
-    bottomSpacerHeight,
-    containerRef,
-    onScroll,
-  } = useVirtualList(filteredAndSortedItems, { itemHeight: 56, threshold: 100 });
+  const { visibleItems, isVirtual, topSpacerHeight, bottomSpacerHeight, containerRef, onScroll } =
+    useVirtualList(filteredAndSortedItems, { itemHeight: 56, threshold: 100 });
 
   // Current calculated contingency amount
   const liveContingencyAmount = Math.round(plan.totalBudget * plan.contingencyRate);
@@ -417,9 +463,30 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
   if (isLoading) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-        <div style={{ height: '90px', background: 'var(--surface-raised)', borderRadius: 'var(--radius-lg)' }} className="skeleton" />
-        <div style={{ height: '300px', background: 'var(--surface-raised)', borderRadius: 'var(--radius-lg)' }} className="skeleton" />
-        <div style={{ height: '400px', background: 'var(--surface-raised)', borderRadius: 'var(--radius-lg)' }} className="skeleton" />
+        <div
+          style={{
+            height: '90px',
+            background: 'var(--surface-raised)',
+            borderRadius: 'var(--radius-lg)',
+          }}
+          className="skeleton"
+        />
+        <div
+          style={{
+            height: '300px',
+            background: 'var(--surface-raised)',
+            borderRadius: 'var(--radius-lg)',
+          }}
+          className="skeleton"
+        />
+        <div
+          style={{
+            height: '400px',
+            background: 'var(--surface-raised)',
+            borderRadius: 'var(--radius-lg)',
+          }}
+          className="skeleton"
+        />
       </div>
     );
   }
@@ -449,7 +516,9 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
             Currency View (NRI & Destination Events):
           </span>
           <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
-            {selectedCurrency === 'INR' ? 'Native Indian Rupee (₹ Lakhs & Crores)' : `Estimates converted to ${selectedCurrency}`}
+            {selectedCurrency === 'INR'
+              ? 'Native Indian Rupee (₹ Lakhs & Crores)'
+              : `Estimates converted to ${selectedCurrency}`}
           </span>
         </div>
 
@@ -468,7 +537,9 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
                   fontSize: 'var(--text-xs)',
                   fontWeight: isSelected ? 700 : 500,
                   cursor: 'pointer',
-                  border: isSelected ? '1px solid var(--accent-primary)' : '1px solid var(--border)',
+                  border: isSelected
+                    ? '1px solid var(--accent-primary)'
+                    : '1px solid var(--border)',
                   background: isSelected ? 'var(--accent-primary)' : 'var(--surface)',
                   color: isSelected ? '#ffffff' : 'var(--text)',
                   transition: 'all var(--transition-fast)',
@@ -496,15 +567,41 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
         <div
           className="stat-card"
           title={`Full Amount: ${formatCurrency(budgetSummary.totalBudget)}`}
-          style={{ background: 'var(--surface-raised)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: 'var(--space-4)' }}
+          style={{
+            background: 'var(--surface-raised)',
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-md)',
+            padding: 'var(--space-4)',
+          }}
         >
-          <span className="stat-label" style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+          <span
+            className="stat-label"
+            style={{
+              fontSize: 'var(--text-xs)',
+              fontWeight: 700,
+              color: 'var(--text-muted)',
+              textTransform: 'uppercase',
+            }}
+          >
             Total Event Budget
           </span>
-          <div className="stat-value tabular-nums" style={{ fontSize: 'var(--text-2xl)', fontWeight: 800, color: 'var(--text)', margin: '4px 0' }}>
-            {selectedCurrency === 'INR' ? formatIndianShort(budgetSummary.totalBudget) : formatWithCurrency(budgetSummary.totalBudget, selectedCurrency)}
+          <div
+            className="stat-value tabular-nums"
+            style={{
+              fontSize: 'var(--text-2xl)',
+              fontWeight: 800,
+              color: 'var(--text)',
+              margin: '4px 0',
+            }}
+          >
+            {selectedCurrency === 'INR'
+              ? formatIndianShort(budgetSummary.totalBudget)
+              : formatWithCurrency(budgetSummary.totalBudget, selectedCurrency)}
           </div>
-          <span className="stat-subtext" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+          <span
+            className="stat-subtext"
+            style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}
+          >
             Base Target: {formatCurrency(budgetSummary.totalBudget)}
           </span>
         </div>
@@ -513,9 +610,22 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
         <div
           className="stat-card"
           title={`Full Estimated: ${formatCurrency(budgetSummary.totalEstimated)}`}
-          style={{ background: 'var(--surface-raised)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: 'var(--space-4)' }}
+          style={{
+            background: 'var(--surface-raised)',
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-md)',
+            padding: 'var(--space-4)',
+          }}
         >
-          <span className="stat-label" style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+          <span
+            className="stat-label"
+            style={{
+              fontSize: 'var(--text-xs)',
+              fontWeight: 700,
+              color: 'var(--text-muted)',
+              textTransform: 'uppercase',
+            }}
+          >
             Estimated Planned
           </span>
           <div
@@ -527,9 +637,14 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
               margin: '4px 0',
             }}
           >
-            {selectedCurrency === 'INR' ? formatIndianShort(budgetSummary.totalEstimated) : formatWithCurrency(budgetSummary.totalEstimated, selectedCurrency)}
+            {selectedCurrency === 'INR'
+              ? formatIndianShort(budgetSummary.totalEstimated)
+              : formatWithCurrency(budgetSummary.totalEstimated, selectedCurrency)}
           </div>
-          <span className="stat-subtext" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+          <span
+            className="stat-subtext"
+            style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}
+          >
             {budgetSummary.utilizationPercentage}% of budget committed
           </span>
         </div>
@@ -538,9 +653,22 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
         <div
           className="stat-card"
           title={`Realized Contracted Spend: ${formatCurrency(budgetSummary.totalActual)}`}
-          style={{ background: 'var(--surface-raised)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: 'var(--space-4)' }}
+          style={{
+            background: 'var(--surface-raised)',
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-md)',
+            padding: 'var(--space-4)',
+          }}
         >
-          <span className="stat-label" style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+          <span
+            className="stat-label"
+            style={{
+              fontSize: 'var(--text-xs)',
+              fontWeight: 700,
+              color: 'var(--text-muted)',
+              textTransform: 'uppercase',
+            }}
+          >
             Actual / Invoiced
           </span>
           <div
@@ -552,9 +680,14 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
               margin: '4px 0',
             }}
           >
-            {selectedCurrency === 'INR' ? formatIndianShort(budgetSummary.totalActual) : formatWithCurrency(budgetSummary.totalActual, selectedCurrency)}
+            {selectedCurrency === 'INR'
+              ? formatIndianShort(budgetSummary.totalActual)
+              : formatWithCurrency(budgetSummary.totalActual, selectedCurrency)}
           </div>
-          <span className="stat-subtext" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+          <span
+            className="stat-subtext"
+            style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}
+          >
             Signed contracts & paid receipts
           </span>
         </div>
@@ -568,13 +701,24 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
               : `Available: ${formatCurrency(budgetSummary.remainingBalance)} remaining`
           }
           style={{
-            background: budgetSummary.remainingBalance < 0 ? 'var(--color-danger-bg)' : 'var(--surface-raised)',
+            background:
+              budgetSummary.remainingBalance < 0
+                ? 'var(--color-danger-bg)'
+                : 'var(--surface-raised)',
             border: `1px solid ${budgetSummary.remainingBalance < 0 ? 'var(--color-danger-border)' : 'var(--border)'}`,
             borderRadius: 'var(--radius-md)',
             padding: 'var(--space-4)',
           }}
         >
-          <span className="stat-label" style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+          <span
+            className="stat-label"
+            style={{
+              fontSize: 'var(--text-xs)',
+              fontWeight: 700,
+              color: 'var(--text-muted)',
+              textTransform: 'uppercase',
+            }}
+          >
             Remaining Buffer
           </span>
           <div
@@ -582,17 +726,25 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
             style={{
               fontSize: 'var(--text-2xl)',
               fontWeight: 800,
-              color: budgetSummary.remainingBalance < 0 ? 'var(--color-danger)' : 'var(--color-success)',
+              color:
+                budgetSummary.remainingBalance < 0 ? 'var(--color-danger)' : 'var(--color-success)',
               margin: '4px 0',
             }}
           >
             {selectedCurrency === 'INR'
-              ? (budgetSummary.remainingBalance < 0
-                  ? `${formatIndianShort(Math.abs(budgetSummary.remainingBalance))} over`
-                  : formatIndianShort(budgetSummary.remainingBalance))
+              ? budgetSummary.remainingBalance < 0
+                ? `${formatIndianShort(Math.abs(budgetSummary.remainingBalance))} over`
+                : formatIndianShort(budgetSummary.remainingBalance)
               : formatWithCurrency(budgetSummary.remainingBalance, selectedCurrency)}
           </div>
-          <span className="stat-subtext" style={{ fontSize: 'var(--text-xs)', color: budgetSummary.remainingBalance < 0 ? 'var(--color-danger)' : 'var(--text-muted)' }}>
+          <span
+            className="stat-subtext"
+            style={{
+              fontSize: 'var(--text-xs)',
+              color:
+                budgetSummary.remainingBalance < 0 ? 'var(--color-danger)' : 'var(--text-muted)',
+            }}
+          >
             {budgetSummary.remainingBalance < 0 ? 'Exceeds budget cap' : 'Unallocated funds'}
           </span>
         </div>
@@ -601,15 +753,41 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
         <div
           className="stat-card"
           title={`Per Guest Allocation: ${formatCurrency(budgetSummary.perGuestCost)} (${plan.guestCount} invited guests)`}
-          style={{ background: 'var(--surface-raised)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: 'var(--space-4)' }}
+          style={{
+            background: 'var(--surface-raised)',
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-md)',
+            padding: 'var(--space-4)',
+          }}
         >
-          <span className="stat-label" style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+          <span
+            className="stat-label"
+            style={{
+              fontSize: 'var(--text-xs)',
+              fontWeight: 700,
+              color: 'var(--text-muted)',
+              textTransform: 'uppercase',
+            }}
+          >
             Per-Guest Cost
           </span>
-          <div className="stat-value tabular-nums" style={{ fontSize: 'var(--text-2xl)', fontWeight: 800, color: 'var(--accent-primary)', margin: '4px 0' }}>
-            {selectedCurrency === 'INR' ? formatIndianShort(budgetSummary.perGuestCost) : formatWithCurrency(budgetSummary.perGuestCost, selectedCurrency)}
+          <div
+            className="stat-value tabular-nums"
+            style={{
+              fontSize: 'var(--text-2xl)',
+              fontWeight: 800,
+              color: 'var(--accent-primary)',
+              margin: '4px 0',
+            }}
+          >
+            {selectedCurrency === 'INR'
+              ? formatIndianShort(budgetSummary.perGuestCost)
+              : formatWithCurrency(budgetSummary.perGuestCost, selectedCurrency)}
           </div>
-          <span className="stat-subtext" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+          <span
+            className="stat-subtext"
+            style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}
+          >
             {formatCurrency(budgetSummary.perGuestCost)} / guest ({plan.guestCount} guests)
           </span>
         </div>
@@ -618,8 +796,19 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
       {/* =====================================================================
           1B. VENDOR PAYMENT SETTLEMENTS & CASH FLOW PROGRESS
           ===================================================================== */}
-      <Card variant="subtle" style={{ padding: 'var(--space-3) var(--space-4)', background: 'var(--surface-raised)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-3)' }}>
+      <Card
+        variant="subtle"
+        style={{ padding: 'var(--space-3) var(--space-4)', background: 'var(--surface-raised)' }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: 'var(--space-3)',
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
             <div
               style={{
@@ -637,27 +826,76 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
               <FileSpreadsheet size={18} />
             </div>
             <div>
-              <div style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+              <div
+                style={{
+                  fontSize: 'var(--text-xs)',
+                  fontWeight: 700,
+                  color: 'var(--text-muted)',
+                  textTransform: 'uppercase',
+                }}
+              >
                 Vendor Payment Milestones & Settlement
               </div>
               <div style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--text)' }}>
-                Paid Advances: <span className="tabular-nums" style={{ color: 'var(--color-success)' }}>{formatIndianShort(paymentMetrics.totalPaid)}</span> ({paymentMetrics.paidCount} items) • Balance Due: <span className="tabular-nums" style={{ color: paymentMetrics.totalPending > 0 ? 'var(--color-warning)' : 'var(--text-muted)' }}>{formatIndianShort(paymentMetrics.totalPending)}</span>
+                Paid Advances:{' '}
+                <span className="tabular-nums" style={{ color: 'var(--color-success)' }}>
+                  {formatIndianShort(paymentMetrics.totalPaid)}
+                </span>{' '}
+                ({paymentMetrics.paidCount} items) • Balance Due:{' '}
+                <span
+                  className="tabular-nums"
+                  style={{
+                    color:
+                      paymentMetrics.totalPending > 0
+                        ? 'var(--color-warning)'
+                        : 'var(--text-muted)',
+                  }}
+                >
+                  {formatIndianShort(paymentMetrics.totalPending)}
+                </span>
               </div>
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', minWidth: '180px' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 'var(--space-3)',
+              minWidth: '180px',
+            }}
+          >
             <div style={{ flex: 1, minWidth: '100px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '2px' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  fontSize: '0.7rem',
+                  fontWeight: 600,
+                  color: 'var(--text-muted)',
+                  marginBottom: '2px',
+                }}
+              >
                 <span>Settled</span>
                 <span className="tabular-nums">{paymentMetrics.paidPct}%</span>
               </div>
-              <div style={{ width: '100%', height: '6px', background: 'var(--border)', borderRadius: 'var(--radius-pill)', overflow: 'hidden' }}>
+              <div
+                style={{
+                  width: '100%',
+                  height: '6px',
+                  background: 'var(--border)',
+                  borderRadius: 'var(--radius-pill)',
+                  overflow: 'hidden',
+                }}
+              >
                 <div
                   style={{
                     width: `${paymentMetrics.paidPct}%`,
                     height: '100%',
-                    background: paymentMetrics.paidPct === 100 ? 'var(--color-success)' : 'var(--accent-primary)',
+                    background:
+                      paymentMetrics.paidPct === 100
+                        ? 'var(--color-success)'
+                        : 'var(--accent-primary)',
                     borderRadius: 'var(--radius-pill)',
                     transition: 'width var(--transition-normal)',
                   }}
@@ -682,17 +920,54 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
           2. TRADE-OFF CALLOUT (Reusing Decision Engine Vendor Spike Rule)
           ===================================================================== */}
       {costSpikeItems.length > 0 && (
-        <Card variant="subtle" style={{ borderLeft: '4px solid var(--color-warning)', background: 'var(--color-warning-bg)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 'var(--space-4)', flexWrap: 'wrap' }}>
+        <Card
+          variant="subtle"
+          style={{
+            borderLeft: '4px solid var(--color-warning)',
+            background: 'var(--color-warning-bg)',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'flex-start',
+              gap: 'var(--space-4)',
+              flexWrap: 'wrap',
+            }}
+          >
             <div style={{ display: 'flex', gap: 'var(--space-3)', flex: 1, minWidth: '280px' }}>
-              <ShieldAlert size={22} color="var(--color-warning-text)" style={{ flexShrink: 0, marginTop: '2px' }} />
+              <ShieldAlert
+                size={22}
+                color="var(--color-warning-text)"
+                style={{ flexShrink: 0, marginTop: '2px' }}
+              />
               <div>
-                <h2 style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--color-warning-text)', margin: '0 0 4px 0' }}>
+                <h2
+                  style={{
+                    fontSize: 'var(--text-sm)',
+                    fontWeight: 700,
+                    color: 'var(--color-warning-text)',
+                    margin: '0 0 4px 0',
+                  }}
+                >
                   Vendor Cost Escalation & Decision Trade-off
                 </h2>
-                <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-warning-text)', margin: 0, lineHeight: 1.5 }}>
-                  Actual vendor quotes escalated expenses by <strong>{formatCurrency(totalSpike)}</strong> ({formatIndianShort(totalSpike)}).
-                  Dynamic Decision Tradeoff: Trim decoration budget by <strong>{formatCurrency(decorCut)}</strong> to offset the price spike, or reduce guest headcount by ~{Math.max(5, Math.ceil(totalSpike / Math.max(500, budgetSummary.perGuestCost)))} attendees.
+                <p
+                  style={{
+                    fontSize: 'var(--text-xs)',
+                    color: 'var(--color-warning-text)',
+                    margin: 0,
+                    lineHeight: 1.5,
+                  }}
+                >
+                  Actual vendor quotes escalated expenses by{' '}
+                  <strong>{formatCurrency(totalSpike)}</strong> ({formatIndianShort(totalSpike)}).
+                  Dynamic Decision Tradeoff: Trim decoration budget by{' '}
+                  <strong>{formatCurrency(decorCut)}</strong> to offset the price spike, or reduce
+                  guest headcount by ~
+                  {Math.max(5, Math.ceil(totalSpike / Math.max(500, budgetSummary.perGuestCost)))}{' '}
+                  attendees.
                 </p>
               </div>
             </div>
@@ -712,23 +987,60 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
           3. CONTINGENCY BUFFER CONTROLLER (0-25% with Live ₹ Readout)
           ===================================================================== */}
       <Card>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-4)' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: 'var(--space-4)',
+          }}
+        >
           <div>
-            <h2 style={{ fontSize: 'var(--text-base)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 'var(--space-2)', margin: '0 0 4px 0' }}>
+            <h2
+              style={{
+                fontSize: 'var(--text-base)',
+                fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 'var(--space-2)',
+                margin: '0 0 4px 0',
+              }}
+            >
               <Sliders size={18} color="var(--accent-primary)" />
               Configurable Contingency Buffer
             </h2>
             <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', margin: 0 }}>
-              Indian celebration safeguard: 10%–15% reserve for unexpected baraat delays, sound curfews, and logistics.
+              Indian celebration safeguard: 10%–15% reserve for unexpected baraat delays, sound
+              curfews, and logistics.
             </p>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)', flexWrap: 'wrap' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 'var(--space-4)',
+              flexWrap: 'wrap',
+            }}
+          >
             <div style={{ textAlign: 'right' }}>
               <label htmlFor="contingency-slider" style={{ cursor: 'pointer' }}>
-                <span className="tabular-nums" style={{ fontWeight: 800, fontSize: 'var(--text-lg)', color: 'var(--accent-primary)', display: 'block' }}>
-                  {Math.round(plan.contingencyRate * 100)}% ({formatIndianShort(liveContingencyAmount)})
+                <span
+                  className="tabular-nums"
+                  style={{
+                    fontWeight: 800,
+                    fontSize: 'var(--text-lg)',
+                    color: 'var(--accent-primary)',
+                    display: 'block',
+                  }}
+                >
+                  {Math.round(plan.contingencyRate * 100)}% (
+                  {formatIndianShort(liveContingencyAmount)})
                 </span>
-                <span className="tabular-nums" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+                <span
+                  className="tabular-nums"
+                  style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}
+                >
                   {formatCurrency(liveContingencyAmount)}
                 </span>
               </label>
@@ -768,7 +1080,10 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
                   Clear Filter
                 </Button>
               )}
-              <span className="tabular-nums" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', fontWeight: 700 }}>
+              <span
+                className="tabular-nums"
+                style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', fontWeight: 700 }}
+              >
                 {budgetSummary.utilizationPercentage}% committed
               </span>
             </div>
@@ -833,17 +1148,36 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
         >
           <Info size={14} style={{ flexShrink: 0, color: 'var(--accent-primary)' }} />
           <span>
-            <strong>Planning Estimates Only:</strong> Market rates and vendor quotes are planning benchmarks. Always verify quotes, seasonal surcharges, GST, and payment schedules directly with local vendors and municipal authorities.
+            <strong>Planning Estimates Only:</strong> Market rates and vendor quotes are planning
+            benchmarks. Always verify quotes, seasonal surcharges, GST, and payment schedules
+            directly with local vendors and municipal authorities.
           </span>
         </div>
 
         {/* Toolbar: Search & Filter Chips */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--space-3)', flexWrap: 'wrap', marginBottom: 'var(--space-4)' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: 'var(--space-3)',
+            flexWrap: 'wrap',
+            marginBottom: 'var(--space-4)',
+          }}
+        >
           <div style={{ position: 'relative', width: '280px', maxWidth: '100%' }}>
             <label htmlFor="budget-expense-search" className="sr-only">
               Search and filter expenses
             </label>
-            <Search size={15} style={{ position: 'absolute', left: '10px', top: '10px', color: 'var(--text-muted)' }} />
+            <Search
+              size={15}
+              style={{
+                position: 'absolute',
+                left: '10px',
+                top: '10px',
+                color: 'var(--text-muted)',
+              }}
+            />
             <input
               id="budget-expense-search"
               type="text"
@@ -865,12 +1199,16 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
             >
               All ({plan.budgetItems.length})
             </Button>
-            {(['venue', 'catering', 'decor', 'photography', 'entertainment'] as BudgetCategory[]).map((cat) => (
+            {(
+              ['venue', 'catering', 'decor', 'photography', 'entertainment'] as BudgetCategory[]
+            ).map((cat) => (
               <Button
                 key={cat}
                 variant={selectedCategoryFilter === cat ? 'primary' : 'secondary'}
                 size="sm"
-                onClick={() => setSelectedCategoryFilter(selectedCategoryFilter === cat ? 'all' : cat)}
+                onClick={() =>
+                  setSelectedCategoryFilter(selectedCategoryFilter === cat ? 'all' : cat)
+                }
                 aria-pressed={selectedCategoryFilter === cat}
               >
                 {CATEGORY_LABELS[cat].split('&')[0].trim()}
@@ -897,7 +1235,14 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
             description="Clear your search filters or click 'Add Custom Expense' to track new line items."
             action={
               selectedCategoryFilter !== 'all' || searchQuery ? (
-                <Button variant="secondary" size="sm" onClick={() => { setSelectedCategoryFilter('all'); setSearchQuery(''); }}>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedCategoryFilter('all');
+                    setSearchQuery('');
+                  }}
+                >
                   Clear Filters
                 </Button>
               ) : undefined
@@ -913,83 +1258,182 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
               overflowY: isVirtual ? 'auto' : undefined,
             }}
           >
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 'var(--text-sm)' }}>
-              <caption className="sr-only">Detailed breakdown of event budget items, estimates, actual costs, and variance</caption>
+            <table
+              style={{
+                width: '100%',
+                borderCollapse: 'collapse',
+                textAlign: 'left',
+                fontSize: 'var(--text-sm)',
+              }}
+            >
+              <caption className="sr-only">
+                Detailed breakdown of event budget items, estimates, actual costs, and variance
+              </caption>
               <thead>
                 <tr style={{ borderBottom: '2px solid var(--border)', color: 'var(--text-muted)' }}>
                   <th
                     scope="col"
-                    aria-sort={sortField === 'name' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+                    aria-sort={
+                      sortField === 'name'
+                        ? sortDirection === 'asc'
+                          ? 'ascending'
+                          : 'descending'
+                        : 'none'
+                    }
                     style={{ padding: 'var(--space-3) var(--space-2)' }}
                   >
                     <button
                       type="button"
                       onClick={() => handleSort('name')}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        color: 'inherit',
+                        fontWeight: 700,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                      }}
                     >
                       Item Description <ArrowUpDown size={12} />
                     </button>
                   </th>
                   <th
                     scope="col"
-                    aria-sort={sortField === 'category' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+                    aria-sort={
+                      sortField === 'category'
+                        ? sortDirection === 'asc'
+                          ? 'ascending'
+                          : 'descending'
+                        : 'none'
+                    }
                     style={{ padding: 'var(--space-3) var(--space-2)' }}
                   >
                     <button
                       type="button"
                       onClick={() => handleSort('category')}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        color: 'inherit',
+                        fontWeight: 700,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                      }}
                     >
                       Category <ArrowUpDown size={12} />
                     </button>
                   </th>
                   <th
                     scope="col"
-                    aria-sort={sortField === 'estimatedCost' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+                    aria-sort={
+                      sortField === 'estimatedCost'
+                        ? sortDirection === 'asc'
+                          ? 'ascending'
+                          : 'descending'
+                        : 'none'
+                    }
                     style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'right' }}
                   >
                     <button
                       type="button"
                       onClick={() => handleSort('estimatedCost')}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px', marginLeft: 'auto' }}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        color: 'inherit',
+                        fontWeight: 700,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        marginLeft: 'auto',
+                      }}
                     >
                       Estimated Cost <ArrowUpDown size={12} />
                     </button>
                   </th>
                   <th
                     scope="col"
-                    aria-sort={sortField === 'actualCost' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+                    aria-sort={
+                      sortField === 'actualCost'
+                        ? sortDirection === 'asc'
+                          ? 'ascending'
+                          : 'descending'
+                        : 'none'
+                    }
                     style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'right' }}
                   >
                     <button
                       type="button"
                       onClick={() => handleSort('actualCost')}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px', marginLeft: 'auto' }}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        color: 'inherit',
+                        fontWeight: 700,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        marginLeft: 'auto',
+                      }}
                     >
                       Actual / Paid <ArrowUpDown size={12} />
                     </button>
                   </th>
                   <th
                     scope="col"
-                    aria-sort={sortField === 'variance' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+                    aria-sort={
+                      sortField === 'variance'
+                        ? sortDirection === 'asc'
+                          ? 'ascending'
+                          : 'descending'
+                        : 'none'
+                    }
                     style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}
                   >
                     <button
                       type="button"
                       onClick={() => handleSort('variance')}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px', margin: '0 auto' }}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        color: 'inherit',
+                        fontWeight: 700,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        margin: '0 auto',
+                      }}
                     >
                       Variance <ArrowUpDown size={12} />
                     </button>
                   </th>
-                  <th scope="col" style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}>Status</th>
-                  <th scope="col" style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}>Actions</th>
+                  <th
+                    scope="col"
+                    style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}
+                  >
+                    Status
+                  </th>
+                  <th
+                    scope="col"
+                    style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}
+                  >
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {isVirtual && topSpacerHeight > 0 && (
                   <tr style={{ height: `${topSpacerHeight}px` }} aria-hidden="true">
-                    <td colSpan={7} aria-hidden="true" style={{ padding: 0, border: 'none' }}>Spacer</td>
+                    <td colSpan={7} aria-hidden="true" style={{ padding: 0, border: 'none' }}>
+                      Spacer
+                    </td>
                   </tr>
                 )}
                 {visibleItems.map((item) => {
@@ -1015,7 +1459,14 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
                             aria-label="Edit item name"
                             required
                           />
-                          <div style={{ fontSize: '0.7rem', color: 'var(--color-warning-text)', fontWeight: 600, marginTop: '4px' }}>
+                          <div
+                            style={{
+                              fontSize: '0.7rem',
+                              color: 'var(--color-warning-text)',
+                              fontWeight: 600,
+                              marginTop: '4px',
+                            }}
+                          >
                             Editing (Enter to save, Esc to cancel)
                           </div>
                         </td>
@@ -1034,7 +1485,9 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
                             ))}
                           </select>
                         </td>
-                        <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'right' }}>
+                        <td
+                          style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'right' }}
+                        >
                           <input
                             type="number"
                             min="0"
@@ -1042,24 +1495,41 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
                             className="form-control tabular-nums"
                             style={{ width: '120px', marginLeft: 'auto', textAlign: 'right' }}
                             value={editCost}
-                            onChange={(e) => setEditCost(Math.max(0, parseInt(e.target.value, 10) || 0))}
+                            onChange={(e) =>
+                              setEditCost(Math.max(0, parseInt(e.target.value, 10) || 0))
+                            }
                             onKeyDown={(e) => handleInlineKeyDown(e, item.id)}
                             aria-label="Edit estimated cost"
                           />
                         </td>
-                        <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'right' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 'var(--space-2)' }}>
+                        <td
+                          style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'right' }}
+                        >
+                          <div
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'flex-end',
+                              gap: 'var(--space-2)',
+                            }}
+                          >
                             <input
                               type="number"
                               min="0"
                               step="500"
                               placeholder="Actual ₹"
                               className="form-control tabular-nums"
-                              style={{ width: '110px', textAlign: 'right', fontSize: 'var(--text-xs)' }}
+                              style={{
+                                width: '110px',
+                                textAlign: 'right',
+                                fontSize: 'var(--text-xs)',
+                              }}
                               value={editActualCost}
                               onChange={(e) =>
                                 setEditActualCost(
-                                  e.target.value === '' ? '' : Math.max(0, parseInt(e.target.value, 10) || 0)
+                                  e.target.value === ''
+                                    ? ''
+                                    : Math.max(0, parseInt(e.target.value, 10) || 0),
                                 )
                               }
                               onKeyDown={(e) => handleInlineKeyDown(e, item.id)}
@@ -1067,11 +1537,25 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
                             />
                           </div>
                         </td>
-                        <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}>
-                          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>—</span>
+                        <td
+                          style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}
+                        >
+                          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+                            —
+                          </span>
                         </td>
-                        <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}>
-                          <label style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: 'var(--text-xs)', cursor: 'pointer' }}>
+                        <td
+                          style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}
+                        >
+                          <label
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              fontSize: 'var(--text-xs)',
+                              cursor: 'pointer',
+                            }}
+                          >
                             <input
                               type="checkbox"
                               checked={editIsPaid}
@@ -1081,7 +1565,9 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
                             Paid
                           </label>
                         </td>
-                        <td style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}>
+                        <td
+                          style={{ padding: 'var(--space-3) var(--space-2)', textAlign: 'center' }}
+                        >
                           <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
                             <Button
                               variant="primary"
@@ -1118,7 +1604,9 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
                 })}
                 {isVirtual && bottomSpacerHeight > 0 && (
                   <tr style={{ height: `${bottomSpacerHeight}px` }} aria-hidden="true">
-                    <td colSpan={7} aria-hidden="true" style={{ padding: 0, border: 'none' }}>Spacer</td>
+                    <td colSpan={7} aria-hidden="true" style={{ padding: 0, border: 'none' }}>
+                      Spacer
+                    </td>
                   </tr>
                 )}
               </tbody>
@@ -1127,10 +1615,22 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
         )}
 
         {/* Pricing Notice */}
-        <div className="estimate-disclaimer" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginTop: 'var(--space-4)', fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+        <div
+          className="estimate-disclaimer"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 'var(--space-2)',
+            marginTop: 'var(--space-4)',
+            fontSize: 'var(--text-xs)',
+            color: 'var(--text-muted)',
+          }}
+        >
           <Info size={14} style={{ flexShrink: 0 }} />
           <span>
-            <strong>Pricing Notice:</strong> All figures above are planning estimates based on regional averages in {plan.city}. Actual vendor quotes will vary based on dates, taxes, gratuities, and specific contract terms.
+            <strong>Pricing Notice:</strong> All figures above are planning estimates based on
+            regional averages in {plan.city}. Actual vendor quotes will vary based on dates, taxes,
+            gratuities, and specific contract terms.
           </span>
         </div>
       </Card>
@@ -1160,7 +1660,13 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
               />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-4)' }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: 'var(--space-4)',
+              }}
+            >
               <div className="form-group">
                 <label htmlFor="new-exp-cat" className="form-label">
                   <span>Category</span>
@@ -1187,7 +1693,9 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
                   id="new-exp-priority"
                   className="form-control"
                   value={newPriority}
-                  onChange={(e) => setNewPriority(e.target.value as 'essential' | 'recommended' | 'optional')}
+                  onChange={(e) =>
+                    setNewPriority(e.target.value as 'essential' | 'recommended' | 'optional')
+                  }
                 >
                   <option value="essential">Essential</option>
                   <option value="recommended">Recommended</option>
@@ -1198,11 +1706,20 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
 
             {/* Amount with Live Lakh / Crore Preview */}
             <div className="form-group">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+              >
                 <label htmlFor="new-exp-cost" className="form-label">
                   <span>Estimated Amount ({plan.currency || '₹'}) *</span>
                 </label>
-                <span className="tabular-nums" style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--accent-primary)' }}>
+                <span
+                  className="tabular-nums"
+                  style={{
+                    fontSize: 'var(--text-xs)',
+                    fontWeight: 700,
+                    color: 'var(--accent-primary)',
+                  }}
+                >
                   {formatIndianShort(newCost)}
                 </span>
               </div>
@@ -1216,8 +1733,11 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
                 onChange={(e) => setNewCost(Math.max(0, parseInt(e.target.value, 10) || 0))}
                 required
               />
-              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginTop: '4px' }}>
-                Live Preview: <strong className="tabular-nums">{formatCurrency(newCost)}</strong> ({formatIndianShort(newCost)})
+              <div
+                style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginTop: '4px' }}
+              >
+                Live Preview: <strong className="tabular-nums">{formatCurrency(newCost)}</strong> (
+                {formatIndianShort(newCost)})
               </div>
             </div>
 
@@ -1235,7 +1755,15 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
               />
             </div>
 
-            <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontSize: 'var(--text-xs)', cursor: 'pointer' }}>
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 'var(--space-2)',
+                fontSize: 'var(--text-xs)',
+                cursor: 'pointer',
+              }}
+            >
               <input
                 type="checkbox"
                 checked={newIsPerGuest}
@@ -1245,11 +1773,29 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
               <span>Scale cost dynamically if guest count changes</span>
             </label>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
-              <Button variant="secondary" size="md" type="button" onClick={() => setShowAddModal(false)}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                gap: 'var(--space-3)',
+                marginTop: 'var(--space-2)',
+              }}
+            >
+              <Button
+                variant="secondary"
+                size="md"
+                type="button"
+                onClick={() => setShowAddModal(false)}
+              >
                 Cancel
               </Button>
-              <Button variant="primary" size="md" type="submit" onClick={handleAddNewItem} leadingIcon={<Sparkles size={16} />}>
+              <Button
+                variant="primary"
+                size="md"
+                type="submit"
+                onClick={handleAddNewItem}
+                leadingIcon={<Sparkles size={16} />}
+              >
                 Save Expense
               </Button>
             </div>

@@ -58,7 +58,7 @@ describe('Setup Wizard (Step 3)', () => {
 
     // Verify Step 2 values were strictly retained
     expect(screen.getByLabelText(/Event Name \/ Celebration Title \*/i)).toHaveValue(
-      'Grand Sangeet & Reception 2026'
+      'Grand Sangeet & Reception 2026',
     );
     expect(screen.getByLabelText(/City \/ Location \*/i)).toHaveValue('Udaipur, Rajasthan');
 
@@ -87,7 +87,9 @@ describe('Setup Wizard (Step 3)', () => {
 
     // Navigate to Step 4: Preferences
     fireEvent.click(screen.getByRole('button', { name: /Next/i }));
-    expect(screen.getByText(/Step 4: Cultural, Dietary & Accessibility Guardrails/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Step 4: Cultural, Dietary & Accessibility Guardrails/i),
+    ).toBeInTheDocument();
 
     // Check dietary chips exist
     expect(screen.getByRole('button', { name: /Pure Veg/i })).toBeInTheDocument();

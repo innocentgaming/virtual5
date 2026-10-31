@@ -40,12 +40,20 @@ export const Badge: React.FC<BadgeProps> = ({
       {...props}
     >
       {dot && <span className="ui-badge__dot" aria-hidden="true" />}
-      {icon && <span className="ui-badge__icon" aria-hidden="true">{icon}</span>}
+      {icon && (
+        <span className="ui-badge__icon" aria-hidden="true">
+          {icon}
+        </span>
+      )}
       {isDietary && dietaryType === 'jain' && !dot && !icon && (
-        <span className="ui-badge__icon" aria-hidden="true">🥗</span>
+        <span className="ui-badge__icon" aria-hidden="true">
+          🥗
+        </span>
       )}
       {isDietary && dietaryType === 'pure_veg' && !dot && !icon && (
-        <span className="ui-badge__icon" aria-hidden="true">🌱</span>
+        <span className="ui-badge__icon" aria-hidden="true">
+          🌱
+        </span>
       )}
       <span>{children}</span>
     </span>

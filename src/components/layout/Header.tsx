@@ -98,7 +98,17 @@ export const Header: React.FC<HeaderProps> = ({
         >
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <h1 className="brand-title" style={{ margin: 0, fontSize: 'inherit', fontWeight: 'inherit', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <h1
+                className="brand-title"
+                style={{
+                  margin: 0,
+                  fontSize: 'inherit',
+                  fontWeight: 'inherit',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                }}
+              >
                 <span className="sr-only">EventWise AI</span>
                 <Logo size="sm" />
                 <span
@@ -118,9 +128,7 @@ export const Header: React.FC<HeaderProps> = ({
                 </span>
               </h1>
             </div>
-            <div className="brand-subtitle">
-              Personalized Event Planning & Decision Engine
-            </div>
+            <div className="brand-subtitle">Personalized Event Planning & Decision Engine</div>
           </div>
         </Link>
 
@@ -147,13 +155,15 @@ export const Header: React.FC<HeaderProps> = ({
               {activeEvent.eventType === 'wedding'
                 ? '👑 Royal Wedding'
                 : activeEvent.eventType === 'birthday'
-                ? '🎉 Milestone Birthday'
-                : '🪔 Community Utsav'}
+                  ? '🎉 Milestone Birthday'
+                  : '🪔 Community Utsav'}
             </Badge>
           </div>
         ) : (
           <div className="event-selector-wrapper" style={{ padding: '0.25rem 0.5rem' }}>
-            <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text-muted)' }}>
+            <span
+              style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text-muted)' }}
+            >
               ✨ Clean Slate
             </span>
           </div>
@@ -282,7 +292,14 @@ export const Header: React.FC<HeaderProps> = ({
         {onImportPlan && (
           <label
             className="ui-button ui-button--secondary ui-button--sm"
-            style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', margin: 0, padding: '0.35rem 0.65rem' }}
+            style={{
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              margin: 0,
+              padding: '0.35rem 0.65rem',
+            }}
             title="Restore event plan from JSON backup file"
           >
             <Upload size={14} aria-hidden="true" />
@@ -374,15 +391,28 @@ export const Header: React.FC<HeaderProps> = ({
             >
               {user.initials}
             </div>
-            <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
+            <div
+              style={{
+                textAlign: 'left',
+                display: 'flex',
+                flexDirection: 'column',
+                lineHeight: 1.1,
+              }}
+            >
               <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text)' }}>
                 {user.name.split(' ')[0]}
               </span>
-              <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>{user.roleLabel}</span>
+              <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>
+                {user.roleLabel}
+              </span>
             </div>
           </button>
         ) : (
-          <Link to="/signup?next=/app" className="ui-button ui-button--secondary ui-button--sm" style={{ textDecoration: 'none' }}>
+          <Link
+            to="/signup?next=/app"
+            className="ui-button ui-button--secondary ui-button--sm"
+            style={{ textDecoration: 'none' }}
+          >
             <span className="ui-button__icon" aria-hidden="true">
               <UserPlus size={14} color="var(--accent-primary)" />
             </span>
@@ -437,7 +467,19 @@ const SyncBadge: React.FC<{ status: SyncStatus; onRetry: () => void }> = ({ stat
       <Icon size={14} className={busy ? 'ui-spinner-icon' : undefined} aria-hidden="true" />
       <span className="sync-badge__label">{SYNC_LABEL[status]}</span>
       {(status === 'offline' || status === 'error') && (
-        <button type="button" onClick={onRetry} style={{ background: 'none', border: 0, color: 'var(--accent-primary)', fontWeight: 700, cursor: 'pointer', padding: 0, fontSize: 'inherit' }}>
+        <button
+          type="button"
+          onClick={onRetry}
+          style={{
+            background: 'none',
+            border: 0,
+            color: 'var(--accent-primary)',
+            fontWeight: 700,
+            cursor: 'pointer',
+            padding: 0,
+            fontSize: 'inherit',
+          }}
+        >
           Retry
         </button>
       )}

@@ -80,7 +80,10 @@ describe('Timeline & Run of Show Redesign (Step 6)', () => {
     },
   ];
 
-  const createPlan = (tasks: TaskItem[] = mockTasks, schedule: ScheduleItem[] = mockSchedule): EventPlan => ({
+  const createPlan = (
+    tasks: TaskItem[] = mockTasks,
+    schedule: ScheduleItem[] = mockSchedule,
+  ): EventPlan => ({
     id: 'evt-test-timeline',
     title: 'Royal Rajasthan Wedding',
     eventType: 'wedding',
@@ -112,7 +115,7 @@ describe('Timeline & Run of Show Redesign (Step 6)', () => {
           onAddTask={vi.fn()}
           onDeleteTask={vi.fn()}
         />
-      </ToastProvider>
+      </ToastProvider>,
     );
 
     // Overdue task should display "Overdue (N days overdue)"
@@ -130,7 +133,7 @@ describe('Timeline & Run of Show Redesign (Step 6)', () => {
           onAddTask={vi.fn()}
           onDeleteTask={vi.fn()}
         />
-      </ToastProvider>
+      </ToastProvider>,
     );
 
     // 'task-caterer' depends on incomplete 'task-venue', so it should show Blocked state
@@ -139,7 +142,7 @@ describe('Timeline & Run of Show Redesign (Step 6)', () => {
 
     // Now resolve the prerequisite
     const resolvedTasks: TaskItem[] = mockTasks.map((t) =>
-      t.id === 'task-venue' ? { ...t, completed: true } : t
+      t.id === 'task-venue' ? { ...t, completed: true } : t,
     );
 
     rerender(
@@ -150,7 +153,7 @@ describe('Timeline & Run of Show Redesign (Step 6)', () => {
           onAddTask={vi.fn()}
           onDeleteTask={vi.fn()}
         />
-      </ToastProvider>
+      </ToastProvider>,
     );
 
     // Blocked badge should disappear and prerequisite chip should show completed
@@ -167,7 +170,7 @@ describe('Timeline & Run of Show Redesign (Step 6)', () => {
           onUpdateScheduleItem={vi.fn()}
           onDeleteScheduleItem={vi.fn()}
         />
-      </ToastProvider>
+      </ToastProvider>,
     );
 
     // Rule 9 banner and 10 PM divider
@@ -176,8 +179,14 @@ describe('Timeline & Run of Show Redesign (Step 6)', () => {
 
     // Check ritual content & badges
     expect(screen.getAllByText(/Baraat Procession/i).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByRole('heading', { name: /Grand Baraat Procession with Dhol/i })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /Vedic Pheras at Sacred Mandap/i })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /Late Night Sangeet & Indoor DJ/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: /Grand Baraat Procession with Dhol/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: /Vedic Pheras at Sacred Mandap/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: /Late Night Sangeet & Indoor DJ/i }),
+    ).toBeInTheDocument();
   });
 });

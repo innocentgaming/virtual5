@@ -67,7 +67,10 @@ export function convertFromInr(inrAmount: number, targetCurrency: CurrencyCode =
   return inrAmount * config.ratePerInr;
 }
 
-export function formatWithCurrency(inrAmount: number, targetCurrency: CurrencyCode = 'INR'): string {
+export function formatWithCurrency(
+  inrAmount: number,
+  targetCurrency: CurrencyCode = 'INR',
+): string {
   if (targetCurrency === 'INR') {
     return formatCurrency(inrAmount, '₹');
   }
@@ -78,4 +81,3 @@ export function formatWithCurrency(inrAmount: number, targetCurrency: CurrencyCo
   });
   return `${config.symbol}${intlFormatter.format(Math.round(converted))}`;
 }
-

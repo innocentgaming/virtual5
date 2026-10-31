@@ -72,12 +72,8 @@ describe('Copilot, Vendors & Ideas Polish (Step 7)', () => {
     const handleClose = vi.fn();
     render(
       <ToastProvider>
-        <AICopilotDrawer
-          plan={mockPlan}
-          isOpen={true}
-          onClose={handleClose}
-        />
-      </ToastProvider>
+        <AICopilotDrawer plan={mockPlan} isOpen={true} onClose={handleClose} />
+      </ToastProvider>,
     );
 
     const dialog = screen.getByRole('dialog');
@@ -90,7 +86,7 @@ describe('Copilot, Vendors & Ideas Polish (Step 7)', () => {
 
     // Focus trap: Tab navigation
     const focusable = dialog.querySelectorAll<HTMLElement>(
-      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled])'
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled])',
     );
     expect(focusable.length).toBeGreaterThan(1);
 
@@ -108,12 +104,8 @@ describe('Copilot, Vendors & Ideas Polish (Step 7)', () => {
   it('handles context suggestion chips and toggle behavior', async () => {
     render(
       <ToastProvider>
-        <AICopilotDrawer
-          plan={mockPlan}
-          isOpen={true}
-          onClose={vi.fn()}
-        />
-      </ToastProvider>
+        <AICopilotDrawer plan={mockPlan} isOpen={true} onClose={vi.fn()} />
+      </ToastProvider>,
     );
 
     // Suggestion chip is rendered
@@ -139,16 +131,14 @@ describe('Copilot, Vendors & Ideas Polish (Step 7)', () => {
   it('renders tailored interview questions in Vendor Checklist', () => {
     render(
       <ToastProvider>
-        <VendorChecklist
-          plan={mockPlan}
-          onUpdateVendor={vi.fn()}
-          onAddVendor={vi.fn()}
-        />
-      </ToastProvider>
+        <VendorChecklist plan={mockPlan} onUpdateVendor={vi.fn()} onAddVendor={vi.fn()} />
+      </ToastProvider>,
     );
 
     // Expand Pandit Ji details
-    const panditToggleButtons = screen.getAllByRole('button', { name: /Toggle vendor questions and notes/i });
+    const panditToggleButtons = screen.getAllByRole('button', {
+      name: /Toggle vendor questions and notes/i,
+    });
     fireEvent.click(panditToggleButtons[1]); // second vendor is Pandit Ji
 
     // Check tailored Pandit Ji questions
@@ -168,28 +158,32 @@ describe('Copilot, Vendors & Ideas Polish (Step 7)', () => {
           onAddBudgetItem={handleAddBudget}
           onAddTask={handleAddTask}
         />
-      </ToastProvider>
+      </ToastProvider>,
     );
 
     // Click "Add to budget" on the Live Jalebi idea
-    const addBudgetBtn = screen.getByRole('button', { name: /Add Live Jalebi & Rabri Station to budget/i });
+    const addBudgetBtn = screen.getByRole('button', {
+      name: /Add Live Jalebi & Rabri Station to budget/i,
+    });
     fireEvent.click(addBudgetBtn);
     expect(handleAddBudget).toHaveBeenCalledTimes(1);
     expect(handleAddBudget).toHaveBeenCalledWith(
       expect.objectContaining({
         name: 'Live Jalebi & Rabri Station',
         category: 'catering',
-      })
+      }),
     );
 
     // Click "Add to tasks" on the Live Jalebi idea
-    const addTaskBtn = screen.getByRole('button', { name: /Add Live Jalebi & Rabri Station to tasks/i });
+    const addTaskBtn = screen.getByRole('button', {
+      name: /Add Live Jalebi & Rabri Station to tasks/i,
+    });
     fireEvent.click(addTaskBtn);
     expect(handleAddTask).toHaveBeenCalledTimes(1);
     expect(handleAddTask).toHaveBeenCalledWith(
       expect.objectContaining({
         title: 'Plan: Live Jalebi & Rabri Station',
-      })
+      }),
     );
   });
 });

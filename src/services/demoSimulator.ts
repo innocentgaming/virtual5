@@ -8,13 +8,7 @@ import { calculateBudgetSummary, evaluateDecisionRules } from './decisionEngine'
  */
 
 export type DemoScenarioId =
-  | 'caterer'
-  | 'guests'
-  | 'rain'
-  | 'date'
-  | 'venue_cancels'
-  | 'budget_cut'
-  | 'jain_rsvp';
+  'caterer' | 'guests' | 'rain' | 'date' | 'venue_cancels' | 'budget_cut' | 'jain_rsvp';
 
 export interface DemoScenario {
   id: DemoScenarioId;
@@ -51,12 +45,14 @@ export const DEMO_SCENARIOS: DemoScenario[] = [
   {
     id: 'budget_cut',
     label: 'Budget cut 15%',
-    caption: 'Total allocated budget drops by 15%, triggering immediate deficit and trade-off alerts.',
+    caption:
+      'Total allocated budget drops by 15%, triggering immediate deficit and trade-off alerts.',
   },
   {
     id: 'jain_rsvp',
     label: 'Jain guests RSVP',
-    caption: 'Dedicated Jain & Satvik counter added, triggering the kitchen-counter segregation rule.',
+    caption:
+      'Dedicated Jain & Satvik counter added, triggering the kitchen-counter segregation rule.',
   },
 ];
 
@@ -77,7 +73,11 @@ function toIsoDate(d: Date): string {
  * @param now - Reference anchor date for schedule recalculations
  * @returns Modified EventPlan with injected disruption
  */
-export function applyDemoScenario(plan: EventPlan, id: DemoScenarioId, now: Date = new Date()): EventPlan {
+export function applyDemoScenario(
+  plan: EventPlan,
+  id: DemoScenarioId,
+  now: Date = new Date(),
+): EventPlan {
   switch (id) {
     case 'caterer': {
       return {
@@ -96,7 +96,9 @@ export function applyDemoScenario(plan: EventPlan, id: DemoScenarioId, now: Date
         ...plan,
         guestCount: next,
         budgetItems: plan.budgetItems.map((item) =>
-          item.isPerGuest ? { ...item, estimatedCost: Math.round(item.estimatedCost * ratio) } : item,
+          item.isPerGuest
+            ? { ...item, estimatedCost: Math.round(item.estimatedCost * ratio) }
+            : item,
         ),
       };
     }
@@ -171,7 +173,11 @@ export function applyTradeOffFix(plan: EventPlan): EventPlan {
   return {
     ...plan,
     budgetItems: plan.budgetItems.map((item) => {
-      if (item.category === 'decor' || item.category === 'entertainment' || item.category === 'invitations') {
+      if (
+        item.category === 'decor' ||
+        item.category === 'entertainment' ||
+        item.category === 'invitations'
+      ) {
         const trimmed = Math.round(item.estimatedCost * 0.8);
         return {
           ...item,
@@ -200,7 +206,12 @@ export interface DemoSnapshot {
  * @returns Computed DemoSnapshot object
  */
 export function snapshotPlan(plan: EventPlan, now: Date = new Date()): DemoSnapshot {
-  const summary = calculateBudgetSummary(plan.totalBudget, plan.budgetItems, plan.contingencyRate, plan.guestCount);
+  const summary = calculateBudgetSummary(
+    plan.totalBudget,
+    plan.budgetItems,
+    plan.contingencyRate,
+    plan.guestCount,
+  );
   const overrun = plan.budgetItems.reduce((sum, item) => {
     if (item.category === 'contingency' || item.actualCost === undefined) return sum;
     return sum + Math.max(0, item.actualCost - item.estimatedCost);
@@ -217,6 +228,10 @@ export function snapshotPlan(plan: EventPlan, now: Date = new Date()): DemoSnaps
  * @param now - Reference anchor date
  * @returns Compound disrupted EventPlan
  */
-export function applyAll(plan: EventPlan, ids: DemoScenarioId[], now: Date = new Date()): EventPlan {
+export function applyAll(
+  plan: EventPlan,
+  ids: DemoScenarioId[],
+  now: Date = new Date(),
+): EventPlan {
   return ids.reduce((acc, id) => applyDemoScenario(acc, id, now), plan);
 }

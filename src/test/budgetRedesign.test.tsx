@@ -104,7 +104,7 @@ describe('Budget Redesign (Step 4)', () => {
           onDeleteExpense={vi.fn()}
           onUpdateContingency={vi.fn()}
         />
-      </ToastProvider>
+      </ToastProvider>,
     );
 
     // Green variance: on/under budget (-5%)
@@ -133,7 +133,7 @@ describe('Budget Redesign (Step 4)', () => {
           onDeleteExpense={vi.fn()}
           onUpdateContingency={vi.fn()}
         />
-      </ToastProvider>
+      </ToastProvider>,
     );
 
     // Click edit on the first item
@@ -156,7 +156,7 @@ describe('Budget Redesign (Step 4)', () => {
       'item-1-green',
       expect.objectContaining({
         estimatedCost: 0,
-      })
+      }),
     );
   });
 
@@ -171,7 +171,7 @@ describe('Budget Redesign (Step 4)', () => {
           onDeleteExpense={vi.fn()}
           onUpdateContingency={vi.fn()}
         />
-      </ToastProvider>
+      </ToastProvider>,
     );
 
     const editButtons = screen.getAllByLabelText(/Edit/i);

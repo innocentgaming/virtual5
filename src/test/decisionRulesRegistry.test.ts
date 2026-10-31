@@ -25,10 +25,22 @@ describe('Decision Rules Registry — Comprehensive Rule Boundary Tests', () => 
     eventType: 'wedding',
     totalBudget: 1000000,
     budgetItems: [
-      { id: 'b1', name: 'Royal Palace Banquet', category: 'venue', estimatedCost: 400000, priority: 'essential' },
-      { id: 'b2', name: 'Shahi Catering', category: 'catering', estimatedCost: 350000, priority: 'essential' },
+      {
+        id: 'b1',
+        name: 'Royal Palace Banquet',
+        category: 'venue',
+        estimatedCost: 400000,
+        priority: 'essential',
+      },
+      {
+        id: 'b2',
+        name: 'Shahi Catering',
+        category: 'catering',
+        estimatedCost: 350000,
+        priority: 'essential',
+      },
     ],
-    contingencyRate: 0.10,
+    contingencyRate: 0.1,
     eventDate: '2026-12-01',
     guestCount: 200,
     venuePreference: 'banquet_hall',
@@ -39,8 +51,30 @@ describe('Decision Rules Registry — Comprehensive Rule Boundary Tests', () => 
     tasks: [],
     guests: [],
     vendors: [
-      { id: 'v1', category: 'venue', name: 'Palace', status: 'booked', estimatedCost: 400000, actualCost: 400000, isBooked: true, contractSigned: true, samagriChecklist: [], interviewQuestions: [] },
-      { id: 'v2', category: 'catering', name: 'Caterer', status: 'booked', estimatedCost: 350000, actualCost: 350000, isBooked: true, contractSigned: true, samagriChecklist: [], interviewQuestions: [] },
+      {
+        id: 'v1',
+        category: 'venue',
+        name: 'Palace',
+        status: 'booked',
+        estimatedCost: 400000,
+        actualCost: 400000,
+        isBooked: true,
+        contractSigned: true,
+        samagriChecklist: [],
+        interviewQuestions: [],
+      },
+      {
+        id: 'v2',
+        category: 'catering',
+        name: 'Caterer',
+        status: 'booked',
+        estimatedCost: 350000,
+        actualCost: 350000,
+        isBooked: true,
+        contractSigned: true,
+        samagriChecklist: [],
+        interviewQuestions: [],
+      },
     ],
   };
 
@@ -52,7 +86,12 @@ describe('Decision Rules Registry — Comprehensive Rule Boundary Tests', () => 
   // Rule 1: ruleBudgetOverrun
   describe('Rule 1: ruleBudgetOverrun', () => {
     it('returns null when budget utilization is strictly within budget', () => {
-      const summary = calculateBudgetSummary(basePlan.totalBudget, basePlan.budgetItems, basePlan.contingencyRate, basePlan.guestCount);
+      const summary = calculateBudgetSummary(
+        basePlan.totalBudget,
+        basePlan.budgetItems,
+        basePlan.contingencyRate,
+        basePlan.guestCount,
+      );
       const res = ruleBudgetOverrun.evaluate(basePlan, summary, new Date('2026-06-01'));
       expect(res).toBeNull();
     });
@@ -62,7 +101,12 @@ describe('Decision Rules Registry — Comprehensive Rule Boundary Tests', () => 
         ...basePlan,
         totalBudget: 500000, // costs 750k + 50k contingency = 800k vs 500k
       };
-      const summary = calculateBudgetSummary(overPlan.totalBudget, overPlan.budgetItems, overPlan.contingencyRate, overPlan.guestCount);
+      const summary = calculateBudgetSummary(
+        overPlan.totalBudget,
+        overPlan.budgetItems,
+        overPlan.contingencyRate,
+        overPlan.guestCount,
+      );
       const res = ruleBudgetOverrun.evaluate(overPlan, summary, new Date('2026-06-01'));
       expect(res).not.toBeNull();
       if (res && !Array.isArray(res)) {
@@ -73,7 +117,12 @@ describe('Decision Rules Registry — Comprehensive Rule Boundary Tests', () => 
 
     it('handles zero or negative budget safely without dividing by zero or crashing', () => {
       const zeroPlan = { ...basePlan, totalBudget: 0 };
-      const summary = calculateBudgetSummary(zeroPlan.totalBudget, zeroPlan.budgetItems, zeroPlan.contingencyRate, zeroPlan.guestCount);
+      const summary = calculateBudgetSummary(
+        zeroPlan.totalBudget,
+        zeroPlan.budgetItems,
+        zeroPlan.contingencyRate,
+        zeroPlan.guestCount,
+      );
       const res = ruleBudgetOverrun.evaluate(zeroPlan, summary, new Date('2026-06-01'));
       expect(res).not.toBeNull();
       if (res && !Array.isArray(res)) {
@@ -88,10 +137,22 @@ describe('Decision Rules Registry — Comprehensive Rule Boundary Tests', () => 
       const spikedPlan: DecisionEnginePlanInput = {
         ...basePlan,
         budgetItems: [
-          { id: 'b1', name: 'Palace', category: 'venue', estimatedCost: 100000, actualCost: 130000, priority: 'essential' }, // +30%
+          {
+            id: 'b1',
+            name: 'Palace',
+            category: 'venue',
+            estimatedCost: 100000,
+            actualCost: 130000,
+            priority: 'essential',
+          }, // +30%
         ],
       };
-      const summary = calculateBudgetSummary(spikedPlan.totalBudget, spikedPlan.budgetItems, spikedPlan.contingencyRate, spikedPlan.guestCount);
+      const summary = calculateBudgetSummary(
+        spikedPlan.totalBudget,
+        spikedPlan.budgetItems,
+        spikedPlan.contingencyRate,
+        spikedPlan.guestCount,
+      );
       const res = ruleVendorCostSpike.evaluate(spikedPlan, summary, new Date('2026-06-01'));
       expect(res).not.toBeNull();
       if (res && !Array.isArray(res)) {
@@ -106,10 +167,22 @@ describe('Decision Rules Registry — Comprehensive Rule Boundary Tests', () => 
       const mildSpikePlan: DecisionEnginePlanInput = {
         ...basePlan,
         budgetItems: [
-          { id: 'b1', name: 'Palace', category: 'venue', estimatedCost: 100000, actualCost: 100000, priority: 'essential' },
+          {
+            id: 'b1',
+            name: 'Palace',
+            category: 'venue',
+            estimatedCost: 100000,
+            actualCost: 100000,
+            priority: 'essential',
+          },
         ],
       };
-      const summary = calculateBudgetSummary(mildSpikePlan.totalBudget, mildSpikePlan.budgetItems, mildSpikePlan.contingencyRate, mildSpikePlan.guestCount);
+      const summary = calculateBudgetSummary(
+        mildSpikePlan.totalBudget,
+        mildSpikePlan.budgetItems,
+        mildSpikePlan.contingencyRate,
+        mildSpikePlan.guestCount,
+      );
       const res = ruleVendorCostSpike.evaluate(mildSpikePlan, summary, new Date('2026-06-01'));
       expect(res).toBeNull();
     });
@@ -121,10 +194,24 @@ describe('Decision Rules Registry — Comprehensive Rule Boundary Tests', () => 
       const cancelledPlan: DecisionEnginePlanInput = {
         ...basePlan,
         vendors: [
-          { id: 'v1', category: 'catering', name: 'Shahi Halwai', role: 'Royal Caterer', status: 'cancelled', isBooked: false, samagriChecklist: [], interviewQuestions: [] },
+          {
+            id: 'v1',
+            category: 'catering',
+            name: 'Shahi Halwai',
+            role: 'Royal Caterer',
+            status: 'cancelled',
+            isBooked: false,
+            samagriChecklist: [],
+            interviewQuestions: [],
+          },
         ],
       };
-      const summary = calculateBudgetSummary(cancelledPlan.totalBudget, cancelledPlan.budgetItems, cancelledPlan.contingencyRate, cancelledPlan.guestCount);
+      const summary = calculateBudgetSummary(
+        cancelledPlan.totalBudget,
+        cancelledPlan.budgetItems,
+        cancelledPlan.contingencyRate,
+        cancelledPlan.guestCount,
+      );
       const res = ruleVendorCancellation.evaluate(cancelledPlan, summary, new Date('2026-06-01'));
       expect(res).not.toBeNull();
       const insight = Array.isArray(res) ? res[0] : res;
@@ -140,7 +227,12 @@ describe('Decision Rules Registry — Comprehensive Rule Boundary Tests', () => 
         ...basePlan,
         eventDate: '2026-06-10',
       };
-      const summary = calculateBudgetSummary(closePlan.totalBudget, closePlan.budgetItems, closePlan.contingencyRate, closePlan.guestCount);
+      const summary = calculateBudgetSummary(
+        closePlan.totalBudget,
+        closePlan.budgetItems,
+        closePlan.contingencyRate,
+        closePlan.guestCount,
+      );
       const res = ruleTimelineUrgency.evaluate(closePlan, summary, new Date('2026-06-01')); // 9 days
       expect(res).not.toBeNull();
       if (res && !Array.isArray(res)) {
@@ -155,7 +247,12 @@ describe('Decision Rules Registry — Comprehensive Rule Boundary Tests', () => 
         eventDate: '2026-11-01',
         tasks: [],
       };
-      const summary = calculateBudgetSummary(farPlan.totalBudget, farPlan.budgetItems, farPlan.contingencyRate, farPlan.guestCount);
+      const summary = calculateBudgetSummary(
+        farPlan.totalBudget,
+        farPlan.budgetItems,
+        farPlan.contingencyRate,
+        farPlan.guestCount,
+      );
       const res = ruleTimelineUrgency.evaluate(farPlan, summary, new Date('2026-06-01'));
       expect(res).toBeNull();
     });
@@ -169,7 +266,12 @@ describe('Decision Rules Registry — Comprehensive Rule Boundary Tests', () => 
         venuePreference: 'garden_park',
         eventDate: '2026-07-15',
       };
-      const summary = calculateBudgetSummary(outdoorPlan.totalBudget, outdoorPlan.budgetItems, outdoorPlan.contingencyRate, outdoorPlan.guestCount);
+      const summary = calculateBudgetSummary(
+        outdoorPlan.totalBudget,
+        outdoorPlan.budgetItems,
+        outdoorPlan.contingencyRate,
+        outdoorPlan.guestCount,
+      );
       const res = ruleOutdoorWeatherRisk.evaluate(outdoorPlan, summary, new Date('2026-06-01'));
       expect(res).not.toBeNull();
       if (res && !Array.isArray(res)) {
@@ -184,7 +286,12 @@ describe('Decision Rules Registry — Comprehensive Rule Boundary Tests', () => 
         venuePreference: 'banquet_hall',
         eventDate: '2026-07-15',
       };
-      const summary = calculateBudgetSummary(indoorPlan.totalBudget, indoorPlan.budgetItems, indoorPlan.contingencyRate, indoorPlan.guestCount);
+      const summary = calculateBudgetSummary(
+        indoorPlan.totalBudget,
+        indoorPlan.budgetItems,
+        indoorPlan.contingencyRate,
+        indoorPlan.guestCount,
+      );
       const res = ruleOutdoorWeatherRisk.evaluate(indoorPlan, summary, new Date('2026-06-01'));
       expect(res).toBeNull();
     });
@@ -197,7 +304,12 @@ describe('Decision Rules Registry — Comprehensive Rule Boundary Tests', () => 
         ...basePlan,
         guestCount: 300,
       };
-      const summary = calculateBudgetSummary(largePlan.totalBudget, largePlan.budgetItems, largePlan.contingencyRate, largePlan.guestCount);
+      const summary = calculateBudgetSummary(
+        largePlan.totalBudget,
+        largePlan.budgetItems,
+        largePlan.contingencyRate,
+        largePlan.guestCount,
+      );
       const res = ruleLargeCapacityAndPerGuest.evaluate(largePlan, summary, new Date('2026-06-01'));
       expect(res).not.toBeNull();
       const insights = Array.isArray(res) ? res : res ? [res] : [];
@@ -206,8 +318,17 @@ describe('Decision Rules Registry — Comprehensive Rule Boundary Tests', () => 
 
     it('safely handles 0 or negative guest count', () => {
       const zeroGuestPlan: DecisionEnginePlanInput = { ...basePlan, guestCount: 0 };
-      const summary = calculateBudgetSummary(zeroGuestPlan.totalBudget, zeroGuestPlan.budgetItems, zeroGuestPlan.contingencyRate, zeroGuestPlan.guestCount);
-      const res = ruleLargeCapacityAndPerGuest.evaluate(zeroGuestPlan, summary, new Date('2026-06-01'));
+      const summary = calculateBudgetSummary(
+        zeroGuestPlan.totalBudget,
+        zeroGuestPlan.budgetItems,
+        zeroGuestPlan.contingencyRate,
+        zeroGuestPlan.guestCount,
+      );
+      const res = ruleLargeCapacityAndPerGuest.evaluate(
+        zeroGuestPlan,
+        summary,
+        new Date('2026-06-01'),
+      );
       expect(res).toBeNull();
     });
   });
@@ -219,7 +340,12 @@ describe('Decision Rules Registry — Comprehensive Rule Boundary Tests', () => 
         ...basePlan,
         eventType: 'wedding',
       };
-      const summary = calculateBudgetSummary(weddingPlan.totalBudget, weddingPlan.budgetItems, weddingPlan.contingencyRate, weddingPlan.guestCount);
+      const summary = calculateBudgetSummary(
+        weddingPlan.totalBudget,
+        weddingPlan.budgetItems,
+        weddingPlan.contingencyRate,
+        weddingPlan.guestCount,
+      );
       const res = ruleSoundCurfewAndPermit.evaluate(weddingPlan, summary, new Date('2026-06-01'));
       expect(res).not.toBeNull();
       const insights = Array.isArray(res) ? res : res ? [res] : [];
@@ -233,12 +359,37 @@ describe('Decision Rules Registry — Comprehensive Rule Boundary Tests', () => 
       const blockedPlan: DecisionEnginePlanInput = {
         ...basePlan,
         tasks: [
-          { id: 't1', title: 'Book Pandit Ji', category: 'rituals', dueDate: '2026-05-15', completed: false, priority: 'high' },
-          { id: 't2', title: 'Procure Samagri Kit', category: 'rituals', dueDate: '2026-06-15', completed: false, priority: 'medium', dependencies: ['t1'] },
+          {
+            id: 't1',
+            title: 'Book Pandit Ji',
+            category: 'rituals',
+            dueDate: '2026-05-15',
+            completed: false,
+            priority: 'high',
+          },
+          {
+            id: 't2',
+            title: 'Procure Samagri Kit',
+            category: 'rituals',
+            dueDate: '2026-06-15',
+            completed: false,
+            priority: 'medium',
+            dependencies: ['t1'],
+          },
         ],
       };
-      const summary = calculateBudgetSummary(blockedPlan.totalBudget, blockedPlan.budgetItems, blockedPlan.contingencyRate, blockedPlan.guestCount);
-      const res = ruleTaskDependencyBottlenecks.evaluate(blockedPlan, summary, new Date('2026-06-01'), '2026-06-01');
+      const summary = calculateBudgetSummary(
+        blockedPlan.totalBudget,
+        blockedPlan.budgetItems,
+        blockedPlan.contingencyRate,
+        blockedPlan.guestCount,
+      );
+      const res = ruleTaskDependencyBottlenecks.evaluate(
+        blockedPlan,
+        summary,
+        new Date('2026-06-01'),
+        '2026-06-01',
+      );
       expect(res).not.toBeNull();
       if (res && !Array.isArray(res)) {
         expect(res.ruleId).toBe('RULE_8_DEPENDENCY_BOTTLENECK');
@@ -254,7 +405,12 @@ describe('Decision Rules Registry — Comprehensive Rule Boundary Tests', () => 
         ...basePlan,
         accessibilityNeeds: ['Wheelchair Ramps & Golf Carts'],
       };
-      const summary = calculateBudgetSummary(accessPlan.totalBudget, accessPlan.budgetItems, accessPlan.contingencyRate, accessPlan.guestCount);
+      const summary = calculateBudgetSummary(
+        accessPlan.totalBudget,
+        accessPlan.budgetItems,
+        accessPlan.contingencyRate,
+        accessPlan.guestCount,
+      );
       const res = ruleAccessibilityNeeds.evaluate(accessPlan, summary, new Date('2026-06-01'));
       expect(res).not.toBeNull();
       if (res && !Array.isArray(res)) {
@@ -275,7 +431,12 @@ describe('Decision Rules Registry — Comprehensive Rule Boundary Tests', () => 
           { id: 'g2', name: 'Sunita', rsvpStatus: 'attending', plusOne: true, dietary: 'none' }, // 2 + 2 = 4 attending > 2 capacity
         ],
       };
-      const summary = calculateBudgetSummary(overflowPlan.totalBudget, overflowPlan.budgetItems, overflowPlan.contingencyRate, overflowPlan.guestCount);
+      const summary = calculateBudgetSummary(
+        overflowPlan.totalBudget,
+        overflowPlan.budgetItems,
+        overflowPlan.contingencyRate,
+        overflowPlan.guestCount,
+      );
       const res = ruleRsvpCapacityExceeded.evaluate(overflowPlan, summary, new Date('2026-06-01'));
       expect(res).not.toBeNull();
       if (res && !Array.isArray(res)) {
@@ -294,7 +455,12 @@ describe('Decision Rules Registry — Comprehensive Rule Boundary Tests', () => 
           { id: 'g1', name: 'Aarav', rsvpStatus: 'attending', dietary: 'pure_veg', plusOne: false },
         ],
       };
-      const summary = calculateBudgetSummary(dietaryPlan.totalBudget, dietaryPlan.budgetItems, dietaryPlan.contingencyRate, dietaryPlan.guestCount);
+      const summary = calculateBudgetSummary(
+        dietaryPlan.totalBudget,
+        dietaryPlan.budgetItems,
+        dietaryPlan.contingencyRate,
+        dietaryPlan.guestCount,
+      );
       const res = ruleDietaryAlert.evaluate(dietaryPlan, summary, new Date('2026-06-01'));
       expect(res).not.toBeNull();
       if (res && !Array.isArray(res)) {
@@ -309,10 +475,21 @@ describe('Decision Rules Registry — Comprehensive Rule Boundary Tests', () => 
       const jainPlan: DecisionEnginePlanInput = {
         ...basePlan,
         guests: [
-          { id: 'g1', name: 'Vimal Shah', rsvpStatus: 'attending', plusOne: false, dietary: 'jain' },
+          {
+            id: 'g1',
+            name: 'Vimal Shah',
+            rsvpStatus: 'attending',
+            plusOne: false,
+            dietary: 'jain',
+          },
         ],
       };
-      const summary = calculateBudgetSummary(jainPlan.totalBudget, jainPlan.budgetItems, jainPlan.contingencyRate, jainPlan.guestCount);
+      const summary = calculateBudgetSummary(
+        jainPlan.totalBudget,
+        jainPlan.budgetItems,
+        jainPlan.contingencyRate,
+        jainPlan.guestCount,
+      );
       const res = ruleJainDietarySeparation.evaluate(jainPlan, summary, new Date('2026-06-01'));
       expect(res).not.toBeNull();
       if (res && !Array.isArray(res)) {
@@ -377,8 +554,22 @@ describe('JSON Backup & Corrupted Data Restore (importPlanFromJson)', () => {
 describe('Date Compression Scenario & Timeline Re-pacing', () => {
   it('correctly shifts task milestones when event date moves earlier', () => {
     const sampleTasks = [
-      { id: 't1', title: 'Book Venue', category: 'venue' as const, dueDate: '2026-11-01', completed: false, priority: 'urgent' as const },
-      { id: 't2', title: 'Order Sweets', category: 'catering' as const, dueDate: '2026-11-20', completed: false, priority: 'medium' as const },
+      {
+        id: 't1',
+        title: 'Book Venue',
+        category: 'venue' as const,
+        dueDate: '2026-11-01',
+        completed: false,
+        priority: 'urgent' as const,
+      },
+      {
+        id: 't2',
+        title: 'Order Sweets',
+        category: 'catering' as const,
+        dueDate: '2026-11-20',
+        completed: false,
+        priority: 'medium' as const,
+      },
     ];
 
     const repaced = repaceTimelineTasks(sampleTasks, '2026-12-01', '2026-11-15', '2026-06-01');

@@ -8,12 +8,24 @@ import { Brand } from './SiteChrome';
 import '../site.css';
 
 const SIDE_COPY = {
-  login: { h: 'Pick up where you left off.', p: 'Your budgets, guest lists and schedules are saved to your account and open on any device.' },
-  signup: { h: 'Your whole celebration in one place.', p: 'Create an account to save plans, sync across devices and come back to them whenever you need.' },
-  recover: { h: 'It happens to everyone.', p: 'Reset links work once and expire after 30 minutes, so an old email cannot be used to get into your account.' },
+  login: {
+    h: 'Pick up where you left off.',
+    p: 'Your budgets, guest lists and schedules are saved to your account and open on any device.',
+  },
+  signup: {
+    h: 'Your whole celebration in one place.',
+    p: 'Create an account to save plans, sync across devices and come back to them whenever you need.',
+  },
+  recover: {
+    h: 'It happens to everyone.',
+    p: 'Reset links work once and expire after 30 minutes, so an old email cannot be used to get into your account.',
+  },
 };
 
-const AuthLayout: React.FC<{ side: keyof typeof SIDE_COPY; children: React.ReactNode }> = ({ side, children }) => (
+const AuthLayout: React.FC<{ side: keyof typeof SIDE_COPY; children: React.ReactNode }> = ({
+  side,
+  children,
+}) => (
   <div className="site">
     <div className="s-auth">
       <div className="s-auth__main">
@@ -35,9 +47,9 @@ const Spinner = () => <span className="s-spinner" aria-hidden="true" />;
 const VolatileStorageNotice: React.FC<{ storage?: string | null }> = ({ storage }) =>
   storage === 'memory' ? (
     <div role="status" className="s-alert s-alert--info">
-      Heads-up: this server stores accounts in temporary memory, so they are erased whenever it restarts or sleeps.
-      That is why a correct password can suddenly say &ldquo;incorrect&rdquo;. The site owner needs to connect a
-      database (see the README) to keep accounts permanently.
+      Heads-up: this server stores accounts in temporary memory, so they are erased whenever it
+      restarts or sleeps. That is why a correct password can suddenly say &ldquo;incorrect&rdquo;.
+      The site owner needs to connect a database (see the README) to keep accounts permanently.
     </div>
   ) : null;
 
@@ -80,25 +92,61 @@ export function LoginPage(): React.ReactElement {
         <ErrorBox message={error} />
         <div className="s-field">
           <label htmlFor="login-email">Email</label>
-          <input id="login-email" name="email" type="email" autoComplete="username" required value={email} onChange={(e) => setEmail(e.target.value)} />
+          <input
+            id="login-email"
+            name="email"
+            type="email"
+            autoComplete="username"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
         </div>
-        <PasswordFieldS id="login-password" label="Password" value={password} onChange={setPassword} autoComplete="current-password" />
+        <PasswordFieldS
+          id="login-password"
+          label="Password"
+          value={password}
+          onChange={setPassword}
+          autoComplete="current-password"
+        />
         <div className="s-form__row">
           <label className="s-check">
-            <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
+            <input
+              type="checkbox"
+              checked={remember}
+              onChange={(e) => setRemember(e.target.checked)}
+            />
             <span>Keep me signed in for 30 days</span>
           </label>
-          <Link to="/forgot-password" className="s-link">Forgot password?</Link>
+          <Link to="/forgot-password" className="s-link">
+            Forgot password?
+          </Link>
         </div>
         <button type="submit" className="s-btn s-btn--ink s-btn--block" disabled={busy}>
-          {busy ? <><Spinner /> Signing in</> : 'Sign in'}
+          {busy ? (
+            <>
+              <Spinner /> Signing in
+            </>
+          ) : (
+            'Sign in'
+          )}
         </button>
       </form>
       <p className="s-auth__switch">
-        New here? <Link to={`/signup${next !== '/app' ? `?next=${encodeURIComponent(next)}` : ''}`} className="s-link">Create a free account</Link>
+        New here?{' '}
+        <Link
+          to={`/signup${next !== '/app' ? `?next=${encodeURIComponent(next)}` : ''}`}
+          className="s-link"
+        >
+          Create a free account
+        </Link>
       </p>
       <p className="s-auth__demo">
-        Just looking around? <Link to="/demo" className="s-link">Explore the demo</Link> without an account.
+        Just looking around?{' '}
+        <Link to="/demo" className="s-link">
+          Explore the demo
+        </Link>{' '}
+        without an account.
       </p>
     </AuthLayout>
   );
@@ -124,7 +172,14 @@ export function SignupPage(): React.ReactElement {
     e.preventDefault();
     setBusy(true);
     setError(null);
-    const res = await signup({ name, email, password, role, organization: org, acceptTerms: accepted });
+    const res = await signup({
+      name,
+      email,
+      password,
+      role,
+      organization: org,
+      acceptTerms: accepted,
+    });
     setBusy(false);
     if (res.ok) navigate(next, { replace: true });
     else setError(res.error || 'Failed to create account.');
@@ -139,11 +194,27 @@ export function SignupPage(): React.ReactElement {
         <ErrorBox message={error} />
         <div className="s-field">
           <label htmlFor="su-name">Full name</label>
-          <input id="su-name" autoComplete="name" required minLength={2} maxLength={80} value={name} onChange={(e) => setName(e.target.value)} />
+          <input
+            id="su-name"
+            autoComplete="name"
+            required
+            minLength={2}
+            maxLength={80}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
         </div>
         <div className="s-field">
           <label htmlFor="su-email">Email</label>
-          <input id="su-email" name="email" type="email" autoComplete="username" required value={email} onChange={(e) => setEmail(e.target.value)} />
+          <input
+            id="su-email"
+            name="email"
+            type="email"
+            autoComplete="username"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
         </div>
         <div className="s-field">
           <label htmlFor="su-role">I am planning as</label>
@@ -155,21 +226,59 @@ export function SignupPage(): React.ReactElement {
         </div>
         <div className="s-field">
           <label htmlFor="su-org">Company or family name (optional)</label>
-          <input id="su-org" autoComplete="organization" maxLength={120} value={org} onChange={(e) => setOrg(e.target.value)} />
+          <input
+            id="su-org"
+            autoComplete="organization"
+            maxLength={120}
+            value={org}
+            onChange={(e) => setOrg(e.target.value)}
+          />
         </div>
-        <PasswordFieldS id="su-password" label="Password" value={password} onChange={setPassword} autoComplete="new-password" showStrength />
+        <PasswordFieldS
+          id="su-password"
+          label="Password"
+          value={password}
+          onChange={setPassword}
+          autoComplete="new-password"
+          showStrength
+        />
         <label className="s-check">
-          <input type="checkbox" checked={accepted} onChange={(e) => setAccepted(e.target.checked)} required />
+          <input
+            type="checkbox"
+            checked={accepted}
+            onChange={(e) => setAccepted(e.target.checked)}
+            required
+          />
           <span>
-            I agree to the <Link to="/terms" className="s-link" target="_blank" rel="noopener noreferrer">Terms</Link> and <Link to="/privacy" className="s-link" target="_blank" rel="noopener noreferrer">Privacy Policy</Link>.
+            I agree to the{' '}
+            <Link to="/terms" className="s-link" target="_blank" rel="noopener noreferrer">
+              Terms
+            </Link>{' '}
+            and{' '}
+            <Link to="/privacy" className="s-link" target="_blank" rel="noopener noreferrer">
+              Privacy Policy
+            </Link>
+            .
           </span>
         </label>
         <button type="submit" className="s-btn s-btn--ink s-btn--block" disabled={busy}>
-          {busy ? <><Spinner /> Creating account</> : 'Create account'}
+          {busy ? (
+            <>
+              <Spinner /> Creating account
+            </>
+          ) : (
+            'Create account'
+          )}
         </button>
       </form>
       <p className="s-auth__switch">
-        Already have an account? <Link to={`/login${next !== '/app' ? `?next=${encodeURIComponent(next)}` : ''}`} className="s-link">Sign in</Link>
+        Already have an account?{' '}
+        <Link
+          to={`/login${next !== '/app' ? `?next=${encodeURIComponent(next)}` : ''}`}
+          className="s-link"
+        >
+          Sign in
+        </Link>
       </p>
     </AuthLayout>
   );
@@ -201,29 +310,56 @@ export function ForgotPasswordPage(): React.ReactElement {
       {sent ? (
         <>
           <div role="status" className="s-alert s-alert--ok" style={{ marginTop: '1.5rem' }}>
-            If an account exists for {email}, a reset link is on its way. It works once and expires in 30 minutes.
+            If an account exists for {email}, a reset link is on its way. It works once and expires
+            in 30 minutes.
           </div>
           {sent.devResetLink && (
             <div className="s-alert s-alert--info" style={{ marginTop: '1rem' }}>
-              Development mode (no email provider configured): <a href={sent.devResetLink} className="s-link">{sent.devResetLink}</a>
+              Development mode (no email provider configured):{' '}
+              <a href={sent.devResetLink} className="s-link">
+                {sent.devResetLink}
+              </a>
             </div>
           )}
-          <p className="s-auth__switch"><Link to="/login" className="s-link">Back to sign in</Link></p>
+          <p className="s-auth__switch">
+            <Link to="/login" className="s-link">
+              Back to sign in
+            </Link>
+          </p>
         </>
       ) : (
         <>
-          <p className="s-auth__sub">Enter the email you signed up with and we will send you a link.</p>
+          <p className="s-auth__sub">
+            Enter the email you signed up with and we will send you a link.
+          </p>
           <form className="s-form" onSubmit={submit}>
             <ErrorBox message={error} />
             <div className="s-field">
               <label htmlFor="fp-email">Email</label>
-              <input id="fp-email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+              <input
+                id="fp-email"
+                type="email"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
             </div>
             <button type="submit" className="s-btn s-btn--ink s-btn--block" disabled={busy}>
-              {busy ? <><Spinner /> Sending</> : 'Send reset link'}
+              {busy ? (
+                <>
+                  <Spinner /> Sending
+                </>
+              ) : (
+                'Send reset link'
+              )}
             </button>
           </form>
-          <p className="s-auth__switch"><Link to="/login" className="s-link">Back to sign in</Link></p>
+          <p className="s-auth__switch">
+            <Link to="/login" className="s-link">
+              Back to sign in
+            </Link>
+          </p>
         </>
       )}
     </AuthLayout>
@@ -260,23 +396,50 @@ export function ResetPasswordPage(): React.ReactElement {
           <div role="alert" className="s-alert s-alert--error" style={{ marginTop: '1.5rem' }}>
             This reset link is incomplete. Request a new one.
           </div>
-          <p className="s-auth__switch"><Link to="/forgot-password" className="s-link">Send a new link</Link></p>
+          <p className="s-auth__switch">
+            <Link to="/forgot-password" className="s-link">
+              Send a new link
+            </Link>
+          </p>
         </>
       ) : done ? (
         <>
           <div role="status" className="s-alert s-alert--ok" style={{ marginTop: '1.5rem' }}>
             Your password was changed. All other devices have been signed out.
           </div>
-          <p style={{ marginTop: '1.5rem' }}><Link to="/login" className="s-btn s-btn--ink s-btn--block">Sign in</Link></p>
+          <p style={{ marginTop: '1.5rem' }}>
+            <Link to="/login" className="s-btn s-btn--ink s-btn--block">
+              Sign in
+            </Link>
+          </p>
         </>
       ) : (
         <form className="s-form" onSubmit={submit}>
           <ErrorBox message={error} />
-          <PasswordFieldS id="rp-password" label="New password" value={password} onChange={setPassword} autoComplete="new-password" showStrength />
+          <PasswordFieldS
+            id="rp-password"
+            label="New password"
+            value={password}
+            onChange={setPassword}
+            autoComplete="new-password"
+            showStrength
+          />
           <button type="submit" className="s-btn s-btn--ink s-btn--block" disabled={busy}>
-            {busy ? <><Spinner /> Saving</> : 'Save new password'}
+            {busy ? (
+              <>
+                <Spinner /> Saving
+              </>
+            ) : (
+              'Save new password'
+            )}
           </button>
-          {error && <p><Link to="/forgot-password" className="s-link">Send a new link</Link></p>}
+          {error && (
+            <p>
+              <Link to="/forgot-password" className="s-link">
+                Send a new link
+              </Link>
+            </p>
+          )}
         </form>
       )}
     </AuthLayout>

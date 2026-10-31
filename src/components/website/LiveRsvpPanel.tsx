@@ -1,5 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Copy, ExternalLink, Lock, LockOpen, MessageCircle, RefreshCw, UserPlus, Link2 } from 'lucide-react';
+import {
+  Copy,
+  ExternalLink,
+  Lock,
+  LockOpen,
+  MessageCircle,
+  RefreshCw,
+  UserPlus,
+  Link2,
+} from 'lucide-react';
 import { Button } from '../ui';
 import { useAuth } from '../../hooks/useAuth';
 import { rsvpApi, rsvpUrlFor, type RsvpAnswer } from '../../services/rsvpApi';
@@ -16,11 +25,21 @@ interface Props {
   onLinkChange?: (url: string | null) => void;
 }
 
-const DIET_MAP: Record<RsvpAnswer['diet'], DietaryRequirement> = { veg: 'pure_veg', jain: 'jain', nonveg: 'none' };
-const DIET_LABEL: Record<RsvpAnswer['diet'], string> = { veg: 'Pure veg', jain: 'Jain', nonveg: 'Non-veg' };
+const DIET_MAP: Record<RsvpAnswer['diet'], DietaryRequirement> = {
+  veg: 'pure_veg',
+  jain: 'jain',
+  nonveg: 'none',
+};
+const DIET_LABEL: Record<RsvpAnswer['diet'], string> = {
+  veg: 'Pure veg',
+  jain: 'Jain',
+  nonveg: 'Non-veg',
+};
 
 function guestFields(r: RsvpAnswer): Omit<GuestItem, 'id'> {
-  const extra = [r.guests > 0 ? `Bringing ${r.guests} more` : '', r.note ? `Note: ${r.note}` : ''].filter(Boolean).join(' · ');
+  const extra = [r.guests > 0 ? `Bringing ${r.guests} more` : '', r.note ? `Note: ${r.note}` : '']
+    .filter(Boolean)
+    .join(' · ');
   return {
     name: r.name,
     email: r.email,
@@ -39,7 +58,13 @@ function needsSync(r: RsvpAnswer, guests: GuestItem[]): boolean {
   return g.rsvpStatus !== f.rsvpStatus || g.plusOne !== f.plusOne || g.dietary !== f.dietary;
 }
 
-export const LiveRsvpPanel: React.FC<Props> = ({ plan, onAddGuest, onUpdateGuest, onToast, onLinkChange }) => {
+export const LiveRsvpPanel: React.FC<Props> = ({
+  plan,
+  onAddGuest,
+  onUpdateGuest,
+  onToast,
+  onLinkChange,
+}) => {
   const { status } = useAuth();
   const [token, setToken] = useState<string | null>(null);
   const [closed, setClosed] = useState(false);
@@ -53,13 +78,10 @@ export const LiveRsvpPanel: React.FC<Props> = ({ plan, onAddGuest, onUpdateGuest
     onLinkChange?.(url);
   }, [url, onLinkChange]);
 
-  const refresh = useCallback(
-    async (t: string) => {
-      const res = await rsvpApi.responses(t);
-      if (res.ok) setAnswers(res.responses);
-    },
-    []
-  );
+  const refresh = useCallback(async (t: string) => {
+    const res = await rsvpApi.responses(t);
+    if (res.ok) setAnswers(res.responses);
+  }, []);
 
   // Find an existing link for this event (creating nothing until the host asks for it).
   useEffect(() => {
@@ -92,13 +114,17 @@ export const LiveRsvpPanel: React.FC<Props> = ({ plan, onAddGuest, onUpdateGuest
     };
   }, [answers]);
 
-  const pending = useMemo(() => answers.filter((a) => needsSync(a, plan.guests ?? [])), [answers, plan.guests]);
+  const pending = useMemo(
+    () => answers.filter((a) => needsSync(a, plan.guests ?? [])),
+    [answers, plan.guests],
+  );
 
   if (status !== 'authenticated') {
     return (
       <p className="rsvp-note">
-        <Link to="/signup">Create a free account</Link> or <Link to="/login">sign in</Link> to get a live RSVP link. Guests answer on their phone and
-        the replies land in your guest list. In demo mode nothing is saved to a server.
+        <Link to="/signup">Create a free account</Link> or <Link to="/login">sign in</Link> to get a
+        live RSVP link. Guests answer on their phone and the replies land in your guest list. In
+        demo mode nothing is saved to a server.
       </p>
     );
   }
@@ -167,22 +193,44 @@ export const LiveRsvpPanel: React.FC<Props> = ({ plan, onAddGuest, onUpdateGuest
       ) : (
         <>
           <div className="rsvp-linkrow">
-            <input readOnly aria-label="Live RSVP link" className="form-control" value={url ?? ''} onFocus={(e) => e.currentTarget.select()} />
+            <input
+              readOnly
+              aria-label="Live RSVP link"
+              className="form-control"
+              value={url ?? ''}
+              onFocus={(e) => e.currentTarget.select()}
+            />
             <Button variant="primary" onClick={copy} leftIcon={<Copy size={14} />}>
               Copy
             </Button>
           </div>
           <div className="rsvp-actions">
-            <a className="btn btn-secondary btn-sm" href={whatsapp} target="_blank" rel="noreferrer">
+            <a
+              className="btn btn-secondary btn-sm"
+              href={whatsapp}
+              target="_blank"
+              rel="noreferrer"
+            >
               <MessageCircle size={14} /> Share on WhatsApp
             </a>
-            <a className="btn btn-secondary btn-sm" href={url ?? '#'} target="_blank" rel="noreferrer">
+            <a
+              className="btn btn-secondary btn-sm"
+              href={url ?? '#'}
+              target="_blank"
+              rel="noreferrer"
+            >
               <ExternalLink size={14} /> Open guest page
             </a>
             <button type="button" className="btn btn-secondary btn-sm" onClick={toggleClosed}>
-              {closed ? <LockOpen size={14} /> : <Lock size={14} />} {closed ? 'Reopen RSVPs' : 'Close RSVPs'}
+              {closed ? <LockOpen size={14} /> : <Lock size={14} />}{' '}
+              {closed ? 'Reopen RSVPs' : 'Close RSVPs'}
             </button>
-            <button type="button" className="btn btn-ghost btn-sm" onClick={() => token && void refresh(token)} aria-label="Refresh replies">
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm"
+              onClick={() => token && void refresh(token)}
+              aria-label="Refresh replies"
+            >
               <RefreshCw size={14} /> Refresh
             </button>
           </div>
@@ -203,22 +251,39 @@ export const LiveRsvpPanel: React.FC<Props> = ({ plan, onAddGuest, onUpdateGuest
           </div>
 
           {answers.length === 0 ? (
-            <p className="rsvp-note">No replies yet. Share the link and answers will appear here.</p>
+            <p className="rsvp-note">
+              No replies yet. Share the link and answers will appear here.
+            </p>
           ) : (
             <>
               <ul className="rsvp-list">
-                {answers.slice(-8).reverse().map((a) => (
-                  <li key={a.id}>
-                    <span className={`rsvp-dot ${a.attending ? 'is-yes' : 'is-no'}`} aria-hidden="true" />
-                    <span className="rsvp-list__name">{a.name}</span>
-                    <span className="rsvp-list__meta">
-                      {a.attending ? `Coming${a.guests ? ` +${a.guests}` : ''} · ${DIET_LABEL[a.diet]}` : "Can't make it"}
-                    </span>
-                  </li>
-                ))}
+                {answers
+                  .slice(-8)
+                  .reverse()
+                  .map((a) => (
+                    <li key={a.id}>
+                      <span
+                        className={`rsvp-dot ${a.attending ? 'is-yes' : 'is-no'}`}
+                        aria-hidden="true"
+                      />
+                      <span className="rsvp-list__name">{a.name}</span>
+                      <span className="rsvp-list__meta">
+                        {a.attending
+                          ? `Coming${a.guests ? ` +${a.guests}` : ''} · ${DIET_LABEL[a.diet]}`
+                          : "Can't make it"}
+                      </span>
+                    </li>
+                  ))}
               </ul>
-              <Button variant="secondary" onClick={importAll} disabled={pending.length === 0} leftIcon={<UserPlus size={15} />}>
-                {pending.length ? `Add ${pending.length} ${pending.length === 1 ? 'reply' : 'replies'} to guest list` : 'Guest list is up to date'}
+              <Button
+                variant="secondary"
+                onClick={importAll}
+                disabled={pending.length === 0}
+                leftIcon={<UserPlus size={15} />}
+              >
+                {pending.length
+                  ? `Add ${pending.length} ${pending.length === 1 ? 'reply' : 'replies'} to guest list`
+                  : 'Guest list is up to date'}
               </Button>
             </>
           )}

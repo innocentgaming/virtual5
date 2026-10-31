@@ -87,7 +87,7 @@ export function generateIcsCalendar(plan: EventPlan): string {
     'DESCRIPTION:Event Day Reminder',
     'TRIGGER:-P1D',
     'END:VALARM',
-    'END:VEVENT'
+    'END:VEVENT',
   );
 
   // Timeline Tasks as Calendar Milestones
@@ -108,7 +108,7 @@ export function generateIcsCalendar(plan: EventPlan): string {
       'DESCRIPTION:Task Milestone Reminder',
       'TRIGGER:-P1D',
       'END:VALARM',
-      'END:VEVENT'
+      'END:VEVENT',
     );
   });
 
@@ -126,7 +126,7 @@ export function generateIcsCalendar(plan: EventPlan): string {
         `DESCRIPTION:${escapeIcsText(`Location: ${item.location} | Role: ${item.responsibleRole}${item.notes ? ` | Notes: ${item.notes}` : ''}`)}`,
         `LOCATION:${escapeIcsText(item.location)}`,
         'STATUS:CONFIRMED',
-        'END:VEVENT'
+        'END:VEVENT',
       );
     });
   }

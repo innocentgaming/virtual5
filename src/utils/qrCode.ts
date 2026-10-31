@@ -74,7 +74,8 @@ function calculateReedSolomon(data: Uint8Array, ecCount: number): Uint8Array {
  */
 export function generateQRMatrix(text: string): boolean[][] {
   const utf8 = new TextEncoder().encode(text);
-  const spec = QR_SPECS.find((s) => s.dataCodewords >= utf8.length + 3) || QR_SPECS[QR_SPECS.length - 1];
+  const spec =
+    QR_SPECS.find((s) => s.dataCodewords >= utf8.length + 3) || QR_SPECS[QR_SPECS.length - 1];
   const size = spec.size;
 
   // Initialize matrix and reserved flags
@@ -198,12 +199,38 @@ export function generateQRMatrix(text: string): boolean[][] {
   // 8. Write format bits (Mask 0 + Error Correction L = 0b111011111000100)
   const formatBits = [1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0];
   const formatCoordsTopLeft: [number, number][] = [
-    [8, 0], [8, 1], [8, 2], [8, 3], [8, 4], [8, 5], [8, 7], [8, 8],
-    [7, 8], [5, 8], [4, 8], [3, 8], [2, 8], [1, 8], [0, 8]
+    [8, 0],
+    [8, 1],
+    [8, 2],
+    [8, 3],
+    [8, 4],
+    [8, 5],
+    [8, 7],
+    [8, 8],
+    [7, 8],
+    [5, 8],
+    [4, 8],
+    [3, 8],
+    [2, 8],
+    [1, 8],
+    [0, 8],
   ];
   const formatCoordsSplit: [number, number][] = [
-    [size - 1, 8], [size - 2, 8], [size - 3, 8], [size - 4, 8], [size - 5, 8], [size - 6, 8], [size - 7, 8],
-    [8, size - 8], [8, size - 7], [8, size - 6], [8, size - 5], [8, size - 4], [8, size - 3], [8, size - 2], [8, size - 1]
+    [size - 1, 8],
+    [size - 2, 8],
+    [size - 3, 8],
+    [size - 4, 8],
+    [size - 5, 8],
+    [size - 6, 8],
+    [size - 7, 8],
+    [8, size - 8],
+    [8, size - 7],
+    [8, size - 6],
+    [8, size - 5],
+    [8, size - 4],
+    [8, size - 3],
+    [8, size - 2],
+    [8, size - 1],
   ];
 
   for (let i = 0; i < 15; i++) {
@@ -222,7 +249,7 @@ export function generateQRMatrix(text: string): boolean[][] {
  */
 export function generateQRSvg(
   text: string,
-  options: { size?: number; fgColor?: string; bgColor?: string; quietZone?: number } = {}
+  options: { size?: number; fgColor?: string; bgColor?: string; quietZone?: number } = {},
 ): string {
   const { size = 220, fgColor = '#1f2937', bgColor = '#ffffff', quietZone = 2 } = options;
   const matrix = generateQRMatrix(text);
@@ -250,11 +277,13 @@ export function generateQRSvg(
 /**
  * Generates an SVG Data URI suitable for <img src="..."> or instant downloads
  */
-export function generateQRDataUrl(text: string, options?: { size?: number; fgColor?: string; bgColor?: string }): string {
+export function generateQRDataUrl(
+  text: string,
+  options?: { size?: number; fgColor?: string; bgColor?: string },
+): string {
   const svg = generateQRSvg(text, options);
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }
 
 export const generateQrCodeSvg = generateQRSvg;
 export const generateQrCodeDataUrl = generateQRDataUrl;
-

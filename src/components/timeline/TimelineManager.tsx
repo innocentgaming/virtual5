@@ -69,27 +69,77 @@ interface SamagriItem {
 const DEFAULT_SAMAGRI_ITEMS: SamagriItem[] = [
   // Mandap & Kalash Sthapana
   { id: 'sm-1', name: 'Copper or Brass Kalash', quantity: '1 pc', category: 'mandap' },
-  { id: 'sm-2', name: 'Fresh Green Coconut with husk (Nariyal)', quantity: '2 pcs', category: 'mandap' },
+  {
+    id: 'sm-2',
+    name: 'Fresh Green Coconut with husk (Nariyal)',
+    quantity: '2 pcs',
+    category: 'mandap',
+  },
   { id: 'sm-3', name: 'Fresh Mango Leaves (Aam ke Patte)', quantity: '11 pcs', category: 'mandap' },
-  { id: 'sm-4', name: 'Mauli / Rakshasutra Red Sacred Thread', quantity: '2 rolls', category: 'mandap' },
-  { id: 'sm-5', name: 'Betel Nuts (Supari) & Betel Leaves (Paan)', quantity: '21 pcs each', category: 'mandap' },
+  {
+    id: 'sm-4',
+    name: 'Mauli / Rakshasutra Red Sacred Thread',
+    quantity: '2 rolls',
+    category: 'mandap',
+  },
+  {
+    id: 'sm-5',
+    name: 'Betel Nuts (Supari) & Betel Leaves (Paan)',
+    quantity: '21 pcs each',
+    category: 'mandap',
+  },
 
   // Havan & Pheras
   { id: 'sm-6', name: 'Pure Desi Ghee (Cow Ghee)', quantity: '2 kg', category: 'havan' },
-  { id: 'sm-7', name: 'Dry Havan Samagri Herbs & Navgraha Wood', quantity: '1 kg packet', category: 'havan' },
+  {
+    id: 'sm-7',
+    name: 'Dry Havan Samagri Herbs & Navgraha Wood',
+    quantity: '1 kg packet',
+    category: 'havan',
+  },
   { id: 'sm-8', name: 'Camphor Tablets (Bhimseni Kapoor)', quantity: '100g', category: 'havan' },
-  { id: 'sm-9', name: 'Black Sesame Seeds (Kala Til) & Barley (Jau)', quantity: '250g each', category: 'havan' },
+  {
+    id: 'sm-9',
+    name: 'Black Sesame Seeds (Kala Til) & Barley (Jau)',
+    quantity: '250g each',
+    category: 'havan',
+  },
   { id: 'sm-10', name: 'Janeu (Sacred Cotton Thread)', quantity: '5 pcs', category: 'havan' },
 
   // Kanyadaan & Sindoor Daan
-  { id: 'sm-11', name: 'Pure Sindoor / Kumkum & Haldi Ganth (Turmeric roots)', quantity: '50g + 5 pcs', category: 'kanyadaan' },
+  {
+    id: 'sm-11',
+    name: 'Pure Sindoor / Kumkum & Haldi Ganth (Turmeric roots)',
+    quantity: '50g + 5 pcs',
+    category: 'kanyadaan',
+  },
   { id: 'sm-12', name: 'Sacred Gangajal Bottle', quantity: '1 bottle', category: 'kanyadaan' },
-  { id: 'sm-13', name: 'Silver Shagun Coin (Chandi ka Sikka)', quantity: '1 pc', category: 'kanyadaan' },
-  { id: 'sm-14', name: 'Akshat (Unbroken White Rice grains with turmeric)', quantity: '500g', category: 'kanyadaan' },
+  {
+    id: 'sm-13',
+    name: 'Silver Shagun Coin (Chandi ka Sikka)',
+    quantity: '1 pc',
+    category: 'kanyadaan',
+  },
+  {
+    id: 'sm-14',
+    name: 'Akshat (Unbroken White Rice grains with turmeric)',
+    quantity: '500g',
+    category: 'kanyadaan',
+  },
 
   // Swagat & Varmala
-  { id: 'sm-15', name: 'Fresh Rose & Jasmine Varmalas (in ice box storage)', quantity: '2 garlands', category: 'swagat' },
-  { id: 'sm-16', name: 'Fresh Rose Petal Baskets (Pushp Varsha for Pheras)', quantity: '5 baskets', category: 'swagat' },
+  {
+    id: 'sm-15',
+    name: 'Fresh Rose & Jasmine Varmalas (in ice box storage)',
+    quantity: '2 garlands',
+    category: 'swagat',
+  },
+  {
+    id: 'sm-16',
+    name: 'Fresh Rose Petal Baskets (Pushp Varsha for Pheras)',
+    quantity: '5 baskets',
+    category: 'swagat',
+  },
 ];
 
 interface TaskNodeItemProps {
@@ -100,201 +150,241 @@ interface TaskNodeItemProps {
   onDelete: (id: string, title: string) => void;
 }
 
-const TaskNodeItem = React.memo<TaskNodeItemProps>(({
-  task,
-  todayTime,
-  taskMap,
-  onToggle,
-  onDelete,
-}) => {
-  const taskDate = new Date(task.dueDate);
-  taskDate.setHours(0, 0, 0, 0);
-  const isOverdue = !task.completed && taskDate.getTime() < todayTime;
-  const daysOverdue = isOverdue
-    ? Math.ceil((todayTime - taskDate.getTime()) / (1000 * 60 * 60 * 24))
-    : 0;
+const TaskNodeItem = React.memo<TaskNodeItemProps>(
+  ({ task, todayTime, taskMap, onToggle, onDelete }) => {
+    const taskDate = new Date(task.dueDate);
+    taskDate.setHours(0, 0, 0, 0);
+    const isOverdue = !task.completed && taskDate.getTime() < todayTime;
+    const daysOverdue = isOverdue
+      ? Math.ceil((todayTime - taskDate.getTime()) / (1000 * 60 * 60 * 24))
+      : 0;
 
-  // Prerequisites resolution via Map O(1)
-  const prereqTasks = (task.dependencies || [])
-    .map((depId) => taskMap.get(depId))
-    .filter(Boolean) as TaskItem[];
+    // Prerequisites resolution via Map O(1)
+    const prereqTasks = (task.dependencies || [])
+      .map((depId) => taskMap.get(depId))
+      .filter(Boolean) as TaskItem[];
 
-  const isBlocked = prereqTasks.some((p) => !p.completed);
+    const isBlocked = prereqTasks.some((p) => !p.completed);
 
-  return (
-    <li
-      className="timeline-node"
-      style={{
-        position: 'relative',
-        display: 'flex',
-        alignItems: 'flex-start',
-        gap: 'var(--space-3)',
-        padding: 'var(--space-4)',
-        borderRadius: 'var(--radius-lg)',
-        backgroundColor: task.completed ? 'var(--surface-subtle)' : 'var(--surface-raised)',
-        border: '1px solid var(--border)',
-        borderLeft: task.completed
-          ? '5px solid var(--color-success)'
-          : isOverdue
-          ? '5px solid var(--color-danger)'
-          : task.priority === 'urgent'
-          ? '5px solid var(--color-warning)'
-          : '5px solid var(--accent-primary)',
-        boxShadow: 'var(--shadow-sm)',
-        transition: 'all var(--transition-fast)',
-      }}
-    >
-      {/* Node Marker Dot */}
-      <div
+    return (
+      <li
+        className="timeline-node"
         style={{
-          position: 'absolute',
-          left: '-1.85rem',
-          top: '1.25rem',
-          width: '14px',
-          height: '14px',
-          borderRadius: '50%',
-          backgroundColor: task.completed
-            ? 'var(--color-success)'
+          position: 'relative',
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: 'var(--space-3)',
+          padding: 'var(--space-4)',
+          borderRadius: 'var(--radius-lg)',
+          backgroundColor: task.completed ? 'var(--surface-subtle)' : 'var(--surface-raised)',
+          border: '1px solid var(--border)',
+          borderLeft: task.completed
+            ? '5px solid var(--color-success)'
             : isOverdue
-            ? 'var(--color-danger)'
-            : task.priority === 'urgent'
-            ? 'var(--color-warning)'
-            : 'var(--accent-primary)',
-          border: '2px solid var(--surface)',
-          boxShadow: '0 0 0 2px var(--border)',
+              ? '5px solid var(--color-danger)'
+              : task.priority === 'urgent'
+                ? '5px solid var(--color-warning)'
+                : '5px solid var(--accent-primary)',
+          boxShadow: 'var(--shadow-sm)',
+          transition: 'all var(--transition-fast)',
         }}
-        aria-hidden="true"
-      />
+      >
+        {/* Node Marker Dot */}
+        <div
+          style={{
+            position: 'absolute',
+            left: '-1.85rem',
+            top: '1.25rem',
+            width: '14px',
+            height: '14px',
+            borderRadius: '50%',
+            backgroundColor: task.completed
+              ? 'var(--color-success)'
+              : isOverdue
+                ? 'var(--color-danger)'
+                : task.priority === 'urgent'
+                  ? 'var(--color-warning)'
+                  : 'var(--accent-primary)',
+            border: '2px solid var(--surface)',
+            boxShadow: '0 0 0 2px var(--border)',
+          }}
+          aria-hidden="true"
+        />
 
-      {/* Inline Complete Checkbox */}
-      <input
-        type="checkbox"
-        checked={task.completed}
-        onChange={() => onToggle(task)}
-        style={{
-          width: '20px',
-          height: '20px',
-          marginTop: '2px',
-          cursor: 'pointer',
-          accentColor: 'var(--accent-primary)',
-        }}
-        aria-label={`Mark task completed: ${task.title}`}
-      />
+        {/* Inline Complete Checkbox */}
+        <input
+          type="checkbox"
+          checked={task.completed}
+          onChange={() => onToggle(task)}
+          style={{
+            width: '20px',
+            height: '20px',
+            marginTop: '2px',
+            cursor: 'pointer',
+            accentColor: 'var(--accent-primary)',
+          }}
+          aria-label={`Mark task completed: ${task.title}`}
+        />
 
-      {/* Task Content */}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
-            <h4
+        {/* Task Content */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 'var(--space-2)',
+              flexWrap: 'wrap',
+            }}
+          >
+            <div
               style={{
-                fontSize: 'var(--text-base)',
-                fontWeight: 700,
-                color: 'var(--text)',
-                margin: 0,
-                textDecoration: task.completed ? 'line-through' : 'none',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 'var(--space-2)',
+                flexWrap: 'wrap',
               }}
             >
-              {task.title}
-            </h4>
-
-            {/* Blocked lock icon & tooltip */}
-            {isBlocked && (
-              <span
-                title="Blocked: Requires prerequisite task to be completed first"
+              <h4
                 style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  color: 'var(--color-warning-text)',
-                  fontSize: 'var(--text-xs)',
+                  fontSize: 'var(--text-base)',
                   fontWeight: 700,
+                  color: 'var(--text)',
+                  margin: 0,
+                  textDecoration: task.completed ? 'line-through' : 'none',
                 }}
               >
-                <Lock size={14} color="var(--color-warning)" />
-                <span>Blocked</span>
-              </span>
+                {task.title}
+              </h4>
+
+              {/* Blocked lock icon & tooltip */}
+              {isBlocked && (
+                <span
+                  title="Blocked: Requires prerequisite task to be completed first"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    color: 'var(--color-warning-text)',
+                    fontSize: 'var(--text-xs)',
+                    fontWeight: 700,
+                  }}
+                >
+                  <Lock size={14} color="var(--color-warning)" />
+                  <span>Blocked</span>
+                </span>
+              )}
+            </div>
+
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => onDelete(task.id, task.title)}
+              style={{ padding: '2px 8px', color: 'var(--color-danger)' }}
+              title="Delete task"
+              aria-label={`Delete task ${task.title}`}
+            >
+              <Trash2 size={13} />
+            </Button>
+          </div>
+
+          {/* Task Meta: Due Date, Category, Status badge */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 'var(--space-3)',
+              marginTop: '6px',
+              flexWrap: 'wrap',
+              fontSize: 'var(--text-xs)',
+            }}
+          >
+            <span
+              style={{
+                color: 'var(--text-muted)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+              }}
+            >
+              <Clock size={12} />
+              Due: <time dateTime={task.dueDate}>{task.dueDate}</time>
+            </span>
+
+            <Badge variant="neutral">{CATEGORY_NAMES[task.category] || task.category}</Badge>
+
+            {/* Status with Text + Icon (Never color alone) */}
+            {task.completed ? (
+              <Badge variant="success">
+                <Check size={12} style={{ marginRight: '4px' }} /> Done
+              </Badge>
+            ) : isOverdue ? (
+              <Badge variant="danger">
+                <AlertCircle size={12} style={{ marginRight: '4px' }} />
+                Overdue ({daysOverdue} {daysOverdue === 1 ? 'day' : 'days'} overdue)
+              </Badge>
+            ) : task.priority === 'urgent' ? (
+              <Badge variant="warning">
+                <AlertCircle size={12} style={{ marginRight: '4px' }} /> Urgent
+              </Badge>
+            ) : (
+              <Badge variant="info">
+                <CalendarDays size={12} style={{ marginRight: '4px' }} /> Upcoming
+              </Badge>
             )}
           </div>
 
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => onDelete(task.id, task.title)}
-            style={{ padding: '2px 8px', color: 'var(--color-danger)' }}
-            title="Delete task"
-            aria-label={`Delete task ${task.title}`}
-          >
-            <Trash2 size={13} />
-          </Button>
-        </div>
+          {/* Prerequisite chips */}
+          {prereqTasks.length > 0 && (
+            <div
+              style={{ display: 'flex', gap: 'var(--space-2)', marginTop: '8px', flexWrap: 'wrap' }}
+            >
+              {prereqTasks.map((prereq) => (
+                <span
+                  key={prereq.id}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    fontSize: 'var(--text-xs)',
+                    fontWeight: 600,
+                    padding: '2px 8px',
+                    borderRadius: 'var(--radius-sm)',
+                    background: prereq.completed
+                      ? 'var(--color-success-bg)'
+                      : 'var(--color-warning-bg)',
+                    color: prereq.completed
+                      ? 'var(--color-success-text)'
+                      : 'var(--color-warning-text)',
+                    border: `1px solid ${prereq.completed ? 'var(--color-success-border)' : 'var(--color-warning-border)'}`,
+                  }}
+                  title={
+                    prereq.completed ? 'Prerequisite completed' : 'Prerequisite pending completion'
+                  }
+                >
+                  {prereq.completed ? `✓ ${prereq.title}` : `⚠ Needs: ${prereq.title}`}
+                </span>
+              ))}
+            </div>
+          )}
 
-        {/* Task Meta: Due Date, Category, Status badge */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginTop: '6px', flexWrap: 'wrap', fontSize: 'var(--text-xs)' }}>
-          <span style={{ color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-            <Clock size={12} />
-            Due: <time dateTime={task.dueDate}>{task.dueDate}</time>
-          </span>
-
-          <Badge variant="neutral">
-            {CATEGORY_NAMES[task.category] || task.category}
-          </Badge>
-
-          {/* Status with Text + Icon (Never color alone) */}
-          {task.completed ? (
-            <Badge variant="success">
-              <Check size={12} style={{ marginRight: '4px' }} /> Done
-            </Badge>
-          ) : isOverdue ? (
-            <Badge variant="danger">
-              <AlertCircle size={12} style={{ marginRight: '4px' }} />
-              Overdue ({daysOverdue} {daysOverdue === 1 ? 'day' : 'days'} overdue)
-            </Badge>
-          ) : task.priority === 'urgent' ? (
-            <Badge variant="warning">
-              <AlertCircle size={12} style={{ marginRight: '4px' }} /> Urgent
-            </Badge>
-          ) : (
-            <Badge variant="info">
-              <CalendarDays size={12} style={{ marginRight: '4px' }} /> Upcoming
-            </Badge>
+          {task.notes && (
+            <p
+              style={{
+                margin: '8px 0 0 0',
+                fontSize: 'var(--text-xs)',
+                color: 'var(--text-muted)',
+                lineHeight: 1.5,
+              }}
+            >
+              {task.notes}
+            </p>
           )}
         </div>
-
-        {/* Prerequisite chips */}
-        {prereqTasks.length > 0 && (
-          <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: '8px', flexWrap: 'wrap' }}>
-            {prereqTasks.map((prereq) => (
-              <span
-                key={prereq.id}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  fontSize: 'var(--text-xs)',
-                  fontWeight: 600,
-                  padding: '2px 8px',
-                  borderRadius: 'var(--radius-sm)',
-                  background: prereq.completed ? 'var(--color-success-bg)' : 'var(--color-warning-bg)',
-                  color: prereq.completed ? 'var(--color-success-text)' : 'var(--color-warning-text)',
-                  border: `1px solid ${prereq.completed ? 'var(--color-success-border)' : 'var(--color-warning-border)'}`,
-                }}
-                title={prereq.completed ? 'Prerequisite completed' : 'Prerequisite pending completion'}
-              >
-                {prereq.completed ? `✓ ${prereq.title}` : `⚠ Needs: ${prereq.title}`}
-              </span>
-            ))}
-          </div>
-        )}
-
-        {task.notes && (
-          <p style={{ margin: '8px 0 0 0', fontSize: 'var(--text-xs)', color: 'var(--text-muted)', lineHeight: 1.5 }}>
-            {task.notes}
-          </p>
-        )}
-      </div>
-    </li>
-  );
-});
+      </li>
+    );
+  },
+);
 
 export const TimelineManager: React.FC<TimelineManagerProps> = ({
   plan,
@@ -310,8 +400,8 @@ export const TimelineManager: React.FC<TimelineManagerProps> = ({
   // New task form fields
   const [newTitle, setNewTitle] = useState('');
   const [newCategory, setNewCategory] = useState<TaskCategory>('vendors');
-  const [newDueDate, setNewDueDate] = useState(() =>
-    new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0]
+  const [newDueDate, setNewDueDate] = useState(
+    () => new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0],
   );
   const [newPriority, setNewPriority] = useState<TaskPriority>('medium');
   const [newDependency, setNewDependency] = useState<string>('');
@@ -421,7 +511,6 @@ export const TimelineManager: React.FC<TimelineManagerProps> = ({
     };
   }, [plan.tasks, today]);
 
-
   // Filter tasks
   const filteredTasks = useMemo(() => {
     const startOfWeek = new Date(today);
@@ -437,7 +526,9 @@ export const TimelineManager: React.FC<TimelineManagerProps> = ({
       if (filter === 'completed') return task.completed;
       if (filter === 'overdue') return isOverdue;
       if (filter === 'this_week') {
-        return taskDate.getTime() >= startOfWeek.getTime() && taskDate.getTime() <= endOfWeek.getTime();
+        return (
+          taskDate.getTime() >= startOfWeek.getTime() && taskDate.getTime() <= endOfWeek.getTime()
+        );
       }
       return true;
     });
@@ -456,7 +547,7 @@ export const TimelineManager: React.FC<TimelineManagerProps> = ({
       const eventTime = new Date(plan.eventDate).getTime();
       const taskTime = new Date(t.dueDate).getTime();
       const daysBefore = Math.ceil((eventTime - taskTime) / (1000 * 60 * 60 * 24));
-      let pid: typeof PHASES[number]['id'] = 'phase_final_week';
+      let pid: (typeof PHASES)[number]['id'] = 'phase_final_week';
       if (daysBefore >= 90) pid = 'phase_90_plus';
       else if (daysBefore >= 30) pid = 'phase_30_days';
       else if (daysBefore >= 14) pid = 'phase_2_weeks';
@@ -469,18 +560,24 @@ export const TimelineManager: React.FC<TimelineManagerProps> = ({
 
   const taskMap = useMemo(() => new Map(plan.tasks.map((t) => [t.id, t])), [plan.tasks]);
 
-  const handleToggle = useCallback((task: TaskItem) => {
-    onToggleTask(task.id);
-    toast.showToast(
-      task.completed ? `Task reopened: ${task.title}` : `Completed task: ${task.title} 🎉`,
-      'success'
-    );
-  }, [onToggleTask, toast]);
+  const handleToggle = useCallback(
+    (task: TaskItem) => {
+      onToggleTask(task.id);
+      toast.showToast(
+        task.completed ? `Task reopened: ${task.title}` : `Completed task: ${task.title} 🎉`,
+        'success',
+      );
+    },
+    [onToggleTask, toast],
+  );
 
-  const handleDelete = useCallback((id: string, title: string) => {
-    onDeleteTask(id);
-    toast.showToast(`Deleted task: ${title}`, 'info');
-  }, [onDeleteTask, toast]);
+  const handleDelete = useCallback(
+    (id: string, title: string) => {
+      onDeleteTask(id);
+      toast.showToast(`Deleted task: ${title}`, 'info');
+    },
+    [onDeleteTask, toast],
+  );
 
   const handleCreateTask = (e: React.FormEvent) => {
     e.preventDefault();
@@ -507,8 +604,22 @@ export const TimelineManager: React.FC<TimelineManagerProps> = ({
   if (isLoading) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
-        <div style={{ height: '90px', background: 'var(--surface-raised)', borderRadius: 'var(--radius-lg)' }} className="skeleton" />
-        <div style={{ height: '350px', background: 'var(--surface-raised)', borderRadius: 'var(--radius-lg)' }} className="skeleton" />
+        <div
+          style={{
+            height: '90px',
+            background: 'var(--surface-raised)',
+            borderRadius: 'var(--radius-lg)',
+          }}
+          className="skeleton"
+        />
+        <div
+          style={{
+            height: '350px',
+            background: 'var(--surface-raised)',
+            borderRadius: 'var(--radius-lg)',
+          }}
+          className="skeleton"
+        />
       </div>
     );
   }
@@ -524,7 +635,8 @@ export const TimelineManager: React.FC<TimelineManagerProps> = ({
           <div>
             <div style={{ fontWeight: 700 }}>Event Date Has Passed ({plan.eventDate})</div>
             <p style={{ fontSize: 'var(--text-sm)' }}>
-              This event occurred in the past. To generate an active preparation schedule, update the event date under Event Setup.
+              This event occurred in the past. To generate an active preparation schedule, update
+              the event date under Event Setup.
             </p>
           </div>
         </div>
@@ -535,10 +647,13 @@ export const TimelineManager: React.FC<TimelineManagerProps> = ({
           <AlertCircle size={22} style={{ flexShrink: 0 }} />
           <div>
             <div style={{ fontWeight: 700 }}>
-              Short-Notice Horizon: {daysUntilEvent} Days Remaining ({daysUntilEvent < 14 ? '<14 Days Urgent Triage' : '<21 Days Compression'})
+              Short-Notice Horizon: {daysUntilEvent} Days Remaining (
+              {daysUntilEvent < 14 ? '<14 Days Urgent Triage' : '<21 Days Compression'})
             </div>
             <p style={{ fontSize: 'var(--text-sm)', marginTop: '2px' }}>
-              Standard multi-month lead times have been compressed into rapid sprints. Prioritize critical path tasks: lock venue contract immediately, finalize caterer headcount, and avoid custom manufacturing.
+              Standard multi-month lead times have been compressed into rapid sprints. Prioritize
+              critical path tasks: lock venue contract immediately, finalize caterer headcount, and
+              avoid custom manufacturing.
             </p>
           </div>
         </div>
@@ -580,15 +695,44 @@ export const TimelineManager: React.FC<TimelineManagerProps> = ({
 
         {/* Overall Completion Bar */}
         <div style={{ marginBottom: 'var(--space-5)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
-            <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: 'var(--space-2)',
+            }}
+          >
+            <span
+              style={{
+                fontSize: 'var(--text-xs)',
+                fontWeight: 700,
+                color: 'var(--text-muted)',
+                textTransform: 'uppercase',
+              }}
+            >
               Overall Timeline Execution
             </span>
-            <span className="tabular-nums" style={{ fontSize: 'var(--text-sm)', fontWeight: 800, color: 'var(--accent-primary)' }}>
+            <span
+              className="tabular-nums"
+              style={{
+                fontSize: 'var(--text-sm)',
+                fontWeight: 800,
+                color: 'var(--accent-primary)',
+              }}
+            >
               {audit.completedCount} of {audit.total} tasks completed ({audit.progressPct}%)
             </span>
           </div>
-          <div style={{ width: '100%', height: '8px', background: 'var(--border)', borderRadius: 'var(--radius-pill)', overflow: 'hidden' }}>
+          <div
+            style={{
+              width: '100%',
+              height: '8px',
+              background: 'var(--border)',
+              borderRadius: 'var(--radius-pill)',
+              overflow: 'hidden',
+            }}
+          >
             <div
               style={{
                 width: `${audit.progressPct}%`,
@@ -601,7 +745,9 @@ export const TimelineManager: React.FC<TimelineManagerProps> = ({
         </div>
 
         {/* Filter Pills with Counts */}
-        <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap', alignItems: 'center' }}>
+        <div
+          style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap', alignItems: 'center' }}
+        >
           <Button
             variant={filter === 'all' ? 'primary' : 'secondary'}
             size="sm"
@@ -613,7 +759,13 @@ export const TimelineManager: React.FC<TimelineManagerProps> = ({
             variant={filter === 'overdue' ? 'primary' : 'secondary'}
             size="sm"
             onClick={() => setFilter('overdue')}
-            style={filter === 'overdue' ? {} : audit.overdueCount > 0 ? { borderColor: 'var(--color-danger)', color: 'var(--color-danger)' } : {}}
+            style={
+              filter === 'overdue'
+                ? {}
+                : audit.overdueCount > 0
+                  ? { borderColor: 'var(--color-danger)', color: 'var(--color-danger)' }
+                  : {}
+            }
             leadingIcon={<AlertCircle size={13} />}
           >
             Overdue ({audit.overdueCount})
@@ -671,7 +823,12 @@ export const TimelineManager: React.FC<TimelineManagerProps> = ({
                 <div style={{ marginBottom: 'var(--space-3)' }}>
                   <h3
                     id={`phase-heading-${phase.id}`}
-                    style={{ fontSize: 'var(--text-base)', fontWeight: 800, color: 'var(--text)', margin: '0 0 2px 0' }}
+                    style={{
+                      fontSize: 'var(--text-base)',
+                      fontWeight: 800,
+                      color: 'var(--text)',
+                      margin: '0 0 2px 0',
+                    }}
                   >
                     {phase.title}
                   </h3>
@@ -748,7 +905,13 @@ export const TimelineManager: React.FC<TimelineManagerProps> = ({
               />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-4)' }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: 'var(--space-4)',
+              }}
+            >
               <div className="form-group">
                 <label htmlFor="tsk-category" className="form-label">
                   <span>Category</span>
@@ -832,11 +995,28 @@ export const TimelineManager: React.FC<TimelineManagerProps> = ({
               />
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
-              <Button variant="secondary" size="md" type="button" onClick={() => setShowAddModal(false)}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                gap: 'var(--space-3)',
+                marginTop: 'var(--space-2)',
+              }}
+            >
+              <Button
+                variant="secondary"
+                size="md"
+                type="button"
+                onClick={() => setShowAddModal(false)}
+              >
                 Cancel
               </Button>
-              <Button variant="primary" size="md" type="submit" leadingIcon={<Sparkles size={16} />}>
+              <Button
+                variant="primary"
+                size="md"
+                type="submit"
+                leadingIcon={<Sparkles size={16} />}
+              >
                 Save Task
               </Button>
             </div>
@@ -870,9 +1050,12 @@ export const TimelineManager: React.FC<TimelineManagerProps> = ({
           >
             <div>
               <div style={{ fontSize: 'var(--text-sm)', fontWeight: 700 }}>
-                Procurement Readiness: {samagriPreparedCount} of {DEFAULT_SAMAGRI_ITEMS.length} items procured
+                Procurement Readiness: {samagriPreparedCount} of {DEFAULT_SAMAGRI_ITEMS.length}{' '}
+                items procured
               </div>
-              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginTop: '2px' }}>
+              <div
+                style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginTop: '2px' }}
+              >
                 Handover checklist to Pandit Ji or puja bhandaar store.
               </div>
             </div>
@@ -881,7 +1064,13 @@ export const TimelineManager: React.FC<TimelineManagerProps> = ({
               variant="outline"
               size="sm"
               onClick={handleCopySamagri}
-              leadingIcon={copiedSamagri ? <Check size={14} color="var(--color-success)" /> : <Copy size={14} />}
+              leadingIcon={
+                copiedSamagri ? (
+                  <Check size={14} color="var(--color-success)" />
+                ) : (
+                  <Copy size={14} />
+                )
+              }
               id="btn-copy-samagri"
             >
               {copiedSamagri ? 'Copied to Clipboard!' : 'Copy for WhatsApp'}
@@ -889,7 +1078,15 @@ export const TimelineManager: React.FC<TimelineManagerProps> = ({
           </div>
 
           {/* Progress Bar */}
-          <div style={{ width: '100%', height: '6px', background: 'var(--border)', borderRadius: 'var(--radius-pill)', overflow: 'hidden' }}>
+          <div
+            style={{
+              width: '100%',
+              height: '6px',
+              background: 'var(--border)',
+              borderRadius: 'var(--radius-pill)',
+              overflow: 'hidden',
+            }}
+          >
             <div
               style={{
                 width: `${(samagriPreparedCount / DEFAULT_SAMAGRI_ITEMS.length) * 100}%`,
@@ -901,7 +1098,16 @@ export const TimelineManager: React.FC<TimelineManagerProps> = ({
           </div>
 
           {/* Categorized Checklists */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', maxHeight: '380px', overflowY: 'auto', paddingRight: 'var(--space-1)' }}>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 'var(--space-4)',
+              maxHeight: '380px',
+              overflowY: 'auto',
+              paddingRight: 'var(--space-1)',
+            }}
+          >
             {[
               { key: 'mandap', title: '1. Mandap & Kalash Sthapana', badge: 'Sacred Altar' },
               { key: 'havan', title: '2. Havan Kund & Saptapadi Pheras', badge: 'Sacred Fire' },
@@ -910,12 +1116,28 @@ export const TimelineManager: React.FC<TimelineManagerProps> = ({
             ].map((section) => {
               const items = DEFAULT_SAMAGRI_ITEMS.filter((i) => i.category === section.key);
               return (
-                <div key={section.key} style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: 'var(--space-3)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-2)' }}>
+                <div
+                  key={section.key}
+                  style={{
+                    border: '1px solid var(--border)',
+                    borderRadius: 'var(--radius-md)',
+                    padding: 'var(--space-3)',
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: 'var(--space-2)',
+                    }}
+                  >
                     <h4 style={{ margin: 0, fontSize: 'var(--text-sm)', fontWeight: 700 }}>
                       {section.title}
                     </h4>
-                    <Badge variant="neutral" size="sm">{section.badge}</Badge>
+                    <Badge variant="neutral" size="sm">
+                      {section.badge}
+                    </Badge>
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
@@ -931,20 +1153,30 @@ export const TimelineManager: React.FC<TimelineManagerProps> = ({
                             padding: '6px 10px',
                             borderRadius: 'var(--radius-sm)',
                             background: isChecked ? 'rgba(34, 197, 94, 0.08)' : 'var(--surface)',
-                            border: isChecked ? '1px solid rgba(34, 197, 94, 0.3)' : '1px solid var(--border)',
+                            border: isChecked
+                              ? '1px solid rgba(34, 197, 94, 0.3)'
+                              : '1px solid var(--border)',
                             cursor: 'pointer',
                             fontSize: 'var(--text-xs)',
                             transition: 'all 0.15s ease',
                           }}
                         >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                          <div
+                            style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}
+                          >
                             <input
                               type="checkbox"
                               checked={isChecked}
                               onChange={() => toggleSamagri(item.id)}
                               style={{ width: '15px', height: '15px', cursor: 'pointer' }}
                             />
-                            <span style={{ textDecoration: isChecked ? 'line-through' : 'none', color: isChecked ? 'var(--text-muted)' : 'var(--text)', fontWeight: isChecked ? 500 : 600 }}>
+                            <span
+                              style={{
+                                textDecoration: isChecked ? 'line-through' : 'none',
+                                color: isChecked ? 'var(--text-muted)' : 'var(--text)',
+                                fontWeight: isChecked ? 500 : 600,
+                              }}
+                            >
                               {item.name}
                             </span>
                           </div>
@@ -960,7 +1192,14 @@ export const TimelineManager: React.FC<TimelineManagerProps> = ({
             })}
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--space-2)', marginTop: 'var(--space-1)' }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              gap: 'var(--space-2)',
+              marginTop: 'var(--space-1)',
+            }}
+          >
             <Button variant="primary" size="md" onClick={() => setShowSamagriModal(false)}>
               Close Checklist
             </Button>

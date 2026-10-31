@@ -8,25 +8,24 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  const showToast = useCallback((message: string, type: ToastType = 'info', duration = 3500) => {
-    const id = `toast-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-    setToasts((prev) => [...prev, { id, message, type, duration }]);
+  const showToast = useCallback(
+    (message: string, type: ToastType = 'info', duration = 3500) => {
+      const id = `toast-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+      setToasts((prev) => [...prev, { id, message, type, duration }]);
 
-    if (duration > 0) {
-      setTimeout(() => {
-        removeToast(id);
-      }, duration);
-    }
-  }, [removeToast]);
+      if (duration > 0) {
+        setTimeout(() => {
+          removeToast(id);
+        }, duration);
+      }
+    },
+    [removeToast],
+  );
 
   return (
     <ToastContext.Provider value={{ showToast, removeToast }}>
       {children}
-      <div
-        className="ui-toast-container"
-        aria-live="polite"
-        aria-atomic="false"
-      >
+      <div className="ui-toast-container" aria-live="polite" aria-atomic="false">
         {toasts.map((toast) => (
           <div
             key={toast.id}
@@ -57,7 +56,12 @@ export interface StandaloneToastProps {
   onDismiss?: () => void;
 }
 
-export const Toast: React.FC<StandaloneToastProps> = ({ message, type = 'info', onClose, onDismiss }) => {
+export const Toast: React.FC<StandaloneToastProps> = ({
+  message,
+  type = 'info',
+  onClose,
+  onDismiss,
+}) => {
   const handleDismiss = onClose || onDismiss;
 
   return (

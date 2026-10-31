@@ -64,8 +64,22 @@ describe('Intelligent Timeline & Task Auditing', () => {
 
   it('calculates 100% progress when all tasks are marked completed', () => {
     const tasks: TaskItem[] = [
-      { id: 't1', title: 'Task 1', category: 'venue', dueDate: '2026-08-01', completed: true, priority: 'urgent' },
-      { id: 't2', title: 'Task 2', category: 'final', dueDate: '2026-09-01', completed: true, priority: 'high' },
+      {
+        id: 't1',
+        title: 'Task 1',
+        category: 'venue',
+        dueDate: '2026-08-01',
+        completed: true,
+        priority: 'urgent',
+      },
+      {
+        id: 't2',
+        title: 'Task 2',
+        category: 'final',
+        dueDate: '2026-09-01',
+        completed: true,
+        priority: 'high',
+      },
     ];
 
     const audit = auditTimelineTasks(tasks, '2026-10-21');

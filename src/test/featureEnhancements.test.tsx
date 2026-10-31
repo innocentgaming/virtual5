@@ -1,12 +1,17 @@
 import { describe, it, expect } from 'vitest';
 import { generateQRSvg, generateQrCodeSvg, generateQrCodeDataUrl } from '../utils/qrCode';
-import { convertFromInr, formatWithCurrency, CURRENCY_CONFIGS, CurrencyCode } from '../utils/formatters';
+import {
+  convertFromInr,
+  formatWithCurrency,
+  CURRENCY_CONFIGS,
+  CurrencyCode,
+} from '../utils/formatters';
 
 describe('Feature Enhancements: QR Code Generator', () => {
   it('generates valid SVG for arbitrary wedding website URLs', () => {
     const url = 'https://celebration.example.com/events/aarav-ananya';
     const svg = generateQrCodeSvg(url, { size: 240, quietZone: 2 });
-    
+
     expect(svg).toContain('<svg');
     expect(svg).toContain('viewBox="0 0 240 240"');
     expect(svg).toContain('fill="#1f2937"');
@@ -16,7 +21,7 @@ describe('Feature Enhancements: QR Code Generator', () => {
   it('generates data URL suitable for img src attributes', () => {
     const url = 'https://eventwise.app/rsvp/12345';
     const dataUrl = generateQrCodeDataUrl(url, { size: 180 });
-    
+
     expect(dataUrl.startsWith('data:image/svg+xml;utf8,')).toBe(true);
     expect(decodeURIComponent(dataUrl)).toContain('<svg');
   });

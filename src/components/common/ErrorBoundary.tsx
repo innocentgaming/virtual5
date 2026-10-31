@@ -20,11 +20,14 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    if (typeof window !== 'undefined' && (window as unknown as { reportClientError?: (err: unknown, ctx: string) => void }).reportClientError) {
-      (window as unknown as { reportClientError: (err: unknown, ctx: string) => void }).reportClientError(
-        error,
-        errorInfo.componentStack || 'ErrorBoundary'
-      );
+    if (
+      typeof window !== 'undefined' &&
+      (window as unknown as { reportClientError?: (err: unknown, ctx: string) => void })
+        .reportClientError
+    ) {
+      (
+        window as unknown as { reportClientError: (err: unknown, ctx: string) => void }
+      ).reportClientError(error, errorInfo.componentStack || 'ErrorBoundary');
     }
   }
 
@@ -71,11 +74,26 @@ export class ErrorBoundary extends Component<Props, State> {
               boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)',
             }}
           >
-            <h1 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1rem', color: '#f87171' }}>
+            <h1
+              style={{
+                fontSize: '1.5rem',
+                fontWeight: 700,
+                marginBottom: '1rem',
+                color: '#f87171',
+              }}
+            >
               Something went wrong
             </h1>
-            <p style={{ fontSize: '0.95rem', lineHeight: '1.6', marginBottom: '1.5rem', color: '#94a3b8' }}>
-              EventWise AI encountered an unexpected client error. Your event data has been safely preserved in local storage.
+            <p
+              style={{
+                fontSize: '0.95rem',
+                lineHeight: '1.6',
+                marginBottom: '1.5rem',
+                color: '#94a3b8',
+              }}
+            >
+              EventWise AI encountered an unexpected client error. Your event data has been safely
+              preserved in local storage.
             </p>
             {this.state.error && (
               <pre
@@ -93,7 +111,14 @@ export class ErrorBoundary extends Component<Props, State> {
                 {this.state.error.message}
               </pre>
             )}
-            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <div
+              style={{
+                display: 'flex',
+                gap: '0.75rem',
+                justifyContent: 'center',
+                flexWrap: 'wrap',
+              }}
+            >
               <button
                 type="button"
                 onClick={this.handleReload}

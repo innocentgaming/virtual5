@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { formatCurrency, formatNumber, formatPercent, formatIndianShort } from '../utils/formatters';
+import {
+  formatCurrency,
+  formatNumber,
+  formatPercent,
+  formatIndianShort,
+} from '../utils/formatters';
 
 describe('Formatting Utilities', () => {
   it('formats positive currency amounts with en-IN digit separators and Rupee symbol', () => {

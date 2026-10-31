@@ -5,14 +5,32 @@ import type { BudgetItem } from '../types/event';
 describe('Budget Calculations & Boundary Tests', () => {
   it('calculates total estimated cost and remaining balance correctly with contingency', () => {
     const items: BudgetItem[] = [
-      { id: '1', name: 'Venue Rental', category: 'venue', estimatedCost: 5000, priority: 'essential' },
-      { id: '2', name: 'Catering Buffet', category: 'catering', estimatedCost: 3000, priority: 'essential' },
-      { id: '3', name: 'Photography', category: 'photography', estimatedCost: 1500, priority: 'recommended' },
+      {
+        id: '1',
+        name: 'Venue Rental',
+        category: 'venue',
+        estimatedCost: 5000,
+        priority: 'essential',
+      },
+      {
+        id: '2',
+        name: 'Catering Buffet',
+        category: 'catering',
+        estimatedCost: 3000,
+        priority: 'essential',
+      },
+      {
+        id: '3',
+        name: 'Photography',
+        category: 'photography',
+        estimatedCost: 1500,
+        priority: 'recommended',
+      },
     ];
 
     // Total budget = 10,000; Contingency rate = 10% (1,000)
     // Non-contingency = 9,500; Total estimated = 9,500 + 1,000 = 10,500
-    const summary = calculateBudgetSummary(10000, items, 0.10);
+    const summary = calculateBudgetSummary(10000, items, 0.1);
 
     expect(summary.totalBudget).toBe(10000);
     expect(summary.contingencyAmount).toBe(1000);
@@ -27,12 +45,24 @@ describe('Budget Calculations & Boundary Tests', () => {
 
   it('handles within-budget scenario with surplus balance', () => {
     const items: BudgetItem[] = [
-      { id: '1', name: 'Hall Rental', category: 'venue', estimatedCost: 2000, priority: 'essential' },
-      { id: '2', name: 'DJ Music', category: 'entertainment', estimatedCost: 800, priority: 'recommended' },
+      {
+        id: '1',
+        name: 'Hall Rental',
+        category: 'venue',
+        estimatedCost: 2000,
+        priority: 'essential',
+      },
+      {
+        id: '2',
+        name: 'DJ Music',
+        category: 'entertainment',
+        estimatedCost: 800,
+        priority: 'recommended',
+      },
     ];
 
     // Budget = 5,000; Contingency 10% = 500. Total = 2,800 + 500 = 3,300
-    const summary = calculateBudgetSummary(5000, items, 0.10);
+    const summary = calculateBudgetSummary(5000, items, 0.1);
 
     expect(summary.totalEstimated).toBe(3300);
     expect(summary.remainingBalance).toBe(1700);
@@ -42,10 +72,28 @@ describe('Budget Calculations & Boundary Tests', () => {
 
   it('safely handles zero, negative, and invalid NaN values', () => {
     const itemsWithNegatives: BudgetItem[] = [
-      { id: '1', name: 'Invalid Negative Item', category: 'venue', estimatedCost: -1500, priority: 'essential' },
+      {
+        id: '1',
+        name: 'Invalid Negative Item',
+        category: 'venue',
+        estimatedCost: -1500,
+        priority: 'essential',
+      },
       // @ts-expect-error testing runtime NaN edge case
-      { id: '2', name: 'Corrupted NaN Item', category: 'catering', estimatedCost: NaN, priority: 'essential' },
-      { id: '3', name: 'Valid Item', category: 'decor', estimatedCost: 400, priority: 'recommended' },
+      {
+        id: '2',
+        name: 'Corrupted NaN Item',
+        category: 'catering',
+        estimatedCost: NaN,
+        priority: 'essential',
+      },
+      {
+        id: '3',
+        name: 'Valid Item',
+        category: 'decor',
+        estimatedCost: 400,
+        priority: 'recommended',
+      },
     ];
 
     // Should clamp negative to 0 and NaN to 0
@@ -69,22 +117,27 @@ describe('Budget Calculations & Boundary Tests', () => {
     const extremeHigh = calculateBudgetSummary(10000, items, 0.95);
     expect(extremeHigh.contingencyAmount).toBe(5000); // capped at 50%
 
-    const extremeLow = calculateBudgetSummary(10000, items, -0.20);
+    const extremeLow = calculateBudgetSummary(10000, items, -0.2);
     expect(extremeLow.contingencyAmount).toBe(0); // floor at 0%
   });
 
   it('calculates perGuestCost accurately across different guest counts', () => {
     const items: BudgetItem[] = [
-      { id: '1', name: 'Catering', category: 'catering', estimatedCost: 4000, priority: 'essential' },
+      {
+        id: '1',
+        name: 'Catering',
+        category: 'catering',
+        estimatedCost: 4000,
+        priority: 'essential',
+      },
     ];
 
     // 4000 + 10% contingency (1000) = 5000 / 100 guests = 50 per guest
-    const summary100 = calculateBudgetSummary(10000, items, 0.10, 100);
+    const summary100 = calculateBudgetSummary(10000, items, 0.1, 100);
     expect(summary100.perGuestCost).toBe(50);
 
     // With 0 or invalid guestCount, safely falls back to default divisor
-    const summaryZero = calculateBudgetSummary(10000, items, 0.10, 0);
+    const summaryZero = calculateBudgetSummary(10000, items, 0.1, 0);
     expect(summaryZero.perGuestCost).toBe(5000);
   });
 });
-

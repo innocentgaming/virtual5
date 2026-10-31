@@ -72,7 +72,9 @@ describe('QA Pass: Accessibility, Heading Hierarchy & Responsive Standards', () 
     const timelineTab = screen.getByRole('button', { name: /Timeline & Tasks/i });
     fireEvent.click(timelineTab);
     const timelineH2s = Array.from(document.querySelectorAll('h2')).map((el) => el.textContent);
-    expect(timelineH2s.some((text) => text?.includes('Date-Aware Preparation Timeline'))).toBe(true);
+    expect(timelineH2s.some((text) => text?.includes('Date-Aware Preparation Timeline'))).toBe(
+      true,
+    );
   });
 
   it('exposes polite aria-live status regions for filter updates', () => {

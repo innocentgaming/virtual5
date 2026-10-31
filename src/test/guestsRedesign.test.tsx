@@ -76,7 +76,7 @@ describe('Guests Redesign (Step 5)', () => {
           onUpdateGuest={vi.fn()}
           onDeleteGuest={vi.fn()}
         />
-      </ToastProvider>
+      </ToastProvider>,
     );
 
     // Initial all view
@@ -113,7 +113,7 @@ describe('Guests Redesign (Step 5)', () => {
           onUpdateGuest={vi.fn()}
           onDeleteGuest={vi.fn()}
         />
-      </ToastProvider>
+      </ToastProvider>,
     );
 
     expect(screen.getByText(/Approaching planned capacity/i)).toBeInTheDocument();
@@ -127,10 +127,12 @@ describe('Guests Redesign (Step 5)', () => {
           onUpdateGuest={vi.fn()}
           onDeleteGuest={vi.fn()}
         />
-      </ToastProvider>
+      </ToastProvider>,
     );
 
-    expect(screen.getByText(/Rule 6 Triggered: RSVP headcount exceeds planned venue capacity/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Rule 6 Triggered: RSVP headcount exceeds planned venue capacity/i),
+    ).toBeInTheDocument();
   });
 
   it('renders persistent info banner for Jain/Pure Veg kitchen counter with accurate count', () => {
@@ -142,10 +144,12 @@ describe('Guests Redesign (Step 5)', () => {
           onUpdateGuest={vi.fn()}
           onDeleteGuest={vi.fn()}
         />
-      </ToastProvider>
+      </ToastProvider>,
     );
 
-    expect(screen.getByText(/Dedicated Pure Veg \/ Jain Kitchen Counter Required/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Dedicated Pure Veg \/ Jain Kitchen Counter Required/i),
+    ).toBeInTheDocument();
     expect(screen.getByText(/2 guests/i)).toBeInTheDocument();
   });
 });

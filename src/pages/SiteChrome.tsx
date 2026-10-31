@@ -15,15 +15,29 @@ export const SiteNav: React.FC = () => (
     <div className="s-wrap s-header__inner">
       <Brand />
       <nav className="s-nav" aria-label="Primary site navigation">
-        <a href="/#celebrations" className="s-nav__link">Celebrations</a>
-        <a href="/#features" className="s-nav__link">Features</a>
-        <a href="/#how" className="s-nav__link">How it works</a>
-        <a href="/#faq" className="s-nav__link">FAQ</a>
+        <a href="/#celebrations" className="s-nav__link">
+          Celebrations
+        </a>
+        <a href="/#features" className="s-nav__link">
+          Features
+        </a>
+        <a href="/#how" className="s-nav__link">
+          How it works
+        </a>
+        <a href="/#faq" className="s-nav__link">
+          FAQ
+        </a>
       </nav>
       <div className="s-header__actions">
-        <Link to="/demo" className="s-btn s-btn--subtle">Demo</Link>
-        <Link to="/login" className="s-btn s-btn--ghost">Sign in</Link>
-        <Link to="/signup" className="s-btn s-btn--primary">Create account</Link>
+        <Link to="/demo" className="s-btn s-btn--subtle">
+          Demo
+        </Link>
+        <Link to="/login" className="s-btn s-btn--ghost">
+          Sign in
+        </Link>
+        <Link to="/signup" className="s-btn s-btn--primary">
+          Create account
+        </Link>
       </div>
     </div>
   </header>
@@ -37,26 +51,43 @@ export const SiteFooter: React.FC = () => (
       <div className="s-footer__info">
         <Brand />
         <p className="s-footer__desc">
-          Intelligent, culturally attuned celebration planning for weddings, birthdays, and community melas across India.
+          Intelligent, culturally attuned celebration planning for weddings, birthdays, and
+          community melas across India.
         </p>
       </div>
       <div className="s-footer__cols">
         <div>
           <h4>Product</h4>
           <ul>
-            <li><Link to="/demo">Explore demo</Link></li>
-            <li><Link to="/login">Sign in</Link></li>
-            <li><Link to="/signup">Create account</Link></li>
-            <li><a href="/#celebrations">Celebration types</a></li>
+            <li>
+              <Link to="/demo">Explore demo</Link>
+            </li>
+            <li>
+              <Link to="/login">Sign in</Link>
+            </li>
+            <li>
+              <Link to="/signup">Create account</Link>
+            </li>
+            <li>
+              <a href="/#celebrations">Celebration types</a>
+            </li>
           </ul>
         </div>
         <div>
           <h4>Standards</h4>
           <ul>
-            <li><Link to="/privacy">Privacy Policy</Link></li>
-            <li><Link to="/terms">Terms of Service</Link></li>
-            <li><span>No third-party trackers</span></li>
-            <li><span>Vedic timing precision</span></li>
+            <li>
+              <Link to="/privacy">Privacy Policy</Link>
+            </li>
+            <li>
+              <Link to="/terms">Terms of Service</Link>
+            </li>
+            <li>
+              <span>No third-party trackers</span>
+            </li>
+            <li>
+              <span>Vedic timing precision</span>
+            </li>
           </ul>
         </div>
       </div>

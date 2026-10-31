@@ -9,7 +9,14 @@ import {
   PlusCircle,
   CalendarPlus,
 } from 'lucide-react';
-import type { PersonalizedIdea, EventPlan, BudgetItem, TaskItem, BudgetCategory, TaskCategory } from '../../types/event';
+import type {
+  PersonalizedIdea,
+  EventPlan,
+  BudgetItem,
+  TaskItem,
+  BudgetCategory,
+  TaskCategory,
+} from '../../types/event';
 import { Card, CardHeader, Button, Badge, EmptyState, useToast } from '../ui';
 
 interface PersonalizedIdeasProps {
@@ -101,7 +108,12 @@ export const PersonalizedIdeas: React.FC<PersonalizedIdeasProps> = ({
         name: idea.title,
         category: mapIdeaCategoryToBudget(idea.category),
         estimatedCost,
-        priority: idea.tier === 'premium' ? 'optional' : idea.tier === 'budget' ? 'recommended' : 'essential',
+        priority:
+          idea.tier === 'premium'
+            ? 'optional'
+            : idea.tier === 'budget'
+              ? 'recommended'
+              : 'essential',
         notes: `Idea source: ${idea.description}`,
       });
     }
@@ -134,7 +146,9 @@ export const PersonalizedIdeas: React.FC<PersonalizedIdeasProps> = ({
           title="Personalized Event Concepts & Alternatives"
           icon={<Lightbulb size={20} color="var(--accent-primary)" />}
           subtitle={`Tailored specifically for ${plan.eventType} celebrations with ${plan.guestCount} guests in ${plan.city}.${
-            plan.accessibilityNeeds && plan.accessibilityNeeds.length > 0 ? ` Factoring in: ${plan.accessibilityNeeds.join(', ')}.` : ''
+            plan.accessibilityNeeds && plan.accessibilityNeeds.length > 0
+              ? ` Factoring in: ${plan.accessibilityNeeds.join(', ')}.`
+              : ''
           }`}
           action={
             <Button
@@ -152,7 +166,15 @@ export const PersonalizedIdeas: React.FC<PersonalizedIdeasProps> = ({
         />
 
         {/* Filter Controls Bar */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-3)' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: 'var(--space-3)',
+          }}
+        >
           {/* Low/Mid/High Tier Tabs */}
           <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
             <Button
@@ -200,7 +222,12 @@ export const PersonalizedIdeas: React.FC<PersonalizedIdeasProps> = ({
             <select
               id="idea-cat-filter"
               className="form-control"
-              style={{ width: '160px', padding: '4px 8px', fontSize: 'var(--text-xs)', height: '36px' }}
+              style={{
+                width: '160px',
+                padding: '4px 8px',
+                fontSize: 'var(--text-xs)',
+                height: '36px',
+              }}
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
             >
@@ -240,7 +267,14 @@ export const PersonalizedIdeas: React.FC<PersonalizedIdeasProps> = ({
             title="No Concepts Found"
             description="Try selecting 'All Tiers' or 'All Categories' to view recommended ideas."
             action={
-              <Button variant="secondary" size="sm" onClick={() => { setSelectedTier('all'); setSelectedCategory('all'); }}>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  setSelectedTier('all');
+                  setSelectedCategory('all');
+                }}
+              >
                 Reset Filters
               </Button>
             }
@@ -263,34 +297,65 @@ export const PersonalizedIdeas: React.FC<PersonalizedIdeasProps> = ({
                   borderLeft: isCostSaver
                     ? '5px solid var(--color-success)'
                     : isPremium
-                    ? '5px solid var(--accent-primary)'
-                    : '5px solid var(--color-info)',
+                      ? '5px solid var(--accent-primary)'
+                      : '5px solid var(--color-info)',
                 }}
               >
                 <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 'var(--space-2)' }}>
-                    <span style={{ fontSize: 'var(--text-xs)', fontWeight: 800, textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.04em' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
+                      gap: 'var(--space-2)',
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: 'var(--text-xs)',
+                        fontWeight: 800,
+                        textTransform: 'uppercase',
+                        color: 'var(--text-muted)',
+                        letterSpacing: '0.04em',
+                      }}
+                    >
                       {idea.category}
                     </span>
 
                     {/* ₹ Cost-Impact Badge */}
                     <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                      <Badge
-                        variant={isCostSaver ? 'success' : isPremium ? 'warning' : 'info'}
-                      >
+                      <Badge variant={isCostSaver ? 'success' : isPremium ? 'warning' : 'info'}>
                         {idea.costImpact}
                       </Badge>
                       <Badge variant="neutral">
-                        {idea.tier === 'budget' ? 'Cost Saver' : idea.tier === 'premium' ? 'Elevated' : 'Balanced'}
+                        {idea.tier === 'budget'
+                          ? 'Cost Saver'
+                          : idea.tier === 'premium'
+                            ? 'Elevated'
+                            : 'Balanced'}
                       </Badge>
                     </div>
                   </div>
 
-                  <h3 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, color: 'var(--text)', marginTop: 'var(--space-2)' }}>
+                  <h3
+                    style={{
+                      fontSize: 'var(--text-lg)',
+                      fontWeight: 700,
+                      color: 'var(--text)',
+                      marginTop: 'var(--space-2)',
+                    }}
+                  >
                     {idea.title}
                   </h3>
 
-                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', marginTop: 'var(--space-2)', lineHeight: 1.6 }}>
+                  <p
+                    style={{
+                      fontSize: 'var(--text-sm)',
+                      color: 'var(--text-muted)',
+                      marginTop: 'var(--space-2)',
+                      lineHeight: 1.6,
+                    }}
+                  >
                     {idea.description}
                   </p>
                 </div>
