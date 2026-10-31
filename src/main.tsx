@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
+import { reportClientError } from './utils/reportError'
 
 // Synchronously initialize theme and colorMode to avoid flash of light mode
 try {
@@ -15,6 +16,9 @@ try {
 } catch {
   // Storage unavailable in restricted sandbox
 }
+
+window.addEventListener('error', (e) => reportClientError(e.error ?? e.message, 'window.onerror'));
+window.addEventListener('unhandledrejection', (e) => reportClientError(e.reason, 'unhandledrejection'));
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

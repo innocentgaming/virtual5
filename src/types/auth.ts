@@ -10,6 +10,7 @@ export interface AuthUser {
   initials: string;
   permissions: string[];
   createdAt: string;
+  isAdmin?: boolean;
 }
 
 /** Where the server keeps accounts. `memory` is volatile: accounts vanish whenever the server restarts. */

@@ -1,6 +1,7 @@
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
+import zlib from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -27,44 +28,69 @@ const MIME_TYPES = {
   '.webmanifest': 'application/manifest+json',
 };
 
-// Lazy cache for API handlers
-let authHandler = null;
-let eventsHandler = null;
-let geminiHandler = null;
+// Lazy-loaded API handlers (TypeScript via tsx). Keep in step with the files under api/ that Vercel deploys.
+const handlerCache = new Map();
+const HANDLER_FILES = {
+  auth: './api/auth/[action].ts',
+  admin: './api/admin/[action].ts',
+  rsvp: './api/rsvp/[action].ts',
+  events: './api/events.ts',
+  gemini: './api/gemini.ts',
+  health: './api/health.ts',
+  'client-error': './api/client-error.ts',
+};
 
-async function getAuthHandler() {
-  if (!authHandler) {
-    const mod = await import('./api/auth/[action].ts');
-    authHandler = mod.default;
+async function getHandler(name) {
+  if (!handlerCache.has(name)) {
+    const mod = await import(HANDLER_FILES[name]);
+    handlerCache.set(name, mod.default);
   }
-  return authHandler;
+  return handlerCache.get(name);
 }
 
-async function getEventsHandler() {
-  if (!eventsHandler) {
-    const mod = await import('./api/events.ts');
-    eventsHandler = mod.default;
-  }
-  return eventsHandler;
-}
+const IS_PROD = process.env.NODE_ENV === 'production';
+const CSP =
+  "default-src 'self'; script-src 'self'; connect-src 'self' https://generativelanguage.googleapis.com; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'";
+const COMPRESSIBLE = new Set(['.html', '.js', '.mjs', '.css', '.json', '.svg', '.webmanifest']);
 
-async function getGeminiHandler() {
-  if (!geminiHandler) {
-    const mod = await import('./api/gemini.ts');
-    geminiHandler = mod.default;
-  }
-  return geminiHandler;
+function log(level, msg, fields = {}) {
+  console.log(JSON.stringify({ t: new Date().toISOString(), level, msg, ...fields }));
 }
 
 const server = http.createServer(async (req, res) => {
+  const started = Date.now();
+  const host = req.headers['x-forwarded-host'] || req.headers.host || `localhost:${PORT}`;
+  const proto = req.headers['x-forwarded-proto'] || 'http';
+
+  // Health checks must answer over plain HTTP too (load balancers probe internally).
+  const isHealth = (req.url || '').startsWith('/api/health');
+
+  // Force HTTPS in production behind a proxy (Render sets x-forwarded-proto).
+  if (IS_PROD && !isHealth && proto === 'http' && !/^(localhost|127\.)/.test(String(host))) {
+    res.statusCode = 308;
+    res.setHeader('Location', `https://${host}${req.url}`);
+    return res.end();
+  }
+
   // Global security headers
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+  res.setHeader('Content-Security-Policy', CSP);
+  if (IS_PROD) res.setHeader('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
 
-  const host = req.headers['x-forwarded-host'] || req.headers.host || `localhost:${PORT}`;
-  const proto = req.headers['x-forwarded-proto'] || 'http';
+  res.on('finish', () => {
+    if ((req.url || '').startsWith('/assets/') && res.statusCode < 400) return; // keep logs readable
+    log(res.statusCode >= 500 ? 'error' : 'info', 'request', {
+      method: req.method,
+      path: (req.url || '').split('?')[0],
+      status: res.statusCode,
+      ms: Date.now() - started,
+    });
+  });
+
   let url;
   try {
     url = new URL(req.url, `${proto}://${host}`);
@@ -83,28 +109,21 @@ const server = http.createServer(async (req, res) => {
       }
       req.query = queryObj;
 
-      if (pathname.startsWith('/api/auth/')) {
-        const action = pathname.slice('/api/auth/'.length).split('/')[0];
-        req.query.action = action;
-        const handler = await getAuthHandler();
-        return await handler(req, res);
+      const multi = /^\/api\/(auth|admin|rsvp)\/([^/]+)\/?$/.exec(pathname);
+      if (multi) {
+        req.query.action = multi[2];
+        return await (await getHandler(multi[1]))(req, res);
       }
-
-      if (pathname === '/api/events') {
-        const handler = await getEventsHandler();
-        return await handler(req, res);
-      }
-
-      if (pathname === '/api/gemini') {
-        const handler = await getGeminiHandler();
-        return await handler(req, res);
+      const single = /^\/api\/(events|gemini|health|client-error)\/?$/.exec(pathname);
+      if (single) {
+        return await (await getHandler(single[1]))(req, res);
       }
 
       res.statusCode = 404;
       res.setHeader('Content-Type', 'application/json');
       return res.end(JSON.stringify({ error: 'API endpoint not found', code: 'not_found' }));
     } catch (err) {
-      console.error('[server] API error:', err);
+      log('error', 'api_error', { path: pathname, error: String(err), stack: err?.stack?.split('\n').slice(0, 5).join(' | ') });
       if (!res.headersSent) {
         res.statusCode = 500;
         res.setHeader('Content-Type', 'application/json');
@@ -115,7 +134,14 @@ const server = http.createServer(async (req, res) => {
   }
 
   // 2. Static Assets from dist/
-  const safePath = path.normalize(decodeURIComponent(pathname)).replace(/^(\.\.[/\\])+/, '');
+  let decoded;
+  try {
+    decoded = decodeURIComponent(pathname);
+  } catch {
+    res.statusCode = 400;
+    return res.end('Bad request');
+  }
+  const safePath = path.normalize(decoded).replace(/^(\.\.[/\\])+/, '');
   let filePath = path.join(DIST_DIR, safePath);
 
   let isFile = false;
@@ -148,10 +174,27 @@ const server = http.createServer(async (req, res) => {
   }
 
   res.setHeader('Content-Type', contentType);
+  res.setHeader('Vary', 'Accept-Encoding');
   const stream = fs.createReadStream(filePath);
-  stream.pipe(res);
+  stream.on('error', () => res.destroy());
+  if (COMPRESSIBLE.has(ext) && /\bgzip\b/.test(String(req.headers['accept-encoding'] || ''))) {
+    res.setHeader('Content-Encoding', 'gzip');
+    stream.pipe(zlib.createGzip({ level: 6 })).pipe(res);
+  } else {
+    stream.pipe(res);
+  }
 });
 
+// Graceful shutdown so deploys / restarts finish in-flight requests instead of dropping them.
+for (const signal of ['SIGTERM', 'SIGINT']) {
+  process.on(signal, () => {
+    log('info', 'shutting_down', { signal });
+    server.close(() => process.exit(0));
+    setTimeout(() => process.exit(0), 10_000).unref();
+  });
+}
+process.on('unhandledRejection', (reason) => log('error', 'unhandled_rejection', { reason: String(reason) }));
+
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`[EventWise AI] Server running on http://0.0.0.0:${PORT}`);
+  log('info', 'server_started', { port: PORT, production: IS_PROD });
 });

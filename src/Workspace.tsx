@@ -985,6 +985,7 @@ export function Workspace({ mode }: { mode: WorkspaceMode }) {
             onClose={() => setIsWebsiteOpen(false)}
             plan={activeEvent}
             onAddGuest={addGuest}
+            onUpdateGuest={updateGuest}
             onToast={(msg) => showToast(msg)}
           />
         </Suspense>

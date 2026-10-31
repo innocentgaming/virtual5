@@ -143,7 +143,15 @@ export async function getSessionUser(req: ApiRequest, store: Store): Promise<Use
   const payload = verifySessionToken(cookies[SESSION_COOKIE]);
   if (!payload) return null;
   const user = await store.getUser(payload.uid);
-  if (!user || user.tokenVersion !== payload.tv) return null;
+  if (!user || user.tokenVersion !== payload.tv || user.disabled) return null;
+  return user;
+}
+
+/** Server-side authorization for admin-only endpoints (never trust the client's idea of its own role). */
+export async function requireAdmin(req: ApiRequest, store: Store): Promise<UserRecord> {
+  const user = await getSessionUser(req, store);
+  if (!user) throw new HttpError(401, 'You need to sign in to continue.', 'unauthenticated');
+  if (!user.isAdmin) throw new HttpError(403, 'Administrator access is required.', 'forbidden');
   return user;
 }
 

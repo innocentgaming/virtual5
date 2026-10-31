@@ -329,3 +329,33 @@ npm run build
 - **Repository**: `innocentgaming/virtual5`
 - **Main Branch**: `main` (clean single-branch history)
 - **License**: MIT License
+
+
+## 🛠 Admin, RSVP & Operations
+
+**Admin dashboard (`/admin`).** The *first account that signs up* on a fresh deployment becomes the administrator
+(claimed atomically, so two simultaneous first signups can never both win). Admins can see overview stats and a
+30-day sign-up chart, search/paginate users, change roles, promote/demote admins, disable (which signs the user out
+immediately), sign users out everywhere, delete users (type-the-email confirmation), read the activity/audit log
+(sign-ups, sign-ins, failed sign-ins, password changes, admin actions) and download a full backup. Every admin route is
+authorized on the server. The last active administrator can't be demoted, disabled or deleted. Set `ADMIN_EMAILS=a@x.com,b@y.com`
+to always treat those emails as admins (recovery / bootstrap).
+
+**Live RSVP.** In *Event Website → Publish & Share*, signed-in hosts create a private link `/rsvp/<token>` per event.
+Guests need no account; replies are validated, rate-limited, honeypot-protected and stored on the server. The host sees a
+live summary (coming, headcount, declined), can close/reopen RSVPs and add replies to the guest list in one tap
+(re-importing updates instead of duplicating).
+
+**Health, errors, logs.** `GET /api/health` returns `200 {status:"ok"}` (or `503`) after checking the database. Point Render's
+health check and an uptime monitor (UptimeRobot, Better Stack…) at it. Server logs are JSON lines. Browser crashes show a
+recovery screen and are reported to `POST /api/client-error`. Set `ALERT_WEBHOOK_URL` (Slack/Discord/Teams incoming webhook) to
+be pinged, at most once a minute, on unexpected server errors.
+
+**Backups.** Admin → *Data & backup* downloads one JSON file (users, plans, RSVPs, audit log). On the server
+`npm run backup` writes `backups/eventwise-<time>.json` and `npm run restore -- file.json` merges one back.
+Backups contain password hashes and personal data: keep them private. Upstash Redis also offers automatic daily backups on paid plans.
+
+**Going live checklist.** 1) Connect Upstash Redis (accounts must persist). 2) Set `AUTH_SECRET`, `APP_URL`, `RESEND_API_KEY` + `EMAIL_FROM`
+(password-reset email). 3) Add your custom domain in Vercel/Render (HTTPS is automatic; HSTS and CSP are already sent).
+4) Sign up first yourself so you are the admin. 5) Add `/api/health` to an uptime monitor and set `ALERT_WEBHOOK_URL`.
+6) Schedule `npm run backup` (or download backups from the admin page) regularly.

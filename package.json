@@ -8,6 +8,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build && node scripts/check-size-budget.mjs",
     "start": "tsx server.mjs",
+    "backup": "tsx scripts/backup.ts backup",
+    "restore": "tsx scripts/backup.ts restore",
     "analyze": "node scripts/run-analyze.mjs",
     "check:budget": "node scripts/check-size-budget.mjs",
     "lint": "oxlint",

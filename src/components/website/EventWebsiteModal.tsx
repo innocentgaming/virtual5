@@ -7,7 +7,6 @@ import type { EventPlan, GuestItem } from '../../types/event';
 import {
   Smartphone,
   Monitor,
-  Copy,
   Download,
   Calendar,
   MapPin,
@@ -20,12 +19,14 @@ import {
   QrCode,
 } from 'lucide-react';
 import { generateQRSvg, generateQRDataUrl } from '../../utils/qrCode';
+import { LiveRsvpPanel } from './LiveRsvpPanel';
 
 interface EventWebsiteModalProps {
   isOpen: boolean;
   onClose: () => void;
   plan: EventPlan | null;
   onAddGuest?: (guest: Omit<GuestItem, 'id'>) => void;
+  onUpdateGuest?: (id: string, updates: Partial<GuestItem>) => void;
   onToast?: (message: string) => void;
 }
 
@@ -91,6 +92,7 @@ export const EventWebsiteModal: React.FC<EventWebsiteModalProps> = ({
   onClose,
   plan,
   onAddGuest,
+  onUpdateGuest,
   onToast,
 }) => {
   const [activeTab, setActiveTab] = useState<Tab>('preview');
@@ -100,6 +102,8 @@ export const EventWebsiteModal: React.FC<EventWebsiteModalProps> = ({
   const [showSchedule, setShowSchedule] = useState(true);
   const [showRsvp, setShowRsvp] = useState(true);
   const [customGreeting, setCustomGreeting] = useState('');
+  // The real, server-backed RSVP link for this event (null until the host creates it).
+  const [liveRsvpUrl, setLiveRsvpUrl] = useState<string | null>(null);
 
   // Interactive RSVP state within the preview
   const [rsvpName, setRsvpName] = useState('');
@@ -184,15 +188,10 @@ export const EventWebsiteModal: React.FC<EventWebsiteModalProps> = ({
     }, 4000);
   };
 
-  const shareUrl = typeof window !== 'undefined'
-    ? `${window.location.origin}/app?event=${plan?.eventType || 'wedding'}&website=1`
-    : 'https://eventwise.ai/app?website=1';
-
-  const handleCopyShareLink = () => {
-    if (typeof window === 'undefined') return;
-    navigator.clipboard.writeText(shareUrl);
-    onToast?.('✓ Shareable celebration website link copied to clipboard!');
-  };
+  const shareUrl = liveRsvpUrl
+    ?? (typeof window !== 'undefined'
+      ? `${window.location.origin}/app?event=${plan?.eventType || 'wedding'}&website=1`
+      : 'https://eventwise.ai/app?website=1');
 
   const handleDownloadQrSvg = () => {
     if (!plan) return;
@@ -385,28 +384,11 @@ export const EventWebsiteModal: React.FC<EventWebsiteModalProps> = ({
     }
 
     ${
-      showRsvp
+      showRsvp && liveRsvpUrl
         ? `<div class="card" id="rsvp">
       <h2>Guest RSVP</h2>
       <p style="margin-bottom: 1.5rem; opacity: 0.85;">Please let us know if you can join us!</p>
-      <form onsubmit="event.preventDefault(); alert('Thank you! Your RSVP has been received.');">
-        <div class="form-group">
-          <label>Your Full Name</label>
-          <input class="form-control" required placeholder="Guest name">
-        </div>
-        <div class="form-group">
-          <label>Email or Phone</label>
-          <input class="form-control" type="email" placeholder="contact@example.com">
-        </div>
-        <div class="form-group">
-          <label>Will you be attending?</label>
-          <select class="form-control">
-            <option>Joyfully Accepts</option>
-            <option>Regretfully Declines</option>
-          </select>
-        </div>
-        <button type="submit" class="btn-submit">Submit RSVP</button>
-      </form>
+      <a class="btn-submit" style="display:block;text-align:center;text-decoration:none;" href="${liveRsvpUrl}">RSVP online</a>
     </div>`
         : ''
     }
@@ -931,27 +913,19 @@ export const EventWebsiteModal: React.FC<EventWebsiteModalProps> = ({
             }}
           >
             <h3 style={{ fontSize: 'var(--text-md)', fontWeight: 700, margin: '0 0 0.5rem', color: 'var(--text)' }}>
-              1. Shareable Invitation Link
+              1. Live RSVP Link
             </h3>
             <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', margin: '0 0 1rem' }}>
-              Share this celebration link with your guests via WhatsApp, Email, or SMS to collect RSVPs.
+              Guests open this link on their phone (no account needed), answer, and their replies are saved to your event. Add them to your guest list with one tap.
             </p>
 
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <input
-                readOnly
-                value={typeof window !== 'undefined' ? `${window.location.origin}/app?event=${plan.eventType}&website=1` : ''}
-                className="form-control"
-                style={{ fontSize: 'var(--text-xs)' }}
-              />
-              <Button
-                variant="primary"
-                onClick={handleCopyShareLink}
-                leftIcon={<Copy size={14} />}
-              >
-                Copy
-              </Button>
-            </div>
+            <LiveRsvpPanel
+              plan={plan}
+              onAddGuest={onAddGuest}
+              onUpdateGuest={onUpdateGuest}
+              onToast={onToast}
+              onLinkChange={setLiveRsvpUrl}
+            />
           </div>
 
           <div

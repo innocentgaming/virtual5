@@ -20,11 +20,14 @@ import {
   type ApiRequest,
   type ApiResponse,
 } from '../_lib/http.js';
+import { audit } from '../_lib/audit.js';
+import { reportServerError } from '../_lib/log.js';
 import { escapeHtml, isMailerConfigured, sendEmail } from '../_lib/mailer.js';
 import { StorageNotConfiguredError, getStore, type Role, type Store, type UserRecord } from '../_lib/store.js';
 import {
   ROLES,
   checkPasswordPolicy,
+  isBootstrapAdminEmail,
   isValidEmail,
   normalizeEmail,
   toPublicUser,
@@ -90,11 +93,22 @@ const signup: Handler = async (req, res, store) => {
     createdAt: now,
     updatedAt: now,
   };
+  // The very first account on a fresh deployment becomes the administrator. The existing-user count is read
+  // BEFORE creating the account (it also rebuilds the user index for older databases), and the claim itself is
+  // an atomic "set if not exists", so two simultaneous first signups can never both become admin.
+  const existingUsers = (await store.listUserIds()).length;
   if (!(await store.createUser(user))) {
     throw new HttpError(409, 'An account with this email already exists. Try signing in instead.', 'email_taken');
   }
-  issueSession(res, user, true);
-  sendJson(res, 201, { user: toPublicUser(user) });
+  let created = user;
+  const firstUser = existingUsers === 0 && (await store.claimFirstAdmin(user.id));
+  if (firstUser || isBootstrapAdminEmail(email)) {
+    created = { ...user, isAdmin: true };
+    await store.updateUser(created);
+  }
+  await audit(store, req, 'signup', { actor: created, detail: created.isAdmin ? 'administrator' : created.role });
+  issueSession(res, created, true);
+  sendJson(res, 201, { user: toPublicUser(created) });
 };
 
 const login: Handler = async (req, res, store) => {
@@ -111,10 +125,21 @@ const login: Handler = async (req, res, store) => {
   const user = id ? await store.getUser(id) : null;
   // Always burn one scrypt computation so response time does not reveal whether the account exists.
   const ok = await verifyPassword(password, user?.passwordHash ?? (await getDummyHash()));
-  if (!user || !ok) throw new HttpError(401, LOGIN_ERROR, 'invalid_credentials');
+  if (!user || !ok) {
+    await audit(store, req, 'login_failed', { target: user ? { id: user.id, email: user.email } : null, detail: user ? undefined : email.slice(0, 80) });
+    throw new HttpError(401, LOGIN_ERROR, 'invalid_credentials');
+  }
+  if (user.disabled) {
+    await audit(store, req, 'login_blocked', { actor: user, detail: 'disabled account' });
+    throw new HttpError(403, 'This account has been disabled. Please contact support.', 'account_disabled');
+  }
 
-  issueSession(res, user, body.remember !== false);
-  sendJson(res, 200, { user: toPublicUser(user) });
+  let signedIn = { ...user, lastLoginAt: new Date().toISOString() };
+  if (!signedIn.isAdmin && isBootstrapAdminEmail(signedIn.email)) signedIn = { ...signedIn, isAdmin: true };
+  await store.updateUser(signedIn);
+  await audit(store, req, 'login', { actor: signedIn });
+  issueSession(res, signedIn, body.remember !== false);
+  sendJson(res, 200, { user: toPublicUser(signedIn) });
 };
 
 const logout: Handler = async (req, res, store) => {
@@ -215,6 +240,7 @@ const resetPassword: Handler = async (req, res, store) => {
     tokenVersion: user.tokenVersion + 1, // signs out every existing session
     updatedAt: new Date().toISOString(),
   });
+  await audit(store, req, 'password_reset', { actor: user });
   sendJson(res, 200, { ok: true }, { 'Set-Cookie': clearSessionCookie() });
 };
 
@@ -235,6 +261,7 @@ const changePassword: Handler = async (req, res, store) => {
     updatedAt: new Date().toISOString(),
   };
   await store.updateUser(updated);
+  await audit(store, req, 'password_changed', { actor: updated });
   issueSession(res, updated, true); // keep this device signed in, revoke all others
   sendJson(res, 200, { ok: true });
 };
@@ -264,7 +291,14 @@ const deleteAccount: Handler = async (req, res, store) => {
   if (!(await verifyPassword(String(body.password ?? ''), user.passwordHash))) {
     throw new HttpError(403, 'Password is incorrect.', 'invalid_credentials');
   }
+  if (user.isAdmin) {
+    const others = await Promise.all((await store.listUserIds()).map((id) => store.getUser(id)));
+    if (!others.some((u) => u && u.id !== user.id && u.isAdmin && !u.disabled)) {
+      throw new HttpError(400, 'You are the only administrator. Promote another administrator before deleting this account.', 'last_admin');
+    }
+  }
   await store.deleteUser(user);
+  await audit(store, req, 'account_deleted', { actor: user });
   sendJson(res, 200, { ok: true }, { 'Set-Cookie': clearSessionCookie() });
 };
 
@@ -300,7 +334,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse): Promis
     } else if (err instanceof StorageNotConfiguredError) {
       sendJson(res, 503, { error: err.message, code: 'storage_not_configured' });
     } else {
-      console.error('[auth] Unhandled error', err);
+      reportServerError('auth', err);
       sendJson(res, 500, { error: 'Something went wrong. Please try again.', code: 'server_error' });
     }
   }

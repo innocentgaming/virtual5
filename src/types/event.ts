@@ -178,6 +178,8 @@ export interface GuestItem {
   plusOneName?: string;
   tableNumber?: string;
   notes?: string;
+  /** Set when this guest came from the live RSVP link, so re-imports update instead of duplicating. */
+  rsvpResponseId?: string;
 }
 
 export interface ScheduleItem {

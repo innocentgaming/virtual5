@@ -20,9 +20,19 @@ export function initialsOf(name: string): string {
   return (name.trim().slice(0, 2) || 'EW').toUpperCase();
 }
 
-export function permissionsFor(role: Role): string[] {
+export function permissionsFor(role: Role, isAdmin = false): string[] {
   const base = ['manage_budget', 'approve_vendors', 'edit_timeline', 'manage_guests', 'ai_copilot'];
-  return role === 'planner' ? [...base, 'export_plans'] : base;
+  const list = role === 'planner' ? [...base, 'export_plans'] : base;
+  return isAdmin ? [...list, 'admin'] : list;
+}
+
+/** Emails listed in ADMIN_EMAILS (comma separated) are always administrators – a recovery / bootstrap path. */
+export function isBootstrapAdminEmail(email: string): boolean {
+  return (process.env.ADMIN_EMAILS ?? '')
+    .split(',')
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean)
+    .includes(email.toLowerCase());
 }
 
 export function toPublicUser(u: UserRecord) {
@@ -34,8 +44,9 @@ export function toPublicUser(u: UserRecord) {
     roleLabel: ROLE_LABELS[u.role],
     organization: u.organization,
     initials: initialsOf(u.name),
-    permissions: permissionsFor(u.role),
+    permissions: permissionsFor(u.role, u.isAdmin === true),
     createdAt: u.createdAt,
+    isAdmin: u.isAdmin === true,
   };
 }
 

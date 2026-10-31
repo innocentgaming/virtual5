@@ -3,6 +3,7 @@ services:
     name: eventwise-ai
     runtime: node
     plan: free
+    healthCheckPath: /api/health
     region: oregon
     buildCommand: npm install --include=dev && npm run build
     startCommand: npm start
@@ -22,5 +23,11 @@ services:
       - key: UPSTASH_REDIS_REST_TOKEN
         sync: false
       - key: VITE_GEMINI_API_KEY
+        sync: false
+      # Optional: comma-separated emails that are always administrators (the first account to sign up is admin anyway).
+      - key: ADMIN_EMAILS
+        sync: false
+      # Optional: Slack/Discord/Teams incoming-webhook URL, pinged when the API hits an unexpected error.
+      - key: ALERT_WEBHOOK_URL
         sync: false
 

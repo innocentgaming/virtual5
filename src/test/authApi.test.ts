@@ -292,6 +292,13 @@ describe('Serverless Auth & Cloud Events API', () => {
   });
 
   it('deletes user account and wipes session', async () => {
+    // The first account on a fresh deployment is the administrator (and cannot be deleted while it is the only
+    // one), so register an owner first; the account under test is then an ordinary user.
+    await fetch(`${baseUrl}/api/auth/signup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Origin: baseUrl },
+      body: JSON.stringify({ email: 'owner@eventwise.ai', password: 'MyPassword123!', name: 'Site Owner', role: 'planner', acceptTerms: true }),
+    });
     const signupRes = await fetch(`${baseUrl}/api/auth/signup`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Origin: baseUrl },

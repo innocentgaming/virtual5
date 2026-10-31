@@ -13,6 +13,7 @@ import {
   Loader2,
   UserPlus,
   Globe,
+  ShieldCheck,
 } from 'lucide-react';
 import type { EventPlan } from '../../types/event';
 import { Badge, Button, Logo } from '../ui';
@@ -20,6 +21,7 @@ import { formatIndianShort } from '../../utils/formatters';
 import type { AuthUser } from '../../types/auth';
 import type { SyncStatus } from '../../hooks/useEventPlan';
 import { Link } from '../../routerComponents';
+import { navigate } from '../../router';
 
 interface HeaderProps {
   events: EventPlan[];
@@ -318,6 +320,20 @@ export const Header: React.FC<HeaderProps> = ({
         >
           {colorMode === 'dark' ? <Sun size={15} color="#f59e0b" /> : <Moon size={15} />}
         </Button>
+
+        {mode === 'account' && user?.isAdmin && (
+          <a
+            href="/admin"
+            className="btn btn-secondary btn-sm"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, textDecoration: 'none' }}
+            onClick={(e) => {
+              e.preventDefault();
+              navigate('/admin');
+            }}
+          >
+            <ShieldCheck size={14} aria-hidden="true" /> Admin
+          </a>
+        )}
 
         {/* Cloud sync status */}
         {mode === 'account' && <SyncBadge status={syncStatus} onRetry={onRetrySync} />}

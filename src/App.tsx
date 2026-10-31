@@ -3,6 +3,7 @@ import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './hooks/useAuth';
 import { useLocation } from './router';
 import { Redirect } from './routerComponents';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { lazyWithPreload } from './utils/lazyWithPreload';
 import './index.css';
 
@@ -14,6 +15,8 @@ const AuthPages = {
   forgot: lazyWithPreload(() => import('./pages/AuthPages').then((m) => ({ default: m.ForgotPasswordPage }))),
   reset: lazyWithPreload(() => import('./pages/AuthPages').then((m) => ({ default: m.ResetPasswordPage }))),
 };
+const RsvpPage = lazyWithPreload(() => import('./pages/RsvpPage').then((m) => ({ default: m.RsvpPage })));
+const AdminPage = lazyWithPreload(() => import('./pages/AdminPage').then((m) => ({ default: m.AdminPage })));
 const Privacy = lazyWithPreload(() => import('./pages/LegalPages').then((m) => ({ default: m.PrivacyPage })));
 const Terms = lazyWithPreload(() => import('./pages/LegalPages').then((m) => ({ default: m.TermsPage })));
 const NotFound = lazyWithPreload(() => import('./pages/LegalPages').then((m) => ({ default: m.NotFoundPage })));
@@ -31,6 +34,9 @@ function Routes(): React.ReactElement {
   const { status, user } = useAuth();
   const path = pathname.length > 1 ? pathname.replace(/\/+$/, '') : pathname;
 
+  const rsvpMatch = /^\/rsvp\/([A-Za-z0-9_-]{1,64})$/.exec(path);
+  if (rsvpMatch) return <RsvpPage token={rsvpMatch[1]} />;
+
   switch (path) {
     case '/':
       return <LandingPage />;
@@ -41,6 +47,10 @@ function Routes(): React.ReactElement {
       if (status === 'anonymous') return <Redirect to={`/login?next=${encodeURIComponent('/app')}`} />;
       // key: a different signed-in user must never reuse the previous user's in-memory plans
       return <Workspace key={user?.id ?? 'account'} mode="account" />;
+    case '/admin':
+      if (status === 'loading') return <Loading />;
+      if (status === 'anonymous') return <Redirect to={`/login?next=${encodeURIComponent('/admin')}`} />;
+      return <AdminPage />;
     case '/login':
     case '/signup':
     case '/forgot-password': {
@@ -64,11 +74,13 @@ function Routes(): React.ReactElement {
 
 export function App() {
   return (
-    <AuthProvider>
-      <Suspense fallback={<Loading />}>
-        <Routes />
-      </Suspense>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <Suspense fallback={<Loading />}>
+          <Routes />
+        </Suspense>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 
