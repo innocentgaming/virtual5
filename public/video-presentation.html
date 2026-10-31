@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EventWise AI — Live Video Presentation & Walkthrough</title>
+  <style>
+    :root {
+      --primary: #0f766e;
+      --primary-dark: #115e59;
+      --accent: #d97706;
+      --bg: #090d16;
+      --card-bg: #111827;
+      --text: #f3f4f6;
+      --muted: #9ca3af;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 24px 16px;
+    }
+    header {
+      width: 100%;
+      max-width: 1200px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .badge {
+      background: rgba(15, 118, 110, 0.2);
+      border: 1px solid rgba(15, 118, 110, 0.5);
+      color: #2dd4bf;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .cinema-frame {
+      position: relative;
+      width: 100%;
+      max-width: 1120px;
+      aspect-ratio: 16 / 9;
+      background: #000;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    }
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: #000;
+    }
+    .overlay-controls {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 60%, transparent 100%);
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: opacity 0.3s;
+    }
+    .progress-bar-container {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 9999px;
+      cursor: pointer;
+      position: relative;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: #2dd4bf;
+      border-radius: 9999px;
+      width: 0%;
+      transition: width 0.1s linear;
+    }
+    .controls-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .left-controls, .right-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    button {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    button:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    .btn-record {
+      background: #dc2626;
+      border-color: #ef4444;
+      animation: pulse 2s infinite;
+    }
+    .btn-record:hover {
+      background: #b91c1c;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.8; }
+    }
+    .caption-box {
+      width: 100%;
+      max-width: 1120px;
+      background: var(--card-bg);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-top: 20px;
+    }
+    .caption-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #2dd4bf;
+      margin-bottom: 8px;
+    }
+    .caption-text {
+      font-size: 15px;
+      line-height: 1.6;
+      color: #d1d5db;
+    }
+    .status-text {
+      font-size: 13px;
+      color: #9ca3af;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div>
+      <h1 style="font-size: 22px; font-weight: 700;">🇮🇳 EventWise AI — Video Presentation & Demo</h1>
+      <p style="font-size: 13px; color: var(--muted);">Automated walkthrough with live synchronized audio narration</p>
+    </div>
+    <div style="display: flex; gap: 10px; align-items: center;">
+      <span class="badge">Live on Render</span>
+      <a href="https://eventwise-ai-d11f.onrender.com" target="_blank" style="color: #2dd4bf; text-decoration: none; font-size: 14px; font-weight: 600;">Open Live App ↗</a>
+    </div>
+  </header>
+
+  <div class="cinema-frame" id="cinemaFrame">
+    <canvas id="videoCanvas" width="1280" height="720"></canvas>
+    <div class="overlay-controls" id="overlayControls">
+      <div class="progress-bar-container" id="progressBar" onclick="seek(event)">
+        <div class="progress-bar-fill" id="progressFill"></div>
+      </div>
+      <div class="controls-row">
+        <div class="left-controls">
+          <button id="btnPlay" onclick="togglePlay()">▶ Play Video</button>
+          <button onclick="prevSlide()">⏮ Prev</button>
+          <button onclick="nextSlide()">⏭ Next</button>
+          <button id="btnAudio" onclick="toggleAudio()">🔊 Narration: ON</button>
+          <span class="status-text" id="timeDisplay">0:00 / 2:30</span>
+        </div>
+        <div class="right-controls">
+          <button class="btn-record" id="btnRecord" onclick="toggleRecord()">🔴 Record & Download MP4</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="caption-box">
+    <div class="caption-title" id="slideTitle">1. Introduction & Cultural Problem Statement</div>
+    <div class="caption-text" id="slideDescription">
+      EventWise AI is an intelligent, full-stack, personalized event planning assistant engineered specifically for Indian celebrations. Unlike generic tools that produce static lists, EventWise AI solves the real-world chaos of Indian weddings, birthdays, and festivals with deterministic, explainable mathematical trade-offs.
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('videoCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const scenes = [
+      {
+        title: "1. EventWise AI: India Edition v2.0",
+        desc: "EventWise AI is an intelligent, full-stack, personalized event planning assistant engineered specifically for Indian celebrations. Supporting Lakhs, Crores, and en-IN currency grouping, it turns event chaos into deterministic, explainable roadmaps.",
+        imgSrc: "video-screens/01-landing.png",
+        duration: 16
+      },
+      {
+        title: "2. The Dynamic Change & Chaos Simulation Engine",
+        desc: "Real Indian weddings face sudden unexpected changes: quotes spike +20%, dates get compressed, or guest lists expand by 50. EventWise AI detects these changes instantly and displays a real-time 'What Changed?' Rupee variance diff banner.",
+        imgSrc: "video-screens/02-dashboard.png",
+        duration: 18
+      },
+      {
+        title: "3. Quantified ₹ Trade-offs & 1-Click Execution",
+        desc: "Instead of hallucinating answers, Rule 2 calculates 3 concrete mathematical trade-offs: rebalance from decor (-₹1.44 Lakhs), trim 10 guests, or absorb via contingency. With 1 click, users apply the fix and can undo any decision via a 20-step undo stack.",
+        imgSrc: "video-screens/03-chaos-tradeoffs.png",
+        duration: 20
+      },
+      {
+        title: "4. Native Indian Economics & Budget Donut",
+        desc: "Speaks native Indian Rupee economics with high-contrast SVG Donut charts, category breakdown commitments, and an accessible WCAG 2.1 AA 'View as Data Table' toggle for screen readers.",
+        imgSrc: "video-screens/04-budget-donut.png",
+        duration: 16
+      },
+      {
+        title: "5. Deep Cultural Guardrails & Vedic Pacing",
+        desc: "Incorporates deep cultural traditions: automatically flags 10:00 PM outdoor sound curfews, paces Baraats and DJs indoors, and provides Vedic Ritual Samagri checklists with Pandit Ji consultation items.",
+        imgSrc: "video-screens/05-timeline-curfew.png",
+        duration: 18
+      },
+      {
+        title: "6. Dietary Kitchen Isolation & Live Mobile RSVP",
+        desc: "Enforces strict Pure Veg and Jain kitchen counter isolation protocols. Hosts can publish a custom event website with private /rsvp/<token> links featuring anti-bot honeypots, rate limiting, and 1-click guest list sync.",
+        imgSrc: "video-screens/06-guest-dietary.png",
+        duration: 18
+      },
+      {
+        title: "7. Production Admin Dashboard & System Health",
+        desc: "Includes an operational /admin dashboard where the first signup atomically claims administrator status. Features user management, audit logging, system health check (/api/health), and full JSON backup/restore.",
+        imgSrc: "video-screens/07-health-api.png",
+        duration: 16
+      }
+    ];
+
+    let currentScene = 0;
+    let isPlaying = false;
+    let audioEnabled = true;
+    let sceneTimer = null;
+    let elapsedSeconds = 0;
+    let totalDuration = scenes.reduce((sum, s) => sum + s.duration, 0);
+
+    const images = {};
+    let loadedCount = 0;
+
+    scenes.forEach(s => {
+      const img = new Image();
+      img.src = s.imgSrc;
+      img.onload = () => {
+        loadedCount++;
+        if (loadedCount === 1) render();
+      };
+      images[s.imgSrc] = img;
+    });
+
+    function render() {
+      const scene = scenes[currentScene];
+      const img = images[scene.imgSrc];
+
+      ctx.fillStyle = '#090d16';
+      ctx.fillRect(0, 0, 1280, 720);
+
+      if (img && img.complete) {
+        ctx.drawImage(img, 0, 0, 1280, 720);
+      } else {
+        ctx.fillStyle = '#111827';
+        ctx.fillRect(40, 40, 1200, 640);
+      }
+
+      // Cinematic Header Bar
+      ctx.fillStyle = 'rgba(9, 13, 22, 0.85)';
+      ctx.fillRect(0, 0, 1280, 80);
+
+      ctx.fillStyle = '#2dd4bf';
+      ctx.font = 'bold 24px sans-serif';
+      ctx.fillText(scene.title, 40, 48);
+
+      ctx.fillStyle = '#9ca3af';
+      ctx.font = '600 14px sans-serif';
+      ctx.fillText(`SCENE ${currentScene + 1} OF ${scenes.length}`, 1120, 48);
+
+      // Subtitle Banner at bottom
+      ctx.fillStyle = 'rgba(9, 13, 22, 0.9)';
+      ctx.fillRect(40, 590, 1200, 100);
+      ctx.strokeStyle = 'rgba(45, 212, 191, 0.4)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(40, 590, 1200, 100);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '500 16px sans-serif';
+
+      // Simple word wrapping
+      const words = scene.desc.split(' ');
+      let line1 = '', line2 = '';
+      for (let w of words) {
+        if ((line1 + w).length < 110) line1 += w + ' ';
+        else line2 += w + ' ';
+      }
+
+      ctx.fillText(line1.trim(), 64, 630);
+      if (line2) ctx.fillText(line2.trim(), 64, 660);
+
+      // Update text under cinema
+      document.getElementById('slideTitle').textContent = scene.title;
+      document.getElementById('slideDescription').textContent = scene.desc;
+
+      const progress = (elapsedSeconds / totalDuration) * 100;
+      document.getElementById('progressFill').style.width = progress + '%';
+      document.getElementById('timeDisplay').textContent =
+        `${Math.floor(elapsedSeconds / 60)}:${String(elapsedSeconds % 60).padStart(2, '0')} / ${Math.floor(totalDuration / 60)}:${String(totalDuration % 60).padStart(2, '0')}`;
+    }
+
+    function speakCurrentScene() {
+      if (!audioEnabled || !('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const text = scenes[currentScene].desc;
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 1.05;
+      utterance.pitch = 1.0;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function togglePlay() {
+      isPlaying = !isPlaying;
+      document.getElementById('btnPlay').textContent = isPlaying ? '⏸ Pause' : '▶ Play Video';
+      if (isPlaying) {
+        speakCurrentScene();
+        runPlayback();
+      } else {
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        clearTimeout(sceneTimer);
+      }
+    }
+
+    function runPlayback() {
+      if (!isPlaying) return;
+      render();
+      elapsedSeconds++;
+
+      let sceneStart = 0;
+      for (let i = 0; i < currentScene; i++) sceneStart += scenes[i].duration;
+
+      if (elapsedSeconds - sceneStart >= scenes[currentScene].duration) {
+        if (currentScene < scenes.length - 1) {
+          currentScene++;
+          speakCurrentScene();
+        } else {
+          togglePlay();
+          elapsedSeconds = 0;
+          currentScene = 0;
+          render();
+          return;
+        }
+      }
+
+      sceneTimer = setTimeout(runPlayback, 1000);
+    }
+
+    function prevSlide() {
+      if (currentScene > 0) {
+        currentScene--;
+        updateElapsedToScene();
+        render();
+        if (isPlaying) speakCurrentScene();
+      }
+    }
+
+    function nextSlide() {
+      if (currentScene < scenes.length - 1) {
+        currentScene++;
+        updateElapsedToScene();
+        render();
+        if (isPlaying) speakCurrentScene();
+      }
+    }
+
+    function updateElapsedToScene() {
+      elapsedSeconds = 0;
+      for (let i = 0; i < currentScene; i++) elapsedSeconds += scenes[i].duration;
+    }
+
+    function toggleAudio() {
+      audioEnabled = !audioEnabled;
+      document.getElementById('btnAudio').textContent = audioEnabled ? '🔊 Narration: ON' : '🔇 Narration: OFF';
+      if (!audioEnabled && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      } else if (audioEnabled && isPlaying) {
+        speakCurrentScene();
+      }
+    }
+
+    // MediaRecorder: Record presentation canvas stream directly into an MP4/WebM file
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let isRecording = false;
+
+    function toggleRecord() {
+      if (!isRecording) {
+        startRecording();
+      } else {
+        stopRecording();
+      }
+    }
+
+    function startRecording() {
+      isRecording = true;
+      recordedChunks = [];
+      document.getElementById('btnRecord').textContent = '⏹ Stop & Save Video';
+      document.getElementById('btnRecord').style.background = '#059669';
+
+      const stream = canvas.captureStream(30);
+      const mime = MediaRecorder.isTypeSupported('video/mp4;codecs=avc1.42E01E') ? 'video/mp4;codecs=avc1.42E01E' :
+                   MediaRecorder.isTypeSupported('video/mp4') ? 'video/mp4' :
+                   MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' : 'video/webm';
+
+      mediaRecorder = new MediaRecorder(stream, { mimeType: mime });
+      mediaRecorder.ondataavailable = e => {
+        if (e.data.size > 0) recordedChunks.push(e.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        const ext = mime.includes('mp4') ? 'mp4' : 'webm';
+        const blob = new Blob(recordedChunks, { type: mime });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `eventwise-ai-walkthrough.${ext}`;
+        a.click();
+        URL.revokeObjectURL(url);
+        document.getElementById('btnRecord').textContent = '🔴 Record & Download MP4';
+        document.getElementById('btnRecord').style.background = '#dc2626';
+        isRecording = false;
+        alert(`✓ Video downloaded successfully as eventwise-ai-walkthrough.${ext}!`);
+      };
+
+      mediaRecorder.start(200);
+
+      // Reset to beginning and play
+      currentScene = 0;
+      elapsedSeconds = 0;
+      if (!isPlaying) togglePlay();
+    }
+
+    function stopRecording() {
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+      }
+      if (isPlaying) togglePlay();
+    }
+
+    // Initial render
+    render();
+  </script>
+</body>
+</html>
