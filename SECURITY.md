@@ -20,7 +20,7 @@ When reporting a vulnerability, please include:
 EventWise AI is engineered with an **offline-first, zero-trust client architecture**:
 
 1. **No Public Bundle Key Inlining**:
-   - In production builds (`import.meta.env.PROD`), ambient build-time variables like `VITE_GEMINI_API_KEY` are strictly ignored and not exposed to client JavaScript.
+   - API keys are strictly user-supplied in volatile React memory or configured server-side via GEMINI_API_KEY, and never bundled into client JavaScript.
    - Users provide ephemeral session keys held exclusively in browser memory, or the app uses an optional serverless proxy (`api/gemini.ts`).
 
 2. **Header-Based Authentication**:

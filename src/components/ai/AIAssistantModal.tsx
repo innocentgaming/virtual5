@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, Bot, Key, ShieldCheck, Cpu, Info } from 'lucide-react';
+import { Sparkles, Bot, Key, Cpu, Info, ShieldCheck } from 'lucide-react';
 import type { EventPlan } from '../../types/event';
 import { Card, CardHeader, Button, Badge } from '../ui';
 
@@ -15,7 +15,6 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
   isGenerating = false,
 }) => {
   const [apiKey, setApiKey] = useState('');
-  const hasEnvKey = !import.meta.env.PROD && Boolean(import.meta.env.VITE_GEMINI_API_KEY);
   const [offlineMode, setOfflineMode] = useState<boolean>(() => {
     return (
       typeof window !== 'undefined' &&
@@ -232,11 +231,6 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
           icon={<Key size={18} color="var(--accent-primary)" />}
           action={
             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-              {hasEnvKey && (
-                <Badge variant="success" icon={<ShieldCheck size={12} />}>
-                  Dev .env Active
-                </Badge>
-              )}
               <Badge variant="info">In-Memory Session Only</Badge>
             </div>
           }
@@ -268,16 +262,11 @@ export const AIAssistantModal: React.FC<AIAssistantModalProps> = ({
             className="form-control"
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
-            placeholder={
-              hasEnvKey
-                ? 'Local dev key active from .env (or enter custom key)'
-                : 'AIzaSy... (leave blank to use offline rule engine)'
-            }
+            placeholder="AIzaSy... (leave blank to use offline rule engine)"
           />
           <span className="form-hint">
-            {hasEnvKey
-              ? 'Dev Mode: Ambient key from local .env detected. Override with a temporary session key anytime.'
-              : 'Session key is held in volatile memory only and never written to storage or sent in URLs. Leave blank to run offline.'}
+            Session key is held in volatile memory only and never written to storage or sent in
+            URLs. Leave blank to run offline.
           </span>
         </div>
 

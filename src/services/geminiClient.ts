@@ -3,8 +3,7 @@
  *
  * Security guarantees:
  * 1. API keys are sent strictly via the 'x-goog-api-key' request header, NEVER in URL query strings.
- * 2. In production builds (import.meta.env.PROD), ambient VITE_GEMINI_API_KEY is ignored to prevent
- *    inlining secrets into the public client bundle.
+ * 2. API keys are strictly user-supplied in ephemeral React state/memory and never bundled.
  * 3. Fresh AbortController and strict timeouts are used per model candidate.
  * 4. Response payloads are capped (512 KB) to prevent memory exhaustion / DoS attacks.
  * 5. Secret redaction ensures API keys never leak into console logs or error messages.
@@ -69,13 +68,6 @@ export function redactSecrets(text: string, customKey?: string): string {
 export function getActiveApiKey(customApiKey?: string): string | undefined {
   const explicit = customApiKey?.trim();
   if (explicit) return explicit;
-
-  // Never allow ambient build-time keys in production builds
-  if (!import.meta.env.PROD) {
-    const devKey = (import.meta.env.VITE_GEMINI_API_KEY as string | undefined)?.trim();
-    if (devKey) return devKey;
-  }
-
   return undefined;
 }
 

@@ -14,7 +14,7 @@ function lucidePlugin() {
   try {
     const lucideMjs = fs.readFileSync(
       path.resolve(__dirname, 'node_modules/lucide-react/dist/esm/lucide-react.mjs'),
-      'utf8'
+      'utf8',
     );
     for (const line of lucideMjs.split('\n')) {
       const m = line.match(/export \{([^}]+)\} from '(\.\/icons\/[^']+)';/);
@@ -42,7 +42,10 @@ function lucidePlugin() {
       }
       const lucideImportRegex = /import\s*\{([^}]+)\}\s*from\s*['"]lucide-react['"];?/g;
       return code.replace(lucideImportRegex, (_match, importsStr: string) => {
-        const specs = importsStr.split(',').map((s) => s.trim()).filter(Boolean);
+        const specs = importsStr
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean);
         const replacements: string[] = [];
         for (const spec of specs) {
           const parts = spec.split(/\s+as\s+/);
@@ -111,18 +114,22 @@ export default defineConfig({
   base: '/',
   server: {
     headers: {
-      'Content-Security-Policy': "default-src 'self'; script-src 'self'; connect-src 'self' https://generativelanguage.googleapis.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'self';",
+      'Content-Security-Policy':
+        "default-src 'self'; script-src 'self'; connect-src 'self' https://generativelanguage.googleapis.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';",
       'X-Content-Type-Options': 'nosniff',
       'X-Frame-Options': 'DENY',
       'Referrer-Policy': 'strict-origin-when-cross-origin',
+      'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
     },
   },
   preview: {
     headers: {
-      'Content-Security-Policy': "default-src 'self'; script-src 'self'; connect-src 'self' https://generativelanguage.googleapis.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'self';",
+      'Content-Security-Policy':
+        "default-src 'self'; script-src 'self'; connect-src 'self' https://generativelanguage.googleapis.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';",
       'X-Content-Type-Options': 'nosniff',
       'X-Frame-Options': 'DENY',
       'Referrer-Policy': 'strict-origin-when-cross-origin',
+      'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
     },
   },
   plugins: [
@@ -152,7 +159,10 @@ export default defineConfig({
           if (id.includes('node_modules/lucide-react/')) {
             return 'vendor-lucide';
           }
-          if (id.includes('src/services/fallbackPlanner') || id.includes('src/services/decisionEngine')) {
+          if (
+            id.includes('src/services/fallbackPlanner') ||
+            id.includes('src/services/decisionEngine')
+          ) {
             return 'event-engine';
           }
         },
@@ -166,6 +176,5 @@ export default defineConfig({
     testTimeout: 75000,
     hookTimeout: 45000,
     fileParallelism: false,
-
   },
 });

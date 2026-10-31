@@ -6,7 +6,7 @@
 
 ## ⚡ 0. Offline Verification (Pre-Flight Check)
 1. **Disable Network / Turn off Wi-Fi** or disconnect internet.
-2. Ensure no `VITE_GEMINI_API_KEY` is present in `.env` (or keep it blank).
+2. Ensure no API key is entered in AI settings (keep it blank for offline engine).
 3. Open `http://localhost:5173/` in Google Chrome / Chromium.
 4. Verify the green offline indicator: all planning benchmarks, decision engines, and copilot capabilities run deterministically in browser memory.
 
