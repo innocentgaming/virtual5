@@ -4,7 +4,7 @@ services:
     runtime: node
     plan: free
     region: oregon
-    buildCommand: npm install && npm run build
+    buildCommand: npm install --include=dev && npm run build
     startCommand: npm start
     envVars:
       - key: NODE_ENV
@@ -15,3 +15,4 @@ services:
         generateValue: true
       - key: VITE_GEMINI_API_KEY
         sync: false
+
