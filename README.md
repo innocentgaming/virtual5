@@ -4,12 +4,12 @@
 <div align="center">
 
 [![React](https://img.shields.io/badge/React-19.0.0-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.8.0-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-6.0.3-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Vite](https://img.shields.io/badge/Vite-8.3.5-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
-[![Tests](https://img.shields.io/badge/Tests-247%2F247%20Passing%20(100%25)-brightgreen?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
+[![Tests](https://img.shields.io/badge/Tests-308%2F308%20Passing%20(100%25)-brightgreen?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
 [![Linter](https://img.shields.io/badge/Oxlint-0%20Warnings%20%2F%200%20Errors-success?style=for-the-badge&logo=oxc&logoColor=white)](https://oxc.rs/)
 [![Accessibility](https://img.shields.io/badge/WCAG-2.1%20AA%20Compliant-blueviolet?style=for-the-badge&logo=w3c&logoColor=white)](https://www.w3.org/WAI/standards-guidelines/wcag/)
-[![Bundle Size](https://img.shields.io/badge/Main%20JS-24.7%20kB%20(Gzip%208.8%20kB)-brightgreen?style=for-the-badge)](#)
+[![Bundle Size](https://img.shields.io/badge/Main%20JS-27.9%20kB%20(Gzip%2010.0%20kB)-brightgreen?style=for-the-badge)](#)
 [![Security](https://img.shields.io/badge/Audit-0%20Vulnerabilities-success?style=for-the-badge&logo=npm&logoColor=white)](#)
 
 **[🌐 Live Landing Page](https://virtual5.vercel.app/)** • **[🚀 90-Second Guided Demo](https://virtual5.vercel.app/demo)** • **[🔐 Accounts & Cloud Sync](https://virtual5.vercel.app/signup)** • **[📦 GitHub Repo](https://github.com/innocentgaming/virtual5)**
@@ -28,9 +28,7 @@
 > * **Native Indian Rupee (`₹`) Economics**: First-class support for `en-IN` grouping (e.g., `₹35,00,000`), Lakhs (`₹35L`) and Crores (`₹2.5 Cr`) shorthand, and contingency modeling.
 > * **Real-Time Dynamic Change & Trade-off Loop**: Detects quote hikes (+20%), guest surges (+50), weather risks, or date compressions, computes concrete Rupee trade-offs, and provides 1-click execution with a 20-step undo history.
 > * **Deep Cultural Guardrails**: Built-in 10:00 PM outdoor sound curfew alerts, dedicated Jain / Pure Veg kitchen isolation protocols, and Vedic Muhurat Run of Show pacing.
-> * **Native Indian Rupee (`₹`) Economics**: First-class support for `en-IN` grouping (e.g., `₹35,00,000`), Lakhs (`₹35L`) and Crores (`₹2.5 Cr`) shorthand, and contingency modeling.
-> * **Real-Time Dynamic Change & Trade-off Loop**: Detects quote hikes (+20%), guest surges (+50), weather risks, or date compressions, computes concrete Rupee trade-offs, and provides 1-click execution with a 20-step undo history.
-> * **Deep Cultural Guardrails**: Built-in 10:00 PM outdoor sound curfew alerts, dedicated Jain / Pure Veg kitchen isolation protocols, and Vedic Muhurat Run of Show pacing.
+> * **Admin Dashboard & Live Mobile RSVP**: Full `/admin` dashboard with atomic first-signup admin bootstrap, user management, audit logging, and public mobile `/rsvp/<token>` links with 1-click guest list import.
 
 ---
 
@@ -40,6 +38,8 @@
 | :--- | :--- | :--- |
 | 🚀 **90-Second Guided Tour** | [virtual5.vercel.app/demo](https://virtual5.vercel.app/demo) | Instant zero-login demo with interactive 90s tour, Chaos Bar, and preloaded personas |
 | 🔐 **Production Application** | [virtual5.vercel.app/app](https://virtual5.vercel.app/app) | Full authenticated planner with scrypt hashing, Upstash Redis sync & JSON backup/restore |
+| 👑 **Admin Console** | [virtual5.vercel.app/admin](https://virtual5.vercel.app/admin) | First registered user admin console, user management, audit logs & system health |
+| ☁️ **Render Deployment** | [`render.yaml`](render.yaml) | Production Blueprint with automated health checks, security headers & gzip compression |
 | 🎬 **Evaluator Video Guide** | [docs/DEMO.md](docs/DEMO.md) | Click-by-click 90-second evaluator demonstration script (no voiceover required) |
 | 🛡️ **Security Policy** | [SECURITY.md](SECURITY.md) | Defense-in-depth threat mitigation, CSP headers, and secret sanitization architecture |
 
@@ -55,8 +55,8 @@
 | **2. Dynamic Decision Making & Chaos Trade-offs** | Handle unexpected real-world changes (e.g. caterer raises quote 20%, date compressed by 14 days) with concrete trade-offs in ₹. | • `rule-vendor-cost-spike` detects actual quote escalations and offers 2–3 quantified trade-offs in ₹ with 1-click `Apply` and `Undo`.<br>• `rule-date-compression` ripples task schedules backwards to avoid overdue bottlenecks.<br>• Zero hallucinated vendor contacts; focused on actionable samagri checklists. | [`rulesRegistry.ts`](file:///d:/challege5/src/services/rulesRegistry.ts)<br>[`ScenarioChangePanel.tsx`](file:///d:/challege5/src/components/scenarios/ScenarioChangePanel.tsx)<br>[`scenarioChangeLoop.test.ts`](file:///d:/challege5/src/test/scenarioChangeLoop.test.ts) |
 | **3. Code Quality & Modularity** | Clean architecture, centralized business constants, pure evaluation functions, zero dead code or linters. | • Centralized thresholds in [`rulesConfig.ts`](file:///d:/challege5/src/constants/rulesConfig.ts).<br>• 12 pure rules in [`rulesRegistry.ts`](file:///d:/challege5/src/services/rulesRegistry.ts) with full JSDoc.<br>• **0 oxlint warnings / 0 errors** on 115 files. | [`rulesRegistry.ts`](file:///d:/challege5/src/services/rulesRegistry.ts)<br>[`rulesConfig.ts`](file:///d:/challege5/src/constants/rulesConfig.ts)<br>`npm run lint` (0 errors) |
 | **4. Security Architecture** | Zero secrets in repo/git history, hardened API communication, safe storage, and XSS immunity. | • **0 secrets in Git / code**.<br>• Serverless Gemini proxy (`api/gemini.ts`) with origin allowlisting and rate limits.<br>• Safe JSON import/export with schema validation (`importPlanFromJson`).<br>• `rel="noopener noreferrer"` across all external links. | [`gemini.ts`](file:///d:/challege5/api/gemini.ts)<br>[`storageService.ts`](file:///d:/challege5/src/services/storageService.ts)<br>[`securityHardening.test.tsx`](file:///d:/challege5/src/test/securityHardening.test.tsx) |
-| **5. Efficiency & Performance** | Fast page loads, sub-second interactions, strict bundle limits, and caching. | • **Main JS Chunk: 24.54 kB** (Limit: 150 kB) / **8.78 kB gzip**.<br>• **Main CSS: 38.88 kB** (Limit: 50 kB) / **7.46 kB gzip**.<br>• Copilot in-memory LRU cache (`copilotMemoryCache`) with SHA-256 hash.<br>• Code-split lazy routes with preloading. | [`copilotService.ts`](file:///d:/challege5/src/services/copilotService.ts)<br>[`check-size-budget.mjs`](file:///d:/challege5/scripts/check-size-budget.mjs)<br>`npm run build` |
-| **6. Testing & CI Verification** | Automated tests covering business math, edge cases, negative numbers, overdue tasks, and fallback resilience. | • **249 / 249 tests passing (100%)** across 35 test files (`vitest`).<br>• Automated GitHub Actions CI workflow ([`.github/workflows/ci.yml`](file:///.github/workflows/ci.yml)).<br>• 25 boundary tests for all 12 decision rules. | [`ci.yml`](file:///.github/workflows/ci.yml)<br>[`decisionRulesRegistry.test.ts`](file:///d:/challege5/src/test/decisionRulesRegistry.test.ts)<br>`npm test` |
+| **5. Efficiency & Performance** | Fast page loads, sub-second interactions, strict bundle limits, and caching. | • **Main JS Chunk: 27.95 kB** (Limit: 150 kB) / **10.02 kB gzip**.<br>• **Main CSS: 42.44 kB** (Limit: 65 kB) / **8.16 kB gzip**.<br>• Copilot in-memory LRU cache (`copilotMemoryCache`) with SHA-256 hash.<br>• Code-split lazy routes with preloading. | [`copilotService.ts`](file:///d:/challege5/src/services/copilotService.ts)<br>[`check-size-budget.mjs`](file:///d:/challege5/scripts/check-size-budget.mjs)<br>`npm run build` |
+| **6. Testing & CI Verification** | Automated tests covering business math, edge cases, negative numbers, overdue tasks, and fallback resilience. | • **308 / 308 tests passing (100%)** across 41 test files (`vitest`).<br>• Automated GitHub Actions CI workflow ([`.github/workflows/ci.yml`](file:///.github/workflows/ci.yml)).<br>• 25 boundary tests for all 12 decision rules. | [`ci.yml`](file:///.github/workflows/ci.yml)<br>[`decisionRulesRegistry.test.ts`](file:///d:/challege5/src/test/decisionRulesRegistry.test.ts)<br>`npm test` |
 | **7. Accessibility (WCAG 2.1 AA)** | Screen reader support, keyboard navigability, high contrast, skip-to-content, and ARIA landmarks. | • Root `<html lang="en-IN">` with `<a href="#main" class="skip-to-content">`.<br>• Interactive Donut chart provides an accessible **"View as Data Table"** toggle (`#btn-toggle-budget-table`).<br>• Automated Axe scans verify zero accessibility violations. | [`InteractiveBudgetChart.tsx`](file:///d:/challege5/src/components/budget/InteractiveBudgetChart.tsx)<br>[`a11yBaselineScan.test.tsx`](file:///d:/challege5/src/test/a11yBaselineScan.test.tsx)<br>[`index.html`](file:///d:/challege5/index.html) |
 
 ---
@@ -65,17 +65,26 @@
 
 ```mermaid
 flowchart TD
-    User([User / Evaluator]) --> Router{Page Router}
+    User([User / Evaluator / Guest]) --> Router{Page Router}
     
     Router -->|'/'| Landing[Public Landing Page - Hero & Feature Pillars]
     Router -->|'/demo'| Demo[Evaluator Demo Mode - 90s Tour & Chaos Bar]
     Router -->|'/app'| AppWorkspace[Authenticated Workspace - Cloud Sync]
+    Router -->|'/admin'| Admin[Admin Console - Role Bootstrap, Logs & Backups]
+    Router -->|'/rsvp/:token'| Rsvp[Public Mobile RSVP - Honeypot & Sync]
     
     subgraph State Management & Orchestration
         AppWorkspace --> Hook[useEventPlan Custom Hook]
         Demo --> Hook
         Hook --> Storage[storageService - LocalStorage v2 + JSON Import/Export]
         Hook --> DiffEngine[PlanChangeDiff Engine - Real-time What Changed?]
+    end
+
+    subgraph Admin, RSVP & Operations
+        Admin --> AdminApi[adminApi - Server Authorization & Audit Trail]
+        Rsvp --> RsvpApi[rsvpApi - Rate Limiting & Guest Import]
+        Server[Standalone Node Server] --> Health[GET /api/health Check]
+        Server --> Gzip[Gzip / CSP / HSTS / Graceful Shutdown]
     end
 
     subgraph Decision Engine & Rules Registry
@@ -193,10 +202,14 @@ EventWise AI operates with a guaranteed **Multi-Tier Fallback Hierarchy**:
 
 ## 📊 Automated Verification & Verification Proofs
 
-### 1. Vitest Test Suite (249 Passing Tests across 35 Files)
+### 1. Vitest Test Suite (308 Passing Tests across 41 Files)
 
-New in this release: `apiHardening.test.ts` (Gemini proxy origin, model, validation and rate limits; client-IP and CSRF checks; atomic Redis rate-limit counter), `authApiErrors.test.ts` (friendly sign-in errors), `seoMeta.test.tsx` and `pageMeta.test.tsx` (share tags, robots, sitemap, noindex on account pages), `contrastTokens.test.ts` (WCAG AA colour tokens) and `liveDemoWindow.test.tsx` (interactive landing demo).
+New in this release: `adminRsvp.test.ts` & `adminRsvpUi.test.tsx` (atomic first-admin claim, role management, audit trail, RSVP flow, rate limits, honeypot & UI modal), `accountPersistence.test.ts` & `storeConfig.test.ts` (FileStore persistence across server restarts, 30-day session renewal, secret stability), `apiHardening.test.ts` (Gemini proxy origin, model, validation and rate limits; client-IP and CSRF checks; atomic Redis rate-limit counter), `authApiErrors.test.ts` (friendly sign-in errors), `seoMeta.test.tsx` and `pageMeta.test.tsx` (share tags, robots, sitemap, noindex on account pages), `contrastTokens.test.ts` (WCAG AA colour tokens) and `liveDemoWindow.test.tsx` (interactive landing demo).
 ```text
+ ✓ src/test/adminRsvp.test.ts (26 tests)
+ ✓ src/test/adminRsvpUi.test.tsx (8 tests)
+ ✓ src/test/accountPersistence.test.ts (10 tests)
+ ✓ src/test/storeConfig.test.ts (6 tests)
  ✓ src/test/scenarioChangeLoop.test.ts (11 tests)
  ✓ src/test/copilotGrounding.test.ts (7 tests)
  ✓ src/test/performanceOptimization.test.tsx (9 tests)
@@ -214,7 +227,7 @@ New in this release: `apiHardening.test.ts` (Gemini proxy origin, model, validat
  ✓ src/test/aiPlanner.test.ts (3 tests)
  ✓ src/test/decisionEngine.test.ts (8 tests)
  ✓ src/test/decisionRulesRegistry.test.ts (25 tests)
- ✓ src/test/authUi.test.tsx (8 tests)
+ ✓ src/test/authUi.test.tsx (9 tests)
  ✓ src/test/authApi.test.ts (7 tests)
  ✓ src/test/demoFeatures.test.tsx (11 tests)
  ✓ src/test/proFeaturesUpgrade.test.tsx (12 tests)
@@ -226,9 +239,17 @@ New in this release: `apiHardening.test.ts` (Gemini proxy origin, model, validat
  ✓ src/test/guests.test.ts (5 tests)
  ✓ src/test/schedule.test.ts (3 tests)
  ✓ src/test/copilot.test.ts (5 tests)
+ ✓ src/test/cleanSlateAndWebsite.test.tsx (2 tests)
+ ✓ src/test/liveDemoWindow.test.tsx (13 tests)
+ ✓ src/test/contrastTokens.test.ts (13 tests)
+ ✓ src/test/apiHardening.test.ts (15 tests)
+ ✓ src/test/featureEnhancements.test.tsx (6 tests)
+ ✓ src/test/authApiErrors.test.ts (4 tests)
+ ✓ src/test/pageMeta.test.tsx (2 tests)
+ ✓ src/test/seoMeta.test.tsx (6 tests)
 
- Test Files  29 passed (29)
-      Tests  196 passed (196)
+ Test Files  41 passed (41)
+      Tests  308 passed (308)
 ```
 
 ### 2. Static Analysis (`oxlint`)
@@ -240,14 +261,14 @@ Finished in 194ms on 115 files with 116 rules using 12 threads.
 
 ### 3. Production Build & Size Budget
 ```text
-📦 Main JS Chunk: index-DEMTPjei.js
-   - Raw size:  24.54 kB (Limit: 150 kB)
-   - Gzip size: 8.78 kB (Limit: 50 kB)
+📦 Main JS Chunk: index-CukiSg6Y.js
+   - Raw size:  27.95 kB (Limit: 150 kB)
+   - Gzip size: 10.02 kB (Limit: 50 kB)
    ✅ PASSED: Within performance budget.
 
-📦 Main CSS Bundle: index-C3haZTit.css
-   - Raw size:  38.88 kB (Limit: 50 kB)
-   - Gzip size: 7.46 kB (Limit: 15 kB)
+📦 Main CSS Bundle: index-D1kOtRUT.css
+   - Raw size:  42.44 kB (Limit: 65 kB)
+   - Gzip size: 8.16 kB (Limit: 20 kB)
    ✅ PASSED: Within performance budget.
 
 🎉 All bundle chunks are strictly within performance budgets!
@@ -292,7 +313,7 @@ npm install
 npm run dev
 # -> Opens http://localhost:5173
 
-# 4. Run automated test suite (196 tests passing)
+# 4. Run automated test suite (308 tests passing across 41 files)
 npm test
 
 # 5. Run static linting

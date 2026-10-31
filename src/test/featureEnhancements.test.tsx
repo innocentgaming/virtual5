@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { generateQRSvg, generateQRDataUrl, generateQrCodeSvg, generateQrCodeDataUrl } from '../utils/qrCode';
+import { generateQRSvg, generateQrCodeSvg, generateQrCodeDataUrl } from '../utils/qrCode';
 import { convertFromInr, formatWithCurrency, CURRENCY_CONFIGS, CurrencyCode } from '../utils/formatters';
 
 describe('Feature Enhancements: QR Code Generator', () => {
