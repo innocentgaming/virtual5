@@ -482,9 +482,9 @@ export const AICopilotDrawer: React.FC<AICopilotDrawerProps> = ({
             </div>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                <h3 id="copilot-drawer-title" style={{ fontSize: 'var(--text-base)', fontWeight: 800, color: 'var(--text)', margin: 0 }}>
+                <h2 id="copilot-drawer-title" style={{ fontSize: 'var(--text-base)', fontWeight: 800, color: 'var(--text)', margin: 0 }}>
                   EventWise Copilot
-                </h3>
+                </h2>
                 {/* Status Pill with Tooltip */}
                 <Badge
                   variant={isAiOnline ? 'success' : 'warning'}

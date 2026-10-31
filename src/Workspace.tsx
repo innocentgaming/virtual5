@@ -146,8 +146,16 @@ export function Workspace({ mode }: { mode: WorkspaceMode }) {
   });
   const [isCopilotOpen, setIsCopilotOpen] = useState(false);
   const [colorMode, setColorMode] = useState<'light' | 'dark'>(() => {
-    const saved = localStorage.getItem('eventwise_color_mode');
-    return saved === 'dark' ? 'dark' : 'light';
+    try {
+      const saved = localStorage.getItem('eventwise_color_mode');
+      if (saved === 'dark' || saved === 'light') return saved;
+    } catch {
+      // ignore
+    }
+    if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: dark)')?.matches) {
+      return 'dark';
+    }
+    return 'light';
   });
   const [notification, setNotification] = useState<string | null>(null);
   const [isAccountOpen, setIsAccountOpen] = useState(false);

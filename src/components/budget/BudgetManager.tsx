@@ -687,9 +687,9 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
             <div style={{ display: 'flex', gap: 'var(--space-3)', flex: 1, minWidth: '280px' }}>
               <ShieldAlert size={22} color="var(--color-warning-text)" style={{ flexShrink: 0, marginTop: '2px' }} />
               <div>
-                <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--color-warning-text)', margin: '0 0 4px 0' }}>
+                <h2 style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--color-warning-text)', margin: '0 0 4px 0' }}>
                   Vendor Cost Escalation & Decision Trade-off
-                </h3>
+                </h2>
                 <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-warning-text)', margin: 0, lineHeight: 1.5 }}>
                   Actual vendor quotes escalated expenses by <strong>{formatCurrency(totalSpike)}</strong> ({formatIndianShort(totalSpike)}).
                   Dynamic Decision Tradeoff: Trim decoration budget by <strong>{formatCurrency(decorCut)}</strong> to offset the price spike, or reduce guest headcount by ~{Math.max(5, Math.ceil(totalSpike / Math.max(500, budgetSummary.perGuestCost)))} attendees.
@@ -714,24 +714,27 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
       <Card>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-4)' }}>
           <div>
-            <h3 style={{ fontSize: 'var(--text-base)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 'var(--space-2)', margin: '0 0 4px 0' }}>
+            <h2 style={{ fontSize: 'var(--text-base)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 'var(--space-2)', margin: '0 0 4px 0' }}>
               <Sliders size={18} color="var(--accent-primary)" />
               Configurable Contingency Buffer
-            </h3>
+            </h2>
             <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', margin: 0 }}>
               Indian celebration safeguard: 10%–15% reserve for unexpected baraat delays, sound curfews, and logistics.
             </p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)', flexWrap: 'wrap' }}>
             <div style={{ textAlign: 'right' }}>
-              <span className="tabular-nums" style={{ fontWeight: 800, fontSize: 'var(--text-lg)', color: 'var(--accent-primary)', display: 'block' }}>
-                {Math.round(plan.contingencyRate * 100)}% ({formatIndianShort(liveContingencyAmount)})
-              </span>
-              <span className="tabular-nums" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
-                {formatCurrency(liveContingencyAmount)}
-              </span>
+              <label htmlFor="contingency-slider" style={{ cursor: 'pointer' }}>
+                <span className="tabular-nums" style={{ fontWeight: 800, fontSize: 'var(--text-lg)', color: 'var(--accent-primary)', display: 'block' }}>
+                  {Math.round(plan.contingencyRate * 100)}% ({formatIndianShort(liveContingencyAmount)})
+                </span>
+                <span className="tabular-nums" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+                  {formatCurrency(liveContingencyAmount)}
+                </span>
+              </label>
             </div>
             <input
+              id="contingency-slider"
               type="range"
               min="0"
               max="25"
@@ -837,8 +840,12 @@ export const BudgetManager: React.FC<BudgetManagerProps> = ({
         {/* Toolbar: Search & Filter Chips */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--space-3)', flexWrap: 'wrap', marginBottom: 'var(--space-4)' }}>
           <div style={{ position: 'relative', width: '280px', maxWidth: '100%' }}>
+            <label htmlFor="budget-expense-search" className="sr-only">
+              Search and filter expenses
+            </label>
             <Search size={15} style={{ position: 'absolute', left: '10px', top: '10px', color: 'var(--text-muted)' }} />
             <input
+              id="budget-expense-search"
               type="text"
               placeholder="Filter expenses..."
               className="form-control"

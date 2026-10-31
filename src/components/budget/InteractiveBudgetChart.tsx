@@ -49,6 +49,13 @@ const InteractiveBudgetChartComponent: React.FC<InteractiveBudgetChartProps> = (
   const activeAmount = activeCategory ? budgetSummary.categoryTotals[activeCategory] || 0 : 0;
   const activePct = total > 0 && activeCategory ? (activeAmount / total) * 100 : 0;
 
+  const chartSummary = `Donut chart: Total budget allocated ${formatCurrency(total)}. Breakdown: ${validCategories
+    .map(
+      (c) =>
+        `${categoryLabels[c]}: ${formatCurrency(budgetSummary.categoryTotals[c] || 0)} (${Math.round(((budgetSummary.categoryTotals[c] || 0) / total) * 100)}%)`
+    )
+    .join(', ')}.`;
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
       {/* Accessibility Chart / Data Table Toggle Bar */}
@@ -163,7 +170,7 @@ const InteractiveBudgetChartComponent: React.FC<InteractiveBudgetChartProps> = (
           viewBox="0 0 220 220"
           style={{ transform: 'rotate(-90deg)', overflow: 'visible' }}
           role="img"
-          aria-label={`Donut chart showing ${validCategories.length} expense categories with ${budgetSummary.utilizationPercentage}% budget utilized`}
+          aria-label={chartSummary}
         >
           {/* Background Ring Track */}
           <circle
@@ -210,7 +217,9 @@ const InteractiveBudgetChartComponent: React.FC<InteractiveBudgetChartProps> = (
                 onClick={() => onSelectCategory?.(selectedCategory === cat ? 'all' : cat)}
                 onMouseEnter={() => setHoveredCategory(cat)}
                 onMouseLeave={() => setHoveredCategory(null)}
-              />
+              >
+                <title>{`${categoryLabels[cat]}: ${formatCurrency(amount)} (${Math.round(ratio * 100)}%)`}</title>
+              </circle>
             );
           })}
         </svg>
@@ -273,14 +282,29 @@ const InteractiveBudgetChartComponent: React.FC<InteractiveBudgetChartProps> = (
 
       {/* Accessible Text Alternative for Screen Readers */}
       <div className="sr-only">
-        <h3>Expense category distribution details</h3>
-        <ul>
-          {validCategories.map((cat) => (
-            <li key={cat}>
-              {categoryLabels[cat]}: {formatCurrency(budgetSummary.categoryTotals[cat])} ({formatPercent((budgetSummary.categoryTotals[cat] / total) * 100)} of budget)
-            </li>
-          ))}
-        </ul>
+        <table aria-label="Budget Category Distribution Breakdown">
+          <caption>Expense category allocation details</caption>
+          <thead>
+            <tr>
+              <th scope="col">Category</th>
+              <th scope="col">Amount</th>
+              <th scope="col">Percentage</th>
+            </tr>
+          </thead>
+          <tbody>
+            {validCategories.map((cat) => {
+              const amount = budgetSummary.categoryTotals[cat] || 0;
+              const pct = total > 0 ? Math.round((amount / total) * 100) : 0;
+              return (
+                <tr key={cat}>
+                  <th scope="row">{categoryLabels[cat]}</th>
+                  <td>{formatCurrency(amount)}</td>
+                  <td>{pct}%</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
 
       {/* Interactive Category Legend with Mini Progress Bars */}

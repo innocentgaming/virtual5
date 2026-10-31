@@ -141,6 +141,13 @@
   --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
 
   --focus-ring: 0 0 0 2px var(--surface-raised), 0 0 0 4px var(--accent-primary);
+
+  /* WCAG AA Compliant High-Contrast Text Tokens (4.5:1 on light backgrounds) */
+  --gold-text: #8A6D00;
+  --coral-text: #B8432F;
+  --marigold-text: #946200;
+  --accent-gold-text: #8A6D00;
+  --accent-btn-text: #ffffff;
 }
 
 /* ==============================================================================
@@ -158,6 +165,8 @@
   --accent-subtle: #fdf2f2;
   --accent-text: #9E2A2B;
   --accent-gold: #b45309; /* darkened gold for 4.8:1 text contrast on light */
+  --gold-text: #8A6D00; /* WCAG AA 4.71:1 on light */
+  --accent-gold-text: #8A6D00;
   --accent-glow: rgba(158, 42, 43, 0.2);
   --brand-primary: var(--accent-primary);
 }
@@ -167,10 +176,11 @@
   --theme-primary: #c2410c;
   --theme-accent: #E76F51;
   --theme-accent-secondary: #F4A261;
-  --accent-primary: #E76F51;
-  --accent-primary-hover: #c2410c;
+  --accent-primary: #c2410c; /* WCAG AA: white on #c2410c is 5.18:1 */
+  --accent-primary-hover: #9a3412;
   --accent-subtle: #fff7ed;
   --accent-text: #9a3412; /* WCAG AA 5.1:1 on white */
+  --coral-text: #B8432F; /* WCAG AA 5.18:1 on light */
   --accent-glow: rgba(231, 111, 81, 0.2);
   --brand-primary: var(--accent-primary);
 }
@@ -180,11 +190,12 @@
   --theme-primary: #1b6d63;
   --theme-accent: #2A9D8F;
   --theme-accent-secondary: #E9C46A;
-  --accent-primary: #2A9D8F;
-  --accent-primary-hover: #1b6d63;
+  --accent-primary: #1b6d63; /* WCAG AA: white on #1b6d63 is 6.15:1 */
+  --accent-primary-hover: #134e48;
   --accent-subtle: #f0fdf4;
   --accent-text: #064e3b; /* WCAG AA 4.8:1 on white */
   --accent-gold: #b45309;
+  --marigold-text: #946200; /* WCAG AA 5.02:1 on light */
   --accent-glow: rgba(42, 157, 143, 0.2);
   --brand-primary: var(--accent-primary);
 }
@@ -293,6 +304,11 @@ html {
 :focus-visible {
   outline: 2px solid var(--accent-primary);
   outline-offset: 2px;
+}
+
+button, a, input, select, textarea, [role="button"] {
+  min-height: 24px;
+  min-width: 24px;
 }
 
 body {
@@ -739,7 +755,7 @@ h1, h2, h3, .heading-display {
 
 .btn-primary {
   background: var(--accent-primary);
-  color: white;
+  color: var(--accent-btn-text, #ffffff);
   box-shadow: 0 2px 8px var(--accent-glow);
 }
 
@@ -1563,6 +1579,11 @@ th, td {
 .ui-modal-close:focus-visible {
   outline: 2px solid var(--accent-primary);
   outline-offset: 2px;
+}
+
+button, a, input, select, textarea, [role="button"] {
+  min-height: 24px;
+  min-width: 24px;
 }
 
 .ui-modal-body {

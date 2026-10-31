@@ -50,6 +50,7 @@
     "oxlint": "^1.88.0",
     "prettier": "^3.9.10",
     "rollup-plugin-visualizer": "^7.1.1",
-    "vitest": "^5.0.5"
+    "vitest": "^5.0.5",
+    "vitest-axe": "^0.1.0"
   }
 }

@@ -651,9 +651,9 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-3)' }}>
             <AlertTriangle size={20} color="#ea580c" style={{ flexShrink: 0, marginTop: '2px' }} />
             <div>
-              <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: '#ea580c', margin: '0 0 2px 0' }}>
+              <h2 style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: '#ea580c', margin: '0 0 2px 0' }}>
                 Dedicated Pure Veg / Jain Kitchen Counter Required
-              </h3>
+              </h2>
               <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text)', margin: 0, lineHeight: 1.5 }}>
                 <strong>{stats.jainOrPureVegCount} guests</strong> require Jain (no onion/garlic/root veg) or Sattvic Pure Vegetarian preparation. Ensure your caterer sets up an isolated preparation counter, distinct serving ladles, and clear signage.
               </p>
@@ -726,8 +726,12 @@ export const GuestManager: React.FC<GuestManagerProps> = ({
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
             {/* Search Box */}
             <div style={{ position: 'relative', width: '280px', maxWidth: '100%' }}>
+              <label htmlFor="guest-search-input" className="sr-only">
+                Search guest list
+              </label>
               <Search size={15} style={{ position: 'absolute', left: '10px', top: '10px', color: 'var(--text-muted)' }} />
               <input
+                id="guest-search-input"
                 type="text"
                 placeholder="Search guest, table, or notes..."
                 className="form-control"
